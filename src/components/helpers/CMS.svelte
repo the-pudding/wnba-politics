@@ -4,7 +4,6 @@
 	// — the name picks a component from `components`, the labeled parts become props.
 	import { base } from "$app/paths";
 	import FoxBadge from "$components/FoxBadge.svelte";
-	import copy from "$data/copy.json";
 
 	let { body = [], components = {} } = $props();
 
@@ -21,7 +20,7 @@
 	const hl = (html, color = "#d55181") => (html ?? "").replace(/==(.+?)==/g,
 		(_, w) => `<mark style="background:${color}2e; box-shadow: inset 0 -2px 0 ${color}66">${w}</mark>`);
 
-	function parseChart(value) {
+	function parseChart(value, section) {
 		const [name, ...parts] = value.split("|").map((s) => s.trim());
 		const props = {};
 		for (const p of parts) {
@@ -31,7 +30,7 @@
 			if (key === "words") props.words = v.split(",").map((w) => w.trim());
 			else if (key === "groups") props.groups = v.split("/")
 				.map((g) => g.split(",").map((w) => w.trim()).filter(Boolean)).filter((g) => g.length);
-			else if (key === "steps") props.steps = copy[v] ?? [];
+			else if (key === "steps") props.steps = section[v] ?? [];
 			else if (key === "from") props.from = /^\d{4}$/.test(v) ? v + "-01" : v;
 			else if (key === "to") props.to = /^\d{4}$/.test(v) ? v + "-12" : v;
 			else props[key] = v === "true" ? true : v === "false" ? false : v;
@@ -74,7 +73,7 @@
 			{#if b.type === "text"}
 				<p>{@html hl(b.value)}</p>
 			{:else if b.type === "chart"}
-				{@const { name, props } = parseChart(b.value)}
+				{@const { name, props } = parseChart(b.value, section)}
 				{@const C = components[name]}
 				<div class="chart" class:full-bleed={FULL_BLEED.has(name)}>
 					{#if props.title && !SELF_CAPTIONED.has(name)}

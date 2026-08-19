@@ -10,7 +10,6 @@
 	import articleNet from "$data/article_network.json";
 	import bios from "$data/net_bios.json";
 	import { scores as sentimentScores } from "$data/headline_sentiment.json";
-	import copyData from "$data/copy.json";
 	import { scaleSqrt } from "d3-scale";
 	import { forceSimulation, forceManyBody, forceLink, forceCollide, forceCenter, forceX, forceY } from "d3-force";
 
@@ -79,7 +78,7 @@
 		{ year: "2024", focus: "Caitlin Clark, Angel Reese", text: "Clark arrives, and one pairing swamps everything else." },
 		{ year: "2026", focus: "Riley Gaines, Dave Portnoy, Sophie Cunningham", text: "By 2026 the loudest voices in the WNBA's headlines aren't in the WNBA." }
 	];
-	const rawSteps = steps ?? copyData.networkSteps ?? DEFAULT_STEPS;
+	const rawSteps = steps ?? DEFAULT_STEPS;
 	const STEPS = rawSteps.map((s) => ({
 		year: String(s.year ?? "2026"),
 		focus: (s.focus ?? "").split(",").map((f) => f.trim()).filter(Boolean),
