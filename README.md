@@ -1,12 +1,9 @@
 # How Does Fox News Frame the WNBA?
 
 A data-driven essay about how Fox News covers the WNBA — and how differently
-everyone else does. By [Melanie Walsh](https://melaniewalsh.org).
+everyone else does. 
 
-This is the **streamlined, publishable repo**: the essay site, the data as
-CSVs, and short notebooks that reproduce the headline findings. The full
-research pipeline (harvesters, caches, every experiment) lives in the private
-companion repo, `wnba-politics-full`.
+
 
 ## The site
 
@@ -20,45 +17,6 @@ using [ArchieML](http://archieml.org/) for a micro-CMS powered by Google Docs.
 npm install
 npm run dev
 ```
-
-### Google Doc
-
-The copy lives in a Google Doc whose id is set in `google.config.js`. Running
-`npm run gdoc` at any point (even in a new tab while the server is running)
-fetches the latest Doc into `src/data/copy.json`. The Doc is the essay, in
-order: a `[body]` of sections holding text, images, clippings, and charts in
-the flow.
-
-A simple chart is one line — `chart: timeline-clark | nba: true | caption: …`
-— where the name picks a component from the map in `Index.svelte` and the
-labeled parts become props. A scrollytelling chart is a block with its steps
-nested right inside it, at its spot in the copy:
-
-```
-{.chart}
-id: ternary-scrolly
-
-[.steps]
-groups: viktor, bout
-text: While MSNBC named the man Griner was exchanged for, Viktor Bout…
-[]
-{}
-```
-
-### Components
-
-One file per chart in `src/components/`, named the way the Doc names them.
-`helpers/CMS.svelte` renders the Doc's body and owns every chart's title and
-caption. Colors are CSS variables defined at the bottom of `Index.svelte`;
-edit them there (or live in dev tools on `<html>`) and every chart follows.
-
-### Embedding data
-
-Chart data is embedded with normal import syntax (e.g.
-`import rows from "$data/outlet_topics.csv"`) — CSV where the data is a flat
-table (`outlet_topics.csv`, `fox_ngrams.csv`, `trans_articles.csv`), JSON
-where it's nested (networks, word grids, examples). All generated from the
-corpora by the full repo's pipeline.
 
 ### Style
 
@@ -114,12 +72,10 @@ the outlet allows it:
 
 ## The notebooks (`notebooks/`)
 
-Short, self-contained, CSV-in → table-out. Run in order or independently:
-
 1. **01-fightin-words** — which words Fox uses more than Just Women's Sports
-   (and vice versa), by weighted log-odds. The piece's core method.
+   (and vice versa), by weighted log-odds. 
 2. **02-topic-rates** — the share of each outlet's articles touching
-   race/protest and LGBTQ topics, by year. The piece's comparison charts.
+   race/protest and LGBTQ topics, by year.
 3. **03-chyron-ternary** — each network's most distinctive chyron words,
    including the Griner-swap example (*viktor bout* vs *merchant of death*).
 
