@@ -1,20 +1,7 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// Scrollytelling version of the network: the graph stays on screen while the
-	// text scrolls, and each step grows it by one year and can spotlight people.
-	//
-	// An edge here means Fox put two names in the SAME HEADLINE — an editorial
-	// choice, not an incidental mention — so the graph stays readable and every
-	// line is something a Fox editor decided to pair.
-	//
-	// Steps come from the Doc, e.g.:
-	//   [networkSteps]
-	//   year: 2022
-	//   focus: Brittney Griner, Joe Biden
-	//   text: When Griner was detained, Fox's WNBA headlines became White House headlines.
-	//   []
-	//
-	// Layout is d3-force; Svelte draws the marks.
+	// Scrollytelling network: the graph stays put while text scrolls, growing a year
+	// per step. An edge = Fox named two people in the same headline.
+	// Doc embed: [networkSteps] year: 2022 | focus: … | text: …
 	import { onMount } from "svelte";
 	import { base } from "$app/paths";
 	import faceFiles from "$data/net_faces.json";
@@ -29,8 +16,7 @@
 
 	let {
 		steps = null,
-		source = "headline" // "headline" = named in the same headline
-		                    // "article"  = named anywhere in the same article
+		source = "headline" // or "article": named anywhere in the same article
 	} = $props();
 
 	const net = source === "article" ? articleNet : headlineNet;
@@ -39,9 +25,7 @@
 	const GROUP_COLORS = { players: "#2a78d6", league: "#eda100", politics: "#1f9d6e", media: "#d55181" };
 	const GROUP_LABELS = { players: "WNBA players", league: "the league", politics: "politicians", media: "media voices" };
 
-	// Second way to color the graph: the league on one side, and everyone Fox
-	// brings in from outside it sorted by political alignment. This is an
-	// editorial judgment — edit the two lists to change it.
+	// lean coloring is an editorial judgment — edit these lists to change it
 	const RIGHT_LEANING = new Set(["Donald Trump", "J.D. Vance", "Kelly Loeffler", "Riley Gaines",
 		"Dave Portnoy", "Enes Kanter Freedom", "Clay Travis", "Charlie Kirk", "J.K. Rowling",
 		"Stephen A. Smith"]);
@@ -51,8 +35,7 @@
 	const LEAN_LABELS = { league: "WNBA players & league", right: "right-leaning voices",
 		left: "left-leaning voices", unaligned: "no clear lean" };
 
-	// an explicit lean wins even for players (Rapinoe is a political figure in
-	// this coverage, not just an athlete)
+	// an explicit lean wins even for players
 	const leanOf = (node) => {
 		if (RIGHT_LEANING.has(node.name)) return "right";
 		if (LEFT_LEANING.has(node.name)) return "left";
@@ -60,12 +43,10 @@
 		return "unaligned";
 	};
 
-	let colorMode = $state("lean");     // "lean" | "role" — political lean by default
+	let colorMode = $state("lean");     // "lean" | "role"
 	let edgeMode = $state("weight");    // "weight" | "sentiment"
 
-	// How negative or positive are the headlines behind a link? The score for
-	// each headline comes from a RoBERTa classifier (-1 hostile … +1 glowing);
-	// an edge takes the average of its own headlines.
+	// mean RoBERTa sentiment (-1…+1) of the edge's headlines
 	function edgeSentiment(edge) {
 		const scored = (edge.heads ?? [edge.ex])
 			.map((headline) => sentimentScores[headline])
@@ -74,7 +55,6 @@
 		return scored.reduce((sum, score) => sum + score, 0) / scored.length;
 	}
 
-	// red for negative, green for positive, muted in between
 	function edgeColor(edge) {
 		if (edgeMode !== "sentiment") return null;
 		const mood = edgeSentiment(edge);
@@ -86,16 +66,11 @@
 	}
 	const colorOf = (node) => (colorMode === "lean" ? LEAN_COLORS[leanOf(node)] : GROUP_COLORS[node.group]);
 
-	// portraits (same files the old network used)
-	// every face in viz/static/net — regenerate with fetch_portraits.py
-	// the one source of truth for which portrait file each person has; this used
-	// to be a hardcoded copy, which quietly went stale every time a portrait was
-	// replaced and left those nodes requesting a file that no longer exists
+	// portrait files in viz/static/net — regenerate with fetch_portraits.py
 	const IMG_EXT = faceFiles;
 	const slugOf = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 	const HEADSHOT = new Set(["caitlin-clark","angel-reese","brittney-griner","sophie-cunningham","paige-bueckers","dijonai-carrington","natasha-cloud","a-ja-wilson","sue-bird","layshia-clarendon"]);
 
-	// --- steps: from the Doc, else a sensible default walk-through --------------
 	const DEFAULT_STEPS = [
 		{ year: "2020", text: "Each face is someone Fox News named in a WNBA headline. A line means two people shared one — an editorial decision, not an accident." },
 		{ year: "2020", focus: "Sue Bird, Megan Rapinoe", text: "In 2020 the whole network is one line: Sue Bird and Megan Rapinoe, together in politics." },
@@ -113,24 +88,13 @@
 	}));
 
 	let stepIndex = $state(0);
-	// The last DOC step is still a story beat; explore lives one scroll segment
-	// further, on a synthetic card-less step. They used to be the same state,
-	// which meant the 2026 data arriving (the big genuine growth — the story's
-	// point) fired in the same frame as the mode switch, the control bar
-	// mounting and the layout widening. Now the year lands under its card, and
-	// the mode switch that follows changes no data at all.
+	// explore is a synthetic step past the last Doc step, so the mode switch changes no data
 	let current = $derived(STEPS[Math.min(stepIndex ?? 0, STEPS.length - 1)] ?? STEPS[0]);
 
-	// After the final step the chart becomes a free-explore tool: you can drag
-	// nodes, replay the years, and click anyone to read their headlines.
-	// Explore mode is the last step, tracked live. It used to latch — once you
-	// reached the end it stayed on — which meant scrolling back up into the story
-	// left hover-to-read-headlines armed, so passing the mouse over a face during
-	// the walk-through popped a panel over the step commentary.
+	// tracked live, not latched: scrolling back up must disarm explore
 	let atFinalStep = $derived(stepIndex !== undefined && stepIndex >= STEPS.length);
 	let exploring = $derived(atFinalStep);
-	// Animation runs on MONTHS so the graph grows smoothly rather than jumping a
-	// year at a time; the year buttons just jump to that year's last month.
+	// animation runs on months; year buttons jump to the year's last month
 	const MONTHS = net.months ?? [];
 	const lastMonthOf = (year) => {
 		const inYear = MONTHS.filter((m) => m.startsWith(year));
@@ -152,14 +116,12 @@
 		}, 130);
 	}
 
-	// the cutoff we are showing: a month while exploring, else the step's year end
 	let cutoffMonth = $derived(exploring ? exploreMonth : lastMonthOf(current.year));
 	let shownYear = $derived(cutoffMonth.slice(0, 4));
 	let monthsShown = $derived(MONTHS.filter((m) => m <= cutoffMonth));
-	// years fully or partly covered — used for the headline table and node counts
 	let yearsShown = $derived(net.years.filter((y) => y <= shownYear));
 
-	// One lookup of headline text per pair, so monthly edges can show an example.
+	// monthly edges carry no example headline; borrow from the yearly ones
 	const exampleFor = new Map();
 	for (const year of net.years) {
 		for (const edge of net.edges[year] ?? []) {
@@ -181,15 +143,9 @@
 	});
 	let maxWeight = $derived(Math.max(1, ...edges.map((e) => e.n)));
 
-	// --- clicking a person: every headline that ties them to someone else -------
-	// You can select more than one person: with one selected you see all of their
-	// shared headlines; with two or more you see only the headlines they share.
+	// one name selected: all their shared headlines; two+: only what they share
 	let selectedNames = $state([]);
 	let selected = $derived(selectedNames.length === 1 ? selectedNames[0] : null);
-	// In free-explore, hovering someone previews their headlines; clicking pins
-	// them so you can move the mouse over to the list and scroll it.
-	// The list belongs to free-explore only: during the walk-through the step
-	// card is the commentary, and a second panel competes with it.
 	let tableNames = $derived(
 		!exploring ? [] : (selectedNames.length ? selectedNames : (hovered ? [hovered] : []))
 	);
@@ -201,7 +157,6 @@
 			for (const edge of net.edges[year] ?? []) {
 				const touches = tableNames.filter((n) => n === edge.a || n === edge.b);
 				if (!touches.length) continue;
-				// with several people selected, only keep headlines that hold them all
 				const both = tableNames.length > 1
 					? tableNames.every((n) => n === edge.a || n === edge.b)
 					: true;
@@ -210,15 +165,12 @@
 					? edge.b
 					: (tableNames.includes(edge.b) && !tableNames.includes(edge.a) ? edge.a : null);
 				for (const headline of edge.heads ?? [edge.ex]) {
-					// the article network also carries the sentences that name both
-					// people together — the actual evidence for the link
+					// sents: sentences naming both people (article network only)
 					rows.push({ year, partner, headline, sentences: edge.sents?.[headline] ?? [] });
 				}
 			}
 		}
-		// Fallback only: if this person shares no headline with anyone, show the
-		// ones where they appear alone, so clicking them still gives you something
-		// to read instead of an empty table.
+		// fallback: no shared headlines — show their solo ones
 		if (tableNames.length === 1 && rows.length === 0) {
 			const node = nodeByName.get(tableNames[0]);
 			for (const own of node?.headlines ?? []) {
@@ -233,7 +185,6 @@
 			.filter((r) => !seen.has(r.headline) && seen.add(r.headline));
 	});
 
-	// ---------- highlight the people's names inside each headline ----------
 	// longest names first so "Caitlin Clark" wins over "Clark"
 	const NAME_PATTERNS = net.nodes
 		.flatMap((node) => {
@@ -261,7 +212,6 @@
 		return html;
 	}
 
-	// how many headlines each person has so far
 	let counts = $derived.by(() => {
 		const out = {};
 		for (const node of net.nodes) {
@@ -273,10 +223,8 @@
 		return out;
 	});
 
-	// the headline to show for this step: the strongest edge among focused people
 	let stepHeadline = $derived.by(() => {
-		// The Doc can pin the headline for a step with `headline:`; otherwise the
-		// chart picks the busiest pairing among the people the step focuses on.
+		// Doc can pin via headline:; else the busiest pairing among the focused people
 		if (current.headline) {
 			return { text: current.headline, pair: current.focus.join(" + "), n: 1 };
 		}
@@ -289,7 +237,6 @@
 			.sort((x, y) => y.n - x.n);
 		const pick = withinFocus[0] ?? touchingFocus[0];
 		if (pick) return { text: pick.ex, pair: `${pick.a} + ${pick.b}`, n: pick.n };
-		// nobody paired yet — fall back to a solo headline from this year
 		for (const name of current.focus) {
 			const node = net.nodes.find((n) => n.name === name);
 			const solo = node?.examples?.[current.year];
@@ -298,14 +245,11 @@
 		return null;
 	});
 
-	// while exploring, the clicked person acts as the focus
 	let focusSet = $derived(new Set(selectedNames.length ? selectedNames : (exploring ? [] : current.focus)));
 	let connectedToFocus = $derived.by(() => {
 		if (!focusSet.size) return null;
-		// Two or more people picked (or named in the step): show only them.
 		if (selectedNames.length >= 2) return new Set(selectedNames);
 		if (!selectedNames.length && current.focus.length >= 2) return new Set(current.focus);
-		// One person picked (or a story step): show them plus who they're tied to.
 		const set = new Set(focusSet);
 		for (const e of edges) {
 			if (focusSet.has(e.a)) set.add(e.b);
@@ -314,19 +258,11 @@
 		return set;
 	});
 
-	// --- force layout -----------------------------------------------------------
-	// On a phone the drawing flips portrait: more units across a taller canvas,
-	// so the network fills the screen while nodes and type render smaller.
-	// Decided once at init — phones don't cross the breakpoint mid-read, and a
-	// reactive canvas would re-heat the simulation (see the edge-signature note
-	// below for how touchy that is).
+	// canvas size decided once at init — a reactive one would re-heat the simulation
 	const MOBILE_NET = typeof window !== "undefined" && window.innerWidth < 640;
 	const WIDTH = MOBILE_NET ? 560 : 900, HEIGHT = MOBILE_NET ? 860 : 620;
 	const CENTER_X = WIDTH / 2, CENTER_Y = HEIGHT / 2;
-	// Circle AREA tracks headline count, so Clark (809 headlines) reads as roughly
-	// 3.5x Reese (230) instead of both hitting a ceiling. The scale is pinned to
-	// the all-years maximum, so during playback nodes grow toward their final size
-	// instead of resizing relative to each other every frame.
+	// area tracks headline count, pinned to the all-years max so playback grows nodes
 	const BIGGEST_TOTAL = Math.max(...net.nodes.map((node) => node.total));
 	const SMALLEST_R = MOBILE_NET ? 30 : 20, BIGGEST_R = MOBILE_NET ? 120 : 82;
 	const nodeRadius = scaleSqrt().domain([0, BIGGEST_TOTAL]).range([0, BIGGEST_R - SMALLEST_R]);
@@ -352,8 +288,7 @@
 			.force("towardMiddleY", forceY(CENTER_Y).strength(0.06))
 			.force("collide", forceCollide((node) => radius(node) + (MOBILE_NET ? 10 : 16)).iterations(2))
 			.on("tick", () => {
-				// mutate in place: $state tracks x and y per node, so only the
-				// circles that actually moved re-render
+				// mutate in place: $state tracks x/y per node
 				for (const node of nodes) {
 					node.x = Math.max(28, Math.min(WIDTH - 28, node.x));
 					node.y = Math.max(24, Math.min(HEIGHT - 24, node.y));
@@ -362,11 +297,7 @@
 		return () => simulation?.stop();
 	});
 
-	// Rebuild the links whenever the step changes — but only when they actually
-	// changed. `edges` is a $derived and returns a fresh array on every
-	// recompute, so this effect used to fire on the beat→explore handover even
-	// though the data was identical, re-heating the simulation (alpha 0.65) and
-	// making every node jostle at the exact moment the layout was easing wider.
+	// `edges` is a fresh array every recompute — skip identical sets or the sim re-heats
 	let lastEdgeSig = "";
 	$effect(() => {
 		if (!simulation) return;
@@ -385,7 +316,6 @@
 			.restart();
 	});
 
-	// --- dragging (explore mode only) -------------------------------------------
 	let svgEl;
 	let dragging = null, dragMoved = 0;
 	function toSvgPoint(event) {
@@ -409,10 +339,9 @@
 		dragMoved++;
 	}
 	function endDrag() {
-		// a quiet click on empty canvas clears the selection; a drag never does
 		if (!dragging && bgPressed && bgMoved < 4) selectedNames = [];
 		bgPressed = false; bgMoved = 0;
-		// a press that barely moved is a click: open that person's headlines
+		// moved < 4 = a click, not a drag
 		if (dragging && dragMoved < 4) {
 			selectedNames = selectedNames.includes(dragging)
 				? selectedNames.filter((n) => n !== dragging)
@@ -424,11 +353,8 @@
 		dragging = null;
 	}
 
-	// background press tracking, so panning/dragging never clears a selection
 	let bgPressed = false, bgMoved = 0;
 
-	// --- compare picker ---------------------------------------------------------
-	// Everyone who has appeared by the year currently on screen, alphabetical.
 	let peopleInPlay = $derived(
 		net.nodes
 			.filter((node) => (counts[node.name] ?? 0) > 0)
@@ -443,12 +369,7 @@
 	}
 
 	let hovered = $state(null);
-	// No tooltips: hovering lights the person and their links, and the headline
-	// list on the left carries the detail.
 	const leaveGraph = (event) => { endDrag(event); hovered = null; };
-	// Hovering anyone (during the story or while exploring) lights them and their
-	// connections; a selection still wins if there is one.
-	// adjacency, computed once per edge set rather than on every pointer move
 	let neighbours = $derived.by(() => {
 		const map = new Map();
 		for (const edge of edges) {
@@ -465,13 +386,7 @@
 	let visible = $derived(hoverSet ?? (focusSet.size ? connectedToFocus : null));
 	let litNames = $derived(hoverSet ? new Set([hovered]) : focusSet);
 
-	// Clicking someone removes the links that don't involve them, so their own
-	// connections read cleanly:
-	//   one person selected  → only their links
-	//   two or more selected → only the links running between them
-	// A scroll step does NOT remove anything: the whole graph stays visible in
-	// the background, dimmed, so you can see how much of it the step is picking
-	// out. Only the people being discussed are lit.
+	// selections filter edges; scroll steps only dim — the whole graph stays visible
 	function edgeIsRelevant(edge) {
 		if (!selectedNames.length) return true;
 		if (selectedNames.length === 1) return edge.a === selectedNames[0] || edge.b === selectedNames[0];
@@ -479,28 +394,23 @@
 	}
 	let shownEdges = $derived(edges.filter(edgeIsRelevant));
 
-	// Links bow slightly instead of running dead straight, so a line passing
-	// behind someone's face can't be mistaken for a link to them.
+	// bowed so a line passing behind a face isn't read as a link to it
 	function arcBetween(from, to) {
 		const dx = to.x - from.x, dy = to.y - from.y;
 		const distance = Math.hypot(dx, dy) || 1;
 		const bow = distance * 0.12;
-		// control point offset perpendicular to the line
 		const cx = (from.x + to.x) / 2 - (dy / distance) * bow;
 		const cy = (from.y + to.y) / 2 + (dx / distance) * bow;
 		return `M${from.x},${from.y} Q${cx},${cy} ${to.x},${to.y}`;
 	}
 
-	// Which edge is the step actually talking about. With two or more people lit,
-	// that's the link between them — not every link either of them has.
+	// two+ people lit: only the link between them
 	function edgeLit(edge) {
 		if (litNames.size > 1) return litNames.has(edge.a) && litNames.has(edge.b);
 		return litNames.has(edge.a) || litNames.has(edge.b);
 	}
 
-	// Hovering someone lights only the edges that touch them. Without this, links
-	// running between two of their neighbours stay at full strength and read as
-	// part of the highlight.
+	// neighbour-to-neighbour links must dim too, or they read as highlighted
 	function edgeDimmed(edge) {
 		if (hovered && !selectedNames.length) {
 			return edge.a !== hovered && edge.b !== hovered;
@@ -515,8 +425,7 @@
 			Fox News WNBA {LINK_WORD}s, 2019–<strong>{shownYear}</strong>
 		</p>
 
-		<!-- like the explore-bar: present for layout, but only usable (and
-		     visible) once the walk-through hands the graph over -->
+		<!-- present for layout; usable only once explore arms it -->
 		<div class="compare-bar" class:armed={exploring}>
 			<label>
 				Explore headlines between
@@ -657,7 +566,6 @@
 					{#each selectedHeadlines as row, rowIndex}
 					<div class="table-row">
 							<span class="row-left">
-								<!-- no name pill: the names are already highlighted in the headline -->
 								<span class="cdate">{row.year}</span>
 							</span>
 							<p>{@html highlightNames(row.headline)}</p>
@@ -694,8 +602,7 @@
 					</div>
 				</div>
 			{/each}
-			<!-- the explore handover gets its own scroll segment, so the mode
-			     switch happens on a beat where the DATA does not change -->
+			<!-- handover segment: mode switch on a beat where the data doesn't change -->
 			<div class="step step-explore"></div>
 		</Scrolly>
 	</div>
@@ -708,12 +615,7 @@
 		grid-template-columns: minmax(240px, 320px) 1fr;
 		gap: 24px;
 	}
-	/* The sticky spans the whole grid in BOTH modes; during the walk-through the
-	   card column is carved out with padding instead of a narrower grid column.
-	   Same footprint, different mechanism — and the difference is that padding
-	   animates, where a grid-column switch snaps. Entering explore used to
-	   re-span the sticky from column 2 to full width in a single frame, scaling
-	   every circle up ~35% at once: the jump this replaces. */
+	/* card column carved out with padding, not a grid column: padding animates */
 	.sticky {
 		position: relative;
 		grid-column: 1 / -1; grid-row: 1;
@@ -727,27 +629,18 @@
 	.steps { grid-column: 1; grid-row: 1; z-index: 2; }
 	.step-explore { height: 60vh; }
 
-	/* Once the walk-through is done the graph becomes the whole screen: it spans
-	   both columns and takes the full viewport height, so there is room to drag
-	   people around and read the headline table beside them. */
 	.network-scrolly.exploring .sticky {
 		top: 0;
 		height: 100vh;
 		padding: 10px 0;
-		/* nudged right: in explore mode the headline panel opens on the left, and
-		   a dead-centre graph sits half underneath it */
+		/* nudged right: the headline panel opens on the left */
 		padding-left: 56px;
 	}
-	/* The step cards get out of the way entirely — hidden, not removed, so the
-	   page keeps its scroll height and nothing jumps. */
+	/* hidden, not removed, so the page keeps its scroll height */
 	.network-scrolly.exploring .steps { visibility: hidden; pointer-events: none; }
 	@media (max-width: 860px) {
 		.network-scrolly { display: block; }
-		/* the desktop card-column padding and its transition must not leak here:
-		   there is no card column, and this boundary flips on the smallest scroll,
-		   so anything animated at it strobes */
-		/* the portrait mobile canvas earns most of the screen; the captions
-		   around it (legend, hints, counters) give way to the graph itself */
+		/* no transition: this boundary flips on the smallest scroll and strobes */
 		.sticky {
 			position: sticky; top: 0; height: 88vh;
 			padding-left: 0; transition: none;
@@ -755,11 +648,7 @@
 		}
 		.steps { position: relative; z-index: 1; }
 
-		/* On a phone the explore rules used to fight the mobile ones: the graph
-		   jumped from 60vh to 100vh and shifted 56px right the instant the last
-		   step was reached, and because that boundary flips on the smallest
-		   scroll it strobed. Two columns and a side panel don't exist here, so
-		   the geometry simply doesn't change. */
+		/* geometry must not change at the explore boundary or it strobes */
 		.network-scrolly.exploring .sticky {
 			height: 88vh;
 			padding-left: 0;
@@ -767,16 +656,12 @@
 		}
 	}
 	@media (max-width: 640px) {
-		/* !important: .legend's own display:flex rule sits later in this file
-		   and would win the tie otherwise */
+		/* !important: .legend's later display:flex rule would win otherwise */
 		.legend, .explore-hint { display: none !important; }
 	}
 
 	.year-label { text-align: center; font-size: 16px; color: #2a1503; margin: 0 0 4px; }
 	svg { width: 100%; height: auto; flex: 1 1 auto; min-height: 0; max-height: 100%; }
-	/* Headlines open: the graph stays exactly where it is and the list floats over
-	   the left-hand space the step cards used to occupy. Overlapping the graph a
-	   little is fine — better than shoving it sideways every time you click. */
 	@media (min-width: 861px) {
 		.network-scrolly.exploring .sticky.with-table > .headline-table {
 			position: absolute;
@@ -797,10 +682,7 @@
 
 	.portrait { transition: opacity 200ms ease; pointer-events: none; }
 	.ring { cursor: pointer; transition: opacity 200ms ease, stroke-width 250ms ease; }
-	/* The thick ring is for story beats calling someone out, NOT for the cursor:
-	   a stroke jumping 2.5→8 under the mouse reads as the circle swelling, and
-	   the hover state already highlights plenty — everyone else fades, the
-	   connecting edges light, and the name appears. */
+	/* spotlight is for story beats, never for hover */
 	.ring.spotlight { stroke-width: 8; }
 	.faded { opacity: 0.12; }
 
@@ -828,7 +710,6 @@
 	.step.active .card { opacity: 1; }
 	.step-text { font-size: 15.5px; line-height: 1.55; margin: 0; color: #2a1503; }
 
-	/* identical to the headline clippings elsewhere in the story */
 	.headline-clip {
 		margin: 12px -4px 0;
 		background: #fffdf8;
@@ -857,8 +738,7 @@
 		border: 1px solid rgba(42, 21, 3, 0.3); background: transparent; color: rgba(42, 21, 3, 0.7);
 		font-size: 12px; padding: 3px 9px; border-radius: 4px; cursor: pointer;
 	}
-	/* Always in the layout so the svg never reflows at the handover; explore
-	   merely fades it in. */
+	/* always in the layout so the svg never reflows at the handover */
 	.explore-bar {
 		display: flex; justify-content: center; align-items: center; gap: 10px;
 		margin-bottom: 6px; flex-wrap: wrap;
@@ -881,13 +761,11 @@
 	svg.interactive .ring.grabbable { cursor: grab; }
 	svg.interactive .ring.grabbable:active { cursor: grabbing; }
 
-	/* The row is a two-column grid (tags | headline). Sentences belong in the
-	   second column, under the headline — without this they land in the narrow
-	   tag column. The .table-row prefix is needed to outrank `.table-row p`. */
+	/* grid-column 2 keeps sentences out of the tag column; the .table-row prefix outranks `.table-row p` */
 	.table-row p.row-sentence {
-		grid-column: 2;                 /* sit under the headline, not in the tag column */
+		grid-column: 2;
 		font-size: 11px; line-height: 1.4;
-		color: rgba(42, 21, 3, 0.5);    /* quiet enough that headlines still lead */
+		color: rgba(42, 21, 3, 0.5);
 		margin: 2px 0 0;
 	}
 	.table-row p.row-sentence:first-of-type { margin-top: 3px; }
@@ -912,7 +790,6 @@
 	.table-head .close { margin-left: auto; border: 0; background: transparent; font-size: 18px; line-height: 1; cursor: pointer; color: rgba(42, 21, 3, 0.6); }
 	.table-body { overflow-y: auto; padding: 2px 12px 8px; }
 	.row-left { display: inline-flex; align-items: baseline; gap: 5px; }
-	/* compact list so the network keeps the space; names stay highlighted */
 	.table-row {
 		display: grid;
 		grid-template-columns: auto 1fr;

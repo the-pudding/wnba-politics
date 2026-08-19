@@ -1,30 +1,22 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// An ngram chart for the dogwhistle vocabulary: for each word, the share of
-	// Fox's WNBA articles that month containing it.
-	//
-	// The reason this chart exists: "protect" — as in "protecting women's
-	// sports" — carries the trans story in articles that never say "trans".
-	// Plotted together, the proxy vocabulary and the explicit vocabulary rise
-	// as one wave.
-	//
-	// Counts are raw in fox_ngrams.json; the drawing smooths with a centered
-	// 3-month window (sum of hits over sum of articles), because single months
-	// early in the corpus hold 2-3 articles and one match reads as 50%.
-	//
-	// Doc embed:  chart: ngram | words: trans, transgender, protect, race, white
-	// ---------------------------------------------------------------------------
-	import data from "$data/fox_ngrams.json";
+	// Google Ngram-style chart: for each word, the share of Fox's WNBA articles
+	// that month containing it.
+	// Doc embed:  chart: ngram | words: trans language, protect | smooth: 2
+	import rows from "$data/fox_ngrams.csv";
 	import { line as svgLine, curveMonotoneX } from "d3-shape";
 
-	// `smoothing` works like Google Ngram Viewer's setting: each month is
-	// pooled with ±N neighbours (hits over articles). 2 → a 5-month window.
-	let { words = [], title = "", caption = "", smoothing = 2 } = $props();
+	// `smooth` pools each month with ±N neighbours (hits over articles)
+	let { words = [], title = "", caption = "", smooth = 2 } = $props();
 
-	// --- the search bar: any word from the corpus, Google Ngram style ----------
-	// The per-word monthly index (9,832 words in ≥10 articles, ~3MB) loads
-	// lazily on first touch of the input, so readers who never search never
-	// download it.
+	const data = {
+		months: rows.map((r) => r.month),
+		totals: rows.map((r) => +r.articles),
+		series: Object.keys(rows[0])
+			.filter((k) => k !== "month" && k !== "articles")
+			.map((word) => ({ word, counts: rows.map((r) => +r[word]) }))
+	};
+
+	// ~3MB per-word index loads lazily on first touch of the search input
 	let kw = $state(null);
 	let query = $state("");
 	let added = $state([]);
@@ -60,8 +52,8 @@
 		protect: "var(--c-fox, #c0392b)",
 		race: "var(--c-race, #d55181)",
 		white: "#6b5b45",
-		"trans language": "var(--c-trans, #17a2b8)",   // the trans layer's teal
-		"caitlin clark": "var(--c-clark, #2a78d6)",    // Clark's blue, as everywhere else
+		"trans language": "var(--c-trans, #17a2b8)",
+		"caitlin clark": "var(--c-clark, #2a78d6)",
 		"sophie cunningham": "var(--c-cunningham, #e0851f)"
 	};
 	const FALLBACK_COLORS = ["#1f9d6e", "#7a6bcc", "#b04ac2", "#7a4a00"];
@@ -71,11 +63,9 @@
 		.filter((s) => !wanted || wanted.includes(s.word))
 		.map((s, i) => ({ ...s, color: COLORS[s.word] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length] })));
 
-	// centered moving window, Google Ngram style: pooled hits over pooled
-	// articles across ±smoothing months (pooling, not averaging of ratios, so
-	// a 2-article month can't swing the line)
-	let window_ = $derived(Math.max(0, Math.round(+smoothing || 0)));
-	let smooth = $derived((counts) => counts.map((_, i) => {
+	// pooled hits over pooled articles, not averaged ratios — a 2-article month can't swing the line
+	let window_ = $derived(Math.max(0, Math.round(+smooth || 0)));
+	let pooled = $derived((counts) => counts.map((_, i) => {
 		let hit = 0, total = 0;
 		for (let j = Math.max(0, i - window_);
 			j <= Math.min(counts.length - 1, i + window_); j++) {
@@ -83,16 +73,14 @@
 		}
 		return total ? hit / total : 0;
 	}));
-	// searched words join the curated lines, coloured from the spare palette
 	let extraSeries = $derived(!kw ? [] : added
 		.filter((w) => kw.words[w])
 		.map((w, i) => ({ word: w,
 			counts: data.months.map((m) => kw.words[w][m] ?? 0),
 			color: FALLBACK_COLORS[i % FALLBACK_COLORS.length] })));
 	let lines = $derived([...series, ...extraSeries]
-		.map((s) => ({ ...s, pct: smooth(s.counts) })));
+		.map((s) => ({ ...s, pct: pooled(s.counts) })));
 
-	// --- geometry (the shared mobile scheme) -----------------------------------
 	let viewportWidth = $state(typeof window === "undefined" ? 1200 : window.innerWidth);
 	let mobile = $derived(viewportWidth < 640);
 	let WIDTH = $derived(mobile ? 480 : 860);
@@ -101,7 +89,7 @@
 		? { left: 54, right: 92, top: 34, bottom: 34 }
 		: { left: 44, right: 100, top: 30, bottom: 30 });
 
-	// players go by surname at the line ends — full names spill off the chart
+	// surnames at line ends — full names spill off the chart
 	const SHORT = { "caitlin clark": "Clark", "sophie cunningham": "Cunningham" };
 	let plotWidth = $derived(WIDTH - margin.left - margin.right);
 	let plotHeight = $derived(HEIGHT - margin.top - margin.bottom);
@@ -109,20 +97,17 @@
 	let months = $derived(data.months);
 	let stepX = $derived(plotWidth / Math.max(1, months.length - 1));
 	let peak = $derived(Math.max(0.05, ...lines.flatMap((l) => l.pct)));
-	// the axis tops out at the next 10% step above the tallest line
 	let yMax = $derived(Math.ceil(peak * 10) / 10);
 	const xAt = (i) => margin.left + i * stepX;
 	let yAt = $derived((pct) => margin.top + plotHeight * (1 - pct / yMax));
 
-	// interpolated curves instead of point-to-point segments — monotone, so the
-	// curve never invents dips below the data (or under 0%) between points
+	// monotone curve: never invents dips below the data between points
 	let curve = $derived(svgLine()
 		.x((_, i) => xAt(i))
 		.y((p) => yAt(p))
 		.curve(curveMonotoneX));
 	let paths = $derived(lines.map((l) => ({ ...l, d: curve(l.pct) })));
 
-	// line-end labels, nudged apart when two lines finish at the same height
 	let endLabels = $derived.by(() => {
 		const placed = [];
 		for (const l of [...lines].sort((a, b) => yAt(a.pct.at(-1)) - yAt(b.pct.at(-1)))) {
@@ -138,7 +123,6 @@
 		.filter(({ m }) => m.endsWith("-01"))
 		.map(({ m, i }) => ({ label: m.slice(0, 4), x: xAt(i) })));
 
-	// hover: nearest month, all words at once, biggest first
 	let tip = $state(null);
 	function moved(event) {
 		const box = event.currentTarget.getBoundingClientRect();
@@ -164,7 +148,6 @@
 <div class="ngram-chart" class:mobile>
 	{#if title}<h4 class="n-title">{title}</h4>{/if}
 
-	<!-- Google-Ngram-style search: add any corpus word as a line -->
 	<div class="search">
 		<div class="box">
 			<input
@@ -267,7 +250,6 @@
 		text-align: center; max-width: 600px; margin: 10px auto 0;
 	}
 
-	/* --- the search bar ------------------------------------------------------ */
 	.search {
 		display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
 		margin: 0 0 10px; justify-content: center;
@@ -308,7 +290,6 @@
 	}
 	.mobile .box input { width: min(80vw, 320px); font-size: 16px; }
 
-	/* the clipping card, as everywhere else */
 	.tooltip {
 		position: absolute; transform: translate(14px, -50%);
 		width: 210px;

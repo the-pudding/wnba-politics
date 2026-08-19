@@ -1,26 +1,11 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// The chyron ternary, standing still.
-	//
-	// Same maths as the scrollytelling version — a word sits nearest the network
-	// that says it most often, measured as a share of that network's own WNBA
-	// chyrons, so the bigger captioner doesn't win every word by default — but
-	// with a fixed set of words called out instead of a scroll.
-	//
-	// Groups are given in the Doc and coloured in order, which is what makes the
-	// Griner case legible: the same detainee, described in two vocabularies.
-	//
-	// Doc embed:
-	//   chart: ternary-static | groups: viktor, bout / merchant, death, trade
-	//   chart: ternary-static | words: russia, detention, arrest
-	// ---------------------------------------------------------------------------
+	// Static chyron ternary: a word sits nearest the network that says it most,
+	// as a share of that network's own WNBA chyrons.
+	// Doc embed:  chart: ternary-static | groups: viktor, bout / merchant, death, trade
+	// Doc embed:  chart: ternary-static | words: russia, detention, arrest
 	import chy from "$data/chyrons.json";
 
-	// `bare` drops the footnote and title: inside a scrolly the step cards carry
-	// the commentary and a second block of text competes with them.
-	// `big` + `highlightColor`: the scrolly wants display-size labels in one
-	// consistent color across every beat; the standalone chart keeps the
-	// per-group palette at reading size.
+	// bare: no title/footnote inside a scrolly; big + highlightColor: scrolly display labels
 	let { words = [], groups = [], title = "", bare = false,
 		big = false, highlightColor = null } = $props();
 
@@ -30,7 +15,6 @@
 	const MIN_TOTAL = 15;
 
 	let channels = $derived(chy.channels ?? []);
-	// a flat list of groups, each its own colour; a bare `words` list is one group
 	let bands = $derived(
 		(groups.length ? groups : words.length ? [words] : [])
 			.map((band, i) => ({ words: new Set(band.map((w) => w.toLowerCase())),
@@ -38,7 +22,6 @@
 	);
 	const bandFor = (term) => bands.find((band) => band.words.has(term))?.color ?? null;
 
-	// --- the triangle -----------------------------------------------------------
 	const SIDE = 700, PAD = 58;
 	const HEIGHT = SIDE * 0.92;
 	const corners = (() => {
@@ -63,12 +46,7 @@
 	let biggest = $derived(Math.max(1, ...terms.map((t) => t.total)));
 	const radius = (total) => 1.8 + Math.sqrt(total / biggest) * 11;
 
-	// nudge the called-out labels apart so two words at the same corner both read
-	// Words pinned to the same corner sit almost exactly on top of each other, so
-	// labels get nudged apart. Near the apex they nudge DOWNWARD — stacking up
-	// would run them into the network's own corner label.
-	// the floor is the apex itself: anything placed above it collides with the
-	// network's own corner label, which sits just over the point of the triangle
+	// nudge lit labels apart; anything above the apex hits the network's corner label
 	const CEILING = corners.A[1] - 2;
 	let labelled = $derived.by(() => {
 		const placed = [];
@@ -94,8 +72,6 @@
 		return placed;
 	});
 
-	// the same clipping-card tooltip as the timelines: cream card at the
-	// pointer, one row per network, share of that network's WNBA chyrons
 	let tip = $state(null);
 	function showTip(event, term) {
 		const box = event.currentTarget.closest(".ternary-static").getBoundingClientRect();
@@ -114,7 +90,6 @@
 		<polygon class="frame"
 			points="{corners.A[0]},{corners.A[1]} {corners.B[0]},{corners.B[1]} {corners.C[0]},{corners.C[1]}" />
 
-		<!-- the corners, each labelled with the network that owns it -->
 		<text class="corner" x={corners.A[0]} y={corners.A[1] - 14} text-anchor="middle"
 			fill={CHANNEL_COLORS[channels[0]]}>{channels[0]}</text>
 		<text class="corner" x={corners.B[0] - 6} y={corners.B[1] + 20} text-anchor="start"
@@ -168,9 +143,7 @@
 		font-size: 13px; font-weight: 800; pointer-events: none;
 		paint-order: stroke; stroke: #fffdf8; stroke-width: 3.5px; stroke-linejoin: round;
 	}
-	/* scrolly beats carry display-size callouts */
 	.big .word { font-size: 28px; stroke-width: 7px; }
-	/* the clipping card, as on the timelines */
 	.tooltip {
 		position: absolute; transform: translate(14px, -50%);
 		width: 200px;

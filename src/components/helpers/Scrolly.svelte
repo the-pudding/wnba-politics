@@ -1,17 +1,6 @@
 <script>
-	/**
-	 * This component manages which item is most in view for scroll triggering
-	 * example:
-	 * <Scrolly
-	 * 	bind:value={scrollIndex}
-	 * >
-	 * **items here**
-	 * </Scrolly>
-	 *
-	 * optional params with defaults
-	 * <Scrolly root={null} top={0} bottom={0} increments={100}>
-	 */
-	
+	// Tracks which child is most in view for scroll triggering.
+	// <Scrolly bind:value={index} root={null} top={0} bottom={0} increments={100}>
 	let {
 		root = null,
 		top = 0,

@@ -1,27 +1,11 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// Fightin' Words, drawn the way Monroe, Colaresi and Quinn draw it.
-	//
-	//   x  how often the word occurs at all, on a log scale
-	//   y  the weighted log-odds z-score: above zero is Fox, below is the other
-	//      outlet
-	//
-	// Reading it: common words sit far right, rare ones far left, and the ones
-	// worth caring about are the ones that climb away from the middle. A word can
-	// only be far from zero if the difference survives its own sample size, which
-	// is what the Dirichlet prior buys — "trans" at z = 9 on a few hundred uses is
-	// a real difference; a word used twice cannot get there.
-	//
-	// Points inside ±1.96 are drawn faint: that band is where the difference
-	// isn't distinguishable from chance.
-	//
+	// Fightin' Words plot (Monroe, Colaresi & Quinn): word frequency on a log x,
+	// weighted log-odds z-score on y — Fox above zero, the other outlet below.
 	// Doc embed:  chart: word-quadrant
-	// ---------------------------------------------------------------------------
 	import { scaleLinear, scaleLog, scaleSqrt } from "d3-scale";
 	import { base } from "$app/paths";
 	import data from "$data/fighting_words_grid.json";
-	// examples for the story's highlighted words ship with the page (7KB); the
-	// full 17k-word set loads lazily on first hover
+	// story-word examples ship inline; the full 17k-word set loads on first hover
 	import litExamples from "$data/fw_examples_lit.json";
 
 	const FOX = "#c0392b";
@@ -44,7 +28,6 @@
 			i === lines - 1 && words.join(" ").length > perLine * lines ? l + "…" : l);
 	}
 
-	// which logos stand for each side of the comparison
 	const LOGOS = {
 		"all outlets": ["yahoo", "espn", "cbs-sports", "usa-today"],
 		"Yahoo + ESPN": ["yahoo", "espn"],
@@ -52,17 +35,7 @@
 	};
 	const LOGO_WIDTH = { yahoo: 44, espn: 42, "cbs-sports": 44, "usa-today": 56, "fox-news": 22 };
 
-	// A scrollytelling wrapper passes its own words in, one beat at a time; with
-	// nothing passed the chart falls back to the story's standing set.
-	// `bare` drops the footnote and sample line — inside a scrolly they overflow
-	// the sticky box and land on the prose below. `controls` is separate, so the
-	// explore beat can hand back the pickers without bringing the footnote.
-	// `source` lets another dataset borrow this chart wholesale: pass {points,
-	// topLabel, bottomLabel, note} and the pickers, logos and internal corpus
-	// selection step aside. Everything downstream — the dot sizing, the label
-	// collision rule, the white-outlined highlights, the hover tag — is the same
-	// code, which is the point: two Fightin' Words figures that disagree visually
-	// look like two different claims.
+	// `source` ({points, topLabel, bottomLabel}) lets another dataset borrow the chart
 	let { highlight = null, bare = false, controls = true, mode = null,
 		source = null } = $props();
 
@@ -72,17 +45,11 @@
 	let HIGHLIGHT = $derived(
 		highlight?.length ? new Set(highlight.map((w) => w.toLowerCase())) : DEFAULT_HIGHLIGHT
 	);
-	// during a beat, everything that isn't called out recedes
 	let beating = $derived(Boolean(highlight?.length));
 
 	const ALL = "all coverage";
-	// Headlines are eight words of editing; the body is where the framing gets
-	// argued. They don't always agree, so the two are read as separate charts.
 	let text = $state(mode ?? "headlines");
 	let against = $state(data.outlets[0]);
-	// Restricting both corpora to the headlines that name one player is the
-	// closest thing to holding the topic constant across archives — which is what
-	// Monroe et al. do before comparing vocabularies at all.
 	let player = $state(ALL);
 
 	let bodyMode = $derived(text === "articles" && player === ALL && (data.articleWords ?? []).length > 0);
@@ -91,10 +58,7 @@
 		: player === ALL ? data.words
 		: (data.byPlayer?.[player] ?? [])
 	);
-	// an outlet only appears when both sides cleared the minimum
-	// Only Yahoo and ESPN have full text, so over articles the "all outlets"
-	// pooling is literally the same corpus as "Yahoo + ESPN". Showing both would
-	// offer a choice that isn't one — keep the honest name.
+	// over articles, "all outlets" is literally the same corpus as "Yahoo + ESPN" — dedupe
 	let articleOutlets = $derived.by(() => {
 		const seen = new Map();
 		for (const name of data.articleOutlets ?? []) {
@@ -113,7 +77,6 @@
 			: player === ALL ? data.outletN?.[against]
 			: data.playerN?.[player]?.[against]) ?? null
 	);
-	// per-player corpora are small, so a word needs fewer uses to be worth drawing
 	let floor = $derived(player === ALL ? 5 : 3);
 
 	let points = $derived(source ? source.points :
@@ -121,8 +84,6 @@
 			.filter((entry) => entry.z[against] !== undefined && (entry.n?.[against] ?? 0) >= floor)
 			.map((entry) => ({
 				word: entry.word, z: entry.z[against], n: entry.n[against],
-				// counted per side, because the two archives are wildly different
-				// sizes and a pooled number alone looks like an error
 				nf: entry.nf?.[against] ?? 0, no: entry.no?.[against] ?? 0
 			}))
 	);
@@ -131,9 +92,6 @@
 		if (!outletsHere.includes(against)) against = outletsHere[0];
 	});
 
-	// Mobile draws fewer units in the same screen width (so type renders ~1.8x
-	// larger) and taller; the right-hand ranked lists are dropped — at phone
-	// width they would eat half the plot.
 	let viewportWidth = $state(typeof window === "undefined" ? 1200 : window.innerWidth);
 	let mobile = $derived(viewportWidth < 640);
 	let WIDTH = $derived(mobile ? 480 : 880);
@@ -142,8 +100,7 @@
 		? { top: 26, right: 22, bottom: 52, left: 44 }
 		: { top: 26, right: 40, bottom: 48, left: 52 });
 
-	// a thin player can leave almost nothing above the floor, so the domain needs
-	// to survive an empty or single-valued set
+	// the domain must survive an empty or single-valued set
 	let xScale = $derived(scaleLog()
 		.domain([Math.max(3, Math.min(1e9, ...points.map((p) => p.n))),
 			Math.max(30, ...points.map((p) => p.n))])
@@ -152,15 +109,8 @@
 	let yScale = $derived(scaleLinear().domain([-reach, reach]).range([HEIGHT - PAD.bottom, PAD.top]));
 	let sizeScale = $derived(scaleSqrt().domain([0, reach]).range([1.4, 6]));
 
-	// Label the strongest words, skipping any that would land on top of one
-	// already placed. Words we care about for the story jump the queue and are
-	// allowed to collide — everything else yields.
 	let labelled = $derived.by(() => {
-		// A borrowed dataset is a few dozen words, so the labelling is generous —
-		// but not unconditional. Labelling literally everything put "safe" (2 uses
-		// against 3) on the plot dressed as a finding. A word earns its label by
-		// clearing significance, or by being frequent enough (10+ uses) that its
-		// NOT separating the two sides is itself worth seeing.
+		// n >= 10: frequent enough that not separating the sides is itself worth seeing
 		const strong = source
 			? points.filter((p) => Math.abs(p.z) > SIGNIFICANT || p.n >= 10)
 			: points.filter((p) => Math.abs(p.z) > SIGNIFICANT);
@@ -175,24 +125,18 @@
 			if (beating && !lit) continue;
 			if (!source && placed.length > 34 && !lit) continue;
 			const px = xScale(point.n), py = yScale(point.z);
-			// a borrowed (player) dataset is a few dozen words wearing big type,
-			// so its collision boxes are roughly double
 			const charW = source ? (mobile ? 7 : 8.5) : mobile ? 5.6 : 5.9;
 			const rowH = source ? (mobile ? 24 : 27) : mobile ? 19 : 21;
 			const clash = placed.some((other) =>
 				Math.abs(other.px - px) < (other.word.length + point.word.length) * charW &&
 				Math.abs(other.py - py) < rowH);
 			if (clash) continue;
-			// near the right edge a label would run into the ranked lists, so it
-			// flips to the left of its dot instead
 			const flip = px > WIDTH - PAD.right - 70;
 			placed.push({ ...point, px, py, lit, flip });
 		}
 		return placed;
 	});
 
-	// hovering a dot pins its word, its z-score and how often it is used; without
-	// it the cloud is 3,000 anonymous points
 	let hovered = $state(null);
 	let tip = $state(null);
 	function showTip(event, point) {
@@ -200,9 +144,6 @@
 		if (!source) ensureExamples();
 		const box = event.currentTarget.closest(".word-quadrant")?.getBoundingClientRect();
 		tip = { ...point, px: xScale(point.n), py: yScale(point.z),
-			// client coords too: the example card is HTML, which wraps text
-			// properly and can show a whole sentence instead of three hand-broken
-			// lines ending in an ellipsis
 			cx: box ? event.clientX - box.left : 0,
 			cy: box ? event.clientY - box.top : 0,
 			boxW: box ? box.width : 0,
@@ -218,10 +159,6 @@
 		} catch { fullExamples = {}; }
 	}
 
-	// what the hover card shows: the borrowed datasets carry their own example;
-	// the main chart looks the word up — inline for the story words, then the
-	// lazy full set. `s: null` still draws the card, just wordless-sentence-less,
-	// so every hover speaks the same visual language.
 	let cardEx = $derived.by(() => {
 		if (!tip) return null;
 		if (source) return tip.eg ? { s: tip.eg, w: tip.egw } : null;
@@ -230,9 +167,7 @@
 		return { s: hit?.[0] ?? null, w: hit?.[1] ?? null };
 	});
 
-	// A scrolly beat swaps the whole dataset under the cursor. A tip held from
-	// the previous beat then renders the OLD word with the NEW side labels — a
-	// Clark-vs-Reese count captioned "in Fox News · in the other outlets".
+	// a beat swap can leave a stale tip captioned with the new side labels
 	$effect(() => {
 		source;
 		hideTip();
@@ -240,25 +175,15 @@
 
 	const colorOf = (z) => (Math.abs(z) < SIGNIFICANT ? "rgba(42,21,3,0.28)" : z > 0 ? FOX : OTHER);
 
-	// The hovered word, marked inside its own example the same way the prose
-	// marks ==words== — tinted wash plus underline — so the card reads as a
-	// clipping from the story rather than a floating quote. Prefix match, because
-	// the plot shows lemmas ("punch") and the sentence has inflections
-	// ("punching").
 	const escapeHtml = (t) =>
 		t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-	// The exact form seen at parse time wins ("held"); the lemma prefix is the
-	// fallback for older data that only carries the lemma ("hold" → "holding").
+	// the exact seen form wins ("held"); lemma prefix is the fallback ("hold" → "holding")
 	const escRx = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 	const wordRx = (word, form) => form
 		? new RegExp("\\b" + escRx(form) + "\\b", "i")
 		: new RegExp("\\b" + escRx(word) + "\\w*", "i");
 
-	// A long example is windowed around the word rather than read from the top:
-	// showing the first 300 characters of a passage whose point arrives at
-	// character 350 is showing nothing. Cuts land on word boundaries, and a
-	// missing match (irregular inflections — "send"/"sent") falls back to the
-	// opening.
+	// window around the word; irregular inflections may not match — fall back to the opening
 	function excerpt(sentence, word, form, budget = 300) {
 		if (sentence.length <= budget) return sentence;
 		const m = (form && wordRx(word, form).exec(sentence)) || wordRx(word).exec(sentence);
@@ -358,8 +283,6 @@
 		<text class="axis-name" transform="rotate(-90)" x={-(HEIGHT / 2)} y="14" text-anchor="middle">
 			weighted log-odds z-score
 		</text>
-		<!-- the two poles, named by the outlets' own marks, or in words when
-		     another dataset has borrowed the chart -->
 		{#if source}
 			<text class="side" x={PAD.left + 6} y={PAD.top + 2} fill={FOX}>
 				{source.topLabel} ↑
@@ -399,7 +322,6 @@
 		{/each}
 
 		{#each labelled as point (point.word)}
-			<!-- the label is a hover target too: it's bigger than its dot -->
 			<text class="word" class:lit={point.lit}
 				x={point.px + (point.flip ? -6 : 6)} y={point.py + 3.5}
 				text-anchor={point.flip ? "end" : "start"}
@@ -412,10 +334,6 @@
 			</text>
 		{/each}
 
-		<!-- a word already carrying a label needs no tag repeating it; what it can
-		     use is the sentence underneath -->
-		<!-- the bare word tag, for the headline chart; the borrowed datasets get
-		     an HTML card below instead, which can wrap a real sentence -->
 	</svg>
 
 	{#if tip && cardEx}
@@ -423,7 +341,6 @@
 		<div class="tip-card" class:flip={tip.cx > tip.boxW - 350}
 			style="left:{tip.cx}px; top:{Math.min(Math.max(70, tip.cy), (tip.boxH || 500) - 70)}px;
 				border-left-color:{side}">
-			<!-- just the word and its sentence — the stats live in the chart -->
 			<span class="tip-head" style="color:{side}">{tip.word}</span>
 			{#if cardEx.s}
 				<p>{@html markWord(cardEx.s, tip.word, side, cardEx.w)}</p>
@@ -445,7 +362,6 @@
 
 <style>
 	.word-quadrant { max-width: 900px; margin: 0 auto; position: relative; }
-	/* HTML rather than SVG so the sentence wraps by itself and arrives whole */
 	.tip-card {
 		position: absolute; z-index: 8; pointer-events: none;
 		width: 320px; transform: translate(14px, -50%);
@@ -472,7 +388,6 @@
 	.tip-card p {
 		margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: #2a1503;
 	}
-	/* inside a scrolly the footnote overflows the sticky frame onto the prose */
 	.word-quadrant.bare .note,
 	.word-quadrant.bare .sample { display: none; }
 	.word-quadrant .controls[hidden] { display: none; }
@@ -492,7 +407,6 @@
 	.axis { font-size: 11.5px; fill: rgba(42, 21, 3, 0.6); }
 	.axis-name { font-size: 12.5px; fill: rgba(42, 21, 3, 0.65); }
 	.side { font-size: 13px; font-weight: 800; }
-	/* a white halo, so a label reads over the dot cloud rather than through it */
 	.word {
 		font-size: 18px; font-weight: 600; cursor: default;
 		paint-order: stroke; stroke: #fffdf8; stroke-width: 3px;
@@ -500,8 +414,6 @@
 	}
 	.word.lit { font-size: 22px; font-weight: 800; stroke-width: 5.5px; }
 
-	/* mobile draws 480 units in the same width, so these render ~1.8x larger
-	   again — the plot becomes the whole show */
 	.mobile .axis { font-size: 14px; }
 	.mobile .axis-name { font-size: 14px; }
 	.mobile .side { font-size: 15px; }
@@ -509,8 +421,7 @@
 	.mobile .word.lit { font-size: 18.5px; }
 	.mobile .tip-word { font-size: 18px; }
 
-	/* the player charts (borrowed datasets) hold a few dozen words, not 3,000 —
-	   they can wear display-size type. Declared after .mobile so it wins there. */
+	/* declared after .mobile so it wins there */
 	.big .word { font-size: 24px; }
 	.big .word.lit { font-size: 28px; stroke-width: 6px; }
 	.big .axis { font-size: 13px; }
@@ -519,8 +430,6 @@
 	.big .tip-word { font-size: 22px; }
 
 	.tip { pointer-events: none; }
-	/* the bare tag sits straight on the orange and needs an outline to survive;
-	   on a card the same outline turns the text into a white-furred smear */
 	.tip text { paint-order: stroke; stroke: #fffdf8; stroke-width: 4px; stroke-linejoin: round; }
 	.tip.carded text { paint-order: normal; stroke: none; }
 	.tip-word { font-size: 15px; font-weight: 800; }
@@ -530,8 +439,6 @@
 	}
 	.tip-line { font-size: 11.5px; font-weight: 600; fill: rgba(42, 21, 3, 0.75); }
 
-	/* the player filter only exists for headlines; dim it rather than remove it,
-	   so the control doesn't jump when the reader switches */
 	.controls.dimmed { opacity: 0.4; pointer-events: none; }
 
 	.sample {

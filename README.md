@@ -18,15 +18,18 @@ npm install
 npm run dev        # local preview at localhost:5173
 ```
 
-- **Prose** comes from a Google Doc (ArchieML). `python scripts/merge_gdoc.py`
-  pulls it into `src/data/copy.json`. Charts are summoned by Doc lines like
-  `chart: timeline-clark | nba: true | caption: …`.
+- **Prose** comes from a Google Doc (ArchieML). `npm run gdoc` pulls it into
+  `src/data/copy.json`. Charts are summoned by Doc lines like
+  `chart: timeline-clark | nba: true | caption: …` — the name picks a
+  component from the map in `Index.svelte`, the labeled parts become props.
 - **Components** live in `src/components/` — one file per chart, named the
-  way the Doc names them. Colors are CSS variables defined at the bottom of
-  `Index.svelte`; edit them there (or live in dev tools on `<html>`) and
-  every chart follows.
-- **Chart data** lives in `src/data/` as JSON, generated from the corpora by
-  the full repo's pipeline.
+  way the Doc names them. `helpers/CMS.svelte` renders the Doc's body.
+  Colors are CSS variables defined at the bottom of `Index.svelte`; edit
+  them there (or live in dev tools on `<html>`) and every chart follows.
+- **Chart data** lives in `src/data/` — CSV where the data is a flat table
+  (`outlet_topics.csv`, `fox_ngrams.csv`, `trans_articles.csv`), JSON where
+  it's nested (networks, word grids, examples). All generated from the
+  corpora by the full repo's pipeline.
 
 ## The data (`data/`)
 

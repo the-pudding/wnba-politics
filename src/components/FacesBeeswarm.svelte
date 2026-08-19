@@ -1,16 +1,6 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// One plot shape for all three framing measures, so switching tabs re-places
-	// the same faces instead of changing the chart.
-	//
-	//   tone        average sentiment of the headlines naming her (-1 … +1)
-	//   political   share of her headlines carrying culture-war language
-	//   appearance  share where a clothing word is grammatically hers
-	//   celebrity   share where a private-life word is grammatically hers
-	//
-	// Face size is always her headline count, so the cast stays recognisable
-	// across tabs; only the left-to-right position changes.
-	// ---------------------------------------------------------------------------
+	// One beeswarm shape for every framing measure: face size is always her
+	// headline count, only the left-to-right position changes per metric.
 	import { base } from "$app/paths";
 	import { forceSimulation, forceX, forceY, forceCollide } from "d3-force";
 	import { scaleLinear } from "d3-scale";
@@ -29,7 +19,6 @@
 	const groupOf = Object.fromEntries(network.nodes.map((n) => [n.name, n.group]));
 	const slugOf = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-	// --- assemble one row per player, with all three measures -------------------
 	const people = (() => {
 		const byName = new Map();
 		for (const row of headlines.rows) {
@@ -45,9 +34,7 @@
 		const looks = Object.fromEntries(appearance.people.map((p) => [p.name, p]));
 		const tabloid = Object.fromEntries(celebrity.people.map((p) => [p.name, p]));
 		const framing = Object.fromEntries(agency.people.map((p) => [p.name, p]));
-		// Fox's tone minus Yahoo's for the same player. Yahoo is the comparison
-		// because both are real headlines — the slug-derived corpora are
-		// lowercase, which shifts the sentiment model.
+		// Yahoo is the comparison: the slug-derived corpora are lowercase, which shifts the model
 		const versus = outletSentiment.byPlayer ?? {};
 
 		return [...byName]
@@ -99,11 +86,7 @@
 	let axis = $derived(AXES[metric]);
 	const valueOf = (person) => person[metric];
 
-	// --- layout -----------------------------------------------------------------
-	// A 900×520 box scaled into a 343px phone is 198px tall, which leaves sixteen
-	// faces overlapping in an unreadable clump. On a narrow screen the box turns
-	// portrait instead: same beeswarm, more vertical room for the collisions to
-	// resolve into, and faces that stay big enough to recognise.
+	// a narrow screen turns the box portrait so the collisions can resolve vertically
 	let narrow = $state(false);
 	$effect(() => {
 		const query = window.matchMedia("(max-width: 640px)");
@@ -133,12 +116,10 @@
 		return scaleLinear().domain([0, Math.max(0.02, ...values) * 1.1]).range([PAD.left, WIDTH - PAD.right]);
 	});
 
-	// beeswarm: pull each face to its value, collision spreads the ties vertically
 	let nodes = $derived.by(() => {
 		const middle = (PAD.top + HEIGHT - PAD.bottom) / 2;
 		const placed = people.map((person) => ({ ...person, x: xScale(valueOf(person)), y: middle }));
 		forceSimulation(placed)
-			// on a phone let x relax a little so the column can breathe vertically
 			.force("x", forceX((d) => xScale(valueOf(d))).strength(narrow ? 0.72 : 1))
 			.force("y", forceY(middle).strength(0.05))
 			.force("collide", forceCollide((d) => radiusOf(d) + 1.5).iterations(4))

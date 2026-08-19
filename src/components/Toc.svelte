@@ -1,14 +1,7 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// A short contents list, built from the sections themselves.
-	//
-	// Each entry is a section's own h2 linked to its anchor, so adding, renaming
-	// or reordering a section in the Doc updates this without anyone touching it.
-	// The intro is skipped — you are standing in it — and so is anything with no
-	// heading of its own.
-	//
+	// Contents list built from the sections' own h2s; sections without a
+	// heading (the intro) are skipped.
 	// Doc embed:  chart: toc
-	// ---------------------------------------------------------------------------
 	import copy from "$data/copy.json";
 
 	const entries = (copy.body ?? [])

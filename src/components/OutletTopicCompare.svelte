@@ -1,20 +1,19 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// Two yearly LINE charts side by side: the share of each outlet's WNBA
-	// articles touching a topic. Fox on the left, a chooseable outlet on the
-	// right, identical scales. Below, an optional one-axis dot plot places every
-	// outlet's aggregate share as its logo.
-	//
-	// Patterns are identical to the fox_timeline topic columns, so the piece's
-	// charts agree by construction. Years with fewer than 10 articles are
-	// dropped rather than drawn as wild percentages.
-	//
+	// Side-by-side yearly lines: share of each outlet's WNBA articles touching
+	// a topic. Optional logo dot plot of every outlet's share below.
 	// Doc embed:  chart: outlet-topics | topic: lgbtq | dots: lgbtq | title: …
-	// ---------------------------------------------------------------------------
 	import { base } from "$app/paths";
-	import data from "$data/outlet_topics.json";
+	import rows from "$data/outlet_topics.csv";
 
-	let { topic = "polrace", dotsTopic = null } = $props();
+	let { topic = "polrace", dots = null } = $props();
+
+	const data = { topics: {} };
+	for (const r of rows) {
+		const byMethod = (data.topics[r.topic] ??= {});
+		const byOutlet = (byMethod[r.method] ??= {});
+		(byOutlet[r.outlet] ??= {})[r.year] =
+			{ n: +r.articles, hit: +r.hits, g: +r.griner_hits, lg: +r.lgbtq_hits };
+	}
 
 	const FOX = "Fox News";
 	const TOPIC_PHRASE = { lgbtq: "mention LGBTQ topics",
@@ -25,8 +24,7 @@
 		: "var(--c-politics, #1f9d6e)";
 	const MIN_N = 10;
 
-	// logos with their natural aspect kept: width only, height follows —
-	// forcing a square squashed the wide wordmarks (ESPN)
+	// width only, natural aspect — forcing a square squashed wide wordmarks (ESPN)
 	const LOGOS = {
 		"Fox News": { file: "fox-news.svg", w: 30 },
 		"Fox News (NBA)": { file: "fox-news.svg", w: 30 },
@@ -43,9 +41,7 @@
 		"Fox News (NBA)": "Fox (NBA)"
 	};
 
-	// full text where outlets have it; headlines to level the field. One mode
-	// governs everything — a body rate next to a headline rate would
-	// manufacture a gap, since the patterns hit bodies far more often.
+	// one mode governs everything — a body rate next to a headline rate would manufacture a gap
 	let method = $state("body");
 	let outlets = $derived(data.topics[topic][method]);
 	let others = $derived(Object.keys(outlets).filter((o) => o !== FOX));
@@ -58,13 +54,11 @@
 	let viewportWidth = $state(typeof window === "undefined" ? 1200 : window.innerWidth);
 	let mobile = $derived(viewportWidth < 640);
 
-	// one shared year axis: every year either side can show
 	let years = $derived([...new Set([
 		...Object.entries(outlets[FOX]).filter(([, v]) => v.n >= MIN_N).map(([y]) => y),
 		...Object.entries(outlets[against] ?? {}).filter(([, v]) => v.n >= MIN_N).map(([y]) => y)
 	])].sort());
 
-	// the axis fits the data, shared by both panels
 	let yTop = $derived.by(() => {
 		let peak = 0;
 		for (const outlet of [FOX, against]) {
@@ -87,7 +81,6 @@
 	let xMid = $derived((index) => M.left + (index + 0.5) * colW);
 	let yTicks = $derived([0.25, 0.5, 0.75, 1].map((f) => f * yTop));
 
-	// the line: only years that clear the article floor
 	function lineFor(outlet) {
 		return years
 			.map((year, index) => ({ year, index, v: (outlets[outlet] ?? {})[year] }))
@@ -106,10 +99,10 @@
 			flip: event.clientX - box.left > box.width - 250 };
 	}
 
-	// --- the logo dot plot: every outlet's aggregate share on one axis --------
+	// logo dot plot: every outlet's aggregate share on one axis
 	let dotOutlets = $derived.by(() => {
-		if (!dotsTopic) return [];
-		const src = data.topics[dotsTopic][method];
+		if (!dots) return [];
+		const src = data.topics[dots][method];
 		const rows = [];
 		for (const [name, yearsOf] of Object.entries(src)) {
 			let n = 0, hit = 0;
@@ -123,7 +116,6 @@
 		for (const nice of [0.05, 0.1, 0.15, 0.2, 0.25, 0.5]) if (nice >= peak * 1.1) return nice;
 		return 1;
 	});
-	// regular intervals from zero
 	let dotStep = $derived(dotCap <= 0.05 ? 0.01 : dotCap <= 0.25 ? 0.05 : 0.1);
 	let dotTicks = $derived.by(() => {
 		const out = [];
@@ -134,8 +126,7 @@
 	const DML = 24, DMR = 34;
 	let dotX = $derived((share) => DML + (share / dotCap) * (DW - DML - DMR));
 
-	// crowded logos stack VERTICALLY: each takes the lowest level where it
-	// doesn't sit on a neighbour; a dashed leader keeps its true position
+	// crowded logos stack vertically; a dashed leader keeps the true position
 	const LEVEL_H = 34;
 	let dotPlaced = $derived.by(() => {
 		const placed = [];
@@ -153,7 +144,6 @@
 	// the drawing grows to fit the tallest stack (+ room for the WNBA/NBA tags)
 	let DH = $derived(96 + (maxLevel + 1) * 0 + maxLevel * LEVEL_H + 14);
 	let dotMid = $derived(DH - 32);
-	// the two Fox logos carry explicit league tags
 	const LEAGUE_TAG = { "Fox News": "WNBA", "Fox News (NBA)": "NBA" };
 </script>
 
@@ -192,7 +182,6 @@
 					<line class="axis" x1={M.left} x2={W - M.right}
 						y1={M.top + plotH} y2={M.top + plotH} />
 					{#each lineFor(outlet) as p (p.year)}
-						<!-- invisible full-height hover column per year -->
 						<rect x={M.left + p.index * colW} width={colW} y={M.top} height={plotH}
 							fill="transparent"
 							onpointermove={(e) => showTip(e, outlet, p.year, p.v)}
@@ -211,7 +200,7 @@
 		{/each}
 	</div>
 
-	{#if dotsTopic && dotOutlets.length}
+	{#if dots && dotOutlets.length}
 		<div class="dots-hed">Every outlet, all years since 2019</div>
 		<svg class="dots" viewBox="0 0 {DW} {DH}" role="img"
 			aria-label="Each outlet's overall share of articles touching the topic">

@@ -1,18 +1,7 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// A timeline that unfolds a year at a time.
-	//
-	// The trans chart's whole argument is in its shape: almost nothing for four
-	// years, then a wall. Drawn all at once, the early years are a flat smear at
-	// the bottom and the reader never learns they were ever the whole picture.
-	// Revealed year by year, with the y-axis rescaling to what's on screen, each
-	// new year visibly flattens the ones before it.
-	//
-	// The x-axis keeps its full span throughout, so the bars grow rightward into
-	// empty space rather than re-fitting the width.
-	//
+	// Timeline revealed a year at a time; the y-axis rescales to what's on
+	// screen, so each new year flattens the ones before it.
 	// Doc embed:  chart: timeline-scrolly | words: timeline-trans | steps: transSteps
-	// ---------------------------------------------------------------------------
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import TimelineStatic from "$components/TimelineStatic.svelte";
 	import TimelineDots from "$components/TimelineDots.svelte";
@@ -22,7 +11,8 @@
 		return !v ? null : /^\d{4}$/.test(v) ? v + suffix : v;
 	};
 
-	let { steps = null, chartName = "timeline-trans", title = "", caption = "" } = $props();
+	let { steps = null, words = [], title = "", caption = "" } = $props();
+	const chartName = $derived(words[0] ?? "timeline-trans");
 
 	const FALLBACK = [
 		{ until: "2021-12", text: "Through 2021, Fox almost never writes about trans athletes and the WNBA." },
@@ -36,18 +26,10 @@
 			? steps.filter((step) => Object.values(step).some((v) => (v ?? "").toString().trim()))
 				.map((step) => ({
 				until: (step.until ?? "").trim(),
-				// optional per-beat controls from the Doc: an axis cap (`ymax: 8`)
-				// and an x-window (`from: 2020 | to: 2025` — bare years expand to
-				// the January and December of that year)
+				// per-beat Doc options: ymax cap; from/to window (bare years expand)
 				ymax: (step.ymax ?? "").toString().trim(),
 				from: expand(step.from, "-01"),
 				to: expand(step.to, "-12"),
-				// `share: yes` converts the dots into 100%-scaled bars showing
-				// the trans-athlete slice of ALL Fox WNBA coverage that month
-				share: /^(yes|true|1)$/i.test((step.share ?? "").toString().trim()),
-				// `others: yes` adds a cream dot for every NON-trans 2026 article,
-				// so the purple share of each mound is the percentage
-				others: /^(yes|true|1)$/i.test((step.others ?? "").toString().trim()),
 				html: step.text ?? ""
 			}))
 			: FALLBACK
@@ -61,17 +43,14 @@
 	<div class="sticky">
 		<div class="frame">
 			{#if title}<h4 class="ts-title">{title}</h4>{/if}
-			<!-- "-dots" draws one mark per article instead of monthly bars; the
-			     scrolly contract (until / from / to / ymax) is identical -->
+			<!-- "-dots" draws one mark per article; same scrolly contract -->
 			{#if chartName.endsWith("-dots")}
 				<TimelineDots revealUntil={current.until}
 					startMonth={current.from} endMonth={current.to}
-					yCap={current.ymax ? +current.ymax : null}
-					share={current.share ?? false}
-					others={current.others ?? false} tall />
+					yCap={current.ymax ? +current.ymax : null} tall />
 			{:else}
-				<TimelineStatic {chartName} revealUntil={current.until}
-					startMonth={current.from} endMonth={current.to}
+				<TimelineStatic name={chartName} revealUntil={current.until}
+					from={current.from} to={current.to}
 					yCap={current.ymax ? +current.ymax : null} tall />
 			{/if}
 			{#if caption}<p class="ts-cap">{caption}</p>{/if}
@@ -81,8 +60,7 @@
 	<div class="steps">
 		<Scrolly bind:value={index}>
 			{#each STEPS as step, i}
-				<!-- a step without text is a "quiet" beat: a short scroll segment
-				     that advances the reveal with no card — the dots do the talking -->
+				<!-- a textless step is a quiet beat: advances the reveal with no card -->
 				<div class="step" class:active={index === i} class:quiet={!step.html.trim()}>
 					{#if step.html.trim()}<p class="card">{@html step.html}</p>{/if}
 				</div>
@@ -121,12 +99,9 @@
 
 	@media (max-width: 860px) { .card { max-width: 84vw; } }
 
-	/* Pudding-style on phones: the chart fills the screen (the components draw
-	   taller there) and the step text sits low, over the chart's quiet bottom
-	   edge, instead of covering its middle */
+	/* phones: chart rides the top of the screen, card owns the strip below it */
 	@media (max-width: 640px) {
 		.frame { width: 96vw; }
-		/* chart rides the top of the screen; the card owns the strip below it */
 		.sticky { align-items: flex-start; padding-top: 1vh; }
 		.step { align-items: flex-end; justify-content: center; }
 		.card { margin-bottom: 2vh; }

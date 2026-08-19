@@ -1,25 +1,12 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// Three views of how Fox frames each player, behind one set of tabs:
-	//
-	//   tone        — average sentiment of the headlines naming her
-	//   political   — how often Fox makes her a political subject
-	//   appearance  — how often the headline is about what she's wearing
-	//   celebrity   — how often it is about her private life
-	//
-	// Same cast in all three, so switching tabs re-sorts the same people rather
-	// than changing the subject.
-	//
+	// How Fox frames each player — tone / political / appearance / celebrity —
+	// behind one set of tabs, same cast in every view.
 	// Doc embed:  chart: framing-tabs
-	// ---------------------------------------------------------------------------
 	import FacesBeeswarm from "$components/FacesBeeswarm.svelte";
 
 	let { words = [] } = $props();
 
-	// Four questions, all of them asked of Fox's own headlines. The cross-outlet
-	// differential and the receiving-end measure are still computed — they are
-	// one line away from coming back — but four tabs is the number a reader will
-	// actually click through.
+	// the cross-outlet differential and receiving-end measures are still computed upstream
 	const VIEWS = [
 		{ key: "tone", label: "Tone",
 		  blurb: "Average sentiment of every Fox headline naming her, from −1 to +1." },

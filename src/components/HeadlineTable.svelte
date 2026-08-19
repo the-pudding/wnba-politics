@@ -1,21 +1,8 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// Every Fox News WNBA headline, as the piece's closing exhibit.
-	//
-	// This sits at the end of the story, where the reader's question stops being
-	// "what did you find" and becomes "let me look for myself" — so it opens on
-	// that invitation, runs wider than the prose column, and every row links out
-	// to the article it is quoting. Nothing here should require having read the
-	// methodology: the search box says how many headlines there are, the counter
-	// answers in a sentence, and each sentiment score carries its own label.
-	//
-	// Search matches the headline text or any tracked person's name, so people
-	// without a filter chip — Portnoy, Gaines, Kanter, Trump — are still findable.
-	// Sentiment scores come from a RoBERTa classifier run over every headline.
-	//
+	// Every Fox News WNBA headline: searchable, sortable, RoBERTa-scored, every
+	// row linking back to its article.
 	// Doc embed:  chart: headline-table
 	//             chart: headline-table | words: Sophie Cunningham, Brittney Griner
-	// ---------------------------------------------------------------------------
 	import data from "$data/fox_player_headlines.json";
 	import sentiment from "$data/headline_sentiment.json";
 
@@ -30,17 +17,16 @@
 		"Natasha Cloud": "#1f9d6e"
 	};
 	const OTHER_COLOR = "#8a6d3b";
-	const PAGE = 60;       // rows drawn at once; more on request
+	const PAGE = 60;
 	const MAX_TAGS = 3;
 
-	// chips: whatever the Doc asked for, else the six the story follows
 	const players = words.length ? words : data.players;
 
 	let search = $state("");
-	let activePlayers = $state([]);   // empty = everyone
-	let sortBy = $state("date");      // "date" | "sentiment"
-	let ascending = $state(true);     // oldest first / most negative first
-	let mood = $state("all");         // "all" | "negative" | "neutral" | "positive"
+	let activePlayers = $state([]);
+	let sortBy = $state("date");
+	let ascending = $state(true);
+	let mood = $state("all");
 	let shown = $state(PAGE);
 
 	const scoreOf = (headline) => sentiment.scores[headline];
@@ -56,7 +42,7 @@
 		if (sortBy === column) ascending = !ascending;
 		else {
 			sortBy = column;
-			ascending = true;   // dates start oldest, scores start most negative
+			ascending = true;
 		}
 	}
 
@@ -71,10 +57,7 @@
 				&& !row.p.some((p) => p.toLowerCase().includes(term))) return false;
 			return true;
 		});
-		// Sort direction applies only to rows that have a value; anything unscored
-		// stays at the bottom either way, so flipping the sentiment column goes
-		// straight from most negative to most positive instead of landing on a
-		// block of blanks.
+		// unscored rows stay at the bottom in either sort direction
 		const sortable = sortBy === "sentiment"
 			? filtered.filter((row) => scoreOf(row.t) !== undefined)
 			: filtered;
@@ -90,21 +73,17 @@
 		return [...sorted, ...leftovers];
 	});
 
-	// any change to the filters starts the list over at the top
 	$effect(() => {
 		search; activePlayers; sortBy; ascending; mood;
 		shown = PAGE;
 	});
 	let visibleRows = $derived(rows.slice(0, shown));
 
-	// at most three tags, chip-filtered people first so the reason a row matched
-	// is always visible
 	function visibleTags(row) {
 		const rank = (name) => (activePlayers.includes(name) ? 0 : players.includes(name) ? 1 : 2);
 		return [...row.p].sort((a, b) => rank(a) - rank(b)).slice(0, MAX_TAGS);
 	}
 
-	// highlight the searched words inside each headline
 	const escapeHtml = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 	function withHighlight(headline) {
 		const safe = escapeHtml(headline);
@@ -121,12 +100,10 @@
 		return `${MONTHS[+month - 1]} ${+day}, ${year}`;
 	};
 
-	// a small bar reading left (negative) or right (positive) from centre
 	const BAR_HALF = 26;
 	const barWidth = (score) => Math.abs(score) * BAR_HALF;
 	const barColor = (score) => (score < -0.05 ? "#c0392b" : score > 0.05 ? "#1f9d6e" : "rgba(42,21,3,0.3)");
 
-	// the counter, written as a sentence rather than a number
 	let summary = $derived.by(() => {
 		const total = data.rows.length.toLocaleString();
 		if (!filtering) return `All ${total} Fox News WNBA headlines, 2019 to 2026.`;
@@ -260,9 +237,6 @@
 </section>
 
 <style>
-	/* Pudding house style, roughly: a sans-serif chassis, hairline rules instead
-	   of fills, one accent colour, and no panel chrome — the page shows through
-	   the table rather than the table sitting on a card. */
 	.headline-browser {
 		--ink: #1c1917;
 		--muted: rgba(28, 25, 23, 0.55);
@@ -293,9 +267,6 @@
 	.standfirst { font-size: 14px; line-height: 1.55; color: var(--muted); margin: 0; }
 	.standfirst strong { color: var(--ink); font-weight: 700; }
 
-	/* Every control is the same object: white field, same 1px edge, same radius.
-	   They sit above a white table, so floating them on the orange made the strip
-	   read as three unrelated widgets. */
 	.controls { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; align-items: stretch; }
 	input[type="search"] {
 		flex: 1; min-width: 240px;
@@ -315,16 +286,14 @@
 	}
 	.toggle-group button {
 		border: 0; border-left: 1px solid var(--rule);
-		/* the global button reset rounds every corner to 8px, which inside this
-		   white group reads as a stray white margin around the active segment */
+		/* the global button reset rounds every corner to 8px */
 		border-radius: 0;
 		background: transparent; color: var(--muted);
 		padding: 0 14px; font-family: var(--sans);
 		font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
 		cursor: pointer;
 	}
-	/* The group is rounded and clips its children, so a square-cornered fill
-	   leaves a white crescent in each corner. Round the end buttons to match. */
+	/* the rounded group clips its children — round the end buttons to match */
 	.toggle-group button:first-child { border-left: 0; border-radius: 2px 0 0 2px; }
 	.toggle-group button:last-child { border-radius: 0 2px 2px 0; }
 	.toggle-group button:hover { color: var(--ink); background: rgba(28, 25, 23, 0.04); }
@@ -347,8 +316,6 @@
 		color: rgba(28, 25, 23, 0.7); margin: 0 0 7px;
 	}
 
-	/* white paper for the rows, so 2,000 headlines read as a document rather than
-	   as more of the page */
 	.scroller {
 		max-height: 68vh; overflow-y: auto;
 		background: #fff; border-top: 2px solid var(--ink);
@@ -381,14 +348,10 @@
 	tbody tr:hover td { background: rgba(28, 25, 23, 0.045); }
 
 	.col-date { width: 96px; white-space: nowrap; }
-	/* like the serif above: the column's own type is a tbody thing, so the header
-	   row keeps one size and one colour across all four columns */
 	tbody .col-date {
 		font-size: 11px; font-variant-numeric: tabular-nums;
 		letter-spacing: 0.03em; color: var(--muted);
 	}
-	/* the serif belongs to the headlines themselves, not to the column label —
-	   scoping it to tbody keeps every th in one voice */
 	tbody .col-head {
 		font-family: Georgia, "Times New Roman", serif;
 		font-size: 15px; line-height: 1.35; color: var(--ink);
@@ -404,7 +367,6 @@
 		color: #fff; padding: 2px 6px; border-radius: 2px;
 	}
 
-	/* sentiment bar: grows left of centre for negative, right for positive */
 	.meter { position: relative; display: inline-block; width: 52px; height: 10px; vertical-align: middle; }
 	.meter .midline { position: absolute; left: 26px; top: 0; width: 1px; height: 100%; background: rgba(28, 25, 23, 0.25); }
 	.meter .fill { position: absolute; top: 2px; height: 6px; }

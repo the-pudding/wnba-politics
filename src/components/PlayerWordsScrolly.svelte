@@ -1,18 +1,8 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// The verb-and-adjective scatter, walked through.
-	//
-	// Each beat swaps the whole comparison — a different player, a different
-	// grammatical relation, a different opponent — rather than only highlighting
-	// different words on one plot. That is the point of the sequence: the same
-	// method applied six ways, so the pattern is visibly not an artifact of one
-	// cut of the data.
-	//
-	// The words live in the Doc: chart: player-words-scrolly | steps: wordPlaySteps
+	// Verb-and-adjective scatter walked through: each beat swaps the whole
+	// comparison (player, relation, opponent), not just the highlighted words.
+	// Doc embed:  chart: player-words-scrolly | steps: wordPlaySteps
 	// Each step takes: who, rel, vs, pair, words, text
-	//
-	// Doc embed:  chart: player-words-scrolly
-	// ---------------------------------------------------------------------------
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import WordQuadrant from "$components/WordQuadrant.svelte";
 	import { playerWordsSource } from "../utils/playerWords.js";
@@ -51,8 +41,7 @@
 				vs: (step.vs ?? "outlets").trim(),
 				pair: (step.pair ?? "").trim() || null,
 				words: list(step.words),
-				// optional: a Doc-written heading for the sticky, replacing the
-				// generated "relation — X against Y" line
+				// title: optional Doc heading replacing the generated one
 				title: (step.title ?? "").trim(),
 				html: step.text ?? ""
 			}))
@@ -62,8 +51,6 @@
 	let index = $state(0);
 	let current = $derived(STEPS[index ?? 0] ?? STEPS[0]);
 	let source = $derived(playerWordsSource(current));
-	// the beat changes player as well as measure, so her face rides the heading —
-	// six comparisons in a row otherwise blur into one
 	const slugOf = (name) =>
 		name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 	let faces = $derived(

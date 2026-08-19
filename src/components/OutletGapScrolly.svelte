@@ -1,16 +1,7 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// The head-to-head dot plot, walked through.
-	//
-	// Fifteen players on one axis is a lot to take in at once, and the argument
-	// isn't the whole ranking — it's three specific comparisons. So the plot holds
-	// still and each beat calls out the players it's about, with the rest receding
-	// to 22% rather than disappearing, so their place in the order stays visible.
-	//
-	// The words live in the Doc: chart: outlet-gap-scrolly | steps: dotSteps
-	//
-	// Doc embed:  chart: outlet-gap-scrolly
-	// ---------------------------------------------------------------------------
+	// Head-to-head dot plot walked through: the plot holds still and each beat
+	// calls out the players it's about, the rest receding.
+	// Doc embed:  chart: outlet-gap-scrolly | steps: dotSteps
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import OutletGap from "$components/OutletGap.svelte";
 
@@ -47,7 +38,6 @@
 
 <section class="gap-scrolly">
 	<div class="sticky">
-		<!-- the last beat hands the chart over: nothing dimmed, picker back -->
 		<OutletGap highlight={current.explore ? null : current.names} bare={!current.explore} />
 	</div>
 
@@ -69,13 +59,9 @@
 		position: sticky; top: 0; height: 100vh;
 		display: flex; align-items: center; justify-content: center;
 	}
-	/* The cards overlap the name column and that is accepted: clearing them cost
-	   the chart about 120px of width, which matters more than the collision. The
-	   cards are translucent and the dimmed rows underneath stay legible enough. */
+	/* cards overlapping the name column is accepted — clearing them cost ~120px of width */
 	.sticky :global(.outlet-gap) { width: min(860px, 97vw); }
-	/* The cap that actually sizes this chart: it is taller than it is wide, so
-	   the height budget, not the width, decides how big it draws. Pushed as close
-	   to the viewport as the explore beat's picker allows. */
+	/* height, not width, sizes this chart */
 	.sticky :global(svg) { max-height: 93vh; }
 
 	.steps { position: relative; z-index: 1; margin-top: -100vh; pointer-events: none; }

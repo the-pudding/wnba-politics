@@ -1,21 +1,10 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// The Fightin' Words scatter, walked through in two beats.
-	//
-	// The full chart is 3,000 words and rewards study; dropped into the middle of
-	// an argument it is a wall. So the scrolly holds the same plot still and calls
-	// out one set of words at a time — first the fouls, then the race and
-	// culture-war vocabulary — with everything else receding rather than
-	// disappearing, so the reader can see how far out the called-out words sit.
-	//
-	// Doc embed:  chart: word-quadrant-scrolly
-	// ---------------------------------------------------------------------------
+	// The Fightin' Words scatter walked through: the plot holds still and each
+	// beat calls out one set of words, everything else receding.
+	// Doc embed:  chart: word-quadrant-scrolly | steps: wordSteps
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import WordQuadrant from "$components/WordQuadrant.svelte";
 
-	// The first two beats are the Doc's own sentences; the third hands the chart
-	// over — same plot, controls back, nothing dimmed.
-	// The Doc owns these words: `chart: word-quadrant-scrolly | steps: wordSteps`.
 	let { steps = null } = $props();
 
 	const FALLBACK = [
@@ -48,16 +37,13 @@
 	);
 
 	let index = $state(0);
-	// the sentinel rest-stop past the last card: same chart state as the final
-	// beat, but no card on screen — the reader can actually reach the controls
+	// index can run one past the last card (the cardless sentinel step)
 	let current = $derived(STEPS[Math.min(index ?? 0, STEPS.length - 1)] ?? STEPS[0]);
 </script>
 
 <section class="wq-scrolly">
 	<div class="sticky">
-		<!-- whole articles, not headlines: every word in both beats scores two to
-		     three times higher in the body text, and "privilege" rests on 34 headline
-		     uses against 195 in the articles -->
+		<!-- articles, not headlines: headline counts are too sparse for these words -->
 		<WordQuadrant highlight={current.words} bare controls={current.explore} mode="articles" />
 	</div>
 
@@ -68,8 +54,7 @@
 					<p class="card">{@html step.html}</p>
 				</div>
 			{/each}
-			<!-- a cardless beat at the end: the chart stays sticky one more
-			     screen-height with nothing covering the controls -->
+			<!-- cardless final beat: one more screen with nothing covering the controls -->
 			<div class="step step-open" aria-hidden="true"></div>
 		</Scrolly>
 	</div>
@@ -82,12 +67,11 @@
 		position: sticky; top: 0; height: 100vh;
 		display: flex; align-items: center; justify-content: center;
 	}
-	/* the chart is a flex item, and without this it shrinks to its content */
+	/* flex item shrinks to its content without this */
 	.sticky :global(.word-quadrant) { width: min(1000px, 94vw); }
 	/* leaves room for the controls the explore beat brings back */
 	.sticky :global(svg) { max-height: 74vh; }
 
-	/* the steps ride over the sticky chart, as in the chyron scrolly */
 		.steps { position: relative; z-index: 1; margin-top: -100vh; pointer-events: none; }
 	.step {
 		height: 100vh; display: flex; align-items: center; justify-content: flex-start;

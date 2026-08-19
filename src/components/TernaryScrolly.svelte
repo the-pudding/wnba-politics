@@ -1,21 +1,11 @@
 <script>
-	// ---------------------------------------------------------------------------
-	// The chyron ternary, walked through.
-	//
-	// The Griner swap is the clearest framing contest in the whole corpus — two
-	// networks named the man, one named the myth — but on a static triangle the
-	// reader has to find four words among six hundred before the point lands. So
-	// the plot holds still and the words arrive one beat at a time, ending with
-	// both clusters lit so the contrast is the last thing on screen.
-	//
-	// Doc embed:  chart: ternary-scrolly
-	// ---------------------------------------------------------------------------
+	// Chyron ternary walked through: the plot holds still and the called-out
+	// words arrive one beat at a time.
+	// Doc embed:  chart: ternary-scrolly | steps: swapSteps
 	import { base } from "$app/paths";
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
 
-	// The Doc owns these words: `chart: ternary-scrolly | steps: swapSteps`. The
-	// constants below are only the fallback for when that array is missing.
 	let { steps = null } = $props();
 
 	const FALLBACK = [
