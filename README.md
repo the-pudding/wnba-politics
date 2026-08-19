@@ -60,6 +60,30 @@ table (`outlet_topics.csv`, `fox_ngrams.csv`, `trans_articles.csv`), JSON
 where it's nested (networks, word grids, examples). All generated from the
 corpora by the full repo's pipeline.
 
+### Style
+
+There are a few stylesheets included by default in `src/styles`. Refer to
+them in `app.css`, the place for applying global styles.
+
+For variable parity in both CSS and JS, modify files in the `properties`
+folder using the [Style Dictionary](https://amzn.github.io/style-dictionary/)
+API. Run `npm run style` to regenerate the style dictionary.
+
+Some css utility classes in `reset.css`:
+
+- `.sr-only`: makes content invisible available for screen reader
+- `.text-outline`: adds a psuedo stroke to text element
+
+The chart palette is separate: CSS variables at the bottom of
+`Index.svelte`.
+
+#### Custom Fonts
+
+For locally hosted fonts, simply add the font to the `static/assets` folder
+and include a reference in `src/styles/font.css`, making sure the url starts
+with `"assets/..."`. (This piece currently preloads The Pudding's hosted
+fonts in `src/routes/+page.svelte`.)
+
 ### Deploy
 
 ```bash
