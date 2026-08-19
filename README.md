@@ -10,42 +10,64 @@ companion repo, `wnba-politics-full`.
 
 ## The site
 
-A [SvelteKit](https://kit.svelte.dev) app built on
-[The Pudding's svelte-starter](https://github.com/the-pudding/svelte-starter).
+A [SvelteKit](https://kit.svelte.dev/) app built on
+[The Pudding's svelte-starter](https://github.com/the-pudding/svelte-starter),
+using [ArchieML](http://archieml.org/) for a micro-CMS powered by Google Docs.
+
+### Development
 
 ```bash
 npm install
-npm run dev        # local preview at localhost:5173
+npm run dev
 ```
 
-- **Prose** comes from a Google Doc (ArchieML). `npm run gdoc` pulls it into
-  `src/data/copy.json`. The Doc *is* the essay, in order: a `[body]` of
-  sections, each with prose, images, clippings, and charts in the flow.
-- **Charts** are summoned two ways. A simple chart is one line:
-  `chart: timeline-clark | nba: true | caption: …` — the name picks a
-  component from the map in `Index.svelte`, the labeled parts become props.
-  A scrollytelling chart is a block with its steps nested right inside it,
-  at its spot in the prose:
+### Google Doc
 
-  ```
-  {.chart}
-  id: ternary-scrolly
+The copy lives in a Google Doc whose id is set in `google.config.js`. Running
+`npm run gdoc` at any point (even in a new tab while the server is running)
+fetches the latest Doc into `src/data/copy.json`. The Doc is the essay, in
+order: a `[body]` of sections holding text, images, clippings, and charts in
+the flow.
 
-  [.steps]
-  groups: viktor, bout
-  text: While MSNBC named the man Griner was exchanged for, Viktor Bout…
-  []
-  {}
-  ```
-- **Components** live in `src/components/` — one file per chart, named the
-  way the Doc names them. `helpers/CMS.svelte` renders the Doc's body and
-  owns every chart's title and caption. Colors are CSS variables defined at
-  the bottom of `Index.svelte`; edit them there (or live in dev tools on
-  `<html>`) and every chart follows.
-- **Chart data** lives in `src/data/` — CSV where the data is a flat table
-  (`outlet_topics.csv`, `fox_ngrams.csv`, `trans_articles.csv`), JSON where
-  it's nested (networks, word grids, examples). All generated from the
-  corpora by the full repo's pipeline.
+A simple chart is one line — `chart: timeline-clark | nba: true | caption: …`
+— where the name picks a component from the map in `Index.svelte` and the
+labeled parts become props. A scrollytelling chart is a block with its steps
+nested right inside it, at its spot in the copy:
+
+```
+{.chart}
+id: ternary-scrolly
+
+[.steps]
+groups: viktor, bout
+text: While MSNBC named the man Griner was exchanged for, Viktor Bout…
+[]
+{}
+```
+
+### Components
+
+One file per chart in `src/components/`, named the way the Doc names them.
+`helpers/CMS.svelte` renders the Doc's body and owns every chart's title and
+caption. Colors are CSS variables defined at the bottom of `Index.svelte`;
+edit them there (or live in dev tools on `<html>`) and every chart follows.
+
+### Embedding data
+
+Chart data is embedded with normal import syntax (e.g.
+`import rows from "$data/outlet_topics.csv"`) — CSV where the data is a flat
+table (`outlet_topics.csv`, `fox_ngrams.csv`, `trans_articles.csv`), JSON
+where it's nested (networks, word grids, examples). All generated from the
+corpora by the full repo's pipeline.
+
+### Deploy
+
+```bash
+npm run build
+```
+
+This generates a directory called `build` with the statically rendered app.
+Pushing to `main` builds and deploys it to GitHub Pages automatically.
 
 ## The data (`data/`)
 
