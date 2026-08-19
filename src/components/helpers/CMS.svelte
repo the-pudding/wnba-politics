@@ -20,17 +20,27 @@
 	const hl = (html, color = "#d55181") => (html ?? "").replace(/==(.+?)==/g,
 		(_, w) => `<mark style="background:${color}2e; box-shadow: inset 0 -2px 0 ${color}66">${w}</mark>`);
 
-	function parseChart(value, section) {
-		const [name, ...parts] = value.split("|").map((s) => s.trim());
+	// one-liner: `chart: name | key: value | …`
+	// block (scrollies): `{.chart}` with `id:` and a nested `[.steps]` array
+	function parseChart(value) {
+		let name, pairs;
+		if (typeof value === "string") {
+			const [first, ...parts] = value.split("|").map((s) => s.trim());
+			name = first;
+			pairs = parts
+				.map((p) => p.match(/^(\w+)\s*:\s*([^]*)$/) ?? (p ? [null, "words", p] : null))
+				.filter(Boolean)
+				.map((m) => [m[1], m[2]]);
+		} else {
+			name = value.id;
+			pairs = Object.entries(value).filter(([k]) => k !== "id");
+		}
 		const props = {};
-		for (const p of parts) {
-			const m = p.match(/^(\w+)\s*:\s*([^]*)$/);
-			if (!m) { if (p) props.words = p.split(",").map((w) => w.trim()); continue; }
-			const [, key, v] = m;
-			if (key === "words") props.words = v.split(",").map((w) => w.trim());
+		for (const [key, v] of pairs) {
+			if (key === "steps") props.steps = Array.isArray(v) ? v : [];
+			else if (key === "words") props.words = v.split(",").map((w) => w.trim());
 			else if (key === "groups") props.groups = v.split("/")
 				.map((g) => g.split(",").map((w) => w.trim()).filter(Boolean)).filter((g) => g.length);
-			else if (key === "steps") props.steps = section[v] ?? [];
 			else if (key === "from") props.from = /^\d{4}$/.test(v) ? v + "-01" : v;
 			else if (key === "to") props.to = /^\d{4}$/.test(v) ? v + "-12" : v;
 			else props[key] = v === "true" ? true : v === "false" ? false : v;
@@ -73,7 +83,7 @@
 			{#if b.type === "text"}
 				<p>{@html hl(b.value)}</p>
 			{:else if b.type === "chart"}
-				{@const { name, props } = parseChart(b.value, section)}
+				{@const { name, props } = parseChart(b.value)}
 				{@const C = components[name]}
 				<div class="chart" class:full-bleed={FULL_BLEED.has(name)}>
 					{#if props.title && !SELF_CAPTIONED.has(name)}
