@@ -6,7 +6,7 @@
 	import { line as svgLine, curveMonotoneX } from "d3-shape";
 
 	// `smooth` pools each month with ±N neighbours (hits over articles)
-	let { words = [], title = "", caption = "", smooth = 2 } = $props();
+	let { words = [], smooth = 2 } = $props();
 
 	const data = {
 		months: rows.map((r) => r.month),
@@ -146,8 +146,6 @@
 <svelte:window bind:innerWidth={viewportWidth} />
 
 <div class="ngram-chart" class:mobile>
-	{#if title}<h4 class="n-title">{title}</h4>{/if}
-
 	<div class="search">
 		<div class="box">
 			<input
@@ -223,12 +221,10 @@
 		</div>
 	{/if}
 
-	{#if caption}<p class="n-cap">{caption}</p>{/if}
 </div>
 
 <style>
 	.ngram-chart { position: relative; max-width: 860px; margin: 6px auto 18px; }
-	.n-title { font-size: 19px; text-align: center; margin: 0 0 8px; color: #2a1503; }
 	svg { width: 100%; height: auto; display: block; overflow: visible; }
 
 	.grid { stroke: rgba(42, 21, 3, 0.1); stroke-width: 1; }
@@ -245,10 +241,6 @@
 	}
 	.mobile .end { font-size: 15px; }
 
-	.n-cap {
-		font-size: 12.5px; line-height: 1.5; color: rgba(42, 21, 3, 0.6);
-		text-align: center; max-width: 600px; margin: 10px auto 0;
-	}
 
 	.search {
 		display: flex; align-items: center; flex-wrap: wrap; gap: 8px;

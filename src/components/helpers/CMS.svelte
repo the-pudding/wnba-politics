@@ -10,8 +10,8 @@
 	// scrollytelling charts take the full viewport width
 	const FULL_BLEED = new Set(["network-story", "word-quadrant-scrolly", "ternary-scrolly",
 		"outlet-gap-scrolly", "timeline-scrolly", "player-words-scrolly"]);
-	// these draw their own title and caption inside the sticky frame
-	const SELF_CAPTIONED = new Set(["timeline-scrolly"]);
+	// these draw their own title and caption
+	const SELF_CAPTIONED = new Set(["timeline-scrolly", "headline-table"]);
 
 	const PALETTE = { green: "#1f9d6e", pink: "#d55181", purple: "#b04ac2",
 		teal: "#17a2b8", violet: "#7a6bcc", blue: "#2a78d6", orange: "#eda100" };

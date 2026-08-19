@@ -6,7 +6,7 @@
 	import chy from "$data/chyrons.json";
 
 	// bare: no title/footnote inside a scrolly; big + highlightColor: scrolly display labels
-	let { words = [], groups = [], title = "", bare = false,
+	let { words = [], groups = [], bare = false,
 		big = false, highlightColor = null } = $props();
 
 	const CHANNEL_COLORS = { "Fox News": "#7a4a00", "CNN": "#a3232a", "MSNBC": "#1d4f9c" };
@@ -83,7 +83,6 @@
 </script>
 
 <div class="ternary-static" class:big>
-	{#if title && !bare}<h4 class="t-title">{title}</h4>{/if}
 
 	<svg viewBox="0 0 {SIDE} {HEIGHT}" role="img"
 		aria-label="Ternary plot of WNBA chyron words across Fox News, CNN and MSNBC">
@@ -134,7 +133,6 @@
 
 <style>
 	.ternary-static { position: relative; max-width: 700px; margin: 0 auto; }
-	.t-title { font-size: 18px; text-align: center; margin: 0 0 6px; color: #2a1503; }
 	svg { width: 100%; height: auto; display: block; overflow: visible; }
 
 	.frame { fill: rgba(255, 253, 248, 0.35); stroke: rgba(42, 21, 3, 0.3); stroke-width: 1; }
