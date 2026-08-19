@@ -52,7 +52,7 @@
 			{/if}
 			<h1>{meta.hed}</h1>
 			<p class="dek">{@html meta.dek}</p>
-			<p class="byline">By {meta.byline} · {meta.date}</p>
+			{#if meta.byline}<p class="byline">By {meta.byline} · {meta.date}</p>{/if}
 		</header>
 
 		<CMS {body} {components} />
