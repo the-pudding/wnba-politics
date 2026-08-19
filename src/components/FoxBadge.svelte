@@ -1,0 +1,27 @@
+<script>
+	// The source mark that sits above a quoted headline. It replaced the coloured
+	// category chips ("PATRIOTISM", "LGBTQ"), which labelled our own reading of
+	// the headline in the same visual register as the headline itself — the badge
+	// should say where the words came from, not what we made of them.
+	let { outlet = "FOX NEWS", size = 1 } = $props();
+</script>
+
+<span class="source" style="--scale:{size}">
+	<span class="mark">{outlet}</span>
+</span>
+
+<style>
+	.source { display: inline-flex; align-items: center; vertical-align: middle; margin-right: 8px; }
+	.mark {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: calc(10.5px * var(--scale));
+		font-weight: 800;
+		letter-spacing: 0.09em;
+		color: #fff;
+		background: #003366;
+		padding: calc(3px * var(--scale)) calc(7px * var(--scale));
+		border-radius: 2px;
+		line-height: 1.15;
+		white-space: nowrap;
+	}
+</style>
