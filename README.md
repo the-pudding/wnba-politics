@@ -80,6 +80,11 @@ the outlet allows it:
    race/protest and LGBTQ topics, by year.
 3. **03-chyron-ternary** — each network's most distinctive chyron words,
    including the Griner-swap example (*viktor bout* vs *merchant of death*).
+4. **04-player-framing** — regenerates the framing CSVs in `src/data/`:
+   politicization, appearance & celebrity treatment, agency & victim framing.
+   Needs spaCy.
+5. **05-headline-sentiment** — regenerates the sentiment CSVs: every headline
+   scored by RoBERTa, per outlet. Needs torch + transformers, ~10 min.
 
 ```bash
 pip install pandas jupyter
