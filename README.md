@@ -32,8 +32,10 @@ Some css utility classes in `reset.css`:
 - `.sr-only`: makes content invisible available for screen reader
 - `.text-outline`: adds a psuedo stroke to text element
 
-The chart palette is separate: CSS variables at the bottom of
-`Index.svelte`.
+The piece's colors — the chart palette (`clark`, `griner`, `politics`,
+`lgbtq`, …) and the workhorses (`ink`, `paper`, `fox`) — are Style
+Dictionary tokens in `properties/color.json`. Edit there, run
+`npm run style`, and every chart follows.
 
 #### Custom Fonts
 

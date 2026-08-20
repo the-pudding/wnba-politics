@@ -30,7 +30,7 @@
 		"Stephen A. Smith"]);
 	const LEFT_LEANING = new Set(["Joe Biden", "Barack Obama", "Michelle Obama", "Kamala Harris",
 		"Jemele Hill", "Sunny Hostin", "LeBron James", "Megan Rapinoe"]);
-	const LEAN_COLORS = { league: "#8d8578", right: "#c0392b", left: "#2a6fd6", unaligned: "#cbc3b4" };
+	const LEAN_COLORS = { league: "#8d8578", right: "var(--color-fox)", left: "#2a6fd6", unaligned: "#cbc3b4" };
 	const LEAN_LABELS = { league: "WNBA players & league", right: "right-leaning voices",
 		left: "left-leaning voices", unaligned: "no clear lean" };
 
@@ -520,7 +520,7 @@
 
 		{#if edgeMode === "sentiment"}
 			<div class="legend edge-legend">
-				<span><i style="background:#c0392b"></i>negative headlines</span>
+				<span><i style="background:var(--color-fox)"></i>negative headlines</span>
 				<span><i style="background:rgba(42,21,3,0.28)"></i>neutral</span>
 				<span><i style="background:#1f9d6e"></i>positive</span>
 			</div>
@@ -659,7 +659,7 @@
 		.legend, .explore-hint { display: none !important; }
 	}
 
-	.year-label { text-align: center; font-size: 16px; color: #2a1503; margin: 0 0 4px; }
+	.year-label { text-align: center; font-size: 16px; color: var(--color-ink); margin: 0 0 4px; }
 	svg { width: 100%; height: auto; flex: 1 1 auto; min-height: 0; max-height: 100%; }
 	@media (min-width: 861px) {
 		.network-scrolly.exploring .sticky.with-table > .headline-table {
@@ -676,7 +676,7 @@
 
 	.edge { stroke: rgba(42, 21, 3, 0.35); fill: none; transition: opacity 200ms ease; }
 	@keyframes edge-in { from { opacity: 0; } }
-	.edge.highlight { stroke: #2a1503; }
+	.edge.highlight { stroke: var(--color-ink); }
 	.edge.faded { opacity: 0.08; }
 
 	.portrait { transition: opacity 200ms ease; pointer-events: none; }
@@ -686,18 +686,18 @@
 	.faded { opacity: 0.12; }
 
 	.name-label {
-		font-size: 12px; font-weight: 700; fill: #2a1503;
+		font-size: 12px; font-weight: 700; fill: var(--color-ink);
 		paint-order: stroke; stroke: var(--page-orange, #f79241); stroke-width: 3px;
 		stroke-linejoin: round; pointer-events: none;
 	}
 
 	.legend.edge-legend i { width: 16px; height: 3px; border-radius: 2px; }
-	.legend { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: #2a1503; margin-top: 4px; }
+	.legend { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--color-ink); margin-top: 4px; }
 	.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; }
 
 	.step { min-height: 92vh; display: flex; align-items: center; }
 	.card {
-		background: #fffdf8;
+		background: var(--color-paper);
 		border: 1px solid #e6dcc3;
 		border-radius: 6px;
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
@@ -707,11 +707,11 @@
 		transition: opacity 200ms ease;
 	}
 	.step.active .card { opacity: 1; }
-	.step-text { font-size: 15.5px; line-height: 1.55; margin: 0; color: #2a1503; }
+	.step-text { font-size: 15.5px; line-height: 1.55; margin: 0; color: var(--color-ink); }
 
 	.headline-clip {
 		margin: 12px -4px 0;
-		background: #fffdf8;
+		background: var(--color-paper);
 		border: 1px solid #e6dcc3;
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 		padding: 10px 15px;
@@ -723,14 +723,14 @@
 	.compare-bar {
 		display: flex; align-items: center; justify-content: center;
 		gap: 8px; flex-wrap: wrap; margin-bottom: 6px;
-		font-size: 13px; color: #2a1503;
+		font-size: 13px; color: var(--color-ink);
 		opacity: 0; pointer-events: none; transition: opacity 400ms ease;
 	}
 	.compare-bar.armed { opacity: 1; pointer-events: auto; }
 	.compare-bar select {
 		font-size: 13px; padding: 4px 7px; margin-left: 6px;
 		border: 1px solid rgba(42, 21, 3, 0.3); border-radius: 4px;
-		background: #fffdf8; color: #2a1503; max-width: 190px;
+		background: var(--color-paper); color: var(--color-ink); max-width: 190px;
 	}
 	.compare-bar .vs { color: rgba(42, 21, 3, 0.6); font-weight: 700; }
 	.clear-compare {
@@ -745,14 +745,14 @@
 	}
 	.explore-bar.armed { opacity: 1; pointer-events: auto; }
 	.play {
-		border: 1px solid rgba(42, 21, 3, 0.4); background: #2a1503; color: #fff;
+		border: 1px solid rgba(42, 21, 3, 0.4); background: var(--color-ink); color: #fff;
 		width: 34px; height: 30px; border-radius: 4px; font-size: 12px; cursor: pointer;
 	}
 	.toggle-group { display: inline-flex; border: 1px solid rgba(42, 21, 3, 0.3); border-radius: 4px; overflow: hidden; }
-	.toggle-group button { border: 0; background: transparent; color: #2a1503; padding: 5px 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
-	.toggle-group button.active { background: #2a1503; color: #fff; }
+	.toggle-group button { border: 0; background: transparent; color: var(--color-ink); padding: 5px 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+	.toggle-group button.active { background: var(--color-ink); color: #fff; }
 	.color-toggle {
-		border: 1px solid rgba(42, 21, 3, 0.3); background: transparent; color: #2a1503;
+		border: 1px solid rgba(42, 21, 3, 0.3); background: transparent; color: var(--color-ink);
 		font-size: 12px; padding: 3px 9px; border-radius: 4px; cursor: pointer;
 	}
 	.table-row :global(mark) { background: transparent; color: inherit; padding: 0 1px; }
@@ -772,7 +772,7 @@
 	.headline-table {
 		flex: 0 0 auto;
 		margin-top: 8px;
-		background: #fffdf8;
+		background: var(--color-paper);
 		border: 1px solid #e6dcc3;
 		border-radius: 6px;
 		max-height: 19vh;
@@ -783,7 +783,7 @@
 	.table-head {
 		display: flex; align-items: baseline; gap: 8px;
 		padding: 6px 12px; border-bottom: 1px solid #e6dcc3;
-		font-size: 13px; color: #2a1503;
+		font-size: 13px; color: var(--color-ink);
 	}
 	.table-head span { color: rgba(42, 21, 3, 0.6); font-size: 12px; }
 	.table-head .close { margin-left: auto; border: 0; background: transparent; font-size: 18px; line-height: 1; cursor: pointer; color: rgba(42, 21, 3, 0.6); }
@@ -798,7 +798,7 @@
 		border-bottom: 1px solid rgba(42, 21, 3, 0.08);
 	}
 	.table-row:last-child { border-bottom: 0; }
-	.table-row p { font-size: 13.5px; line-height: 1.35; margin: 0; color: #2a1503; }
+	.table-row p { font-size: 13.5px; line-height: 1.35; margin: 0; color: var(--color-ink); }
 	.tag {
 		font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
 		color: #fff; padding: 1px 5px; border-radius: 3px; white-space: nowrap;

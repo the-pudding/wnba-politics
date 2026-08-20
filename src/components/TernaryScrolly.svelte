@@ -52,7 +52,7 @@
 
 <section class="ternary-scrolly">
 	<div class="sticky">
-		<TernaryStatic groups={current.groups} bare big highlightColor="#c0392b" />
+		<TernaryStatic groups={current.groups} bare big highlightColor="var(--color-fox)" />
 	</div>
 
 	<div class="steps">
@@ -95,9 +95,9 @@
 	.card {
 		max-width: 290px; margin: 0;
 		background: rgba(255, 253, 248, 0.94);
-		border-left: 3px solid #c0392b;
+		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px; border-radius: 3px;
-		font-size: 15.5px; line-height: 1.5; color: #2a1503;
+		font-size: 15.5px; line-height: 1.5; color: var(--color-ink);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 		opacity: 0.3; transition: opacity 250ms ease;
 	}

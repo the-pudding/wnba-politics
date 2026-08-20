@@ -20,8 +20,8 @@
 		all: "touch race, protest politics, or LGBTQ topics" }[topic]
 		?? "mention race or protest politics";
 	const MAIN = topic === "lgbtq"
-		? "var(--c-lgbtq, #b04ac2)"
-		: "var(--c-politics, #1f9d6e)";
+		? "var(--color-lgbtq)"
+		: "var(--color-politics)";
 	const MIN_N = 10;
 
 	// width only, natural aspect — forcing a square squashed wide wordmarks (ESPN)
@@ -243,14 +243,14 @@
 		display: flex; justify-content: center; margin-bottom: 8px;
 		border-radius: 6px; overflow: hidden; width: fit-content;
 		margin-left: auto; margin-right: auto;
-		border: 1.5px solid #2a1503;
+		border: 1.5px solid var(--color-ink);
 	}
 	.method button {
-		border: 0; background: #fffdf8; color: #2a1503; padding: 6px 13px;
+		border: 0; background: var(--color-paper); color: var(--color-ink); padding: 6px 13px;
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 		font-size: 12px; font-weight: 700; cursor: pointer;
 	}
-	.method button.on { background: #2a1503; color: #fffdf8; }
+	.method button.on { background: var(--color-ink); color: var(--color-paper); }
 	.panes { display: flex; gap: 18px; }
 	.pane { flex: 1 1 0; min-width: 0; }
 	.mobile .panes { flex-direction: column; }
@@ -262,19 +262,19 @@
 	}
 	.picker {
 		border: 1px solid rgba(42, 21, 3, 0.3); border-radius: 4px;
-		background: #fffdf8; padding: 3px 6px; font-size: 12.5px;
+		background: var(--color-paper); padding: 3px 6px; font-size: 12.5px;
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 	}
 
 	.grid { stroke: rgba(42, 21, 3, 0.35); stroke-width: 1; }
-	.axis { stroke: #2a1503; stroke-width: 1.5; }
-	.tick { font-size: 13.5px; fill: #2a1503; }
+	.axis { stroke: var(--color-ink); stroke-width: 1.5; }
+	.tick { font-size: 13.5px; fill: var(--color-ink); }
 	.mobile .tick { font-size: 16px; }
 	.topic-line { fill: none; stroke-width: 2.8; stroke-linejoin: round; stroke-linecap: round; }
 
 	.dots-hed {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 13px; font-weight: 700; color: #2a1503;
+		font-size: 13px; font-weight: 700; color: var(--color-ink);
 		text-align: center; margin: 18px 0 2px;
 	}
 	.dots { overflow: visible; }
@@ -284,7 +284,7 @@
 	.tooltip {
 		position: absolute; transform: translate(14px, -50%);
 		width: 230px;
-		background: #fffdf8; border: 1px solid rgba(42, 21, 3, 0.14);
+		background: var(--color-paper); border: 1px solid rgba(42, 21, 3, 0.14);
 		border-left: 3px solid rgba(42, 21, 3, 0.35); border-radius: 3px;
 		padding: 9px 12px 10px;
 		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
@@ -296,6 +296,6 @@
 		font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
 		text-transform: uppercase; color: rgba(42, 21, 3, 0.6);
 	}
-	.tooltip .line { margin: 5px 0 0; font-size: 13px; line-height: 1.5; color: #2a1503;
+	.tooltip .line { margin: 5px 0 0; font-size: 13px; line-height: 1.5; color: var(--color-ink);
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
 </style>

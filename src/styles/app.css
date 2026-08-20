@@ -47,6 +47,19 @@
 
 	/* "1" second duration */
 	--1s: 1ms;
+
+	/* piece aliases (raw values live in properties/color.json) */
+	--color-trans-dots: var(--color-lgbtq); /* the dot swarm follows LGBTQ purple */
+}
+
+/* the piece */
+html,
+body {
+	overflow-x: clip;
+}
+
+body {
+	background: var(--color-page-orange);
 }
 
 /* dark theme */

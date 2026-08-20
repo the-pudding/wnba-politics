@@ -10,7 +10,7 @@
 		big = false, highlightColor = null } = $props();
 
 	const CHANNEL_COLORS = { "Fox News": "#7a4a00", "CNN": "#a3232a", "MSNBC": "#1d4f9c" };
-	const GROUP_COLORS = ["#9061c2", "#c0392b", "#1f7a5a", "#1d4f9c"];
+	const GROUP_COLORS = ["#9061c2", "var(--color-fox)", "#1f7a5a", "#1d4f9c"];
 	const DOT = "#b3a58a";
 	const MIN_TOTAL = 15;
 
@@ -100,7 +100,7 @@
 			<circle cx={term.px} cy={term.py} r={radius(term.total)}
 				fill={term.lit ?? DOT}
 				opacity={term.lit ? 0.95 : bands.length ? 0.28 : 0.6}
-				stroke={term.lit ? "#fffdf8" : "none"} stroke-width="1.5"
+				stroke={term.lit ? "var(--color-paper)" : "none"} stroke-width="1.5"
 				onpointerenter={(e) => showTip(e, term)}
 				onpointermove={(e) => showTip(e, term)}
 				onpointerleave={() => (tip = null)}
@@ -116,7 +116,7 @@
 
 	{#if tip}
 		<div class="tooltip" class:flip={tip.flip}
-			style="left:{tip.x}px; top:{tip.y}px; border-left-color:{tip.term.lit ?? '#2a1503'}">
+			style="left:{tip.x}px; top:{tip.y}px; border-left-color:{tip.term.lit ?? 'var(--color-ink)'}">
 			<strong>“{tip.term.term}” · {tip.term.total.toLocaleString()} chyrons</strong>
 			<div class="rows">
 				{#each channels as channel, i}
@@ -139,14 +139,14 @@
 	.corner { font-size: 13px; font-weight: 800; }
 	.word {
 		font-size: 13px; font-weight: 800; pointer-events: none;
-		paint-order: stroke; stroke: #fffdf8; stroke-width: 3.5px; stroke-linejoin: round;
+		paint-order: stroke; stroke: var(--color-paper); stroke-width: 3.5px; stroke-linejoin: round;
 	}
 	.big .word { font-size: 28px; stroke-width: 7px; }
 	.tooltip {
 		position: absolute; transform: translate(14px, -50%);
 		width: 200px;
-		background: #fffdf8; border: 1px solid rgba(42, 21, 3, 0.14);
-		border-left: 3px solid #2a1503; border-radius: 3px;
+		background: var(--color-paper); border: 1px solid rgba(42, 21, 3, 0.14);
+		border-left: 3px solid var(--color-ink); border-radius: 3px;
 		padding: 9px 12px 10px;
 		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
 		pointer-events: none; z-index: 5;
@@ -164,6 +164,6 @@
 		font-size: 12.5px; line-height: 1.7;
 	}
 	.row .who { font-weight: 700; }
-	.row .pct { font-weight: 600; color: #2a1503; font-variant-numeric: tabular-nums; }
+	.row .pct { font-weight: 600; color: var(--color-ink); font-variant-numeric: tabular-nums; }
 
 </style>

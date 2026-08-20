@@ -7,7 +7,7 @@
 
 	let { revealUntil = null, startMonth = null, endMonth = null, yCap = null, tall = false } = $props();
 
-	const DOT = "var(--c-trans-dots, #b04ac2)";
+	const DOT = "var(--color-trans-dots)";
 	const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
 		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -153,8 +153,8 @@
 	.tooltip {
 		position: absolute; transform: translate(14px, -50%);
 		width: 300px;
-		background: #fffdf8; border: 1px solid rgba(42, 21, 3, 0.14);
-		border-left: 3px solid var(--c-trans-dots, #b04ac2); border-radius: 3px;
+		background: var(--color-paper); border: 1px solid rgba(42, 21, 3, 0.14);
+		border-left: 3px solid var(--color-trans-dots); border-radius: 3px;
 		padding: 9px 12px 10px;
 		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
 		pointer-events: none; z-index: 5;
@@ -165,5 +165,5 @@
 		font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
 		color: rgba(42, 21, 3, 0.6);
 	}
-	.tooltip .example { margin: 5px 0 0; font-size: 13.5px; line-height: 1.5; color: #2a1503; }
+	.tooltip .example { margin: 5px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--color-ink); }
 </style>

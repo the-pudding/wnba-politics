@@ -47,14 +47,14 @@
 	const dropWord = (w) => (added = added.filter((x) => x !== w));
 
 	const COLORS = {
-		trans: "var(--c-trans, #17a2b8)",
+		trans: "var(--color-trans)",
 		transgender: "#1d4f9c",
-		protect: "var(--c-fox, #c0392b)",
-		race: "var(--c-race, #d55181)",
+		protect: "var(--color-fox)",
+		race: "var(--color-race)",
 		white: "#6b5b45",
-		"trans language": "var(--c-trans, #17a2b8)",
-		"caitlin clark": "var(--c-clark, #2a78d6)",
-		"sophie cunningham": "var(--c-cunningham, #e0851f)"
+		"trans language": "var(--color-trans)",
+		"caitlin clark": "var(--color-clark)",
+		"sophie cunningham": "var(--color-cunningham)"
 	};
 	const FALLBACK_COLORS = ["#1f9d6e", "#7a6bcc", "#b04ac2", "#7a4a00"];
 
@@ -249,8 +249,8 @@
 	.box { position: relative; }
 	.box input {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 13.5px; color: #2a1503;
-		background: #fffdf8; border: 1px solid rgba(42, 21, 3, 0.25);
+		font-size: 13.5px; color: var(--color-ink);
+		background: var(--color-paper); border: 1px solid rgba(42, 21, 3, 0.25);
 		border-radius: 3px; padding: 7px 11px; width: 250px;
 	}
 	.box input:focus { outline: 2px solid rgba(42, 21, 3, 0.25); outline-offset: 1px; }
@@ -258,35 +258,35 @@
 	.sug {
 		position: absolute; top: calc(100% + 3px); left: 0; right: 0; z-index: 6;
 		margin: 0; padding: 4px 0; list-style: none;
-		background: #fffdf8; border: 1px solid rgba(42, 21, 3, 0.18);
+		background: var(--color-paper); border: 1px solid rgba(42, 21, 3, 0.18);
 		border-radius: 3px; box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
 	}
 	.sug button {
 		display: block; width: 100%; text-align: left;
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 13.5px; color: #2a1503;
+		font-size: 13.5px; color: var(--color-ink);
 		background: none; border: none; padding: 5px 11px; cursor: pointer;
 	}
 	.sug button:hover { background: rgba(42, 21, 3, 0.07); }
 	.chip {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 		font-size: 12.5px; font-weight: 700;
-		background: #fffdf8; border: 1.5px solid; border-radius: 999px;
+		background: var(--color-paper); border: 1.5px solid; border-radius: 999px;
 		padding: 4px 11px; cursor: pointer;
 	}
 	.chip .x { opacity: 0.6; margin-left: 2px; }
 	.chip:hover .x { opacity: 1; }
 	.nf {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 12px; color: #c0392b;
+		font-size: 12px; color: var(--color-fox);
 	}
 	.mobile .box input { width: min(80vw, 320px); font-size: 16px; }
 
 	.tooltip {
 		position: absolute; transform: translate(14px, -50%);
 		width: 210px;
-		background: #fffdf8; border: 1px solid rgba(42, 21, 3, 0.14);
-		border-left: 3px solid #c0392b; border-radius: 3px;
+		background: var(--color-paper); border: 1px solid rgba(42, 21, 3, 0.14);
+		border-left: 3px solid var(--color-fox); border-radius: 3px;
 		padding: 9px 12px 10px;
 		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
 		pointer-events: none; z-index: 5;
@@ -304,5 +304,5 @@
 		font-size: 12.5px; line-height: 1.7;
 	}
 	.row .who { font-weight: 700; }
-	.row .pct { font-weight: 600; color: #2a1503; font-variant-numeric: tabular-nums; }
+	.row .pct { font-weight: 600; color: var(--color-ink); font-variant-numeric: tabular-nums; }
 </style>

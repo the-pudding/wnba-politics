@@ -147,11 +147,11 @@
 
 	const ringColor = (person) => {
 		if (metric === "tone") {
-			return person.tone < -0.02 ? "#c0392b" : person.tone > 0.02 ? "#1f9d6e" : "rgba(42,21,3,0.45)";
+			return person.tone < -0.02 ? "var(--color-fox)" : person.tone > 0.02 ? "#1f9d6e" : "rgba(42,21,3,0.45)";
 		}
-		if (metric === "victim") return valueOf(person) > 0 ? "#c0392b" : "rgba(42,21,3,0.3)";
+		if (metric === "victim") return valueOf(person) > 0 ? "var(--color-fox)" : "rgba(42,21,3,0.3)";
 		if (metric === "differential") {
-			return person.differential < -0.02 ? "#c0392b"
+			return person.differential < -0.02 ? "var(--color-fox)"
 				: person.differential > 0.02 ? "#1f9d6e" : "rgba(42,21,3,0.45)";
 		}
 		return valueOf(person) > 0 ? "#b04ac2" : "rgba(42,21,3,0.3)";

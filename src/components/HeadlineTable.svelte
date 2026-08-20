@@ -102,7 +102,7 @@
 
 	const BAR_HALF = 26;
 	const barWidth = (score) => Math.abs(score) * BAR_HALF;
-	const barColor = (score) => (score < -0.05 ? "#c0392b" : score > 0.05 ? "#1f9d6e" : "rgba(42,21,3,0.3)");
+	const barColor = (score) => (score < -0.05 ? "var(--color-fox)" : score > 0.05 ? "#1f9d6e" : "rgba(42,21,3,0.3)");
 
 	let summary = $derived.by(() => {
 		const total = data.rows.length.toLocaleString();
@@ -241,7 +241,7 @@
 		--ink: #1c1917;
 		--muted: rgba(28, 25, 23, 0.55);
 		--rule: rgba(28, 25, 23, 0.14);
-		--accent: #c0392b;
+		--accent: var(--color-fox);
 		--field-edge: rgba(28, 25, 23, 0.22);
 		--field-shadow: 0 1px 0 rgba(28, 25, 23, 0.05);
 		--sans: "Helvetica Neue", Helvetica, Arial, sans-serif;

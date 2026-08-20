@@ -53,6 +53,45 @@
 		},
 		"yellow": {
 			"value": "oklch(0.8897 0.1781 108.83)"
+		},
+		"clark": {
+			"value": "#2a78d6"
+		},
+		"griner": {
+			"value": "#7db3e0"
+		},
+		"cunningham": {
+			"value": "#e0851f"
+		},
+		"politics": {
+			"value": "#1f9d6e"
+		},
+		"race": {
+			"value": "#d55181"
+		},
+		"lgbtq": {
+			"value": "#b04ac2"
+		},
+		"trans": {
+			"value": "#17a2b8"
+		},
+		"nba": {
+			"value": "#2a1503"
+		},
+		"cream": {
+			"value": "#f5ecd8"
+		},
+		"fox": {
+			"value": "#c0392b"
+		},
+		"ink": {
+			"value": "#2a1503"
+		},
+		"paper": {
+			"value": "#fffdf8"
+		},
+		"page-orange": {
+			"value": "#f9a660"
 		}
 	}
 }

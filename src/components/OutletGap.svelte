@@ -196,7 +196,7 @@
 	}
 	.picker img { display: block; height: auto; }
 	.picker .all {
-		font: inherit; font-size: 12px; font-weight: 700; color: #2a1503;
+		font: inherit; font-size: 12px; font-weight: 700; color: var(--color-ink);
 		line-height: 1.3; padding: 4px 9px;
 	}
 
@@ -208,7 +208,7 @@
 
 	.name { font-size: 13.5px; fill: rgba(42, 21, 3, 0.85); }
 	.name.short { font-size: 17px; }
-	.row.lit .name { fill: #2a1503; font-weight: 700; }
+	.row.lit .name { fill: var(--color-ink); font-weight: 700; }
 	.row.dim { opacity: 0.22; }
 	.row { transition: opacity 300ms ease; }
 
@@ -218,5 +218,5 @@
 		stroke: rgba(255, 253, 248, 0.92);
 		stroke-width: 2;
 	}
-	.row.lit .face-ring { stroke: #fffdf8; stroke-width: 2.5; }
+	.row.lit .face-ring { stroke: var(--color-paper); stroke-width: 2.5; }
 </style>

@@ -8,8 +8,8 @@
 	// story-word examples ship inline; the full 17k-word set loads on first hover
 	import litExamples from "$data/fw_examples_lit.json";
 
-	const FOX = "#c0392b";
-	const OTHER = "#2a1503";
+	const FOX = "var(--color-fox)";
+	const OTHER = "var(--color-ink)";
 	const SIGNIFICANT = 1.96;
 	const SANS = '"Helvetica Neue", Helvetica, Arial, sans-serif';
 
@@ -365,8 +365,8 @@
 	.tip-card {
 		position: absolute; z-index: 8; pointer-events: none;
 		width: 320px; transform: translate(14px, -50%);
-		background: #fffdf8; border: 1px solid rgba(42, 21, 3, 0.14);
-		border-left: 3px solid #c0392b;   /* recoloured inline per side */
+		background: var(--color-paper); border: 1px solid rgba(42, 21, 3, 0.14);
+		border-left: 3px solid var(--color-fox);   /* recoloured inline per side */
 		border-radius: 3px; padding: 10px 13px 11px;
 		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
 	}
@@ -386,20 +386,20 @@
 		font-size: 10.5px; color: rgba(42, 21, 3, 0.5); margin-top: 2px;
 	}
 	.tip-card p {
-		margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: #2a1503;
+		margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--color-ink);
 	}
 	.word-quadrant.bare .note,
 	.word-quadrant.bare .sample { display: none; }
 	.word-quadrant .controls[hidden] { display: none; }
 
 	.controls { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
-	.label { font-size: 13px; color: #2a1503; }
+	.label { font-size: 13px; color: var(--color-ink); }
 	.toggle-group { display: inline-flex; border: 1px solid rgba(42, 21, 3, 0.3); border-radius: 4px; overflow: hidden; }
 	.toggle-group button {
-		border: 0; background: transparent; color: #2a1503;
+		border: 0; background: transparent; color: var(--color-ink);
 		padding: 5px 11px; font-size: 12.5px; font-weight: 600; cursor: pointer;
 	}
-	.toggle-group button.active { background: #2a1503; color: #fff; }
+	.toggle-group button.active { background: var(--color-ink); color: #fff; }
 
 	svg { width: 100%; height: auto; display: block; }
 	.grid { stroke: rgba(42, 21, 3, 0.12); stroke-width: 1; }
@@ -409,7 +409,7 @@
 	.side { font-size: 13px; font-weight: 800; }
 	.word {
 		font-size: 18px; font-weight: 600; cursor: default;
-		paint-order: stroke; stroke: #fffdf8; stroke-width: 3px;
+		paint-order: stroke; stroke: var(--color-paper); stroke-width: 3px;
 		stroke-linejoin: round;
 	}
 	.word.lit { font-size: 22px; font-weight: 800; stroke-width: 5.5px; }
@@ -430,7 +430,7 @@
 	.big .tip-word { font-size: 22px; }
 
 	.tip { pointer-events: none; }
-	.tip text { paint-order: stroke; stroke: #fffdf8; stroke-width: 4px; stroke-linejoin: round; }
+	.tip text { paint-order: stroke; stroke: var(--color-paper); stroke-width: 4px; stroke-linejoin: round; }
 	.tip.carded text { paint-order: normal; stroke: none; }
 	.tip-word { font-size: 15px; font-weight: 800; }
 	.tip.carded .tip-word {

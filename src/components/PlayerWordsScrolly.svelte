@@ -114,7 +114,7 @@
 		box-shadow: 0 2px 8px rgba(42, 21, 3, 0.18);
 	}
 	.heading {
-		font-size: 14.5px; color: #2a1503; text-align: left;
+		font-size: 14.5px; color: var(--color-ink); text-align: left;
 		margin: 0; max-width: 460px; line-height: 1.35;
 	}
 	.heading .vs { color: rgba(42, 21, 3, 0.55); }
@@ -125,9 +125,9 @@
 	.card {
 		max-width: 300px; margin: 0;
 		background: rgba(255, 253, 248, 0.94);
-		border-left: 3px solid #c0392b;
+		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px; border-radius: 3px;
-		font-size: 15.5px; line-height: 1.5; color: #2a1503;
+		font-size: 15.5px; line-height: 1.5; color: var(--color-ink);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 		opacity: 0.3; transition: opacity 250ms ease;
 	}

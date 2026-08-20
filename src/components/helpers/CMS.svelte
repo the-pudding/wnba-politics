@@ -133,7 +133,7 @@
 
 <style>
 	.act { margin: 56px 0; }
-	p { font-size: 17px; line-height: 1.65; margin-bottom: 1em; color: #2a1503; }
+	p { font-size: 17px; line-height: 1.65; margin-bottom: 1em; color: var(--color-ink); }
 	p :global(mark) { color: inherit; padding: 0 3px; border-radius: 2px; }
 
 	.chart { margin: 12px 0 22px; }
@@ -143,13 +143,13 @@
 		transform: translateX(-50%);
 		padding: 0 12px;
 	}
-	.chart-title { font-size: 19px; text-align: center; margin: 0 0 10px; color: #2a1503; }
+	.chart-title { font-size: 19px; text-align: center; margin: 0 0 10px; color: var(--color-ink); }
 	.chart-caption { font-size: 12.5px; color: rgba(42, 21, 3, 0.6); margin-top: 4px; text-align: center; }
 	.missing { font-size: 13px; color: #a33; }
 
 	.clips { display: flex; flex-direction: column; gap: 12px; max-width: 560px; margin: 6px auto 26px; }
 	.clip {
-		background: #fffdf8;
+		background: var(--color-paper);
 		border: 1px solid #e6dcc3;
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 		padding: 10px 15px;

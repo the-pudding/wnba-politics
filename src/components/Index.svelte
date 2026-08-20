@@ -60,10 +60,6 @@
 </svelte:boundary>
 
 <style>
-	:global(html), :global(body) { overflow-x: clip; }
-	:global(body) { background: var(--page-orange, #f4791f); }
-	:global(:root) { --page-orange: #f9a660; }
-
 	#story {
 		max-width: 700px;
 		margin: 0 auto;
@@ -102,23 +98,5 @@
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
 		color: rgba(255, 255, 255, 0.85);
-	}
-
-	/* -----------------------------------------------------------------------
-	   THE CHART PALETTE — edit these to recolor every figure at once.
-	   (Also live-editable in dev tools: select <html> and change them there.)
-	   ----------------------------------------------------------------------- */
-	:global(:root) {
-		--c-clark: #2a78d6;        /* Caitlin Clark blue */
-		--c-griner: #7db3e0;       /* Brittney Griner light blue */
-		--c-cunningham: #e0851f;   /* Sophie Cunningham orange */
-		--c-politics: #1f9d6e;     /* protest politics green */
-		--c-race: #d55181;         /* race / racism pink */
-		--c-lgbtq: #b04ac2;        /* LGBTQ purple */
-		--c-trans: #17a2b8;        /* trans layer teal (bar timelines, ngram) */
-		--c-trans-dots: var(--c-lgbtq);  /* the dot swarm follows LGBTQ purple */
-		--c-nba: #2a1503;          /* NBA backdrop (the piece's ink black) */
-		--c-cream: #f5ecd8;        /* "all articles" bars */
-		--c-fox: #c0392b;          /* Fox red (also the "protect" ngram line) */
 	}
 </style>

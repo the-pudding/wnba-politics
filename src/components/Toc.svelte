@@ -35,20 +35,20 @@
 	.toc-label {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 		font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
-		color: #c0392b; margin: 0 0 8px;
+		color: var(--color-fox); margin: 0 0 8px;
 	}
 	ol { list-style: none; margin: 0; padding: 0; }
 	li { margin: 0 0 3px; }
 	a {
 		display: flex; align-items: baseline; gap: 9px;
-		color: #2a1503; text-decoration: none;
+		color: var(--color-ink); text-decoration: none;
 		font-size: 15px; line-height: 1.35;
 	}
-	a:hover { color: #c0392b; }
+	a:hover { color: var(--color-fox); }
 	.n {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 		font-size: 11px; font-weight: 700; color: rgba(42, 21, 3, 0.45);
 		min-width: 14px;
 	}
-	a:hover .n { color: #c0392b; }
+	a:hover .n { color: var(--color-fox); }
 </style>

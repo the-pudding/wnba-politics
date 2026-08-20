@@ -181,7 +181,7 @@
 
 	let tooltip = $state(null); // null, or {x, y, html}
 
-	function showTooltip(event, html, color = "#2a1503") {
+	function showTooltip(event, html, color = "var(--color-ink)") {
 		const box = event.currentTarget.closest(".timeline-chart").getBoundingClientRect();
 		tooltip = {
 			x: event.clientX - box.left,
@@ -343,16 +343,16 @@
 <style>
 	/* chart colors; each defers to the page-level --c-* palette (Index.svelte) */
 	.timeline-chart {
-		--tl-cream: var(--c-cream, #f5ecd8);
+		--tl-cream: var(--color-cream);
 		--tl-pct-bar: rgba(42, 21, 3, 0.07);
-		--tl-clark: var(--c-clark, #2a78d6);
-		--tl-griner: var(--c-griner, #a8720a);
-		--tl-politics: var(--c-politics, #1f9d6e);
-		--tl-race: var(--c-race, #d55181);
-		--tl-lgbtq: var(--c-lgbtq, #b04ac2);
+		--tl-clark: var(--color-clark);
+		--tl-griner: var(--color-griner);
+		--tl-politics: var(--color-politics);
+		--tl-race: var(--color-race);
+		--tl-lgbtq: var(--color-lgbtq);
 		--tl-both: #677398;      /* the "touches both" band on the LGBTQ chart */
-		--tl-trans: var(--c-trans, #17a2b8);
-		--tl-nba: var(--c-nba, #2a1503);
+		--tl-trans: var(--color-trans);
+		--tl-nba: var(--color-nba);
 	}
 
 	/* x/width transition so re-windowing slides bars rather than teleporting them */
@@ -376,11 +376,11 @@
 		position: absolute;
 		transform: translate(14px, -50%);
 		width: 300px;
-		background: #fffdf8;
+		background: var(--color-paper);
 		border: 1px solid rgba(42, 21, 3, 0.14);
-		border-left: 3px solid #2a1503;   /* recoloured inline per layer */
+		border-left: 3px solid var(--color-ink);   /* recoloured inline per layer */
 		border-radius: 3px;
-		color: #2a1503;
+		color: var(--color-ink);
 		font-size: 12.5px;
 		line-height: 1.45;
 		padding: 9px 12px 10px;
@@ -402,7 +402,7 @@
 		color: rgba(42, 21, 3, 0.55); font-size: 11px; margin-top: 2px;
 	}
 	.tooltip :global(.example) {
-		margin-top: 6px; font-size: 13.5px; line-height: 1.5; color: #2a1503;
+		margin-top: 6px; font-size: 13.5px; line-height: 1.5; color: var(--color-ink);
 	}
 	.tooltip :global(.src) {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
