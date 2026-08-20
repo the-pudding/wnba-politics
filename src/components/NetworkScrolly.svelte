@@ -9,7 +9,8 @@
 	import headlineNet from "$data/headline_network.json";
 	import articleNet from "$data/article_network.json";
 	import bios from "$data/net_bios.json";
-	import { scores as sentimentScores } from "$data/headline_sentiment.json";
+	import sentimentRows from "$data/headline_sentiment.csv";
+	const sentimentScores = Object.fromEntries(sentimentRows.map((r) => [r.headline, +r.score]));
 	import { scaleSqrt } from "d3-scale";
 	import { forceSimulation, forceManyBody, forceLink, forceCollide, forceCenter, forceX, forceY } from "d3-force";
 

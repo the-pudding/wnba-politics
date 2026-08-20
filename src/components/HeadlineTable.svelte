@@ -3,8 +3,17 @@
 	// row linking back to its article.
 	// Doc embed:  chart: headline-table
 	//             chart: headline-table | words: Sophie Cunningham, Brittney Griner
-	import data from "$data/fox_player_headlines.json";
-	import sentiment from "$data/headline_sentiment.json";
+	import headlineRows from "$data/fox_player_headlines.csv";
+	import sentimentRows from "$data/headline_sentiment.csv";
+
+	const data = { rows: headlineRows.map((r) => ({
+		d: r.date, t: r.title, u: r.url,
+		p: r.players ? r.players.split("; ") : []
+	})) };
+	const sentiment = {
+		scores: Object.fromEntries(sentimentRows.map((r) => [r.headline, +r.score])),
+		labels: Object.fromEntries(sentimentRows.map((r) => [r.headline, r.label]))
+	};
 
 	let { words = [], title = "", caption = "" } = $props();
 
@@ -20,7 +29,7 @@
 	const PAGE = 60;
 	const MAX_TAGS = 3;
 
-	const players = words.length ? words : data.players;
+	const players = words.length ? words : Object.keys(PLAYER_COLORS);
 
 	let search = $state("");
 	let activePlayers = $state([]);

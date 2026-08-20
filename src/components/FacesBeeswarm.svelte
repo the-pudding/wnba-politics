@@ -4,15 +4,47 @@
 	import { base } from "$app/paths";
 	import { forceSimulation, forceX, forceY, forceCollide } from "d3-force";
 	import { scaleLinear } from "d3-scale";
-	import headlines from "$data/fox_player_headlines.json";
-	import sentiment from "$data/headline_sentiment.json";
-	import politicization from "$data/politicization_people.json";
-	import appearance from "$data/appearance_talk.json";
-	import celebrity from "$data/celebrity_talk.json";
-	import agency from "$data/agency.json";
-	import outletSentiment from "$data/sentiment_outlets.json";
+	import headlineRows from "$data/fox_player_headlines.csv";
+	import sentimentRows from "$data/headline_sentiment.csv";
+	import politicizationRows from "$data/politicization_people.csv";
+	import appearanceRows from "$data/appearance_talk.csv";
+	import celebrityRows from "$data/celebrity_talk.csv";
+	import agencyRows from "$data/agency.csv";
+	import versusRows from "$data/sentiment_outlets.csv";
 	import network from "$data/headline_network.json";
 	import faceFiles from "$data/net_faces.json";
+
+	const headlines = { rows: headlineRows.map((r) => ({
+		d: r.date, t: r.title, u: r.url,
+		p: r.players ? r.players.split("; ") : []
+	})) };
+	const sentiment = { scores: Object.fromEntries(sentimentRows.map((r) => [r.headline, +r.score])) };
+
+	// the people CSVs are long format: one row per person-example
+	function regroup(rows, ofRow, ofExample) {
+		const byName = new Map();
+		for (const r of rows) {
+			if (!byName.has(r.name)) byName.set(r.name, { ...ofRow(r), name: r.name, examples: [] });
+			const ex = ofExample(r);
+			if (ex) byName.get(r.name).examples.push(ex);
+		}
+		return { people: [...byName.values()] };
+	}
+	const politicization = regroup(politicizationRows,
+		(r) => ({ political: +r.political, share: +r.share }), (r) => r.example);
+	const appearance = regroup(appearanceRows,
+		(r) => ({ hits: +r.hits, share: +r.share }),
+		(r) => r.example_title && { d: r.example_date, t: r.example_title });
+	const celebrity = regroup(celebrityRows,
+		(r) => ({ hits: +r.hits, share: +r.share }),
+		(r) => r.example_title && { d: r.example_date, t: r.example_title });
+	const agency = regroup(agencyRows,
+		(r) => ({ victim: +r.victim, victimRate: +r.victim_rate }), (r) => r.example);
+
+	const outletSentiment = { byPlayer: {} };
+	for (const r of versusRows) {
+		(outletSentiment.byPlayer[r.player] ??= {})[r.outlet] = { n: +r.n, mean: +r.mean };
+	}
 
 	let { metric = "tone", minHeadlines = 8 } = $props();
 
