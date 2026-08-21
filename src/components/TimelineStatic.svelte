@@ -90,13 +90,11 @@
 						onmouseleave={hideTooltip} />
 				{/if}
 
-				{#if name !== "timeline-griner"}
-					<rect {x} {width} fill="var(--color-cream)"
-						y={plotHeight - barHeight(month.articles)} height={barHeight(month.articles)}
-						onmousemove={(e) => showTooltip(e, month, "WNBA", "var(--color-cream)",
-							month.articles, month.example)}
-						onmouseleave={hideTooltip} />
-				{/if}
+				<rect {x} {width} fill="var(--color-cream)"
+					y={plotHeight - barHeight(month.articles)} height={barHeight(month.articles)}
+					onmousemove={(e) => showTooltip(e, month, "WNBA", "var(--color-cream)",
+						month.articles, month.example)}
+					onmouseleave={hideTooltip} />
 
 				<!-- overlay, not a stack: an article can mention both players -->
 				{#each LAYERS as layer}
@@ -116,11 +114,10 @@
 
 			<g transform="translate(0,-14)" class="legend">
 				{#each [...(nba ? [{ label: "NBA", color: "var(--color-nba)" }] : []),
-					...(name !== "timeline-griner" ? [{ label: "WNBA", color: "var(--color-cream)", stroke: "rgba(42,21,3,0.25)" }] : []),
+					{ label: "WNBA", color: "var(--color-cream)", stroke: "rgba(42,21,3,0.25)" },
 					...LAYERS] as item, i}
 					{@const offset = mobile ? 8.6 : 6.8}
-					{@const x = [...(nba ? [{ label: "NBA" }] : []),
-						...(name !== "timeline-griner" ? [{ label: "WNBA" }] : []), ...LAYERS]
+					{@const x = [...(nba ? [{ label: "NBA" }] : []), { label: "WNBA" }, ...LAYERS]
 						.slice(0, i).reduce((sum, prev) => sum + 34 + prev.label.length * offset, 0)}
 					<rect {x} y="0" width="12" height="12" fill={item.color} stroke={item.stroke ?? "none"} />
 					<text x={x + 17} y="10">{item.label}</text>
