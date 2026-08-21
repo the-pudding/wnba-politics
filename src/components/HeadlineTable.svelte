@@ -5,11 +5,19 @@
 	//             chart: headline-table | words: Sophie Cunningham, Brittney Griner
 	import headlineRows from "$data/fox_player_headlines.csv";
 	import sentimentRows from "$data/headline_sentiment.csv";
+	import labelRows from "$data/labeled_headlines.csv";
 
 	const data = { rows: headlineRows.map((r) => ({
 		d: r.date, t: r.title, u: r.url,
 		p: r.players ? r.players.split("; ") : []
 	})) };
+	// which measures each headline triggered (from the player-framing notebook)
+	const FRAMES = ["political", "appearance", "celebrity", "victim"];
+	const FRAME_COLORS = { political: "var(--color-politics)", appearance: "var(--color-race)",
+		celebrity: "var(--color-lgbtq)", victim: "var(--color-fox)" };
+	const frames = Object.fromEntries(labelRows.map((r) => [r.headline, FRAMES.filter((f) => r[f])]));
+	const framesOf = (headline) => frames[headline] ?? [];
+
 	const sentiment = {
 		scores: Object.fromEntries(sentimentRows.map((r) => [r.headline, +r.score])),
 		labels: Object.fromEntries(sentimentRows.map((r) => [r.headline, r.label]))
@@ -36,6 +44,7 @@
 	let sortBy = $state("date");
 	let ascending = $state(true);
 	let mood = $state("all");
+	let frame = $state("all");
 	let shown = $state(PAGE);
 
 	const scoreOf = (headline) => sentiment.scores[headline];
@@ -55,13 +64,14 @@
 		}
 	}
 
-	const filtering = $derived(Boolean(search.trim() || activePlayers.length || mood !== "all"));
+	const filtering = $derived(Boolean(search.trim() || activePlayers.length || mood !== "all" || frame !== "all"));
 
 	let rows = $derived.by(() => {
 		const term = search.trim().toLowerCase();
 		const filtered = data.rows.filter((row) => {
 			if (activePlayers.length && !row.p.some((p) => activePlayers.includes(p))) return false;
 			if (mood !== "all" && labelOf(row.t) !== mood) return false;
+			if (frame !== "all" && !framesOf(row.t).includes(frame)) return false;
 			if (term && !row.t.toLowerCase().includes(term)
 				&& !row.p.some((p) => p.toLowerCase().includes(term))) return false;
 			return true;
@@ -83,7 +93,7 @@
 	});
 
 	$effect(() => {
-		search; activePlayers; sortBy; ascending; mood;
+		search; activePlayers; sortBy; ascending; mood; frame;
 		shown = PAGE;
 	});
 	let visibleRows = $derived(rows.slice(0, shown));
@@ -121,10 +131,11 @@
 		if (search.trim()) bits.push(`matching “${search.trim()}”`);
 		if (activePlayers.length) bits.push(`naming ${activePlayers.join(" or ")}`);
 		if (mood !== "all") bits.push(`scored ${mood}`);
+		if (frame !== "all") bits.push(`about ${frame === "victim" ? "victim framing" : frame === "political" ? "politics" : frame}`);
 		return `${rows.length.toLocaleString()} of ${total} headlines ${bits.join(", ")}.`;
 	});
 
-	const clearAll = () => { activePlayers = []; search = ""; mood = "all"; };
+	const clearAll = () => { activePlayers = []; search = ""; mood = "all"; frame = "all"; };
 </script>
 
 <section class="headline-browser">
@@ -148,6 +159,11 @@
 		<div class="toggle-group" role="group" aria-label="Filter by sentiment">
 			{#each ["all", "negative", "neutral", "positive"] as option}
 				<button class:active={mood === option} onclick={() => (mood = option)}>{option}</button>
+			{/each}
+		</div>
+		<div class="toggle-group" role="group" aria-label="Filter by what the headline is about">
+			{#each ["all", ...FRAMES] as option}
+				<button class:active={frame === option} onclick={() => (frame = option)}>{option}</button>
 			{/each}
 		</div>
 	</div>
@@ -179,6 +195,7 @@
 					</th>
 					<th class="col-head">Headline</th>
 					<th class="col-who">Names</th>
+					<th class="col-frame">About</th>
 					<th class="col-mood">
 						<button onclick={() => sortByColumn("sentiment")} class:sorted={sortBy === "sentiment"}>
 							Sentiment <span class="arrow">{sortBy === "sentiment" ? (ascending ? "↑" : "↓") : "↕"}</span>
@@ -205,6 +222,11 @@
 								</span>
 							{/each}
 						</td>
+						<td class="col-frame">
+							{#each framesOf(row.t) as f}
+								<span class="frame-tag" style="color:{FRAME_COLORS[f]}; border-color:{FRAME_COLORS[f]}">{f}</span>
+							{/each}
+						</td>
 						<td class="col-mood">
 							{#if score === undefined}
 								<span class="unscored">—</span>
@@ -222,7 +244,7 @@
 						</td>
 					</tr>
 				{:else}
-					<tr><td colspan="4" class="empty">
+					<tr><td colspan="5" class="empty">
 						Nothing matches those filters. <button class="link" onclick={clearAll}>Clear them</button>
 					</td></tr>
 				{/each}
@@ -370,6 +392,14 @@
 	.col-who { width: 128px; }
 	.col-mood { width: 108px; white-space: nowrap; }
 
+	.frame-tag {
+		display: inline-block;
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+		border: 1px solid; border-radius: 3px;
+		padding: 1px 5px; margin: 1px 3px 1px 0;
+		background: var(--color-paper);
+	}
 	.tag {
 		display: inline-block; margin: 0 4px 3px 0;
 		font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
