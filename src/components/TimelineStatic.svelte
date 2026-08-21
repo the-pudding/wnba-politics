@@ -82,12 +82,17 @@
 				{@const width = Math.max(1, barWidth - 3)}
 
 				{#if nba && month.month >= nbaMonthly.from}
+					{@const nbaH = barHeight(nbaCount[month.month] ?? 0)}
 					<rect class="nba-bar" x={x - 0.5} width={Math.max(1, barWidth - 1)}
-						y={plotHeight - barHeight(nbaCount[month.month] ?? 0)}
-						height={barHeight(nbaCount[month.month] ?? 0)}
-						onmousemove={(e) => showTooltip(e, month, "NBA", "var(--color-nba)",
-							nbaCount[month.month] ?? 0, nbaExample[month.month] ?? "")}
-						onmouseleave={hideTooltip} />
+						y={plotHeight - nbaH} height={nbaH} />
+					<!-- hover only where the black is actually visible above the WNBA bar -->
+					{#if nbaH > barHeight(month.articles)}
+						<rect fill="transparent" x={x - 0.5} width={Math.max(1, barWidth - 1)}
+							y={plotHeight - nbaH} height={nbaH - barHeight(month.articles)}
+							onmousemove={(e) => showTooltip(e, month, "NBA", "var(--color-nba)",
+								nbaCount[month.month] ?? 0, nbaExample[month.month] ?? "")}
+							onmouseleave={hideTooltip} />
+					{/if}
 				{/if}
 
 				<rect {x} {width} fill="var(--color-cream)"
@@ -142,7 +147,7 @@
 
 <style>
 	rect { transition: height 500ms ease, y 500ms ease, x 500ms ease, width 500ms ease; }
-	.nba-bar { fill: var(--color-nba); }
+	.nba-bar { fill: var(--color-nba); pointer-events: none; }
 
 	.timeline-chart { position: relative; width: 100%; margin: 6px auto 18px; }
 	svg { width: 100%; height: auto; }
