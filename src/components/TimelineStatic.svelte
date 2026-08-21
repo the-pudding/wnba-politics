@@ -53,23 +53,13 @@
 	// some stored sentences arrive already quoted; strip or the card opens ““
 	const unquote = (t) => t.replace(/^[\s"“”']+/, "").replace(/[\s"“”']+$/, "");
 
-	// one card per month: every visible category, each with its own example
+	// the segment under the pointer names itself: its category, count, example
 	let tooltip = $state(null);
-	function showTooltip(event, month) {
-		const rows = [];
-		if (nba && (nbaCount[month.month] ?? 0) > 0)
-			rows.push({ label: "NBA", color: "var(--color-nba)",
-				n: nbaCount[month.month], quote: nbaExample[month.month] ?? "" });
-		rows.push({ label: "WNBA", color: "var(--color-cream)",
-			n: month.articles, quote: month.example });
-		for (const layer of LAYERS)
-			if (month.counts[layer.key] > 0)
-				rows.push({ label: PLAYERS[layer.key], color: layer.color,
-					n: month.counts[layer.key], quote: month.headlines[layer.key] });
+	function showTooltip(event, month, label, color, n, quote) {
 		const box = event.currentTarget.closest(".timeline-chart").getBoundingClientRect();
-		tooltip = { month: monthLabel(month.month), rows,
+		tooltip = { month: monthLabel(month.month), label, color, n, quote,
 			x: event.clientX - box.left,
-			y: Math.min(Math.max(80, event.clientY - box.top), box.height - 80),
+			y: Math.min(Math.max(70, event.clientY - box.top), box.height - 70),
 			flip: event.clientX - box.left > box.width - 330 };
 	}
 	const hideTooltip = () => (tooltip = null);
@@ -94,23 +84,29 @@
 				{#if nba && month.month >= nbaMonthly.from}
 					<rect class="nba-bar" x={x - 0.5} width={Math.max(1, barWidth - 1)}
 						y={plotHeight - barHeight(nbaCount[month.month] ?? 0)}
-						height={barHeight(nbaCount[month.month] ?? 0)} />
+						height={barHeight(nbaCount[month.month] ?? 0)}
+						onmousemove={(e) => showTooltip(e, month, "NBA", "var(--color-nba)",
+							nbaCount[month.month] ?? 0, nbaExample[month.month] ?? "")}
+						onmouseleave={hideTooltip} />
 				{/if}
 
 				{#if name !== "timeline-griner"}
 					<rect {x} {width} fill="var(--color-cream)"
-						y={plotHeight - barHeight(month.articles)} height={barHeight(month.articles)} />
+						y={plotHeight - barHeight(month.articles)} height={barHeight(month.articles)}
+						onmousemove={(e) => showTooltip(e, month, "WNBA", "var(--color-cream)",
+							month.articles, month.example)}
+						onmouseleave={hideTooltip} />
 				{/if}
 
 				<!-- overlay, not a stack: an article can mention both players -->
 				{#each LAYERS as layer}
 					<rect {x} {width} fill={layer.color}
 						y={plotHeight - barHeight(month.counts[layer.key])}
-						height={barHeight(month.counts[layer.key])} />
+						height={barHeight(month.counts[layer.key])}
+						onmousemove={(e) => showTooltip(e, month, PLAYERS[layer.key], layer.color,
+							month.counts[layer.key], month.headlines[layer.key])}
+						onmouseleave={hideTooltip} />
 				{/each}
-
-				<rect class="hover" {x} width={Math.max(1, barWidth - 1)} y="0" height={plotHeight}
-					onmousemove={(e) => showTooltip(e, month)} onmouseleave={hideTooltip} />
 			{/each}
 
 			<line x1="0" x2={plotWidth} y1={plotHeight} y2={plotHeight} class="axis" />
@@ -134,16 +130,15 @@
 	</svg>
 
 	{#if tooltip}
-		<div class="tooltip" class:flip={tooltip.flip} style="left:{tooltip.x}px; top:{tooltip.y}px">
+		<div class="tooltip" class:flip={tooltip.flip}
+			style="left:{tooltip.x}px; top:{tooltip.y}px; border-left-color:{tooltip.color}">
 			<strong>{tooltip.month}</strong>
-			{#each tooltip.rows as row}
-				<div class="row">
-					<span class="dot" style="background:{row.color}"></span>
-					<span class="who">{row.label}</span>
-					<span class="n">{row.n.toLocaleString()} {row.n === 1 ? "article" : "articles"}</span>
-				</div>
-				{#if row.quote}<div class="example">“{unquote(row.quote)}”</div>{/if}
-			{/each}
+			<div class="row">
+				<span class="dot" style="background:{tooltip.color}"></span>
+				<span class="who">{tooltip.label}</span>
+				<span class="n">{tooltip.n.toLocaleString()} {tooltip.n === 1 ? "article" : "articles"}</span>
+			</div>
+			{#if tooltip.quote}<div class="example">“{unquote(tooltip.quote)}”</div>{/if}
 		</div>
 	{/if}
 </div>
@@ -151,7 +146,6 @@
 <style>
 	rect { transition: height 500ms ease, y 500ms ease, x 500ms ease, width 500ms ease; }
 	.nba-bar { fill: var(--color-nba); }
-	.hover { fill: transparent; }
 
 	.timeline-chart { position: relative; width: 100%; margin: 6px auto 18px; }
 	svg { width: 100%; height: auto; }
