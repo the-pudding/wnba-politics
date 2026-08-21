@@ -1,0 +1,91 @@
+group,term
+partisan,trump
+partisan,biden
+partisan,kamala
+partisan,harris
+partisan,maga
+partisan,republican
+partisan,democrat
+partisan,gop
+partisan,conservative
+partisan,liberal
+partisan,left-wing
+partisan,right-wing
+partisan,woke
+partisan,congress
+partisan,senator
+partisan,governor
+partisan,white house
+partisan,election
+partisan,administration
+partisan,attorney general
+partisan,politic
+womens_sports,women'?s sports
+womens_sports,girls'? sports
+womens_sports,female athlete
+womens_sports,biological (?:male|men|women|female)
+womens_sports,men (?:don'?t belong|in women)
+womens_sports,fairness in
+womens_sports,save women
+womens_sports,protect(?:ing)? (?:girls|women)
+womens_sports,title ix
+womens_sports,trans
+womens_sports,transgender
+womens_sports,gender
+activism,activis
+activism,protest
+activism,counterprotest
+activism,rally
+activism,rallies
+activism,boycott
+activism,movement
+activism,anthem
+activism,kneel
+activism,speak out
+activism,speaks out
+activism,takes a stand
+activism,puts? career on line
+activism,petition
+activism,march
+activism,police shooting
+activism,mass shooting
+activism,church shooting
+activism,shooting of
+activism,shooting victim
+activism,shooting death
+activism,(?:minneapolis|kenosha|border patrol|ice) shooting
+activism,shot (?:and killed|dead)
+activism,gun (?:control|laws|violence)
+race,\bracis
+race,\brace\b
+race,white privilege
+race,black lives
+race,\bblm\b
+race,racial
+race,\b(?:black|white) (?:wom[ae]n|player|athlete|star)
+lgbtq,lgbtq
+lgbtq,\bgay\b
+lgbtq,lesbian
+lgbtq,queer
+lgbtq,pride
+lgbtq,same-sex
+patriotism,patriot
+patriotism,american flag
+patriotism,god bless
+patriotism,christian
+patriotism,anti-american
+patriotism,un-?american
+combatants,riley gaines
+combatants,j\.?k\.? rowling
+combatants,jk rowling
+combatants,charlie kirk
+combatants,enes kanter
+combatants,dave portnoy
+combatants,clay travis
+combatants,jemele hill
+combatants,megan rapinoe
+combatants,sarah spain
+combatants,michele tafoya
+combatants,outkick
+combatants,media bias
+combatants,smear

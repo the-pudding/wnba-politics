@@ -1,12 +1,12 @@
 topic,method,outlet,year,articles,hits,griner_hits,lgbtq_hits
 polrace,body,Fox News,2019,43,3,1,0
 polrace,body,Fox News,2020,94,37,1,0
-polrace,body,Fox News,2021,145,16,2,0
-polrace,body,Fox News,2022,231,20,14,0
-polrace,body,Fox News,2023,109,21,18,0
-polrace,body,Fox News,2024,579,98,11,0
-polrace,body,Fox News,2025,451,85,4,0
-polrace,body,Fox News,2026,541,179,5,0
+polrace,body,Fox News,2021,161,17,2,0
+polrace,body,Fox News,2022,234,20,14,0
+polrace,body,Fox News,2023,116,22,18,0
+polrace,body,Fox News,2024,590,98,11,0
+polrace,body,Fox News,2025,457,85,4,0
+polrace,body,Fox News,2026,572,180,5,0
 polrace,body,Just Women's Sports,2020,62,15,2,0
 polrace,body,Just Women's Sports,2021,371,30,6,0
 polrace,body,Just Women's Sports,2022,779,37,9,0
@@ -40,12 +40,12 @@ polrace,body,Fox News (NBA),2025,1164,98,1,0
 polrace,body,Fox News (NBA),2026,887,119,2,0
 polrace,headline,Fox News,2019,43,0,0,0
 polrace,headline,Fox News,2020,94,10,0,0
-polrace,headline,Fox News,2021,145,3,0,0
-polrace,headline,Fox News,2022,231,3,1,0
-polrace,headline,Fox News,2023,109,4,3,0
-polrace,headline,Fox News,2024,579,23,2,0
-polrace,headline,Fox News,2025,451,12,0,0
-polrace,headline,Fox News,2026,541,29,0,0
+polrace,headline,Fox News,2021,161,3,0,0
+polrace,headline,Fox News,2022,234,3,1,0
+polrace,headline,Fox News,2023,116,4,3,0
+polrace,headline,Fox News,2024,590,23,2,0
+polrace,headline,Fox News,2025,457,12,0,0
+polrace,headline,Fox News,2026,572,29,0,0
 polrace,headline,Just Women's Sports,2020,62,1,0,0
 polrace,headline,Just Women's Sports,2021,371,1,0,0
 polrace,headline,Just Women's Sports,2022,779,2,0,0
@@ -103,12 +103,12 @@ polrace,headline,USA Today,2025,409,1,0,0
 polrace,headline,USA Today,2026,757,4,0,0
 lgbtq,body,Fox News,2019,43,0,0,0
 lgbtq,body,Fox News,2020,94,6,0,0
-lgbtq,body,Fox News,2021,145,1,0,0
-lgbtq,body,Fox News,2022,231,10,10,0
-lgbtq,body,Fox News,2023,109,13,7,0
-lgbtq,body,Fox News,2024,579,11,1,0
-lgbtq,body,Fox News,2025,451,10,1,0
-lgbtq,body,Fox News,2026,541,59,1,0
+lgbtq,body,Fox News,2021,161,1,0,0
+lgbtq,body,Fox News,2022,234,10,10,0
+lgbtq,body,Fox News,2023,116,13,7,0
+lgbtq,body,Fox News,2024,590,11,1,0
+lgbtq,body,Fox News,2025,457,10,1,0
+lgbtq,body,Fox News,2026,572,59,1,0
 lgbtq,body,Just Women's Sports,2020,62,3,1,0
 lgbtq,body,Just Women's Sports,2021,371,6,2,0
 lgbtq,body,Just Women's Sports,2022,779,14,5,0
@@ -142,12 +142,12 @@ lgbtq,body,Fox News (NBA),2025,1164,6,0,0
 lgbtq,body,Fox News (NBA),2026,887,20,0,0
 lgbtq,headline,Fox News,2019,43,0,0,0
 lgbtq,headline,Fox News,2020,94,0,0,0
-lgbtq,headline,Fox News,2021,145,0,0,0
-lgbtq,headline,Fox News,2022,231,0,0,0
-lgbtq,headline,Fox News,2023,109,1,0,0
-lgbtq,headline,Fox News,2024,579,1,0,0
-lgbtq,headline,Fox News,2025,451,0,0,0
-lgbtq,headline,Fox News,2026,541,2,0,0
+lgbtq,headline,Fox News,2021,161,0,0,0
+lgbtq,headline,Fox News,2022,234,0,0,0
+lgbtq,headline,Fox News,2023,116,1,0,0
+lgbtq,headline,Fox News,2024,590,1,0,0
+lgbtq,headline,Fox News,2025,457,0,0,0
+lgbtq,headline,Fox News,2026,572,2,0,0
 lgbtq,headline,Just Women's Sports,2020,62,0,0,0
 lgbtq,headline,Just Women's Sports,2021,371,1,0,0
 lgbtq,headline,Just Women's Sports,2022,779,0,0,0
@@ -205,12 +205,12 @@ lgbtq,headline,USA Today,2025,409,0,0,0
 lgbtq,headline,USA Today,2026,757,0,0,0
 all,body,Fox News,2019,43,3,1,0
 all,body,Fox News,2020,94,39,1,6
-all,body,Fox News,2021,145,17,2,1
-all,body,Fox News,2022,231,27,21,0
-all,body,Fox News,2023,109,29,21,6
-all,body,Fox News,2024,579,100,11,10
-all,body,Fox News,2025,451,90,5,9
-all,body,Fox News,2026,541,196,5,58
+all,body,Fox News,2021,161,18,2,1
+all,body,Fox News,2022,234,27,21,0
+all,body,Fox News,2023,116,30,21,6
+all,body,Fox News,2024,590,100,11,10
+all,body,Fox News,2025,457,90,5,9
+all,body,Fox News,2026,572,197,5,58
 all,body,Just Women's Sports,2020,62,15,2,2
 all,body,Just Women's Sports,2021,371,31,6,4
 all,body,Just Women's Sports,2022,779,45,12,9
@@ -244,12 +244,12 @@ all,body,Fox News (NBA),2025,1164,102,1,6
 all,body,Fox News (NBA),2026,887,131,2,20
 all,headline,Fox News,2019,43,0,0,0
 all,headline,Fox News,2020,94,10,0,0
-all,headline,Fox News,2021,145,3,0,0
-all,headline,Fox News,2022,231,3,1,0
-all,headline,Fox News,2023,109,5,3,1
-all,headline,Fox News,2024,579,24,2,1
-all,headline,Fox News,2025,451,12,0,0
-all,headline,Fox News,2026,541,31,0,2
+all,headline,Fox News,2021,161,3,0,0
+all,headline,Fox News,2022,234,3,1,0
+all,headline,Fox News,2023,116,5,3,1
+all,headline,Fox News,2024,590,24,2,1
+all,headline,Fox News,2025,457,12,0,0
+all,headline,Fox News,2026,572,31,0,2
 all,headline,Just Women's Sports,2020,62,1,0,0
 all,headline,Just Women's Sports,2021,371,2,0,1
 all,headline,Just Women's Sports,2022,779,2,0,0

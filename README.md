@@ -48,6 +48,17 @@ Notebook 06 concatenates all of these into `all_outlets_full.csv` (\~170MB, giti
 4.  **04-player-framing** — politicization, appearance & celebrity treatment, etc.
 5.  **05-headline-sentiment** — every headline scored by RoBERTa sentiment analysis
 6.  **06-full-corpus-csv** — builds `data/all_outlets_full.csv`, the one-file corpus for Google Drive
+7.  **07-fox-timeline** — the monthly Fox WNBA timeline with topic and player layers, the NBA backdrop, and the trans-article list
+8.  **08-outlet-topics** — race/politics and LGBTQ rates per outlet per year, and the who-gets-covered dot plot
+9.  **09-fightin-words-grid** — the full fightin-words grids (headlines and article text, per outlet and per player) with example lookups
+10. **10-headline-networks** — who Fox names together, in headlines and in articles; the cast of tracked people is an editable table at the top
+11. **11-chyrons** — the cable-chyron analysis: monthly mentions per network, the ternary word-shares, and per-player word associations
+12. **12-player-words** — what each player does vs. what is done to her, in Fox's sentences vs. everyone else's
+
+Notebooks 7–12 regenerate the chart data in `src/data/` from the corpora in
+`data/` — the site's numbers can be reproduced (and edited) entirely from this
+repo. The topic vocabularies are plain term lists in `data/topic_terms.csv`
+and `data/politicization_terms.csv`: one term per row, rows are OR-ed together.
 
 ``` bash
 pip install pandas jupyter

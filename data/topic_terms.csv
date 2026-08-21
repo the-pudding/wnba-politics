@@ -1,0 +1,37 @@
+topic,term
+transgender / trans,transgender
+transgender / trans,trans athlete
+transgender / trans,trans player
+transgender / trans,trans wom[ae]n
+transgender / trans,trans rights
+transgender / trans,gender eligib
+transgender / trans,biological (?:male|man|men|wom[ae]n|female)
+race / racism,racis
+race / racism,white privilege
+race / racism,racial
+race / racism,\b(?:black|white) (?:wom[ae]n|player|players|athlete|athletes|star|stars|community)\b
+politics / protest,social justice
+politics / protest,black lives matter
+politics / protest,\bblm\b
+politics / protest,\banthem\b
+politics / protest,protest
+politics / protest,kneel
+politics / protest,boycott
+politics / protest,police shooting
+politics / protest,shooting of
+politics / protest,\belection\b
+politics / protest,indictment
+LGBTQ / sexuality,lgbtq?\b
+LGBTQ / sexuality,lesbian
+LGBTQ / sexuality,\bgay\b
+LGBTQ / sexuality,\bqueer\b
+LGBTQ / sexuality,sexual orientation
+LGBTQ / sexuality,openly gay
+LGBTQ / sexuality,same-sex
+LGBTQ / sexuality,athlete ally
+LGBTQ / sexuality,pride night
+LGBTQ / sexuality,pride month
+LGBTQ / sexuality,bisexual
+LGBTQ / sexuality,non-?binary
+“woke”,\bwoke\b(?!\s+up\b)
+Trump,\btrump\b
