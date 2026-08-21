@@ -34,7 +34,6 @@
 		"Natasha Cloud": "#1f9d6e"
 	};
 	const OTHER_COLOR = "#8a6d3b";
-	const PAGE = 60;
 	const MAX_TAGS = 3;
 
 	const players = words.length ? words : Object.keys(PLAYER_COLORS);
@@ -45,7 +44,6 @@
 	let ascending = $state(true);
 	let mood = $state("all");
 	let frame = $state("all");
-	let shown = $state(PAGE);
 
 	const scoreOf = (headline) => sentiment.scores[headline];
 	const labelOf = (headline) => sentiment.labels[headline] ?? "unscored";
@@ -92,11 +90,7 @@
 		return [...sorted, ...leftovers];
 	});
 
-	$effect(() => {
-		search; activePlayers; sortBy; ascending; mood; frame;
-		shown = PAGE;
-	});
-	let visibleRows = $derived(rows.slice(0, shown));
+
 
 	function visibleTags(row) {
 		const rank = (name) => (activePlayers.includes(name) ? 0 : players.includes(name) ? 1 : 2);
@@ -195,7 +189,7 @@
 					</th>
 					<th class="col-head">Headline</th>
 					<th class="col-who">Names</th>
-					<th class="col-frame">About</th>
+					<th class="col-frame">Framing</th>
 					<th class="col-mood">
 						<button onclick={() => sortByColumn("sentiment")} class:sorted={sortBy === "sentiment"}>
 							Sentiment <span class="arrow">{sortBy === "sentiment" ? (ascending ? "↑" : "↓") : "↕"}</span>
@@ -204,7 +198,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each visibleRows as row (row.d + row.t)}
+				{#each rows as row (row.d + row.t)}
 					{@const score = scoreOf(row.t)}
 					<tr>
 						<td class="col-date">{prettyDate(row.d)}</td>
@@ -251,12 +245,6 @@
 			</tbody>
 		</table>
 
-		{#if rows.length > shown}
-			<button class="more" onclick={() => (shown += PAGE)}>
-				Show {Math.min(PAGE, rows.length - shown).toLocaleString()} more
-				<span>({(rows.length - shown).toLocaleString()} left)</span>
-			</button>
-		{/if}
 	</div>
 
 	<p class="chart-caption">
