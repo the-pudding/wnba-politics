@@ -9,6 +9,7 @@ appearance,noun,swimsuit
 appearance,noun,lingerie
 appearance,noun,photoshoot
 appearance,noun,clothes
+appearance,noun,naked
 appearance,verb,wear
 appearance,verb,wears
 appearance,verb,wearing
@@ -224,3 +225,5 @@ victim,by_her_verb,hits?
 victim,by_her_verb,targets?
 victim,by_her_verb,hacks?
 victim,by_her_verb,jabs?
+appearance,adjective,naked
+appearance,prefilter,naked

@@ -87,9 +87,14 @@ def words_under(tokens):
 
 
 def attribute(nlp, headlines, groups, register):
-    """{player: [headline rows]} each qualifying headline is grammatically about."""
-    nouns = term_set(register, "noun")
-    verbs = term_set(register, "verb")
+    """{player: [headline rows]} each qualifying headline is grammatically about.
+
+    Any word row in framing_terms.csv counts as a trigger, whatever its kind
+    (noun, verb, adjective...). To add a word, add it twice: once with its part
+    of speech, and once as a `prefilter` row — the prefilter decides which
+    headlines are worth parsing, so without it the word is never seen."""
+    trigger_words = set().union(*[terms for (reg, kind), terms in TERMS.items()
+                                  if reg == register and kind not in ("prefilter", "scrub")])
     prefilter = rx(register, "prefilter")
     scrub = scrub_rx(register)
     text_for = (lambda r: scrub.sub(" ", r["t"])) if scrub else (lambda r: r["t"])
@@ -99,7 +104,7 @@ def attribute(nlp, headlines, groups, register):
         owners_found, pronoun_at = set(), None
         for token in doc:
             word = token.text.lower().strip(",'’s")
-            if word not in nouns and word not in verbs:
+            if word not in trigger_words:
                 continue
             owned = words_under(owner_tokens(token, doc))
             for name in groups:
