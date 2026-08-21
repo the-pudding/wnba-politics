@@ -91,6 +91,13 @@ def clean(text):
     return re.sub(r"['’]s$", "", text.lower()).strip(",'’\"")
 
 
+def leans_on_name(token):
+    """ "husband Darren Waller": the noun modifies a proper name, so the
+    possessor is implied — the sentence's subject owns it."""
+    return token.head.pos_ == "PROPN" or any(
+        c.pos_ == "PROPN" and c.dep_ in ("appos", "flat", "compound") for c in token.children)
+
+
 def words_under(tokens):
     return {clean(sub.text) for t in tokens for sub in t.subtree}
 
@@ -128,9 +135,18 @@ def attribute(nlp, headlines, groups, register):
             if hit is None:
                 continue
             owned = words_under(owner_tokens(hit, doc))
+            direct = False
             for name in groups:
                 if name.split()[-1].lower() in owned:
                     owners_found.add(name)
+                    direct = True
+            if not direct and leans_on_name(hit):
+                root = next((t for t in doc if t.dep_ == "ROOT"), None)
+                if root is not None:
+                    subject_words = words_under([c for c in root.children if c.dep_ in SUBJECT_DEPS])
+                    for name in groups:
+                        if name.split()[-1].lower() in subject_words:
+                            owners_found.add(name)
             if owned & PRONOUNS:
                 pronoun_at = min(pronoun_at, hit.idx) if pronoun_at is not None else hit.idx
         if not owners_found and pronoun_at is not None:
