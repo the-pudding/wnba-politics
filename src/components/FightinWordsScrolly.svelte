@@ -1,9 +1,9 @@
 <script>
 	// The Fightin' Words scatter walked through: the plot holds still and each
 	// beat calls out one set of words, everything else receding.
-	// Doc embed:  chart: word-quadrant-scrolly | steps: wordSteps
+	// Doc embed:  chart: fightin-words-scrolly | steps: wordSteps
 	import Scrolly from "$components/helpers/Scrolly.svelte";
-	import WordQuadrant from "$components/WordQuadrant.svelte";
+	import FightinWords from "$components/FightinWords.svelte";
 
 	let { steps = null } = $props();
 
@@ -41,10 +41,10 @@
 	let current = $derived(STEPS[Math.min(index ?? 0, STEPS.length - 1)] ?? STEPS[0]);
 </script>
 
-<section class="wq-scrolly">
+<section class="fw-scrolly">
 	<div class="sticky">
 		<!-- articles, not headlines: headline counts are too sparse for these words -->
-		<WordQuadrant highlight={current.words} bare controls={current.explore} mode="articles" />
+		<FightinWords highlight={current.words} bare controls={current.explore} mode="articles" />
 	</div>
 
 	<div class="steps">
@@ -61,14 +61,14 @@
 </section>
 
 <style>
-	.wq-scrolly { position: relative; margin: 24px 0; }
+	.fw-scrolly { position: relative; margin: 24px 0; }
 
 	.sticky {
 		position: sticky; top: 0; height: 100vh;
 		display: flex; align-items: center; justify-content: center;
 	}
 	/* flex item shrinks to its content without this */
-	.sticky :global(.word-quadrant) { width: min(1000px, 94vw); }
+	.sticky :global(.fightin-words) { width: min(1000px, 94vw); }
 	/* leaves room for the controls the explore beat brings back */
 	.sticky :global(svg) { max-height: 74vh; }
 

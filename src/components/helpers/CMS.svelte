@@ -8,7 +8,7 @@
 	let { body = [], components = {} } = $props();
 
 	// scrollytelling charts take the full viewport width
-	const FULL_BLEED = new Set(["network-story", "word-quadrant-scrolly", "ternary-scrolly",
+	const FULL_BLEED = new Set(["network-story", "fightin-words-scrolly", "ternary-scrolly",
 		"outlet-gap-scrolly", "timeline-scrolly", "player-words-scrolly"]);
 	// these draw their own title and caption
 	const SELF_CAPTIONED = new Set(["timeline-scrolly", "headline-table"]);

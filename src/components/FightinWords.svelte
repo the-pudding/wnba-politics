@@ -1,7 +1,7 @@
 <script>
 	// Fightin' Words plot (Monroe, Colaresi & Quinn): word frequency on a log x,
 	// weighted log-odds z-score on y — Fox above zero, the other outlet below.
-	// Doc embed:  chart: word-quadrant
+	// Doc embed:  chart: fightin-words
 	import { scaleLinear, scaleLog, scaleSqrt } from "d3-scale";
 	import { base } from "$app/paths";
 	import data from "$data/fighting_words_grid.json";
@@ -142,7 +142,7 @@
 	function showTip(event, point) {
 		hovered = point.word;
 		if (!source) ensureExamples();
-		const box = event.currentTarget.closest(".word-quadrant")?.getBoundingClientRect();
+		const box = event.currentTarget.closest(".fightin-words")?.getBoundingClientRect();
 		tip = { ...point, px: xScale(point.n), py: yScale(point.z),
 			cx: box ? event.clientX - box.left : 0,
 			cy: box ? event.clientY - box.top : 0,
@@ -208,7 +208,7 @@
 
 <svelte:window bind:innerWidth={viewportWidth} />
 
-<div class="word-quadrant" class:bare class:mobile class:big={!!source}>
+<div class="fightin-words" class:bare class:mobile class:big={!!source}>
 	{#if !source}
 	<div class="controls">
 		<span class="label">Fox News compared with</span>
@@ -361,7 +361,7 @@
 </div>
 
 <style>
-	.word-quadrant { max-width: 900px; margin: 0 auto; position: relative; }
+	.fightin-words { max-width: 900px; margin: 0 auto; position: relative; }
 	.tip-card {
 		position: absolute; z-index: 8; pointer-events: none;
 		width: 320px; transform: translate(14px, -50%);
@@ -388,9 +388,9 @@
 	.tip-card p {
 		margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--color-ink);
 	}
-	.word-quadrant.bare .note,
-	.word-quadrant.bare .sample { display: none; }
-	.word-quadrant .controls[hidden] { display: none; }
+	.fightin-words.bare .note,
+	.fightin-words.bare .sample { display: none; }
+	.fightin-words .controls[hidden] { display: none; }
 
 	.controls { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
 	.label { font-size: 13px; color: var(--color-ink); }

@@ -4,7 +4,7 @@
 	// Doc embed:  chart: player-words-scrolly | steps: wordPlaySteps
 	// Each step takes: who, rel, vs, pair, words, text
 	import Scrolly from "$components/helpers/Scrolly.svelte";
-	import WordQuadrant from "$components/WordQuadrant.svelte";
+	import FightinWords from "$components/FightinWords.svelte";
 	import { playerWordsSource } from "../utils/playerWords.js";
 	import { base } from "$app/paths";
 	import faceFiles from "$data/net_faces.json";
@@ -79,7 +79,7 @@
 					{/if}
 				</p>
 			</div>
-			<WordQuadrant {source} highlight={current.words} bare controls={false} />
+			<FightinWords {source} highlight={current.words} bare controls={false} />
 		{:else}
 			<p class="heading">No comparison stored for {current.who} · {current.rel}</p>
 		{/if}
@@ -103,7 +103,7 @@
 		position: sticky; top: 0; height: 100vh;
 		display: flex; flex-direction: column; align-items: center; justify-content: center;
 	}
-	.sticky :global(.word-quadrant) { width: min(900px, 96vw); }
+	.sticky :global(.fightin-words) { width: min(900px, 96vw); }
 	.who {
 		display: flex; align-items: center; justify-content: center; gap: 12px;
 		margin-bottom: 4px;

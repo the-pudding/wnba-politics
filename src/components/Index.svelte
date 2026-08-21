@@ -9,7 +9,7 @@
 	import NgramChart from "$components/NgramChart.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
 	import TernaryScrolly from "$components/TernaryScrolly.svelte";
-	import WordQuadrantScrolly from "$components/WordQuadrantScrolly.svelte";
+	import FightinWordsScrolly from "$components/FightinWordsScrolly.svelte";
 	import OutletGapScrolly from "$components/OutletGapScrolly.svelte";
 	import PlayerWordsScrolly from "$components/PlayerWordsScrolly.svelte";
 	import NetworkScrolly from "$components/NetworkScrolly.svelte";
@@ -30,7 +30,8 @@
 		ngram: NgramChart,
 		"ternary-static": TernaryStatic,
 		"ternary-scrolly": TernaryScrolly,
-		"word-quadrant-scrolly": WordQuadrantScrolly,
+		"fightin-words-scrolly": FightinWordsScrolly,
+		"word-quadrant-scrolly": FightinWordsScrolly, // old Doc name, drop after the Doc updates
 		"outlet-gap-scrolly": OutletGapScrolly,
 		"player-words-scrolly": PlayerWordsScrolly,
 		"network-story": NetworkScrolly,
