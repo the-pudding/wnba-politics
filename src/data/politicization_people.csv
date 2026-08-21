@@ -1,46 +1,46 @@
-name,group,n,political,share,top_groups,example
-Megan Rapinoe,media,14,14,1.0,combatants; womens_sports; partisan,"Megan Rapinoe, Sue Bird announce engagement"
-Megan Rapinoe,media,14,14,1.0,combatants; womens_sports; partisan,"Sue Bird, Megan Rapinoe attempt to dial up support for Democrats before Election Day"
-Megan Rapinoe,media,14,14,1.0,combatants; womens_sports; partisan,Megan Rapinoe honors Brittney Griner with embroidered 'BG' on suit at Presidential Medal of Freedom ceremony
-Natasha Cloud,players,18,8,0.4444,combatants; race; activism,Enes Kanter Freedom swats Natasha Cloud's 'trash' US take: 'You don’t wanna see the other side'
-Natasha Cloud,players,18,8,0.4444,combatants; race; activism,Enes Kanter Freedom's Twitter tussle with Natasha Cloud continues with latest US take: 'It's far from trash'
-Natasha Cloud,players,18,8,0.4444,combatants; race; activism,Natasha Cloud hits back at Enes Kanter Freedom: 'You have no idea what it means to walk my journey'
-DiJonai Carrington,players,31,10,0.3226,race; activism,Sophie Cunningham speaks out against DiJonai Carrington after flagrant foul and 'White privilege' post
-DiJonai Carrington,players,31,10,0.3226,race; activism,WNBA faces discipline dilemma after Carrington's 'White privilege' post targeting Indiana Fever
-DiJonai Carrington,players,31,10,0.3226,race; activism,DiJonai Carrington declares 'White privilege' after ejection for smacking Sophie Cunningham in the face
-Sophie Cunningham,players,144,43,0.2986,womens_sports; activism; combatants,Sophie Cunningham piques interest of pro wrestling promotion: 'She takes down the competition'
-Sophie Cunningham,players,144,43,0.2986,womens_sports; activism; combatants,Fever's Sophie Cunningham slams critics who question teammate Caitlin Clark's WNBA impact: 'Literally dumb'
-Sophie Cunningham,players,144,43,0.2986,womens_sports; activism; combatants,WNBA star Sophie Cunningham sends prayers to victims of 'pure evil' Minneapolis shooting
-Donald Trump,politics,20,5,0.25,partisan; womens_sports; combatants,Trump slams Democrats' war on women's sports in CPAC speech
-Donald Trump,politics,20,5,0.25,partisan; womens_sports; combatants,Trump praises Caitlin Clark while talking pay equity in women's sports: 'She’s unbelievable'
-Donald Trump,politics,20,5,0.25,partisan; womens_sports; combatants,"Riley Gaines tears into WNBA star, who gave Caitlin Clark black eye, for wearing anti-Trump shirt"
-Sue Bird,players,39,9,0.2308,combatants; partisan; activism,"Megan Rapinoe, Sue Bird announce engagement"
-Sue Bird,players,39,9,0.2308,combatants; partisan; activism,"Sue Bird, Megan Rapinoe attempt to dial up support for Democrats before Election Day"
-Sue Bird,players,39,9,0.2308,combatants; partisan; activism,"Sue Bird, WNBA colleagues to stay on court for anthem at Olympics: 'I don't feel like a hypocrite in any way'"
-Stephen A. Smith,media,17,2,0.1176,race; womens_sports,"ESPN's Stephen A Smith says some WNBA players jealous of Caitlin Clark, suggests race is component"
-Stephen A. Smith,media,17,2,0.1176,race; womens_sports,ESPN's Stephen A Smith says Lynx coach Cheryl Reeve hurt WNBA with trans shirt controversy
-Paige Bueckers,players,68,8,0.1176,race; activism; patriotism,UConn star Paige Bueckers honors Black women with incredible speech at awards show
-Paige Bueckers,players,68,8,0.1176,race; activism; patriotism,March Madness 2022: Paige Bueckers starts as UConn rolls past Mercer
-Paige Bueckers,players,68,8,0.1176,race; activism; patriotism,UConn star Paige Bueckers says embracing Christianity is becoming more common in women's basketball
-Angel Reese,players,237,25,0.1055,race; activism; combatants,"Bob Costas talks Caitlin Clark, Angel Reese and race in the WNBA"
-Angel Reese,players,237,25,0.1055,race; activism; combatants,"Caitlin Clark, Angel Reese being used in 'race war,' former NFL star says"
-Angel Reese,players,237,25,0.1055,race; activism; combatants,Sky's Angel Reese sinks half-court shot in friendly competition at WNBA All-Star practice
-Caitlin Clark,players,821,81,0.0987,race; combatants; womens_sports,WNBA great says 'Black people can't be racist' as she pushes back on criticism over Caitlin Clark remarks
-Caitlin Clark,players,821,81,0.0987,race; combatants; womens_sports,Biden calls for female athletes to get 'paid what they deserve' as Caitlin Clark's WNBA salary sparks debate
-Caitlin Clark,players,821,81,0.0987,race; combatants; womens_sports,OutKick's Dan Dakich sounds off on columnist's discipline after odd Caitlin Clark interactions
-Brittney Griner,players,175,17,0.0971,activism; womens_sports; combatants,Megan Rapinoe honors Brittney Griner with embroidered 'BG' on suit at Presidential Medal of Freedom ceremony
-Brittney Griner,players,175,17,0.0971,activism; womens_sports; combatants,Megan Rapinoe leads call at ESPYS for Brittney Griner's return; Russia says US must respect law
-Brittney Griner,players,175,17,0.0971,activism; womens_sports; combatants,Brittney Griner reveals translation issue during her February arrest
-Aliyah Boston,players,23,2,0.087,activism,"March Madness 2022: Aliyah Boston, South Carolina top North Carolina 69-61 in Sweet 16"
-Aliyah Boston,players,23,2,0.087,activism,"March Madness 2022: Aliyah Boston, Gamecocks carry relentless push into Final Four"
-Joe Biden,politics,32,2,0.0625,partisan; activism; womens_sports,Biden praises WNBA champs for social justice activism
-Joe Biden,politics,32,2,0.0625,partisan; activism; womens_sports,Biden calls for female athletes to get 'paid what they deserve' as Caitlin Clark's WNBA salary sparks debate
-LeBron James,media,21,1,0.0476,partisan; womens_sports,Trump's remarks on recruiting LeBron James to women's basketball resurface amid WNBA trans athlete debate
-Breanna Stewart,players,23,1,0.0435,lgbtq,Olympic gold medalist Breanna Stewart reflects on 'pride and passion' shown by Team USA in Milan
-Alyssa Thomas,players,23,1,0.0435,race,Sun star Alyssa Thomas rips Fever fans over alleged racism after eliminating Indiana from WNBA playoffs
-Sabrina Ionescu,players,24,1,0.0417,womens_sports,"NBA broadcaster pushes back on criticism over Sabrina Ionescu remarks, says it has nothing to do about gender"
-A'ja Wilson,players,45,1,0.0222,womens_sports,Sophie Cunningham and West Wilson split on transgender athletes in girls' sports despite podcast partnership
-Napheesa Collier,players,13,0,0.0,,
-Diana Taurasi,players,21,0,0.0,,
-Kamala Harris,politics,12,0,0.0,,
-Kelsey Plum,players,20,0,0.0,,
+name,group,n,political,share,top_groups,matched_words,example
+Megan Rapinoe,media,14,14,1.0,combatants; womens_sports; partisan,megan rapinoe; women's sports; democrats; election; trans; racist; queer; riley gaines,"Megan Rapinoe, Sue Bird announce engagement"
+Megan Rapinoe,media,14,14,1.0,combatants; womens_sports; partisan,megan rapinoe; women's sports; democrats; election; trans; racist; queer; riley gaines,"Sue Bird, Megan Rapinoe attempt to dial up support for Democrats before Election Day"
+Megan Rapinoe,media,14,14,1.0,combatants; womens_sports; partisan,megan rapinoe; women's sports; democrats; election; trans; racist; queer; riley gaines,Megan Rapinoe honors Brittney Griner with embroidered 'BG' on suit at Presidential Medal of Freedom ceremony
+Natasha Cloud,players,18,8,0.4444,combatants; race; activism,enes kanter; charlie kirk; racism; race; gun laws; activism,Enes Kanter Freedom swats Natasha Cloud's 'trash' US take: 'You don’t wanna see the other side'
+Natasha Cloud,players,18,8,0.4444,combatants; race; activism,enes kanter; charlie kirk; racism; race; gun laws; activism,Enes Kanter Freedom's Twitter tussle with Natasha Cloud continues with latest US take: 'It's far from trash'
+Natasha Cloud,players,18,8,0.4444,combatants; race; activism,enes kanter; charlie kirk; racism; race; gun laws; activism,Natasha Cloud hits back at Enes Kanter Freedom: 'You have no idea what it means to walk my journey'
+DiJonai Carrington,players,31,10,0.3226,race; activism,white privilege; speaks out,Sophie Cunningham speaks out against DiJonai Carrington after flagrant foul and 'White privilege' post
+DiJonai Carrington,players,31,10,0.3226,race; activism,white privilege; speaks out,WNBA faces discipline dilemma after Carrington's 'White privilege' post targeting Indiana Fever
+DiJonai Carrington,players,31,10,0.3226,race; activism,white privilege; speaks out,DiJonai Carrington declares 'White privilege' after ejection for smacking Sophie Cunningham in the face
+Sophie Cunningham,players,144,43,0.2986,womens_sports; activism; combatants,women's sports; trans; transgender; rally; speaks out; white privilege; jemele hill; girls sports; save women; activists; counterprotest; jk rowling; riley gaines; activism; counterprotesters; competition; literally; minneapolis shooting; protest; protect girls; gender; biological men; protecting girls; protect women; outkick; white house; protecting women; men don't belong; female athletes; girls' sports; puts career on line; gop; senator; fairness in; speak out; rallies; movement; left-wing; sarah spain; smear; michele tafoya; title ix; megan rapinoe; protesters,Sophie Cunningham piques interest of pro wrestling promotion: 'She takes down the competition'
+Sophie Cunningham,players,144,43,0.2986,womens_sports; activism; combatants,women's sports; trans; transgender; rally; speaks out; white privilege; jemele hill; girls sports; save women; activists; counterprotest; jk rowling; riley gaines; activism; counterprotesters; competition; literally; minneapolis shooting; protest; protect girls; gender; biological men; protecting girls; protect women; outkick; white house; protecting women; men don't belong; female athletes; girls' sports; puts career on line; gop; senator; fairness in; speak out; rallies; movement; left-wing; sarah spain; smear; michele tafoya; title ix; megan rapinoe; protesters,Fever's Sophie Cunningham slams critics who question teammate Caitlin Clark's WNBA impact: 'Literally dumb'
+Sophie Cunningham,players,144,43,0.2986,womens_sports; activism; combatants,women's sports; trans; transgender; rally; speaks out; white privilege; jemele hill; girls sports; save women; activists; counterprotest; jk rowling; riley gaines; activism; counterprotesters; competition; literally; minneapolis shooting; protest; protect girls; gender; biological men; protecting girls; protect women; outkick; white house; protecting women; men don't belong; female athletes; girls' sports; puts career on line; gop; senator; fairness in; speak out; rallies; movement; left-wing; sarah spain; smear; michele tafoya; title ix; megan rapinoe; protesters,WNBA star Sophie Cunningham sends prayers to victims of 'pure evil' Minneapolis shooting
+Donald Trump,politics,20,5,0.25,partisan; womens_sports; combatants,trump; women's sports; trans; democrats; riley gaines,Trump slams Democrats' war on women's sports in CPAC speech
+Donald Trump,politics,20,5,0.25,partisan; womens_sports; combatants,trump; women's sports; trans; democrats; riley gaines,Trump praises Caitlin Clark while talking pay equity in women's sports: 'She’s unbelievable'
+Donald Trump,politics,20,5,0.25,partisan; womens_sports; combatants,trump; women's sports; trans; democrats; riley gaines,"Riley Gaines tears into WNBA star, who gave Caitlin Clark black eye, for wearing anti-Trump shirt"
+Sue Bird,players,39,9,0.2308,combatants; partisan; activism,megan rapinoe; democrats; election; anthem; racist; women's sports; protect women,"Megan Rapinoe, Sue Bird announce engagement"
+Sue Bird,players,39,9,0.2308,combatants; partisan; activism,megan rapinoe; democrats; election; anthem; racist; women's sports; protect women,"Sue Bird, Megan Rapinoe attempt to dial up support for Democrats before Election Day"
+Sue Bird,players,39,9,0.2308,combatants; partisan; activism,megan rapinoe; democrats; election; anthem; racist; women's sports; protect women,"Sue Bird, WNBA colleagues to stay on court for anthem at Olympics: 'I don't feel like a hypocrite in any way'"
+Stephen A. Smith,media,17,2,0.1176,race; womens_sports,race; trans,"ESPN's Stephen A Smith says some WNBA players jealous of Caitlin Clark, suggests race is component"
+Stephen A. Smith,media,17,2,0.1176,race; womens_sports,race; trans,ESPN's Stephen A Smith says Lynx coach Cheryl Reeve hurt WNBA with trans shirt controversy
+Paige Bueckers,players,68,8,0.1176,race; activism; patriotism,black women; march; christianity; racial; white privilege; church shooting; gun control,UConn star Paige Bueckers honors Black women with incredible speech at awards show
+Paige Bueckers,players,68,8,0.1176,race; activism; patriotism,black women; march; christianity; racial; white privilege; church shooting; gun control,March Madness 2022: Paige Bueckers starts as UConn rolls past Mercer
+Paige Bueckers,players,68,8,0.1176,race; activism; patriotism,black women; march; christianity; racial; white privilege; church shooting; gun control,UConn star Paige Bueckers says embracing Christianity is becoming more common in women's basketball
+Angel Reese,players,237,25,0.1055,race; activism; combatants,race; speaks out; racism; dave portnoy; racist; competition; women's sports; racial; jemele hill; border patrol shooting; megan rapinoe; anthem,"Bob Costas talks Caitlin Clark, Angel Reese and race in the WNBA"
+Angel Reese,players,237,25,0.1055,race; activism; combatants,race; speaks out; racism; dave portnoy; racist; competition; women's sports; racial; jemele hill; border patrol shooting; megan rapinoe; anthem,"Caitlin Clark, Angel Reese being used in 'race war,' former NFL star says"
+Angel Reese,players,237,25,0.1055,race; activism; combatants,race; speaks out; racism; dave portnoy; racist; competition; women's sports; racial; jemele hill; border patrol shooting; megan rapinoe; anthem,Sky's Angel Reese sinks half-court shot in friendly competition at WNBA All-Star practice
+Caitlin Clark,players,821,81,0.0987,race; combatants; womens_sports,race; racism; jemele hill; speaks out; transgender; racist; women's sports; white privilege; riley gaines; racial; pride; trump; black women; dave portnoy; title ix; smear; biden; female athletes; outkick; trans; right-wing; transformed; megan rapinoe; black players; transfers; transition; michele tafoya; literally; protest; competition; white athletes; sarah spain; racially; speak out; queer,WNBA great says 'Black people can't be racist' as she pushes back on criticism over Caitlin Clark remarks
+Caitlin Clark,players,821,81,0.0987,race; combatants; womens_sports,race; racism; jemele hill; speaks out; transgender; racist; women's sports; white privilege; riley gaines; racial; pride; trump; black women; dave portnoy; title ix; smear; biden; female athletes; outkick; trans; right-wing; transformed; megan rapinoe; black players; transfers; transition; michele tafoya; literally; protest; competition; white athletes; sarah spain; racially; speak out; queer,Biden calls for female athletes to get 'paid what they deserve' as Caitlin Clark's WNBA salary sparks debate
+Caitlin Clark,players,821,81,0.0987,race; combatants; womens_sports,race; racism; jemele hill; speaks out; transgender; racist; women's sports; white privilege; riley gaines; racial; pride; trump; black women; dave portnoy; title ix; smear; biden; female athletes; outkick; trans; right-wing; transformed; megan rapinoe; black players; transfers; transition; michele tafoya; literally; protest; competition; white athletes; sarah spain; racially; speak out; queer,OutKick's Dan Dakich sounds off on columnist's discipline after odd Caitlin Clark interactions
+Brittney Griner,players,175,17,0.0971,activism; womens_sports; combatants,transgender; anthem; megan rapinoe; transfer; translation; speaks out; transferred; riley gaines; activism; unpatriotic; kneeling; racial,Megan Rapinoe honors Brittney Griner with embroidered 'BG' on suit at Presidential Medal of Freedom ceremony
+Brittney Griner,players,175,17,0.0971,activism; womens_sports; combatants,transgender; anthem; megan rapinoe; transfer; translation; speaks out; transferred; riley gaines; activism; unpatriotic; kneeling; racial,Megan Rapinoe leads call at ESPYS for Brittney Griner's return; Russia says US must respect law
+Brittney Griner,players,175,17,0.0971,activism; womens_sports; combatants,transgender; anthem; megan rapinoe; transfer; translation; speaks out; transferred; riley gaines; activism; unpatriotic; kneeling; racial,Brittney Griner reveals translation issue during her February arrest
+Aliyah Boston,players,23,2,0.087,activism,march,"March Madness 2022: Aliyah Boston, South Carolina top North Carolina 69-61 in Sweet 16"
+Aliyah Boston,players,23,2,0.087,activism,march,"March Madness 2022: Aliyah Boston, Gamecocks carry relentless push into Final Four"
+Joe Biden,politics,32,2,0.0625,partisan; activism; womens_sports,biden; activism; female athletes,Biden praises WNBA champs for social justice activism
+Joe Biden,politics,32,2,0.0625,partisan; activism; womens_sports,biden; activism; female athletes,Biden calls for female athletes to get 'paid what they deserve' as Caitlin Clark's WNBA salary sparks debate
+LeBron James,media,21,1,0.0476,partisan; womens_sports,trump; trans,Trump's remarks on recruiting LeBron James to women's basketball resurface amid WNBA trans athlete debate
+Breanna Stewart,players,23,1,0.0435,lgbtq,pride,Olympic gold medalist Breanna Stewart reflects on 'pride and passion' shown by Team USA in Milan
+Alyssa Thomas,players,23,1,0.0435,race,racism,Sun star Alyssa Thomas rips Fever fans over alleged racism after eliminating Indiana from WNBA playoffs
+Sabrina Ionescu,players,24,1,0.0417,womens_sports,gender,"NBA broadcaster pushes back on criticism over Sabrina Ionescu remarks, says it has nothing to do about gender"
+A'ja Wilson,players,45,1,0.0222,womens_sports,transgender; girls' sports,Sophie Cunningham and West Wilson split on transgender athletes in girls' sports despite podcast partnership
+Napheesa Collier,players,13,0,0.0,,,
+Diana Taurasi,players,21,0,0.0,,,
+Kamala Harris,politics,12,0,0.0,,,
+Kelsey Plum,players,20,0,0.0,,,
