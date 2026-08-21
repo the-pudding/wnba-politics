@@ -239,14 +239,14 @@
 				<div class="example harsh">{person.worst.headline}</div>
 				<div class="example warm">{person.best.headline}</div>
 			{:else if metric === "political"}
-				<div class="stat">{person.politicalN} of {person.count} headlines ({axis.format(person.political)})</div>
+				<div class="stat">{person.politicalN} of her {person.count} headlines are political ({axis.format(person.political)})</div>
 				{#if person.politicalExample}<div class="example">{person.politicalExample}</div>{/if}
 			{:else if metric === "appearance"}
-				<div class="stat">{person.appearanceN} of {person.count} headlines ({axis.format(person.appearance)})</div>
+				<div class="stat">{person.appearanceN} of her {person.count} headlines are about her looks ({axis.format(person.appearance)})</div>
 				{#if person.appearanceExample}<div class="example">{person.appearanceExample}</div>
 				{:else}<div class="example none">Fox never wrote about her appearance.</div>{/if}
 			{:else if metric === "celebrity"}
-				<div class="stat">{person.celebrityN} of {person.count} headlines ({axis.format(person.celebrity)})</div>
+				<div class="stat">{person.celebrityN} of her {person.count} headlines are about her private life or looks ({axis.format(person.celebrity)})</div>
 				{#if person.celebrityExample}<div class="example">{person.celebrityExample}</div>
 				{:else}<div class="example none">Fox never wrote about her private life or her looks.</div>{/if}
 			{:else if metric === "differential"}
