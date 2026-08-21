@@ -10,7 +10,7 @@
 	let { name = "timeline-clark", from = null, to = null, nba = false } = $props();
 
 	const PLAYERS = { clark: "Caitlin Clark", griner: "Brittney Griner" };
-	const col = (key) => foxTimeline.topics.length + foxTimeline.players.indexOf(PLAYERS[key]);
+	const col = (key) => foxTimeline.players.indexOf(PLAYERS[key]);
 	const LAYERS = name === "timeline-griner"
 		? [{ key: "griner", label: "Brittney Griner", color: "var(--color-griner)" },
 			{ key: "clark", label: "Caitlin Clark", color: "var(--color-clark)" }]
