@@ -3,7 +3,6 @@
 	// screen, so each new year flattens the ones before it.
 	// Doc embed:  chart: timeline-scrolly | words: timeline-trans | steps: transSteps
 	import Scrolly from "$components/helpers/Scrolly.svelte";
-	import TimelineStatic from "$components/TimelineStatic.svelte";
 	import TimelineDots from "$components/TimelineDots.svelte";
 
 	const expand = (value, suffix) => {
@@ -11,8 +10,7 @@
 		return !v ? null : /^\d{4}$/.test(v) ? v + suffix : v;
 	};
 
-	let { steps = null, words = [], title = "", caption = "" } = $props();
-	const chartName = $derived(words[0] ?? "timeline-trans");
+	let { steps = null, title = "", caption = "" } = $props();
 
 	const FALLBACK = [
 		{ until: "2021-12", text: "Through 2021, Fox almost never writes about trans athletes and the WNBA." },
@@ -44,15 +42,9 @@
 		<div class="frame">
 			{#if title}<h4 class="ts-title">{title}</h4>{/if}
 			<!-- "-dots" draws one mark per article; same scrolly contract -->
-			{#if chartName.endsWith("-dots")}
-				<TimelineDots revealUntil={current.until}
-					startMonth={current.from} endMonth={current.to}
-					yCap={current.ymax ? +current.ymax : null} tall />
-			{:else}
-				<TimelineStatic name={chartName} revealUntil={current.until}
-					from={current.from} to={current.to}
-					yCap={current.ymax ? +current.ymax : null} tall />
-			{/if}
+			<TimelineDots revealUntil={current.until}
+				startMonth={current.from} endMonth={current.to}
+				yCap={current.ymax ? +current.ymax : null} tall />
 			{#if caption}<p class="ts-cap">{caption}</p>{/if}
 		</div>
 	</div>
