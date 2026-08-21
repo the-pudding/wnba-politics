@@ -69,7 +69,7 @@
 	// portrait files in viz/static/net — regenerate with fetch_portraits.py
 	const IMG_EXT = faceFiles;
 	const slugOf = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-	const HEADSHOT = new Set(["caitlin-clark","angel-reese","brittney-griner","sophie-cunningham","paige-bueckers","dijonai-carrington","natasha-cloud","a-ja-wilson","sue-bird","layshia-clarendon"]);
+	const HEADSHOT = new Set(["caitlin-clark","angel-reese","brittney-griner","sophie-cunningham","paige-bueckers","dijonai-carrington","natasha-cloud","a-ja-wilson","sue-bird","layshia-clarendon","cameron-brink"]);
 
 	const DEFAULT_STEPS = [
 		{ year: "2020", text: "Each face is someone Fox News named in a WNBA headline. A line means two people shared one — an editorial decision, not an accident." },
