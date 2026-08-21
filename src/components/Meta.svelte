@@ -5,7 +5,6 @@
 		url = "",
 		keywords = "",
 		socialImg = "",
-		// the starter hardcoded The Pudding here; these come from the Doc now
 		author = "",
 		siteName = "",
 		preloadFont = []
