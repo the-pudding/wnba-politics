@@ -15,20 +15,6 @@ appearance,verb,wears
 appearance,verb,wearing
 appearance,verb,wore
 appearance,verb,worn
-appearance,prefilter,outfit
-appearance,prefilter,fit check
-appearance,prefilter,fit criticism
-appearance,prefilter,attire
-appearance,prefilter,ensemble
-appearance,prefilter,dress(?:es)?
-appearance,prefilter,bikini
-appearance,prefilter,swimsuit
-appearance,prefilter,lingerie
-appearance,prefilter,photo ?shoot
-appearance,prefilter,clothes
-appearance,prefilter,wear(?:s|ing)?
-appearance,prefilter,wore
-appearance,prefilter,worn
 celebrity,noun,boyfriend
 celebrity,noun,girlfriend
 celebrity,noun,husband
@@ -62,7 +48,6 @@ celebrity,noun,sister
 celebrity,noun,brother
 celebrity,noun,twin
 celebrity,noun,boo
-celebrity,noun,tiktok
 celebrity,noun,mansion
 celebrity,noun,gala
 celebrity,noun,carpet
@@ -83,46 +68,6 @@ celebrity,verb,divorce
 celebrity,verb,divorced
 celebrity,verb,expecting
 celebrity,verb,pregnant
-celebrity,prefilter,boyfriend
-celebrity,prefilter,girlfriend
-celebrity,prefilter,husband
-celebrity,prefilter,wife
-celebrity,prefilter,"fianc[eé]{1,2}"
-celebrity,prefilter,partner
-celebrity,prefilter,beau
-celebrity,prefilter,romance
-celebrity,prefilter,relationship
-celebrity,prefilter,engagement
-celebrity,prefilter,engaged
-celebrity,prefilter,wedding
-celebrity,prefilter,marriage
-celebrity,prefilter,married
-celebrity,prefilter,marry
-celebrity,prefilter,honeymoon
-celebrity,prefilter,break-?up
-celebrity,prefilter,split
-celebrity,prefilter,divorce
-celebrity,prefilter,dating
-celebrity,prefilter,date night
-celebrity,prefilter,bab(?:y|ies)
-celebrity,prefilter,pregnan\w+
-celebrity,prefilter,expecting
-celebrity,prefilter,famil(?:y|ies)
-celebrity,prefilter,mom
-celebrity,prefilter,mother
-celebrity,prefilter,dad
-celebrity,prefilter,father
-celebrity,prefilter,parents
-celebrity,prefilter,sister
-celebrity,prefilter,brother
-celebrity,prefilter,twin
-celebrity,prefilter,mansion
-celebrity,prefilter,net worth
-celebrity,prefilter,red carpet
-celebrity,prefilter,gala
-celebrity,prefilter,vacation
-celebrity,prefilter,birthday
-celebrity,prefilter,instagram
 celebrity,scrub,speaking engagement
 celebrity,scrub,fan engagement
 celebrity,scrub,(?:release|launch|debut|start|due|draft|trade) date
@@ -229,4 +174,4 @@ victim,by_her_verb,targets?
 victim,by_her_verb,hacks?
 victim,by_her_verb,jabs?
 appearance,adjective,naked
-appearance,prefilter,naked
+celebrity,noun,tiktok followers

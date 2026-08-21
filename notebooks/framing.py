@@ -82,36 +82,53 @@ def nearest_named(headline, groups, before):
     return best
 
 
+def clean(text):
+    # lowercase, drop a possessive 's, trim stray punctuation (never letters)
+    return re.sub(r"['’]s$", "", text.lower()).strip(",'’\"")
+
+
 def words_under(tokens):
-    return {sub.text.lower().strip(",'’s") for t in tokens for sub in t.subtree}
+    return {clean(sub.text) for t in tokens for sub in t.subtree}
 
 
 def attribute(nlp, headlines, groups, register):
     """{player: [headline rows]} each qualifying headline is grammatically about.
 
-    Any word row in framing_terms.csv counts as a trigger, whatever its kind
-    (noun, verb, adjective...). To add a word, add it twice: once with its part
-    of speech, and once as a `prefilter` row — the prefilter decides which
-    headlines are worth parsing, so without it the word is never seen."""
-    trigger_words = set().union(*[terms for (reg, kind), terms in TERMS.items()
+    Every word row in framing_terms.csv is a trigger, whatever its kind
+    (noun, verb, adjective...) — multi-word phrases like "tiktok followers"
+    work too, judged by their last word. One row per term is all it takes."""
+    trigger_terms = set().union(*[terms for (reg, kind), terms in TERMS.items()
                                   if reg == register and kind not in ("prefilter", "scrub")])
-    prefilter = rx(register, "prefilter")
+    single = {t for t in trigger_terms if " " not in t}
+    phrases = {}
+    for t in trigger_terms:
+        parts = t.lower().split()
+        if len(parts) > 1:
+            phrases.setdefault(parts[0], []).append(parts)
     scrub = scrub_rx(register)
     text_for = (lambda r: scrub.sub(" ", r["t"])) if scrub else (lambda r: r["t"])
-    candidates = [r for r in headlines if prefilter.search(text_for(r))]
     attributed = defaultdict(list)
-    for row, doc in zip(candidates, nlp.pipe([text_for(r) for r in candidates], batch_size=32)):
+    for row, doc in zip(headlines, nlp.pipe([text_for(r) for r in headlines], batch_size=64)):
         owners_found, pronoun_at = set(), None
-        for token in doc:
-            word = token.text.lower().strip(",'’s")
-            if word not in trigger_words:
+        for i, token in enumerate(doc):
+            word = clean(token.text)
+            hit = token if word in single else None
+            if hit is None:
+                # a phrase matches when the following tokens spell out the rest;
+                # ownership is judged from its last word ("followers", not "tiktok")
+                for parts in phrases.get(word, []):
+                    rest = [clean(doc[i + j].text) for j in range(1, len(parts)) if i + j < len(doc)]
+                    if rest == parts[1:]:
+                        hit = doc[i + len(parts) - 1]
+                        break
+            if hit is None:
                 continue
-            owned = words_under(owner_tokens(token, doc))
+            owned = words_under(owner_tokens(hit, doc))
             for name in groups:
                 if name.split()[-1].lower() in owned:
                     owners_found.add(name)
             if owned & PRONOUNS:
-                pronoun_at = min(pronoun_at, token.idx) if pronoun_at is not None else token.idx
+                pronoun_at = min(pronoun_at, hit.idx) if pronoun_at is not None else hit.idx
         if not owners_found and pronoun_at is not None:
             who = nearest_named(row["t"], groups, pronoun_at)
             if who:

@@ -1,24 +1,27 @@
 name,mentions,placed,coverage,agency,victim,victim_rate,contact_by,top_as_agent,top_as_patient,example
-Caitlin Clark,821,368,0.448,0.516,95,0.1157,18,be; break; get; miss; make,target; leave; protect; praise; credit,Caitlin Clark’s expletive-filled outburst leads to 1st career technical foul as Fever remain winless
-Caitlin Clark,821,368,0.448,0.516,95,0.1157,18,be; break; get; miss; make,target; leave; protect; praise; credit,"Angel Reese takes thinly veiled jab at Caitlin Clark's popularity, impact on the WNBA"
-Caitlin Clark,821,368,0.448,0.516,95,0.1157,18,be; break; get; miss; make,target; leave; protect; praise; credit,Hard foul on Caitlin Clark appears to leave golf influencer Paige Spiranac perplexed
-Caitlin Clark,821,368,0.448,0.516,95,0.1157,18,be; break; get; miss; make,target; leave; protect; praise; credit,Sky's Chennedy Carter rips Caitlin Clark after refusing to answer questions about foul
-DiJonai Carrington,31,16,0.516,0.625,7,0.2258,0,fire; lie; mock; send; win,defend; bury,Sun's DiJonai Carrington fires back at claim she targeted Caitlin Clark with foul
-DiJonai Carrington,31,16,0.516,0.625,7,0.2258,0,fire; lie; mock; send; win,defend; bury,Sun's DiJonai Carrington sends fiery message to fans after appearing to take swipe at Caitlin Clark
-DiJonai Carrington,31,16,0.516,0.625,7,0.2258,0,fire; lie; mock; send; win,defend; bury,Sun's DiJonai Carrington held back by teammate after hard foul vs Lynx
-DiJonai Carrington,31,16,0.516,0.625,7,0.2258,0,fire; lie; mock; send; win,defend; bury,WNBA player DiJonai Carrington fires back at critics amid foul controversy
-Brittney Griner,175,56,0.32,0.679,1,0.0057,0,name; release; lead; see; return,free; detain; allow; honor; have,"Brittney Griner plays in first game since detainment, says hearing national anthem 'definitely hit different'"
-Sophie Cunningham,145,74,0.51,0.703,13,0.0897,9,hit; be; send; spark; show,praise; stop; baptize; back; defend,Sparks' social media account takes swipe at Fever's Sophie Cunningham over WNBA expansion remarks
-Sophie Cunningham,145,74,0.51,0.703,13,0.0897,9,hit; be; send; spark; show,praise; stop; baptize; back; defend,Sophie Cunningham helped off court after brutal knee injury forces early exit from Fever game
-Sophie Cunningham,145,74,0.51,0.703,13,0.0897,9,hit; be; send; spark; show,praise; stop; baptize; back; defend,Fever star Sophie Cunningham's sister rips WNBA refs after guard suffers devastating knee injury
-Sophie Cunningham,145,74,0.51,0.703,13,0.0897,9,hit; be; send; spark; show,praise; stop; baptize; back; defend,Fever star Sophie Cunningham to miss remainder of 2025 WNBA season with right knee injury
-Angel Reese,237,109,0.46,0.78,19,0.0802,7,take; get; open; break; try,feature; pick; choose; shock; praise,"Sky's Angel Reese takes heat for cheering Caitlin Clark hard foul, delivering rough box out"
-Angel Reese,237,109,0.46,0.78,19,0.0802,7,take; get; open; break; try,feature; pick; choose; shock; praise,"WNBA upgrades hard foul on Caitlin Clark, fines Angel Reese for skipping postgame interview"
-Angel Reese,237,109,0.46,0.78,19,0.0802,7,take; get; open; break; try,feature; pick; choose; shock; praise,"Angel Reese defends hitting Caitlin Clark in head, resulting in flagrant foul: 'It's a basketball play'"
-Angel Reese,237,109,0.46,0.78,19,0.0802,7,take; get; open; break; try,feature; pick; choose; shock; praise,"Angel Reese strikes Caitlin Clark in head during layup attempt, receives flagrant foul in Fever-Sky rematch"
+Caitlin Clark,833,376,0.451,0.516,96,0.1152,18,be; get; break; miss; make,target; leave; protect; praise; credit,Caitlin Clark’s expletive-filled outburst leads to 1st career technical foul as Fever remain winless
+Caitlin Clark,833,376,0.451,0.516,96,0.1152,18,be; get; break; miss; make,target; leave; protect; praise; credit,"Angel Reese takes thinly veiled jab at Caitlin Clark's popularity, impact on the WNBA"
+Caitlin Clark,833,376,0.451,0.516,96,0.1152,18,be; get; break; miss; make,target; leave; protect; praise; credit,Hard foul on Caitlin Clark appears to leave golf influencer Paige Spiranac perplexed
+Caitlin Clark,833,376,0.451,0.516,96,0.1152,18,be; get; break; miss; make,target; leave; protect; praise; credit,Sky's Chennedy Carter rips Caitlin Clark after refusing to answer questions about foul
+Brittney Griner,200,68,0.34,0.647,1,0.005,0,name; release; be; lead; see,release; free; hold; detain; allow,"Brittney Griner plays in first game since detainment, says hearing national anthem 'definitely hit different'"
+DiJonai Carrington,35,19,0.543,0.684,7,0.2,1,fire; lie; mock; send; win,defend; bury,Sun's DiJonai Carrington fires back at claim she targeted Caitlin Clark with foul
+DiJonai Carrington,35,19,0.543,0.684,7,0.2,1,fire; lie; mock; send; win,defend; bury,Sun's DiJonai Carrington sends fiery message to fans after appearing to take swipe at Caitlin Clark
+DiJonai Carrington,35,19,0.543,0.684,7,0.2,1,fire; lie; mock; send; win,defend; bury,Sun's DiJonai Carrington held back by teammate after hard foul vs Lynx
+DiJonai Carrington,35,19,0.543,0.684,7,0.2,1,fire; lie; mock; send; win,defend; bury,WNBA player DiJonai Carrington fires back at critics amid foul controversy
+Sophie Cunningham,155,77,0.497,0.688,14,0.0903,9,hit; send; be; spark; show,praise; defend; stop; baptize; back,Sparks' social media account takes swipe at Fever's Sophie Cunningham over WNBA expansion remarks
+Sophie Cunningham,155,77,0.497,0.688,14,0.0903,9,hit; send; be; spark; show,praise; defend; stop; baptize; back,Sophie Cunningham helped off court after brutal knee injury forces early exit from Fever game
+Sophie Cunningham,155,77,0.497,0.688,14,0.0903,9,hit; send; be; spark; show,praise; defend; stop; baptize; back,Fever star Sophie Cunningham's sister rips WNBA refs after guard suffers devastating knee injury
+Sophie Cunningham,155,77,0.497,0.688,14,0.0903,9,hit; send; be; spark; show,praise; defend; stop; baptize; back,Fever star Sophie Cunningham to miss remainder of 2025 WNBA season with right knee injury
+Angel Reese,244,113,0.463,0.788,19,0.0779,8,take; get; open; break; try,feature; pick; choose; shock; praise,"Sky's Angel Reese takes heat for cheering Caitlin Clark hard foul, delivering rough box out"
+Angel Reese,244,113,0.463,0.788,19,0.0779,8,take; get; open; break; try,feature; pick; choose; shock; praise,"WNBA upgrades hard foul on Caitlin Clark, fines Angel Reese for skipping postgame interview"
+Angel Reese,244,113,0.463,0.788,19,0.0779,8,take; get; open; break; try,feature; pick; choose; shock; praise,"Angel Reese defends hitting Caitlin Clark in head, resulting in flagrant foul: 'It's a basketball play'"
+Angel Reese,244,113,0.463,0.788,19,0.0779,8,take; get; open; break; try,feature; pick; choose; shock; praise,"Angel Reese strikes Caitlin Clark in head during layup attempt, receives flagrant foul in Fever-Sky rematch"
+Cameron Brink,20,12,0.6,0.833,3,0.15,0,believe; gush; diagnose; suffer; icke,congratulate,Sparks rookie Cameron Brink suffers knee injury on scary-looking play vs Sun
+Cameron Brink,20,12,0.6,0.833,3,0.15,0,believe; gush; diagnose; suffer; icke,congratulate,Caitlin Clark slams refs for foul pushing her to brink of suspension; coach says she 'needs to move on'
+Cameron Brink,20,12,0.6,0.833,3,0.15,0,believe; gush; diagnose; suffer; icke,congratulate,WNBA star Cameron Brink makes surprising injury revelation during 'Celebrity Wheel of Fortune' appearance
 Aliyah Boston,23,16,0.696,0.875,0,0.0,0,lead; help; name; tie; carry,invite,
-A'ja Wilson,45,18,0.4,0.889,3,0.0667,0,make; earn; lead; take; box,release,Angel Reese loses landmark WNBA record to A'ja Wilson after season-ending injury
-A'ja Wilson,45,18,0.4,0.889,3,0.0667,0,make; earn; lead; take; box,release,Brewers' Justin Wilson suffers injury right before he was set to make first appearance since elbow surgery
-A'ja Wilson,45,18,0.4,0.889,3,0.0667,0,make; earn; lead; take; box,release,"Wilson good to go after injury, eager to move on from dustup"
+A'ja Wilson,46,19,0.413,0.895,3,0.0652,0,lead; make; earn; take; box,release,Angel Reese loses landmark WNBA record to A'ja Wilson after season-ending injury
+A'ja Wilson,46,19,0.413,0.895,3,0.0652,0,lead; make; earn; take; box,release,Brewers' Justin Wilson suffers injury right before he was set to make first appearance since elbow surgery
+A'ja Wilson,46,19,0.413,0.895,3,0.0652,0,lead; make; earn; take; box,release,"Wilson good to go after injury, eager to move on from dustup"
+Sue Bird,40,13,0.325,1.0,0,0.0,0,help; make; need; have; dismiss,,
 Sabrina Ionescu,24,12,0.5,1.0,1,0.0417,2,look; expect; go; injure; excite,,Liberty rookie Sabrina Ionescu injures ankle against Dream
-Sue Bird,39,12,0.308,1.0,0,0.0,0,help; make; have; dismiss; feel,,
