@@ -12,14 +12,7 @@ TERMS_CSV = Path(__file__).resolve().parent.parent / "data" / "topic_terms.csv"
 
 UNIONS = {
     "politics or race": ["race / racism", "politics / protest"],
-    "politics or LGBTQ": ["politics / protest", "LGBTQ / sexuality"],
-    "politics or race or LGBTQ": ["race / racism", "politics / protest", "LGBTQ / sexuality"],
 }
-
-# the timeline's column order
-ORDER = ["transgender / trans", "race / racism", "politics / protest", "politics or race",
-         "LGBTQ / sexuality", "politics or LGBTQ", "politics or race or LGBTQ",
-         "\u201cwoke\u201d", "Trump"]
 
 
 def patterns():
@@ -31,9 +24,3 @@ def patterns():
     for union, parts in UNIONS.items():
         pats[union] = "|".join(pats[p] for p in parts)
     return pats
-
-
-def topics():
-    """[(topic name, regex string)] in the timeline's column order."""
-    pats = patterns()
-    return [(t, pats[t]) for t in ORDER]

@@ -11,14 +11,12 @@
 	for (const r of rows) {
 		const byMethod = (data.topics[r.topic] ??= {});
 		const byOutlet = (byMethod[r.method] ??= {});
-		(byOutlet[r.outlet] ??= {})[r.year] =
-			{ n: +r.articles, hit: +r.hits, g: +r.griner_hits, lg: +r.lgbtq_hits };
+		(byOutlet[r.outlet] ??= {})[r.year] = { n: +r.articles, hit: +r.hits };
 	}
 
 	const FOX = "Fox News";
-	const TOPIC_PHRASE = { lgbtq: "mention LGBTQ topics",
-		all: "touch race, protest politics, or LGBTQ topics" }[topic]
-		?? "mention race or protest politics";
+	const TOPIC_PHRASE = topic === "lgbtq"
+		? "mention LGBTQ topics" : "mention race or protest politics";
 	const MAIN = topic === "lgbtq"
 		? "var(--color-lgbtq)"
 		: "var(--color-politics)";

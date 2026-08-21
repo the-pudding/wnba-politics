@@ -1,307 +1,205 @@
-topic,method,outlet,year,articles,hits,griner_hits,lgbtq_hits
-polrace,body,Fox News,2019,43,3,1,0
-polrace,body,Fox News,2020,94,37,1,0
-polrace,body,Fox News,2021,161,17,2,0
-polrace,body,Fox News,2022,234,20,14,0
-polrace,body,Fox News,2023,116,22,18,0
-polrace,body,Fox News,2024,590,98,11,0
-polrace,body,Fox News,2025,457,85,4,0
-polrace,body,Fox News,2026,572,180,5,0
-polrace,body,Just Women's Sports,2020,62,15,2,0
-polrace,body,Just Women's Sports,2021,371,30,6,0
-polrace,body,Just Women's Sports,2022,779,37,9,0
-polrace,body,Just Women's Sports,2023,708,18,4,0
-polrace,body,Just Women's Sports,2024,279,7,0,0
-polrace,body,Just Women's Sports,2025,458,9,1,0
-polrace,body,Just Women's Sports,2026,525,16,0,0
-polrace,body,Yahoo Sports (syndicated pool),2019,69,4,2,0
-polrace,body,Yahoo Sports (syndicated pool),2020,250,103,7,0
-polrace,body,Yahoo Sports (syndicated pool),2021,475,46,3,0
-polrace,body,Yahoo Sports (syndicated pool),2022,1288,106,82,0
-polrace,body,Yahoo Sports (syndicated pool),2023,771,51,30,0
-polrace,body,Yahoo Sports (syndicated pool),2024,3282,178,21,0
-polrace,body,Yahoo Sports (syndicated pool),2025,11644,310,18,0
-polrace,body,Yahoo Sports (syndicated pool),2026,10743,807,15,0
-polrace,body,ESPN,2019,303,8,1,0
-polrace,body,ESPN,2020,417,152,14,0
-polrace,body,ESPN,2021,391,52,4,0
-polrace,body,ESPN,2022,519,43,16,0
-polrace,body,ESPN,2023,485,24,7,0
-polrace,body,ESPN,2024,774,50,6,0
-polrace,body,ESPN,2025,1051,28,12,0
-polrace,body,ESPN,2026,939,52,3,0
-polrace,body,Fox News (NBA),2019,770,113,0,0
-polrace,body,Fox News (NBA),2020,1424,358,0,0
-polrace,body,Fox News (NBA),2021,2307,233,1,0
-polrace,body,Fox News (NBA),2022,1407,104,6,0
-polrace,body,Fox News (NBA),2023,1360,95,7,0
-polrace,body,Fox News (NBA),2024,1038,88,1,0
-polrace,body,Fox News (NBA),2025,1164,98,1,0
-polrace,body,Fox News (NBA),2026,887,119,2,0
-polrace,headline,Fox News,2019,43,0,0,0
-polrace,headline,Fox News,2020,94,10,0,0
-polrace,headline,Fox News,2021,161,3,0,0
-polrace,headline,Fox News,2022,234,3,1,0
-polrace,headline,Fox News,2023,116,4,3,0
-polrace,headline,Fox News,2024,590,23,2,0
-polrace,headline,Fox News,2025,457,12,0,0
-polrace,headline,Fox News,2026,572,29,0,0
-polrace,headline,Just Women's Sports,2020,62,1,0,0
-polrace,headline,Just Women's Sports,2021,371,1,0,0
-polrace,headline,Just Women's Sports,2022,779,2,0,0
-polrace,headline,Just Women's Sports,2023,708,1,0,0
-polrace,headline,Just Women's Sports,2024,279,0,0,0
-polrace,headline,Just Women's Sports,2025,458,1,0,0
-polrace,headline,Just Women's Sports,2026,525,4,0,0
-polrace,headline,Yahoo Sports (syndicated pool),2019,69,1,0,0
-polrace,headline,Yahoo Sports (syndicated pool),2020,250,24,0,0
-polrace,headline,Yahoo Sports (syndicated pool),2021,475,7,0,0
-polrace,headline,Yahoo Sports (syndicated pool),2022,1288,3,3,0
-polrace,headline,Yahoo Sports (syndicated pool),2023,771,6,4,0
-polrace,headline,Yahoo Sports (syndicated pool),2024,3282,40,0,0
-polrace,headline,Yahoo Sports (syndicated pool),2025,11644,53,0,0
-polrace,headline,Yahoo Sports (syndicated pool),2026,10743,118,0,0
-polrace,headline,ESPN,2019,303,2,0,0
-polrace,headline,ESPN,2020,417,22,0,0
-polrace,headline,ESPN,2021,391,5,0,0
-polrace,headline,ESPN,2022,519,5,0,0
-polrace,headline,ESPN,2023,485,1,0,0
-polrace,headline,ESPN,2024,774,1,0,0
-polrace,headline,ESPN,2025,1051,1,0,0
-polrace,headline,ESPN,2026,939,7,0,0
-polrace,headline,The Athletic,2019,137,0,0,0
-polrace,headline,The Athletic,2020,149,2,0,0
-polrace,headline,The Athletic,2021,202,0,0,0
-polrace,headline,The Athletic,2022,246,0,0,0
-polrace,headline,The Athletic,2023,328,0,0,0
-polrace,headline,The Athletic,2024,512,2,0,0
-polrace,headline,The Athletic,2025,590,1,0,0
-polrace,headline,The Athletic,2026,364,3,0,0
-polrace,headline,Fox News (NBA),2019,770,15,0,0
-polrace,headline,Fox News (NBA),2020,1424,93,0,0
-polrace,headline,Fox News (NBA),2021,2307,65,0,0
-polrace,headline,Fox News (NBA),2022,1407,19,0,0
-polrace,headline,Fox News (NBA),2023,1360,29,2,0
-polrace,headline,Fox News (NBA),2024,1038,20,0,0
-polrace,headline,Fox News (NBA),2025,1164,16,0,0
-polrace,headline,Fox News (NBA),2026,887,22,0,0
-polrace,headline,CBS Sports,2019,142,0,0,0
-polrace,headline,CBS Sports,2020,154,9,0,0
-polrace,headline,CBS Sports,2021,190,1,0,0
-polrace,headline,CBS Sports,2022,377,1,0,0
-polrace,headline,CBS Sports,2023,339,3,1,0
-polrace,headline,CBS Sports,2024,709,3,0,0
-polrace,headline,CBS Sports,2025,946,2,0,0
-polrace,headline,CBS Sports,2026,296,4,0,0
-polrace,headline,USA Today,2019,384,1,0,0
-polrace,headline,USA Today,2020,183,12,1,0
-polrace,headline,USA Today,2021,213,3,0,0
-polrace,headline,USA Today,2022,308,1,0,0
-polrace,headline,USA Today,2023,187,0,0,0
-polrace,headline,USA Today,2024,307,3,0,0
-polrace,headline,USA Today,2025,409,1,0,0
-polrace,headline,USA Today,2026,757,4,0,0
-lgbtq,body,Fox News,2019,43,0,0,0
-lgbtq,body,Fox News,2020,94,6,0,0
-lgbtq,body,Fox News,2021,161,1,0,0
-lgbtq,body,Fox News,2022,234,10,10,0
-lgbtq,body,Fox News,2023,116,13,7,0
-lgbtq,body,Fox News,2024,590,11,1,0
-lgbtq,body,Fox News,2025,457,10,1,0
-lgbtq,body,Fox News,2026,572,59,1,0
-lgbtq,body,Just Women's Sports,2020,62,3,1,0
-lgbtq,body,Just Women's Sports,2021,371,6,2,0
-lgbtq,body,Just Women's Sports,2022,779,14,5,0
-lgbtq,body,Just Women's Sports,2023,708,5,3,0
-lgbtq,body,Just Women's Sports,2024,279,1,0,0
-lgbtq,body,Just Women's Sports,2025,458,1,1,0
-lgbtq,body,Just Women's Sports,2026,525,3,1,0
-lgbtq,body,Yahoo Sports (syndicated pool),2019,69,1,0,0
-lgbtq,body,Yahoo Sports (syndicated pool),2020,250,19,1,0
-lgbtq,body,Yahoo Sports (syndicated pool),2021,475,11,0,0
-lgbtq,body,Yahoo Sports (syndicated pool),2022,1288,76,68,0
-lgbtq,body,Yahoo Sports (syndicated pool),2023,771,14,11,0
-lgbtq,body,Yahoo Sports (syndicated pool),2024,3282,29,8,0
-lgbtq,body,Yahoo Sports (syndicated pool),2025,11644,50,5,0
-lgbtq,body,Yahoo Sports (syndicated pool),2026,10743,133,7,0
-lgbtq,body,ESPN,2019,303,4,1,0
-lgbtq,body,ESPN,2020,417,46,3,0
-lgbtq,body,ESPN,2021,391,18,4,0
-lgbtq,body,ESPN,2022,519,26,13,0
-lgbtq,body,ESPN,2023,485,6,3,0
-lgbtq,body,ESPN,2024,774,14,0,0
-lgbtq,body,ESPN,2025,1051,7,3,0
-lgbtq,body,ESPN,2026,939,6,0,0
-lgbtq,body,Fox News (NBA),2019,770,6,0,0
-lgbtq,body,Fox News (NBA),2020,1424,8,0,0
-lgbtq,body,Fox News (NBA),2021,2307,46,0,0
-lgbtq,body,Fox News (NBA),2022,1407,25,2,0
-lgbtq,body,Fox News (NBA),2023,1360,22,3,0
-lgbtq,body,Fox News (NBA),2024,1038,4,0,0
-lgbtq,body,Fox News (NBA),2025,1164,6,0,0
-lgbtq,body,Fox News (NBA),2026,887,20,0,0
-lgbtq,headline,Fox News,2019,43,0,0,0
-lgbtq,headline,Fox News,2020,94,0,0,0
-lgbtq,headline,Fox News,2021,161,0,0,0
-lgbtq,headline,Fox News,2022,234,0,0,0
-lgbtq,headline,Fox News,2023,116,1,0,0
-lgbtq,headline,Fox News,2024,590,1,0,0
-lgbtq,headline,Fox News,2025,457,0,0,0
-lgbtq,headline,Fox News,2026,572,2,0,0
-lgbtq,headline,Just Women's Sports,2020,62,0,0,0
-lgbtq,headline,Just Women's Sports,2021,371,1,0,0
-lgbtq,headline,Just Women's Sports,2022,779,0,0,0
-lgbtq,headline,Just Women's Sports,2023,708,0,0,0
-lgbtq,headline,Just Women's Sports,2024,279,0,0,0
-lgbtq,headline,Just Women's Sports,2025,458,1,0,0
-lgbtq,headline,Just Women's Sports,2026,525,0,0,0
-lgbtq,headline,Yahoo Sports (syndicated pool),2019,69,0,0,0
-lgbtq,headline,Yahoo Sports (syndicated pool),2020,250,0,0,0
-lgbtq,headline,Yahoo Sports (syndicated pool),2021,475,0,0,0
-lgbtq,headline,Yahoo Sports (syndicated pool),2022,1288,0,0,0
-lgbtq,headline,Yahoo Sports (syndicated pool),2023,771,0,0,0
-lgbtq,headline,Yahoo Sports (syndicated pool),2024,3282,1,0,0
-lgbtq,headline,Yahoo Sports (syndicated pool),2025,11644,13,0,0
-lgbtq,headline,Yahoo Sports (syndicated pool),2026,10743,9,0,0
-lgbtq,headline,ESPN,2019,303,0,0,0
-lgbtq,headline,ESPN,2020,417,0,0,0
-lgbtq,headline,ESPN,2021,391,0,0,0
-lgbtq,headline,ESPN,2022,519,0,0,0
-lgbtq,headline,ESPN,2023,485,0,0,0
-lgbtq,headline,ESPN,2024,774,4,0,0
-lgbtq,headline,ESPN,2025,1051,0,0,0
-lgbtq,headline,ESPN,2026,939,0,0,0
-lgbtq,headline,The Athletic,2019,137,1,0,0
-lgbtq,headline,The Athletic,2020,149,0,0,0
-lgbtq,headline,The Athletic,2021,202,0,0,0
-lgbtq,headline,The Athletic,2022,246,1,0,0
-lgbtq,headline,The Athletic,2023,328,0,0,0
-lgbtq,headline,The Athletic,2024,512,1,0,0
-lgbtq,headline,The Athletic,2025,590,0,0,0
-lgbtq,headline,The Athletic,2026,364,0,0,0
-lgbtq,headline,Fox News (NBA),2019,770,0,0,0
-lgbtq,headline,Fox News (NBA),2020,1424,0,0,0
-lgbtq,headline,Fox News (NBA),2021,2307,2,0,0
-lgbtq,headline,Fox News (NBA),2022,1407,4,0,0
-lgbtq,headline,Fox News (NBA),2023,1360,5,0,0
-lgbtq,headline,Fox News (NBA),2024,1038,1,0,0
-lgbtq,headline,Fox News (NBA),2025,1164,1,0,0
-lgbtq,headline,Fox News (NBA),2026,887,6,0,0
-lgbtq,headline,CBS Sports,2019,142,0,0,0
-lgbtq,headline,CBS Sports,2020,154,0,0,0
-lgbtq,headline,CBS Sports,2021,190,0,0,0
-lgbtq,headline,CBS Sports,2022,377,0,0,0
-lgbtq,headline,CBS Sports,2023,339,0,0,0
-lgbtq,headline,CBS Sports,2024,709,0,0,0
-lgbtq,headline,CBS Sports,2025,946,0,0,0
-lgbtq,headline,CBS Sports,2026,296,0,0,0
-lgbtq,headline,USA Today,2019,384,0,0,0
-lgbtq,headline,USA Today,2020,183,0,0,0
-lgbtq,headline,USA Today,2021,213,0,0,0
-lgbtq,headline,USA Today,2022,308,0,0,0
-lgbtq,headline,USA Today,2023,187,0,0,0
-lgbtq,headline,USA Today,2024,307,0,0,0
-lgbtq,headline,USA Today,2025,409,0,0,0
-lgbtq,headline,USA Today,2026,757,0,0,0
-all,body,Fox News,2019,43,3,1,0
-all,body,Fox News,2020,94,39,1,6
-all,body,Fox News,2021,161,18,2,1
-all,body,Fox News,2022,234,27,21,0
-all,body,Fox News,2023,116,30,21,6
-all,body,Fox News,2024,590,100,11,10
-all,body,Fox News,2025,457,90,5,9
-all,body,Fox News,2026,572,197,5,58
-all,body,Just Women's Sports,2020,62,15,2,2
-all,body,Just Women's Sports,2021,371,31,6,4
-all,body,Just Women's Sports,2022,779,45,12,9
-all,body,Just Women's Sports,2023,708,20,4,2
-all,body,Just Women's Sports,2024,279,7,0,1
-all,body,Just Women's Sports,2025,458,9,1,0
-all,body,Just Women's Sports,2026,525,19,1,2
-all,body,Yahoo Sports (syndicated pool),2019,69,5,2,1
-all,body,Yahoo Sports (syndicated pool),2020,250,107,8,18
-all,body,Yahoo Sports (syndicated pool),2021,475,51,3,11
-all,body,Yahoo Sports (syndicated pool),2022,1288,145,116,8
-all,body,Yahoo Sports (syndicated pool),2023,771,57,34,3
-all,body,Yahoo Sports (syndicated pool),2024,3282,191,23,21
-all,body,Yahoo Sports (syndicated pool),2025,11644,346,22,45
-all,body,Yahoo Sports (syndicated pool),2026,10743,883,18,126
-all,body,ESPN,2019,303,11,1,3
-all,body,ESPN,2020,417,153,14,43
-all,body,ESPN,2021,391,56,8,14
-all,body,ESPN,2022,519,51,20,13
-all,body,ESPN,2023,485,26,9,3
-all,body,ESPN,2024,774,54,6,14
-all,body,ESPN,2025,1051,30,12,4
-all,body,ESPN,2026,939,55,3,6
-all,body,Fox News (NBA),2019,770,118,0,6
-all,body,Fox News (NBA),2020,1424,363,0,8
-all,body,Fox News (NBA),2021,2307,271,1,46
-all,body,Fox News (NBA),2022,1407,121,8,23
-all,body,Fox News (NBA),2023,1360,109,7,19
-all,body,Fox News (NBA),2024,1038,91,1,4
-all,body,Fox News (NBA),2025,1164,102,1,6
-all,body,Fox News (NBA),2026,887,131,2,20
-all,headline,Fox News,2019,43,0,0,0
-all,headline,Fox News,2020,94,10,0,0
-all,headline,Fox News,2021,161,3,0,0
-all,headline,Fox News,2022,234,3,1,0
-all,headline,Fox News,2023,116,5,3,1
-all,headline,Fox News,2024,590,24,2,1
-all,headline,Fox News,2025,457,12,0,0
-all,headline,Fox News,2026,572,31,0,2
-all,headline,Just Women's Sports,2020,62,1,0,0
-all,headline,Just Women's Sports,2021,371,2,0,1
-all,headline,Just Women's Sports,2022,779,2,0,0
-all,headline,Just Women's Sports,2023,708,1,0,0
-all,headline,Just Women's Sports,2024,279,0,0,0
-all,headline,Just Women's Sports,2025,458,2,0,1
-all,headline,Just Women's Sports,2026,525,4,0,0
-all,headline,Yahoo Sports (syndicated pool),2019,69,1,0,0
-all,headline,Yahoo Sports (syndicated pool),2020,250,24,0,0
-all,headline,Yahoo Sports (syndicated pool),2021,475,7,0,0
-all,headline,Yahoo Sports (syndicated pool),2022,1288,3,3,0
-all,headline,Yahoo Sports (syndicated pool),2023,771,6,4,0
-all,headline,Yahoo Sports (syndicated pool),2024,3282,41,0,1
-all,headline,Yahoo Sports (syndicated pool),2025,11644,66,0,13
-all,headline,Yahoo Sports (syndicated pool),2026,10743,127,0,9
-all,headline,ESPN,2019,303,2,0,0
-all,headline,ESPN,2020,417,22,0,0
-all,headline,ESPN,2021,391,5,0,0
-all,headline,ESPN,2022,519,5,0,0
-all,headline,ESPN,2023,485,1,0,0
-all,headline,ESPN,2024,774,5,0,4
-all,headline,ESPN,2025,1051,1,0,0
-all,headline,ESPN,2026,939,7,0,0
-all,headline,The Athletic,2019,137,1,0,1
-all,headline,The Athletic,2020,149,2,0,0
-all,headline,The Athletic,2021,202,0,0,0
-all,headline,The Athletic,2022,246,1,0,1
-all,headline,The Athletic,2023,328,0,0,0
-all,headline,The Athletic,2024,512,3,0,1
-all,headline,The Athletic,2025,590,1,0,0
-all,headline,The Athletic,2026,364,3,0,0
-all,headline,Fox News (NBA),2019,770,15,0,0
-all,headline,Fox News (NBA),2020,1424,93,0,0
-all,headline,Fox News (NBA),2021,2307,67,0,2
-all,headline,Fox News (NBA),2022,1407,23,0,4
-all,headline,Fox News (NBA),2023,1360,34,2,5
-all,headline,Fox News (NBA),2024,1038,21,0,1
-all,headline,Fox News (NBA),2025,1164,17,0,1
-all,headline,Fox News (NBA),2026,887,28,0,6
-all,headline,CBS Sports,2019,142,0,0,0
-all,headline,CBS Sports,2020,154,9,0,0
-all,headline,CBS Sports,2021,190,1,0,0
-all,headline,CBS Sports,2022,377,1,0,0
-all,headline,CBS Sports,2023,339,3,1,0
-all,headline,CBS Sports,2024,709,3,0,0
-all,headline,CBS Sports,2025,946,2,0,0
-all,headline,CBS Sports,2026,296,4,0,0
-all,headline,USA Today,2019,384,1,0,0
-all,headline,USA Today,2020,183,12,1,0
-all,headline,USA Today,2021,213,3,0,0
-all,headline,USA Today,2022,308,1,0,0
-all,headline,USA Today,2023,187,0,0,0
-all,headline,USA Today,2024,307,3,0,0
-all,headline,USA Today,2025,409,1,0,0
-all,headline,USA Today,2026,757,4,0,0
+topic,method,outlet,year,articles,hits
+polrace,body,Fox News,2019,43,3
+polrace,body,Fox News,2020,94,37
+polrace,body,Fox News,2021,161,17
+polrace,body,Fox News,2022,234,20
+polrace,body,Fox News,2023,116,22
+polrace,body,Fox News,2024,590,98
+polrace,body,Fox News,2025,457,85
+polrace,body,Fox News,2026,572,180
+polrace,body,Just Women's Sports,2020,62,15
+polrace,body,Just Women's Sports,2021,371,30
+polrace,body,Just Women's Sports,2022,779,37
+polrace,body,Just Women's Sports,2023,708,18
+polrace,body,Just Women's Sports,2024,279,7
+polrace,body,Just Women's Sports,2025,458,9
+polrace,body,Just Women's Sports,2026,525,16
+polrace,body,Yahoo Sports (syndicated pool),2019,69,4
+polrace,body,Yahoo Sports (syndicated pool),2020,250,103
+polrace,body,Yahoo Sports (syndicated pool),2021,475,46
+polrace,body,Yahoo Sports (syndicated pool),2022,1288,106
+polrace,body,Yahoo Sports (syndicated pool),2023,771,51
+polrace,body,Yahoo Sports (syndicated pool),2024,3282,178
+polrace,body,Yahoo Sports (syndicated pool),2025,11644,310
+polrace,body,Yahoo Sports (syndicated pool),2026,10743,807
+polrace,body,ESPN,2019,303,8
+polrace,body,ESPN,2020,417,152
+polrace,body,ESPN,2021,391,52
+polrace,body,ESPN,2022,519,43
+polrace,body,ESPN,2023,485,24
+polrace,body,ESPN,2024,774,50
+polrace,body,ESPN,2025,1051,28
+polrace,body,ESPN,2026,939,52
+polrace,body,Fox News (NBA),2019,770,113
+polrace,body,Fox News (NBA),2020,1424,358
+polrace,body,Fox News (NBA),2021,2307,233
+polrace,body,Fox News (NBA),2022,1407,104
+polrace,body,Fox News (NBA),2023,1360,95
+polrace,body,Fox News (NBA),2024,1038,88
+polrace,body,Fox News (NBA),2025,1164,98
+polrace,body,Fox News (NBA),2026,887,119
+polrace,headline,Fox News,2019,43,0
+polrace,headline,Fox News,2020,94,10
+polrace,headline,Fox News,2021,161,3
+polrace,headline,Fox News,2022,234,3
+polrace,headline,Fox News,2023,116,4
+polrace,headline,Fox News,2024,590,23
+polrace,headline,Fox News,2025,457,12
+polrace,headline,Fox News,2026,572,29
+polrace,headline,Just Women's Sports,2020,62,1
+polrace,headline,Just Women's Sports,2021,371,1
+polrace,headline,Just Women's Sports,2022,779,2
+polrace,headline,Just Women's Sports,2023,708,1
+polrace,headline,Just Women's Sports,2024,279,0
+polrace,headline,Just Women's Sports,2025,458,1
+polrace,headline,Just Women's Sports,2026,525,4
+polrace,headline,Yahoo Sports (syndicated pool),2019,69,1
+polrace,headline,Yahoo Sports (syndicated pool),2020,250,24
+polrace,headline,Yahoo Sports (syndicated pool),2021,475,7
+polrace,headline,Yahoo Sports (syndicated pool),2022,1288,3
+polrace,headline,Yahoo Sports (syndicated pool),2023,771,6
+polrace,headline,Yahoo Sports (syndicated pool),2024,3282,40
+polrace,headline,Yahoo Sports (syndicated pool),2025,11644,53
+polrace,headline,Yahoo Sports (syndicated pool),2026,10743,118
+polrace,headline,ESPN,2019,303,2
+polrace,headline,ESPN,2020,417,22
+polrace,headline,ESPN,2021,391,5
+polrace,headline,ESPN,2022,519,5
+polrace,headline,ESPN,2023,485,1
+polrace,headline,ESPN,2024,774,1
+polrace,headline,ESPN,2025,1051,1
+polrace,headline,ESPN,2026,939,7
+polrace,headline,The Athletic,2019,137,0
+polrace,headline,The Athletic,2020,149,2
+polrace,headline,The Athletic,2021,202,0
+polrace,headline,The Athletic,2022,246,0
+polrace,headline,The Athletic,2023,328,0
+polrace,headline,The Athletic,2024,512,2
+polrace,headline,The Athletic,2025,590,1
+polrace,headline,The Athletic,2026,364,2
+polrace,headline,Fox News (NBA),2019,770,15
+polrace,headline,Fox News (NBA),2020,1424,93
+polrace,headline,Fox News (NBA),2021,2307,65
+polrace,headline,Fox News (NBA),2022,1407,19
+polrace,headline,Fox News (NBA),2023,1360,29
+polrace,headline,Fox News (NBA),2024,1038,20
+polrace,headline,Fox News (NBA),2025,1164,16
+polrace,headline,Fox News (NBA),2026,887,22
+polrace,headline,CBS Sports,2019,142,0
+polrace,headline,CBS Sports,2020,154,5
+polrace,headline,CBS Sports,2021,190,1
+polrace,headline,CBS Sports,2022,377,1
+polrace,headline,CBS Sports,2023,339,2
+polrace,headline,CBS Sports,2024,709,3
+polrace,headline,CBS Sports,2025,946,2
+polrace,headline,CBS Sports,2026,296,4
+polrace,headline,USA Today,2019,384,1
+polrace,headline,USA Today,2020,183,11
+polrace,headline,USA Today,2021,213,3
+polrace,headline,USA Today,2022,308,1
+polrace,headline,USA Today,2023,187,0
+polrace,headline,USA Today,2024,307,3
+polrace,headline,USA Today,2025,409,1
+polrace,headline,USA Today,2026,757,4
+lgbtq,body,Fox News,2019,43,0
+lgbtq,body,Fox News,2020,94,6
+lgbtq,body,Fox News,2021,161,1
+lgbtq,body,Fox News,2022,234,10
+lgbtq,body,Fox News,2023,116,13
+lgbtq,body,Fox News,2024,590,11
+lgbtq,body,Fox News,2025,457,10
+lgbtq,body,Fox News,2026,572,59
+lgbtq,body,Just Women's Sports,2020,62,3
+lgbtq,body,Just Women's Sports,2021,371,6
+lgbtq,body,Just Women's Sports,2022,779,14
+lgbtq,body,Just Women's Sports,2023,708,5
+lgbtq,body,Just Women's Sports,2024,279,1
+lgbtq,body,Just Women's Sports,2025,458,1
+lgbtq,body,Just Women's Sports,2026,525,3
+lgbtq,body,Yahoo Sports (syndicated pool),2019,69,1
+lgbtq,body,Yahoo Sports (syndicated pool),2020,250,19
+lgbtq,body,Yahoo Sports (syndicated pool),2021,475,11
+lgbtq,body,Yahoo Sports (syndicated pool),2022,1288,76
+lgbtq,body,Yahoo Sports (syndicated pool),2023,771,14
+lgbtq,body,Yahoo Sports (syndicated pool),2024,3282,29
+lgbtq,body,Yahoo Sports (syndicated pool),2025,11644,50
+lgbtq,body,Yahoo Sports (syndicated pool),2026,10743,133
+lgbtq,body,ESPN,2019,303,4
+lgbtq,body,ESPN,2020,417,46
+lgbtq,body,ESPN,2021,391,18
+lgbtq,body,ESPN,2022,519,26
+lgbtq,body,ESPN,2023,485,6
+lgbtq,body,ESPN,2024,774,14
+lgbtq,body,ESPN,2025,1051,7
+lgbtq,body,ESPN,2026,939,6
+lgbtq,body,Fox News (NBA),2019,770,6
+lgbtq,body,Fox News (NBA),2020,1424,8
+lgbtq,body,Fox News (NBA),2021,2307,46
+lgbtq,body,Fox News (NBA),2022,1407,25
+lgbtq,body,Fox News (NBA),2023,1360,22
+lgbtq,body,Fox News (NBA),2024,1038,4
+lgbtq,body,Fox News (NBA),2025,1164,6
+lgbtq,body,Fox News (NBA),2026,887,20
+lgbtq,headline,Fox News,2019,43,0
+lgbtq,headline,Fox News,2020,94,0
+lgbtq,headline,Fox News,2021,161,0
+lgbtq,headline,Fox News,2022,234,0
+lgbtq,headline,Fox News,2023,116,1
+lgbtq,headline,Fox News,2024,590,1
+lgbtq,headline,Fox News,2025,457,0
+lgbtq,headline,Fox News,2026,572,2
+lgbtq,headline,Just Women's Sports,2020,62,0
+lgbtq,headline,Just Women's Sports,2021,371,1
+lgbtq,headline,Just Women's Sports,2022,779,0
+lgbtq,headline,Just Women's Sports,2023,708,0
+lgbtq,headline,Just Women's Sports,2024,279,0
+lgbtq,headline,Just Women's Sports,2025,458,1
+lgbtq,headline,Just Women's Sports,2026,525,0
+lgbtq,headline,Yahoo Sports (syndicated pool),2019,69,0
+lgbtq,headline,Yahoo Sports (syndicated pool),2020,250,0
+lgbtq,headline,Yahoo Sports (syndicated pool),2021,475,0
+lgbtq,headline,Yahoo Sports (syndicated pool),2022,1288,0
+lgbtq,headline,Yahoo Sports (syndicated pool),2023,771,0
+lgbtq,headline,Yahoo Sports (syndicated pool),2024,3282,1
+lgbtq,headline,Yahoo Sports (syndicated pool),2025,11644,13
+lgbtq,headline,Yahoo Sports (syndicated pool),2026,10743,9
+lgbtq,headline,ESPN,2019,303,0
+lgbtq,headline,ESPN,2020,417,0
+lgbtq,headline,ESPN,2021,391,0
+lgbtq,headline,ESPN,2022,519,0
+lgbtq,headline,ESPN,2023,485,0
+lgbtq,headline,ESPN,2024,774,4
+lgbtq,headline,ESPN,2025,1051,0
+lgbtq,headline,ESPN,2026,939,0
+lgbtq,headline,The Athletic,2019,137,1
+lgbtq,headline,The Athletic,2020,149,0
+lgbtq,headline,The Athletic,2021,202,0
+lgbtq,headline,The Athletic,2022,246,1
+lgbtq,headline,The Athletic,2023,328,0
+lgbtq,headline,The Athletic,2024,512,0
+lgbtq,headline,The Athletic,2025,590,0
+lgbtq,headline,The Athletic,2026,364,0
+lgbtq,headline,Fox News (NBA),2019,770,0
+lgbtq,headline,Fox News (NBA),2020,1424,0
+lgbtq,headline,Fox News (NBA),2021,2307,2
+lgbtq,headline,Fox News (NBA),2022,1407,4
+lgbtq,headline,Fox News (NBA),2023,1360,5
+lgbtq,headline,Fox News (NBA),2024,1038,1
+lgbtq,headline,Fox News (NBA),2025,1164,1
+lgbtq,headline,Fox News (NBA),2026,887,6
+lgbtq,headline,CBS Sports,2019,142,0
+lgbtq,headline,CBS Sports,2020,154,0
+lgbtq,headline,CBS Sports,2021,190,0
+lgbtq,headline,CBS Sports,2022,377,0
+lgbtq,headline,CBS Sports,2023,339,0
+lgbtq,headline,CBS Sports,2024,709,0
+lgbtq,headline,CBS Sports,2025,946,0
+lgbtq,headline,CBS Sports,2026,296,0
+lgbtq,headline,USA Today,2019,384,0
+lgbtq,headline,USA Today,2020,183,0
+lgbtq,headline,USA Today,2021,213,0
+lgbtq,headline,USA Today,2022,308,0
+lgbtq,headline,USA Today,2023,187,0
+lgbtq,headline,USA Today,2024,307,0
+lgbtq,headline,USA Today,2025,409,0
+lgbtq,headline,USA Today,2026,757,0
