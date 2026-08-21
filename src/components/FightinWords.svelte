@@ -355,8 +355,7 @@
 		Yahoo Sports, ESPN, CBS Sports and USA Today, which together publish far more than Fox — so the
 		horizontal axis, which counts both archives at once, is mostly theirs. Hover any word for the
 		split. The shaded band is |z| &lt; 1.96, where the difference is not distinguishable from
-		chance. ESPN, CBS and USA Today headlines come from URL slugs, so they lack punctuation and
-		some short words.
+		chance.
 	</p>
 </div>
 

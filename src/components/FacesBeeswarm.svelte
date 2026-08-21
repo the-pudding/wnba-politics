@@ -66,7 +66,7 @@
 		const looks = Object.fromEntries(appearance.people.map((p) => [p.name, p]));
 		const tabloid = Object.fromEntries(celebrity.people.map((p) => [p.name, p]));
 		const framing = Object.fromEntries(agency.people.map((p) => [p.name, p]));
-		// Yahoo is the comparison: the slug-derived corpora are lowercase, which shifts the model
+		// Yahoo is the comparison: the biggest pool of real headlines
 		const versus = outletSentiment.byPlayer ?? {};
 
 		return [...byName]
