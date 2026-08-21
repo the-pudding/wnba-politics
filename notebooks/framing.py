@@ -14,28 +14,32 @@ from pathlib import Path
 
 TERMS_CSV = Path(__file__).resolve().parent.parent / "data" / "framing_terms.csv"
 
-TERMS = defaultdict(list)
-for _row in csv.DictReader(open(TERMS_CSV)):
-    TERMS[(_row["register"], _row["kind"])].append(_row["term"])
+
+def load_terms():
+    """Read the CSV fresh every call, so edits show up without restarting the kernel."""
+    terms = defaultdict(list)
+    for row in csv.DictReader(open(TERMS_CSV)):
+        terms[(row["register"], row["kind"])].append(row["term"])
+    return terms
 
 
 def term_set(register, kind):
-    return set(TERMS[(register, kind)])
+    return set(load_terms()[(register, kind)])
 
 
 def rx(register, kind):
     """rows OR-ed inside \\b(...)\\b, case-insensitive"""
-    return re.compile(r"\b(" + "|".join(TERMS[(register, kind)]) + r")\b", re.I)
+    return re.compile(r"\b(" + "|".join(load_terms()[(register, kind)]) + r")\b", re.I)
 
 
 def scrub_rx(register):
-    terms = TERMS.get((register, "scrub"))
+    terms = load_terms().get((register, "scrub"))
     return re.compile(r"\b(" + "|".join(terms) + r")\b", re.I) if terms else None
 
 
 def by_her_rx(surname_of):
     """{player: regex} — she is the one delivering the contact"""
-    verbs = "|".join(TERMS[("victim", "by_her_verb")])
+    verbs = "|".join(load_terms()[("victim", "by_her_verb")])
     return {name: re.compile(
         rf"\b{re.escape(last)}\b[^.]{{0,24}}\b({verbs})\b", re.I)
         for name, last in surname_of.items()}
@@ -97,7 +101,7 @@ def attribute(nlp, headlines, groups, register):
     Every word row in framing_terms.csv is a trigger, whatever its kind
     (noun, verb, adjective...) — multi-word phrases like "tiktok followers"
     work too, judged by their last word. One row per term is all it takes."""
-    trigger_terms = set().union(*[terms for (reg, kind), terms in TERMS.items()
+    trigger_terms = set().union(*[terms for (reg, kind), terms in load_terms().items()
                                   if reg == register and kind not in ("prefilter", "scrub")])
     single = {t for t in trigger_terms if " " not in t}
     phrases = {}
