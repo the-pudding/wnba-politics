@@ -74,11 +74,11 @@ def owner_tokens(token, doc):
 def nearest_named(headline, groups, before):
     """The roster name closest in front of `before` — who a pronoun refers to."""
     best, where = None, -1
-    lower = headline.lower()
     for name in groups:
-        at = lower.rfind(name.split()[-1].lower(), 0, before)
-        if at != -1 and at > where:
-            best, where = name, at
+        # whole words only: "Bout" must not match inside "about"
+        for m in re.finditer(r"\b" + re.escape(name.split()[-1]) + r"\b", headline[:before], re.I):
+            if m.start() > where:
+                best, where = name, m.start()
     return best
 
 
