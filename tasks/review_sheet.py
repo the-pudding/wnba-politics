@@ -16,10 +16,24 @@ sheets are separate: those are public, pulled by npm run gdoc directly, and
 never pushed back.
 """
 import csv
+import os
+import subprocess
 import sys
 from pathlib import Path
 
-import gspread
+try:
+    import gspread
+except ModuleNotFoundError:
+    # npm sometimes runs this with a python that doesn't have gspread
+    # (e.g. the system one) — find one that does and hand the job over
+    home = str(Path.home())
+    for candidate in (f"{home}/anaconda3/bin/python3", f"{home}/miniconda3/bin/python3"):
+        if os.path.exists(candidate) and candidate != sys.executable:
+            ok = subprocess.run([candidate, "-c", "import gspread"],
+                                capture_output=True).returncode == 0
+            if ok:
+                os.execv(candidate, [candidate] + sys.argv)
+    sys.exit("no python with gspread found — run: pip install gspread")
 
 SHEET_ID = "13RE_msKDrt6Ma_RJNIVgHyn3zXgexhdxqi5aJKncOhk"
 CSV = Path(__file__).resolve().parent.parent / "data" / "framing_review.csv"
