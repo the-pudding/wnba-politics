@@ -40,8 +40,10 @@ def scrub_rx(register):
 def by_her_rx(surname_of):
     """{player: regex} — she is the one delivering the contact"""
     verbs = "|".join(load_terms()[("victim", "by_her_verb")])
+    # the surname must be capitalized (Brink the player, not "the brink of");
+    # the verbs still match in any case
     return {name: re.compile(
-        rf"\b{re.escape(last)}\b[^.]{{0,24}}\b({verbs})\b", re.I)
+        rf"\b{re.escape(last)}\b[^.]{{0,24}}\b(?i:{verbs})\b")
         for name, last in surname_of.items()}
 
 
@@ -79,8 +81,9 @@ def nearest_named(headline, groups, before):
     """The roster name closest in front of `before` — who a pronoun refers to."""
     best, where = None, -1
     for name in groups:
-        # whole words only: "Bout" must not match inside "about"
-        for m in re.finditer(r"\b" + re.escape(name.split()[-1]) + r"\b", headline[:before], re.I):
+        # whole words only ("Bout" must not match inside "about") and
+        # capitalized only ("Brink" the player, not "the brink of")
+        for m in re.finditer(r"\b" + re.escape(name.split()[-1]) + r"\b", headline[:before]):
             if m.start() > where:
                 best, where = name, m.start()
     return best
@@ -120,6 +123,10 @@ def attribute(nlp, headlines, groups, register):
     text_for = (lambda r: scrub.sub(" ", r["t"])) if scrub else (lambda r: r["t"])
     attributed = defaultdict(list)
     for row, doc in zip(headlines, nlp.pipe([text_for(r) for r in headlines], batch_size=64)):
+        # only people whose surname appears capitalized count as present —
+        # "Brink" the player, never "the brink of suspension"
+        present = [name for name in groups
+                   if re.search(r"\b" + re.escape(name.split()[-1]) + r"\b", row["t"])]
         owners_found, pronoun_at = set(), None
         for i, token in enumerate(doc):
             word = clean(token.text)
@@ -136,7 +143,7 @@ def attribute(nlp, headlines, groups, register):
                 continue
             owned = words_under(owner_tokens(hit, doc))
             direct = False
-            for name in groups:
+            for name in present:
                 if name.split()[-1].lower() in owned:
                     owners_found.add(name)
                     direct = True
@@ -144,13 +151,13 @@ def attribute(nlp, headlines, groups, register):
                 root = next((t for t in doc if t.dep_ == "ROOT"), None)
                 if root is not None:
                     subject_words = words_under([c for c in root.children if c.dep_ in SUBJECT_DEPS])
-                    for name in groups:
+                    for name in present:
                         if name.split()[-1].lower() in subject_words:
                             owners_found.add(name)
             if owned & PRONOUNS:
                 pronoun_at = min(pronoun_at, hit.idx) if pronoun_at is not None else hit.idx
         if not owners_found and pronoun_at is not None:
-            who = nearest_named(row["t"], groups, pronoun_at)
+            who = nearest_named(row["t"], present, pronoun_at)
             if who:
                 owners_found.add(who)
         for name in owners_found:
