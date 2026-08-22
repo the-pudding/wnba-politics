@@ -18,21 +18,18 @@
 			key: "political",
 			label: "Politicized",
 			blurb:
-				"Share of her Fox headlines carrying political or culture-war language."
+				"Share of Fox headlines carrying political or culture-war language."
 		},
 		{
 			key: "appearance",
 			label: "Appearance",
-			blurb:
-				"Share of her Fox headlines where a clothing word is grammatically hers."
+			blurb: "Share of Fox headlines discussing appearances."
 		},
 		{
 			key: "celebrity",
 			label: "Celebrity",
 			blurb:
-				"Share of her Fox headlines about her private life or her appearance — a partner, " +
-				"a divorce, a family member, an outfit — where the tabloid word is grammatically " +
-				"hers, not somebody else's in the same headline."
+				"Share of her Fox headlines about private life, appearance, and celebrity."
 		}
 	];
 

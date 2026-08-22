@@ -18,9 +18,4 @@ export default [
 		filepath: "data/framing_terms.csv",
 		sheet: true
 	},
-	{
-		id: "1XTCARQLFnK00pbbYG88IBCzae3QcLz2zGMrZZqbBJd8",
-		filepath: "data/framing_review.csv",
-		sheet: true
-	}
 ];
