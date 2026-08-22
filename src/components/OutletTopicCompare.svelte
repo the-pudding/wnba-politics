@@ -206,7 +206,7 @@
 							<img
 								src="{base}/logos/{LOGOS[outlet].file}"
 								alt={outlet}
-								style:width="30px"
+								style:height="22px"
 								style:filter={outlet === "Fox News (NBA)"
 									? "grayscale(1) opacity(0.75)"
 									: ""}
