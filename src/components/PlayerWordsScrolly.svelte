@@ -11,32 +11,13 @@
 
 	let { steps = null } = $props();
 
-	const FALLBACK = [
-		{ who: "Caitlin Clark", rel: "describe", vs: "outlets", words: [],
-		  html: "Start with adjectives. This is how Fox describes Caitlin Clark, against how "
-		      + "everyone else describes the same player." },
-		{ who: "Caitlin Clark", rel: "describe", vs: "pair",
-		  pair: "Caitlin Clark vs Angel Reese", words: [],
-		  html: "Now Clark against Reese, inside Fox — the comparison Fox's own coverage "
-		      + "keeps making." },
-		{ who: "Caitlin Clark", rel: "object", vs: "outlets", words: [],
-		  html: "Verbs where Clark is the object: what gets done to her. Fox on the left, "
-		      + "the rest of the press on the right." },
-		{ who: "Sophie Cunningham", rel: "subject", vs: "outlets", words: [],
-		  html: "Sophie Cunningham, what she does." },
-		{ who: "Sophie Cunningham", rel: "object", vs: "outlets", words: [],
-		  html: "And what is done to her." },
-		{ who: "DiJonai Carrington", rel: "subject", vs: "outlets", words: [],
-		  html: "DiJonai Carrington, what she does." }
-	];
 
 	const list = (value) =>
 		(value ?? "").split(",").map((w) => w.trim()).filter(Boolean);
 
 	const STEPS = $derived(
-		steps?.length
-			? steps.filter((step) => (step.text ?? "").trim()).map((step) => ({
-				who: (step.who ?? "Caitlin Clark").trim(),
+		(steps ?? []).filter((step) => (step.text ?? "").trim()).map((step) => ({
+				who: (step.who ?? "").trim(),
 				rel: (step.rel ?? "describe").trim(),
 				vs: (step.vs ?? "outlets").trim(),
 				pair: (step.pair ?? "").trim() || null,
@@ -45,7 +26,6 @@
 				title: (step.title ?? "").trim(),
 				html: step.text ?? ""
 			}))
-			: FALLBACK
 	);
 
 	let index = $state(0);

@@ -1,6 +1,5 @@
 <script>
 	// How Fox frames each player — tone / political / appearance / celebrity —
-	// behind one set of tabs, same cast in every view.
 	// Doc embed:  chart: framing-tabs
 	import FacesBeeswarm from "$components/FacesBeeswarm.svelte";
 

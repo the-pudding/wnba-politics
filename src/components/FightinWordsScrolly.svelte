@@ -7,33 +7,13 @@
 
 	let { steps = null } = $props();
 
-	const FALLBACK = [
-		{
-			words: ["hard", "foul", "fouls", "calls", "flagrant"],
-			html: "Case in point: Fox News has consistently discussed &ldquo;<strong>hard</strong>&rdquo; "
-				+ "<strong>fouls</strong> against Caitlin Clark more than other outlets."
-		},
-		{
-			words: ["race", "racism", "racist", "privilege", "black", "white"],
-			html: "They also invoked <strong>race</strong> and <strong>racism</strong> more than other "
-				+ "outlets, as well as culture war buzzwords like &ldquo;<strong>privilege</strong>.&rdquo;"
-		},
-		{
-			words: null,
-			explore: true,
-			html: "Every word in both archives, and the rest of the controls. Switch between whole "
-				+ "articles and headlines, or filter to Caitlin Clark alone."
-		}
-	];
 
 	const STEPS = $derived(
-		steps?.length
-			? steps.filter((step) => (step.text ?? "").trim()).map((step) => ({
+		(steps ?? []).filter((step) => (step.text ?? "").trim()).map((step) => ({
 				words: (step.words ?? "").split(",").map((w) => w.trim()).filter(Boolean),
 				explore: step.explore === true || step.explore === "true",
 				html: step.text ?? ""
 			}))
-			: FALLBACK
 	);
 
 	let index = $state(0);

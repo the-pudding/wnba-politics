@@ -39,11 +39,8 @@
 	let { highlight = null, bare = false, controls = true, mode = null,
 		source = null } = $props();
 
-	const DEFAULT_HIGHLIGHT = new Set(["white", "foul", "fouls", "calls", "alleged", "trans",
-		"transgender", "privilege", "womens", "media", "star", "fans", "social",
-		"olympics", "Donald Trump", "Caitlin Clark"]);
 	let HIGHLIGHT = $derived(
-		highlight?.length ? new Set(highlight.map((w) => w.toLowerCase())) : DEFAULT_HIGHLIGHT
+		new Set((highlight ?? []).map((w) => w.toLowerCase()))
 	);
 	let beating = $derived(Boolean(highlight?.length));
 

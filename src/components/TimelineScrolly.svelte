@@ -12,16 +12,9 @@
 
 	let { steps = null, title = "", caption = "" } = $props();
 
-	const FALLBACK = [
-		{ until: "2021-12", text: "Through 2021, Fox almost never writes about trans athletes and the WNBA." },
-		{ until: "2022-12", text: "2022 is the Griner year, and it barely moves." },
-		{ until: "2023-12", text: "Then 2023: Griner says she'd welcome trans teammates, and Fox platforms Riley Gaines." },
-		{ until: "2026-12", text: "And then 2026." }
-	];
 
 	const STEPS = $derived(
-		steps?.length
-			? steps.filter((step) => Object.values(step).some((v) => (v ?? "").toString().trim()))
+		(steps ?? []).filter((step) => Object.values(step).some((v) => (v ?? "").toString().trim()))
 				.map((step) => ({
 				until: (step.until ?? "").trim(),
 				// per-beat Doc options: ymax cap; from/to window (bare years expand)
@@ -30,7 +23,6 @@
 				to: expand(step.to, "-12"),
 				html: step.text ?? ""
 			}))
-			: FALLBACK
 	);
 
 	let index = $state(0);

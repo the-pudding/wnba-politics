@@ -7,29 +7,13 @@
 
 	let { steps = null } = $props();
 
-	const FALLBACK = [
-		{ names: ["Caitlin Clark"],
-		  html: "Overall, Fox News only discusses Caitlin Clark slightly more than other outlets." },
-		{ names: ["DiJonai Carrington"],
-		  html: "But they discuss players like DiJonai Carrington, who have committed fouls against "
-		      + "Caitlin Clark, and who also have outspoken views against the Trump administration, "
-		      + "much more." },
-		{ names: ["Paige Bueckers", "Napheesa Collier", "A'ja Wilson"],
-		  html: "And they discuss comparable stars like Paige Bueckers, Napheesa Collier, and "
-		      + "A&rsquo;ja Wilson much less." },
-		{ names: [], explore: true,
-		  html: "Every player, and the outlet picker: set Fox against Yahoo, ESPN, CBS or USA Today "
-		      + "on its own." }
-	];
 
 	const STEPS = $derived(
-		steps?.length
-			? steps.filter((step) => (step.text ?? "").trim()).map((step) => ({
+		(steps ?? []).filter((step) => (step.text ?? "").trim()).map((step) => ({
 				names: (step.names ?? step.words ?? "").split(",").map((n) => n.trim()).filter(Boolean),
 				explore: step.explore === true || step.explore === "true",
 				html: step.text ?? ""
 			}))
-			: FALLBACK
 	);
 
 	let index = $state(0);
