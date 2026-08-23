@@ -6,14 +6,14 @@ polrace,body,Fox News,2022,287,31
 polrace,body,Fox News,2023,168,25
 polrace,body,Fox News,2024,666,106
 polrace,body,Fox News,2025,464,87
-polrace,body,Fox News,2026,597,189
+polrace,body,Fox News,2026,606,193
 polrace,body,Just Women's Sports,2020,62,15
 polrace,body,Just Women's Sports,2021,371,30
 polrace,body,Just Women's Sports,2022,779,37
 polrace,body,Just Women's Sports,2023,708,18
 polrace,body,Just Women's Sports,2024,279,7
 polrace,body,Just Women's Sports,2025,458,9
-polrace,body,Just Women's Sports,2026,525,16
+polrace,body,Just Women's Sports,2026,539,16
 polrace,body,Yahoo Sports (syndicated pool),2019,69,4
 polrace,body,Yahoo Sports (syndicated pool),2020,250,103
 polrace,body,Yahoo Sports (syndicated pool),2021,475,46
@@ -21,7 +21,7 @@ polrace,body,Yahoo Sports (syndicated pool),2022,1288,106
 polrace,body,Yahoo Sports (syndicated pool),2023,771,51
 polrace,body,Yahoo Sports (syndicated pool),2024,3282,178
 polrace,body,Yahoo Sports (syndicated pool),2025,11644,310
-polrace,body,Yahoo Sports (syndicated pool),2026,10743,807
+polrace,body,Yahoo Sports (syndicated pool),2026,11208,881
 polrace,body,ESPN,2019,303,8
 polrace,body,ESPN,2020,417,152
 polrace,body,ESPN,2021,391,52
@@ -29,7 +29,7 @@ polrace,body,ESPN,2022,519,43
 polrace,body,ESPN,2023,485,24
 polrace,body,ESPN,2024,774,50
 polrace,body,ESPN,2025,1051,28
-polrace,body,ESPN,2026,939,52
+polrace,body,ESPN,2026,979,54
 polrace,body,Fox News (NBA),2019,770,113
 polrace,body,Fox News (NBA),2020,1424,358
 polrace,body,Fox News (NBA),2021,2307,233
@@ -45,14 +45,14 @@ polrace,headline,Fox News,2022,287,3
 polrace,headline,Fox News,2023,168,4
 polrace,headline,Fox News,2024,666,25
 polrace,headline,Fox News,2025,464,12
-polrace,headline,Fox News,2026,597,30
+polrace,headline,Fox News,2026,606,31
 polrace,headline,Just Women's Sports,2020,62,1
 polrace,headline,Just Women's Sports,2021,371,1
 polrace,headline,Just Women's Sports,2022,779,2
 polrace,headline,Just Women's Sports,2023,708,1
 polrace,headline,Just Women's Sports,2024,279,0
 polrace,headline,Just Women's Sports,2025,458,1
-polrace,headline,Just Women's Sports,2026,525,4
+polrace,headline,Just Women's Sports,2026,539,4
 polrace,headline,Yahoo Sports (syndicated pool),2019,69,1
 polrace,headline,Yahoo Sports (syndicated pool),2020,250,24
 polrace,headline,Yahoo Sports (syndicated pool),2021,475,7
@@ -60,7 +60,7 @@ polrace,headline,Yahoo Sports (syndicated pool),2022,1288,3
 polrace,headline,Yahoo Sports (syndicated pool),2023,771,6
 polrace,headline,Yahoo Sports (syndicated pool),2024,3282,40
 polrace,headline,Yahoo Sports (syndicated pool),2025,11644,53
-polrace,headline,Yahoo Sports (syndicated pool),2026,10743,118
+polrace,headline,Yahoo Sports (syndicated pool),2026,11208,124
 polrace,headline,ESPN,2019,303,2
 polrace,headline,ESPN,2020,417,22
 polrace,headline,ESPN,2021,391,5
@@ -68,7 +68,7 @@ polrace,headline,ESPN,2022,519,5
 polrace,headline,ESPN,2023,485,1
 polrace,headline,ESPN,2024,774,1
 polrace,headline,ESPN,2025,1051,1
-polrace,headline,ESPN,2026,939,7
+polrace,headline,ESPN,2026,979,7
 polrace,headline,The Athletic,2019,137,0
 polrace,headline,The Athletic,2020,149,2
 polrace,headline,The Athletic,2021,202,0
@@ -76,7 +76,7 @@ polrace,headline,The Athletic,2022,246,0
 polrace,headline,The Athletic,2023,328,0
 polrace,headline,The Athletic,2024,512,2
 polrace,headline,The Athletic,2025,590,1
-polrace,headline,The Athletic,2026,364,2
+polrace,headline,The Athletic,2026,378,2
 polrace,headline,Fox News (NBA),2019,770,15
 polrace,headline,Fox News (NBA),2020,1424,93
 polrace,headline,Fox News (NBA),2021,2307,65
@@ -92,7 +92,7 @@ polrace,headline,CBS Sports,2022,377,1
 polrace,headline,CBS Sports,2023,339,2
 polrace,headline,CBS Sports,2024,709,3
 polrace,headline,CBS Sports,2025,946,2
-polrace,headline,CBS Sports,2026,296,4
+polrace,headline,CBS Sports,2026,315,4
 polrace,headline,USA Today,2019,384,1
 polrace,headline,USA Today,2020,183,11
 polrace,headline,USA Today,2021,213,3
@@ -100,7 +100,7 @@ polrace,headline,USA Today,2022,308,1
 polrace,headline,USA Today,2023,187,0
 polrace,headline,USA Today,2024,307,3
 polrace,headline,USA Today,2025,409,1
-polrace,headline,USA Today,2026,757,4
+polrace,headline,USA Today,2026,785,5
 lgbtq,body,Fox News,2019,44,0
 lgbtq,body,Fox News,2020,97,6
 lgbtq,body,Fox News,2021,165,2
@@ -108,14 +108,14 @@ lgbtq,body,Fox News,2022,287,11
 lgbtq,body,Fox News,2023,168,16
 lgbtq,body,Fox News,2024,666,12
 lgbtq,body,Fox News,2025,464,10
-lgbtq,body,Fox News,2026,597,65
+lgbtq,body,Fox News,2026,606,69
 lgbtq,body,Just Women's Sports,2020,62,3
 lgbtq,body,Just Women's Sports,2021,371,6
 lgbtq,body,Just Women's Sports,2022,779,14
 lgbtq,body,Just Women's Sports,2023,708,5
 lgbtq,body,Just Women's Sports,2024,279,1
 lgbtq,body,Just Women's Sports,2025,458,1
-lgbtq,body,Just Women's Sports,2026,525,3
+lgbtq,body,Just Women's Sports,2026,539,3
 lgbtq,body,Yahoo Sports (syndicated pool),2019,69,1
 lgbtq,body,Yahoo Sports (syndicated pool),2020,250,19
 lgbtq,body,Yahoo Sports (syndicated pool),2021,475,11
@@ -123,7 +123,7 @@ lgbtq,body,Yahoo Sports (syndicated pool),2022,1288,76
 lgbtq,body,Yahoo Sports (syndicated pool),2023,771,14
 lgbtq,body,Yahoo Sports (syndicated pool),2024,3282,29
 lgbtq,body,Yahoo Sports (syndicated pool),2025,11644,50
-lgbtq,body,Yahoo Sports (syndicated pool),2026,10743,133
+lgbtq,body,Yahoo Sports (syndicated pool),2026,11208,152
 lgbtq,body,ESPN,2019,303,4
 lgbtq,body,ESPN,2020,417,46
 lgbtq,body,ESPN,2021,391,18
@@ -131,7 +131,7 @@ lgbtq,body,ESPN,2022,519,26
 lgbtq,body,ESPN,2023,485,6
 lgbtq,body,ESPN,2024,774,14
 lgbtq,body,ESPN,2025,1051,7
-lgbtq,body,ESPN,2026,939,6
+lgbtq,body,ESPN,2026,979,7
 lgbtq,body,Fox News (NBA),2019,770,6
 lgbtq,body,Fox News (NBA),2020,1424,8
 lgbtq,body,Fox News (NBA),2021,2307,46
@@ -147,14 +147,14 @@ lgbtq,headline,Fox News,2022,287,0
 lgbtq,headline,Fox News,2023,168,1
 lgbtq,headline,Fox News,2024,666,1
 lgbtq,headline,Fox News,2025,464,0
-lgbtq,headline,Fox News,2026,597,2
+lgbtq,headline,Fox News,2026,606,3
 lgbtq,headline,Just Women's Sports,2020,62,0
 lgbtq,headline,Just Women's Sports,2021,371,1
 lgbtq,headline,Just Women's Sports,2022,779,0
 lgbtq,headline,Just Women's Sports,2023,708,0
 lgbtq,headline,Just Women's Sports,2024,279,0
 lgbtq,headline,Just Women's Sports,2025,458,1
-lgbtq,headline,Just Women's Sports,2026,525,0
+lgbtq,headline,Just Women's Sports,2026,539,0
 lgbtq,headline,Yahoo Sports (syndicated pool),2019,69,0
 lgbtq,headline,Yahoo Sports (syndicated pool),2020,250,0
 lgbtq,headline,Yahoo Sports (syndicated pool),2021,475,0
@@ -162,7 +162,7 @@ lgbtq,headline,Yahoo Sports (syndicated pool),2022,1288,0
 lgbtq,headline,Yahoo Sports (syndicated pool),2023,771,0
 lgbtq,headline,Yahoo Sports (syndicated pool),2024,3282,1
 lgbtq,headline,Yahoo Sports (syndicated pool),2025,11644,13
-lgbtq,headline,Yahoo Sports (syndicated pool),2026,10743,9
+lgbtq,headline,Yahoo Sports (syndicated pool),2026,11208,11
 lgbtq,headline,ESPN,2019,303,0
 lgbtq,headline,ESPN,2020,417,0
 lgbtq,headline,ESPN,2021,391,0
@@ -170,7 +170,7 @@ lgbtq,headline,ESPN,2022,519,0
 lgbtq,headline,ESPN,2023,485,0
 lgbtq,headline,ESPN,2024,774,4
 lgbtq,headline,ESPN,2025,1051,0
-lgbtq,headline,ESPN,2026,939,0
+lgbtq,headline,ESPN,2026,979,0
 lgbtq,headline,The Athletic,2019,137,1
 lgbtq,headline,The Athletic,2020,149,0
 lgbtq,headline,The Athletic,2021,202,0
@@ -178,7 +178,7 @@ lgbtq,headline,The Athletic,2022,246,1
 lgbtq,headline,The Athletic,2023,328,0
 lgbtq,headline,The Athletic,2024,512,0
 lgbtq,headline,The Athletic,2025,590,0
-lgbtq,headline,The Athletic,2026,364,0
+lgbtq,headline,The Athletic,2026,378,0
 lgbtq,headline,Fox News (NBA),2019,770,0
 lgbtq,headline,Fox News (NBA),2020,1424,0
 lgbtq,headline,Fox News (NBA),2021,2307,2
@@ -194,7 +194,7 @@ lgbtq,headline,CBS Sports,2022,377,0
 lgbtq,headline,CBS Sports,2023,339,0
 lgbtq,headline,CBS Sports,2024,709,0
 lgbtq,headline,CBS Sports,2025,946,0
-lgbtq,headline,CBS Sports,2026,296,0
+lgbtq,headline,CBS Sports,2026,315,0
 lgbtq,headline,USA Today,2019,384,0
 lgbtq,headline,USA Today,2020,183,0
 lgbtq,headline,USA Today,2021,213,0
@@ -202,4 +202,4 @@ lgbtq,headline,USA Today,2022,308,0
 lgbtq,headline,USA Today,2023,187,0
 lgbtq,headline,USA Today,2024,307,0
 lgbtq,headline,USA Today,2025,409,0
-lgbtq,headline,USA Today,2026,757,0
+lgbtq,headline,USA Today,2026,785,0
