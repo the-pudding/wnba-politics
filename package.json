@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "prettier --check --plugin-search-dir=. .",
     "format": "prettier --write --plugin-search-dir=. .",
-    "sheetpush": "python3 tasks/review_sheet.py push"
+    "sheetpush": "python3 tasks/review_sheet.py push",
+    "drivepush": "python3 tasks/drive_push.py"
   },
   "devDependencies": {
     "@lucide/svelte": "^1.16.0",
