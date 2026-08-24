@@ -22,6 +22,11 @@
 
 	// Doc `chart:` names -> components
 	const components = {
+		// Doc block names = component names (same pattern as kids-book-animals)
+		Toc, TimelineBars, TimelineDotsScrolly, OutletTopicCompare, NgramChart,
+		TernaryStatic, TernaryScrolly, FightinWordsScrolly, OutletGapScrolly,
+		FightinWordsVerbsAdj, NetworkScrolly, FramingTabs, HeadlineTable,
+		// legacy Doc ids — delete once the Doc carries component names
 		toc: Toc,
 		"timeline-clark": TimelineBars,
 		"timeline-griner": TimelineBars,
@@ -31,7 +36,7 @@
 		"ternary-static": TernaryStatic,
 		"ternary-scrolly": TernaryScrolly,
 		"fightin-words-scrolly": FightinWordsScrolly,
-		"word-quadrant-scrolly": FightinWordsScrolly, // old Doc name, drop after the Doc updates
+		"word-quadrant-scrolly": FightinWordsScrolly,
 		"outlet-gap-scrolly": OutletGapScrolly,
 		"player-words-scrolly": FightinWordsVerbsAdj,
 		"network-story": NetworkScrolly,
