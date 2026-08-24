@@ -214,7 +214,7 @@
 
 	.face-mark { cursor: default; }
 	.face-ring {
-		fill: var(--color-page-orange, #f9a660);
+		fill: var(--page-orange, #f9a660);
 		stroke: rgba(255, 253, 248, 0.92);
 		stroke-width: 2;
 	}

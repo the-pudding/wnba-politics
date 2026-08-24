@@ -3,15 +3,15 @@
 	import { base } from "$app/paths";
 	import CMS from "$components/helpers/CMS.svelte";
 	import Toc from "$components/Toc.svelte";
-	import TimelineBars from "$components/TimelineBars.svelte";
-	import TimelineDotsScrolly from "$components/TimelineDotsScrolly.svelte";
+	import TimelineStatic from "$components/TimelineStatic.svelte";
+	import TimelineScrolly from "$components/TimelineScrolly.svelte";
 	import OutletTopicCompare from "$components/OutletTopicCompare.svelte";
 	import NgramChart from "$components/NgramChart.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
 	import TernaryScrolly from "$components/TernaryScrolly.svelte";
 	import FightinWordsScrolly from "$components/FightinWordsScrolly.svelte";
 	import OutletGapScrolly from "$components/OutletGapScrolly.svelte";
-	import FightinWordsVerbsAdj from "$components/FightinWordsVerbsAdj.svelte";
+	import PlayerWordsScrolly from "$components/PlayerWordsScrolly.svelte";
 	import NetworkScrolly from "$components/NetworkScrolly.svelte";
 	import FramingTabs from "$components/FramingTabs.svelte";
 	import HeadlineTable from "$components/HeadlineTable.svelte";
@@ -23,9 +23,9 @@
 	// Doc `chart:` names -> components
 	const components = {
 		toc: Toc,
-		"timeline-clark": TimelineBars,
-		"timeline-griner": TimelineBars,
-		"timeline-scrolly": TimelineDotsScrolly,
+		"timeline-clark": TimelineStatic,
+		"timeline-griner": TimelineStatic,
+		"timeline-scrolly": TimelineScrolly,
 		"outlet-topics": OutletTopicCompare,
 		ngram: NgramChart,
 		"ternary-static": TernaryStatic,
@@ -33,7 +33,7 @@
 		"fightin-words-scrolly": FightinWordsScrolly,
 		"word-quadrant-scrolly": FightinWordsScrolly, // old Doc name, drop after the Doc updates
 		"outlet-gap-scrolly": OutletGapScrolly,
-		"player-words-scrolly": FightinWordsVerbsAdj,
+		"player-words-scrolly": PlayerWordsScrolly,
 		"network-story": NetworkScrolly,
 		"framing-tabs": FramingTabs,
 		"headline-table": HeadlineTable

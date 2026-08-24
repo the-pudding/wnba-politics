@@ -1,7 +1,7 @@
 <script>
 	// One dot per Fox article about trans athletes — a beeswarm anchored to
 	// publication date, piling upward when a month gets crowded.
-	// Same scrolly contract as TimelineBars: revealUntil, startMonth/endMonth, yCap.
+	// Same scrolly contract as TimelineStatic: revealUntil, startMonth/endMonth, yCap.
 	import articles from "$data/trans_articles.csv";
 	import { forceSimulation, forceX, forceY, forceCollide } from "d3-force";
 

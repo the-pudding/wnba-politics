@@ -3,7 +3,7 @@
 	// calls out the players it's about, the rest receding.
 	// Doc embed:  chart: outlet-gap-scrolly | steps: dotSteps
 	import Scrolly from "$components/helpers/Scrolly.svelte";
-	import OutletGapDotPlot from "$components/OutletGapDotPlot.svelte";
+	import OutletGap from "$components/OutletGap.svelte";
 
 	let { steps = null } = $props();
 
@@ -22,7 +22,7 @@
 
 <section class="gap-scrolly">
 	<div class="sticky">
-		<OutletGapDotPlot highlight={current.explore ? null : current.names} bare={!current.explore} />
+		<OutletGap highlight={current.explore ? null : current.names} bare={!current.explore} />
 	</div>
 
 	<div class="steps">

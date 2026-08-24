@@ -908,7 +908,7 @@
 			height: 88vh;
 			padding-left: 0;
 			transition: none;
-			background: var(--color-page-orange, #f9a660);
+			background: var(--page-orange, #f79241);
 			z-index: 0;
 		}
 		.steps {
@@ -997,7 +997,7 @@
 		font-weight: 700;
 		fill: var(--color-ink);
 		paint-order: stroke;
-		stroke: var(--color-page-orange, #f9a660);
+		stroke: var(--page-orange, #f79241);
 		stroke-width: 3px;
 		stroke-linejoin: round;
 		pointer-events: none;
