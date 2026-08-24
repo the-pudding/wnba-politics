@@ -3,8 +3,8 @@
 	import { base } from "$app/paths";
 	import CMS from "$components/helpers/CMS.svelte";
 	import Toc from "$components/Toc.svelte";
-	import TimelineStatic from "$components/TimelineStatic.svelte";
-	import TimelineScrolly from "$components/TimelineScrolly.svelte";
+	import TimelineBars from "$components/TimelineBars.svelte";
+	import TimelineDotsScrolly from "$components/TimelineDotsScrolly.svelte";
 	import OutletTopicCompare from "$components/OutletTopicCompare.svelte";
 	import NgramChart from "$components/NgramChart.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
@@ -23,9 +23,9 @@
 	// Doc `chart:` names -> components
 	const components = {
 		toc: Toc,
-		"timeline-clark": TimelineStatic,
-		"timeline-griner": TimelineStatic,
-		"timeline-scrolly": TimelineScrolly,
+		"timeline-clark": TimelineBars,
+		"timeline-griner": TimelineBars,
+		"timeline-scrolly": TimelineDotsScrolly,
 		"outlet-topics": OutletTopicCompare,
 		ngram: NgramChart,
 		"ternary-static": TernaryStatic,
