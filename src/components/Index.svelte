@@ -11,7 +11,7 @@
 	import TernaryScrolly from "$components/TernaryScrolly.svelte";
 	import FightinWordsScrolly from "$components/FightinWordsScrolly.svelte";
 	import OutletGapScrolly from "$components/OutletGapScrolly.svelte";
-	import PlayerWordsScrolly from "$components/PlayerWordsScrolly.svelte";
+	import FightinWordsVerbsAdj from "$components/FightinWordsVerbsAdj.svelte";
 	import NetworkScrolly from "$components/NetworkScrolly.svelte";
 	import FramingTabs from "$components/FramingTabs.svelte";
 	import HeadlineTable from "$components/HeadlineTable.svelte";
@@ -33,7 +33,7 @@
 		"fightin-words-scrolly": FightinWordsScrolly,
 		"word-quadrant-scrolly": FightinWordsScrolly, // old Doc name, drop after the Doc updates
 		"outlet-gap-scrolly": OutletGapScrolly,
-		"player-words-scrolly": PlayerWordsScrolly,
+		"player-words-scrolly": FightinWordsVerbsAdj,
 		"network-story": NetworkScrolly,
 		"framing-tabs": FramingTabs,
 		"headline-table": HeadlineTable
