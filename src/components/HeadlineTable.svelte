@@ -340,13 +340,9 @@
 		</table>
 	</div>
 
-	<p class="chart-caption">
-		{#if caption}{@html caption}{:else}
-			Headlines collected from Fox News and OutKick. Sentiment is a five-class
-			RoBERTa classifier scored as an expected value from −1 to +1; it reads
-			tone, not accuracy or bias.
-		{/if}
-	</p>
+	{#if caption}
+		<p class="chart-caption">{@html caption}</p>
+	{/if}
 </section>
 
 <style>
