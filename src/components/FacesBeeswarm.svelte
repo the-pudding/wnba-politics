@@ -6,13 +6,18 @@
 	import { scaleLinear } from "d3-scale";
 	import headlineRows from "$data/fox_player_headlines.csv";
 	import sentimentRows from "$data/headline_sentiment.csv";
-	import politicizationRows from "$data/politicization_people.csv";
-	import appearanceRows from "$data/appearance_talk.csv";
-	import celebrityRows from "$data/celebrity_talk.csv";
-	import agencyRows from "$data/agency.csv";
+	import framingRows from "$data/framing.csv";
+	const byMetric = (m) => framingRows.filter((r) => r.metric === m);
+	const politicizationRows = byMetric("politicization");
+	const appearanceRows = byMetric("appearance");
+	const celebrityRows = byMetric("celebrity");
+	const agencyRows = byMetric("agency");
 	import versusRows from "$data/sentiment_outlets.csv";
 	import network from "$data/headline_network.json";
-	import faceFiles from "$data/net_faces.json";
+	import roster from "$data/people.json";
+	const faceFiles = Object.fromEntries(
+		Object.values(roster).filter((p) => p.face)
+			.map((p) => [p.slug, p.face.slice(p.slug.length)]));
 
 	const headlines = {
 		rows: headlineRows.map((r) => ({

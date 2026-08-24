@@ -5,7 +5,10 @@
 	import { base } from "$app/paths";
 	import { scaleLinear } from "d3-scale";
 	import data from "$data/outlet_gap.json";
-	import faceFiles from "$data/net_faces.json";
+	import roster from "$data/people.json";
+	const faceFiles = Object.fromEntries(
+		Object.values(roster).filter((p) => p.face)
+			.map((p) => [p.slug, p.face.slice(p.slug.length)]));
 
 	const OUTLETS = ["Yahoo Sports", "ESPN", "CBS Sports", "USA Today"];
 	const ALL = "the sports press";

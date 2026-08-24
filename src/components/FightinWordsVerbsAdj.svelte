@@ -7,7 +7,10 @@
 	import FightinWords from "$components/FightinWords.svelte";
 	import { playerWordsSource } from "../utils/playerWords.js";
 	import { base } from "$app/paths";
-	import faceFiles from "$data/net_faces.json";
+	import roster from "$data/people.json";
+	const faceFiles = Object.fromEntries(
+		Object.values(roster).filter((p) => p.face)
+			.map((p) => [p.slug, p.face.slice(p.slug.length)]));
 
 	let { steps = null } = $props();
 

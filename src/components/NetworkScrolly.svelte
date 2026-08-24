@@ -4,11 +4,15 @@
 	// Doc embed: [networkSteps] year: 2022 | focus: … | text: …
 	import { onMount } from "svelte";
 	import { base } from "$app/paths";
-	import faceFiles from "$data/net_faces.json";
+	import roster from "$data/people.json";
+	const faceFiles = Object.fromEntries(
+		Object.values(roster).filter((p) => p.face)
+			.map((p) => [p.slug, p.face.slice(p.slug.length)]));
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import headlineNet from "$data/headline_network.json";
 	import articleNet from "$data/article_network.json";
-	import bios from "$data/net_bios.json";
+	const bios = Object.fromEntries(
+		Object.entries(roster).filter(([, p]) => p.bio).map(([n, p]) => [n, p.bio]));
 	import sentimentRows from "$data/headline_sentiment.csv";
 	const sentimentScores = Object.fromEntries(
 		sentimentRows.map((r) => [r.headline, +r.score])

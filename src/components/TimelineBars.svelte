@@ -1,8 +1,9 @@
 <script>
 	// Fox WNBA articles per month.
 	// Doc embed: chart: timeline-clark | nba: true | caption: …
-	import foxTimeline from "$data/fox_timeline.json";
-	import nbaMonthly from "$data/fox_nba_monthly.json";
+	import timeline from "$data/timeline.json";
+	const foxTimeline = timeline.wnba;
+	const nbaMonthly = timeline.nba;
 	import { niceTicks, yearTicks } from "../utils/chartAxis.js";
 
 	let {

@@ -4,9 +4,10 @@
 	// Doc embed:  chart: fightin-words
 	import { scaleLinear, scaleLog, scaleSqrt } from "d3-scale";
 	import { base } from "$app/paths";
-	import data from "$data/fighting_words_grid.json";
+	import fw from "$data/fighting_words.json";
+	const data = fw.grid;
 	// story-word examples ship inline; the full 17k-word set loads on first hover
-	import litExamples from "$data/fw_examples_lit.json";
+	const litExamples = fw.lit;
 
 	const FOX = "var(--color-fox)";
 	const OTHER = "var(--color-ink)";
