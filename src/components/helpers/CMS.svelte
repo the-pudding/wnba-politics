@@ -26,6 +26,14 @@
 
 	// one-liner: `chart: name | key: value | …`
 	// block (scrollies): `{.chart}` with `id:` and a nested `[.steps]` array
+	// {.TimelineBars} block: the type IS the component; value holds the fields
+	function chartProps(value) {
+		if (typeof value === "string")
+			return parseChart(value ? "_ | " + value : "_").props;
+		const pairs = Object.entries(value ?? {}).filter(([k]) => k !== "id");
+		return pairsToProps(pairs);
+	}
+
 	function parseChart(value) {
 		let name, pairs;
 		if (typeof value === "string") {
@@ -39,6 +47,10 @@
 			name = value.id;
 			pairs = Object.entries(value).filter(([k]) => k !== "id");
 		}
+		return { name, props: pairsToProps(pairs) };
+	}
+
+	function pairsToProps(pairs) {
 		const props = {};
 		for (const [key, v] of pairs) {
 			if (key === "steps") props.steps = Array.isArray(v) ? v : [];
@@ -49,7 +61,7 @@
 			else if (key === "to") props.to = /^\d{4}$/.test(v) ? v + "-12" : v;
 			else props[key] = v === "true" ? true : v === "false" ? false : v;
 		}
-		return { name, props };
+		return props;
 	}
 
 	// clip: tag | date | color | title   (color optional)
@@ -86,8 +98,10 @@
 		{#each blocks(section.content) as b}
 			{#if b.type === "text"}
 				<p>{@html hl(b.value)}</p>
-			{:else if b.type === "chart"}
-				{@const { name, props } = parseChart(b.value)}
+			{:else if b.type === "chart" || components[b.type]}
+				{@const { name, props } = b.type === "chart"
+					? parseChart(b.value)
+					: { name: b.type, props: chartProps(b.value) }}
 				{@const C = components[name]}
 				<div class="chart" class:full-bleed={FULL_BLEED.has(name)}>
 					{#if props.title && !SELF_CAPTIONED.has(name)}
