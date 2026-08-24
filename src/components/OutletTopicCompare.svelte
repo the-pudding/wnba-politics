@@ -1,7 +1,5 @@
 <script>
-	// Side-by-side yearly lines: share of each outlet's WNBA articles touching
-	// a topic. Optional logo dot plot of every outlet's share below.
-	// Doc embed:  chart: outlet-topics | topic: lgbtq | dots: lgbtq | title: …
+	// Side-by-side yearly lines for topics
 	import { base } from "$app/paths";
 	import rows from "$data/outlet_topics.csv";
 

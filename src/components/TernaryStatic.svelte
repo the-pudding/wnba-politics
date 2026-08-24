@@ -1,7 +1,5 @@
 <script>
 	// Static chyron ternary
-	// Doc embed:  chart: ternary-static | groups: viktor, bout / merchant, death, trade
-	// Doc embed:  chart: ternary-static | words: russia, detention, arrest
 	import chy from "$data/chyrons.json";
 
 	// bare: no title/footnote inside a scrolly; big + highlightColor: scrolly display labels

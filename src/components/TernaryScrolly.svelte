@@ -1,12 +1,10 @@
 <script>
 	// Chyron ternary walked through
-	// Doc embed:  chart: ternary-scrolly | steps: swapSteps
 	import { base } from "$app/paths";
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
 
 	let { steps = null } = $props();
-
 
 	// ArchieML gives "viktor, bout / merchant, death" — one group per slash
 	const parseGroups = (step) => {
@@ -24,12 +22,12 @@
 	};
 	const STEPS = $derived(
 		(steps ?? [])
-					.filter((step) => (step.text ?? "").trim())
-					.map((step) => ({
-						groups: parseGroups(step),
-						img: (step.img ?? "").trim(),
-						html: step.text ?? ""
-					}))
+			.filter((step) => (step.text ?? "").trim())
+			.map((step) => ({
+				groups: parseGroups(step),
+				img: (step.img ?? "").trim(),
+				html: step.text ?? ""
+			}))
 	);
 
 	let index = $state(0);

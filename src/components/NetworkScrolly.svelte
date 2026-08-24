@@ -1,18 +1,21 @@
 <script>
-	// Scrollytelling network: the graph stays put while text scrolls, growing a year
-	// per step. An edge = Fox named two people in the same headline.
-	// Doc embed: [networkSteps] year: 2022 | focus: … | text: …
+	// Scrollytelling network
 	import { onMount } from "svelte";
 	import { base } from "$app/paths";
 	import roster from "$data/people.json";
 	const faceFiles = Object.fromEntries(
-		Object.values(roster).filter((p) => p.face)
-			.map((p) => [p.slug, p.face.slice(p.slug.length)]));
+		Object.values(roster)
+			.filter((p) => p.face)
+			.map((p) => [p.slug, p.face.slice(p.slug.length)])
+	);
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import headlineNet from "$data/headline_network.json";
 	import articleNet from "$data/article_network.json";
 	const bios = Object.fromEntries(
-		Object.entries(roster).filter(([, p]) => p.bio).map(([n, p]) => [n, p.bio]));
+		Object.entries(roster)
+			.filter(([, p]) => p.bio)
+			.map(([n, p]) => [n, p.bio])
+	);
 	import sentimentRows from "$data/headline_sentiment.csv";
 	const sentimentScores = Object.fromEntries(
 		sentimentRows.map((r) => [r.headline, +r.score])

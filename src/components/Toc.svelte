@@ -1,12 +1,12 @@
 <script>
-	// Contents list built from the sections' own h2s; sections without a
-	// heading (the intro) are skipped.
-	// Doc embed:  chart: toc
+	// Contents list built from the section h2
 	import copy from "$data/copy.json";
 
 	const entries = (copy.body ?? [])
 		.map((section) => {
-			const heading = (section.content ?? []).find((item) => item.type === "h2");
+			const heading = (section.content ?? []).find(
+				(item) => item.type === "h2"
+			);
 			return heading && section.section
 				? { id: section.section, label: heading.value }
 				: null;
@@ -19,7 +19,11 @@
 		<p class="toc-label">What follows</p>
 		<ol>
 			{#each entries as entry, i}
-				<li><a href="#{entry.id}"><span class="n">{i + 1}</span>{@html entry.label}</a></li>
+				<li>
+					<a href="#{entry.id}"
+						><span class="n">{i + 1}</span>{@html entry.label}</a
+					>
+				</li>
 			{/each}
 		</ol>
 	</nav>
@@ -34,21 +38,41 @@
 	}
 	.toc-label {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
-		color: var(--color-fox); margin: 0 0 8px;
+		font-size: 10.5px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-fox);
+		margin: 0 0 8px;
 	}
-	ol { list-style: none; margin: 0; padding: 0; }
-	li { margin: 0 0 3px; }
+	ol {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	li {
+		margin: 0 0 3px;
+	}
 	a {
-		display: flex; align-items: baseline; gap: 9px;
-		color: var(--color-ink); text-decoration: none;
-		font-size: 15px; line-height: 1.35;
+		display: flex;
+		align-items: baseline;
+		gap: 9px;
+		color: var(--color-ink);
+		text-decoration: none;
+		font-size: 15px;
+		line-height: 1.35;
 	}
-	a:hover { color: var(--color-fox); }
+	a:hover {
+		color: var(--color-fox);
+	}
 	.n {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 11px; font-weight: 700; color: rgba(42, 21, 3, 0.45);
+		font-size: 11px;
+		font-weight: 700;
+		color: rgba(42, 21, 3, 0.45);
 		min-width: 14px;
 	}
-	a:hover .n { color: var(--color-fox); }
+	a:hover .n {
+		color: var(--color-fox);
+	}
 </style>

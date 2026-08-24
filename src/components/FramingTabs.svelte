@@ -1,6 +1,5 @@
 <script>
 	// How Fox frames each player — tone / political / appearance / celebrity —
-	// Doc embed:  chart: framing-tabs
 	import FacesBeeswarm from "$components/FacesBeeswarm.svelte";
 
 	let { words = [] } = $props();

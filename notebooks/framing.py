@@ -1,11 +1,5 @@
-"""The grammar behind the appearance/celebrity/agency measures.
-
-Vocabularies live in data/framing_terms.csv — one term per row, grouped by
-register (appearance, celebrity, agency, victim) and kind. Naming a player in
-a headline that also says "outfit" is not enough (the outfit is often somebody
-else's), so a term counts for a player only when it is grammatically HERS:
-she is its possessor, or the subject of its verb. When the owner is a pronoun,
-it resolves to the nearest name in front of it.
+"""
+Terms are in data/framing_terms.csv 
 """
 import csv
 import re

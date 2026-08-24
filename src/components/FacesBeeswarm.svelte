@@ -1,6 +1,5 @@
 <script>
-	// One beeswarm shape for every framing measure: face size is always her
-	// headline count, only the left-to-right position changes per metric.
+	// One beeswarm shape for every framing measure — goes with framing tabs
 	import { base } from "$app/paths";
 	import { forceSimulation, forceX, forceY, forceCollide } from "d3-force";
 	import { scaleLinear } from "d3-scale";
@@ -16,8 +15,10 @@
 	import network from "$data/headline_network.json";
 	import roster from "$data/people.json";
 	const faceFiles = Object.fromEntries(
-		Object.values(roster).filter((p) => p.face)
-			.map((p) => [p.slug, p.face.slice(p.slug.length)]));
+		Object.values(roster)
+			.filter((p) => p.face)
+			.map((p) => [p.slug, p.face.slice(p.slug.length)])
+	);
 
 	const headlines = {
 		rows: headlineRows.map((r) => ({

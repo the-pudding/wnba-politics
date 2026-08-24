@@ -1,6 +1,5 @@
 <script>
-	// Fox WNBA articles per month.
-	// Doc embed: chart: timeline-clark | nba: true | caption: …
+	// Fox WNBA articles per month vs others
 	import timeline from "$data/timeline.json";
 	const foxTimeline = timeline.wnba;
 	const nbaMonthly = timeline.nba;
