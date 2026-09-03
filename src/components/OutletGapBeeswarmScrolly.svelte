@@ -5,18 +5,38 @@
 
 	let { steps = null } = $props();
 
-	const STEPS = $derived(
-		(steps ?? [])
+	const list = (value) =>
+		String(value ?? "")
+			.split(",")
+			.map((n) => n.trim())
+			.filter(Boolean);
+
+	// Doc fields per step:
+	//   names:   who to highlight
+	//   place:   who moves from the pile to her spot (accumulates down the
+	//            steps; `all` scatters everyone; the explore step implies all)
+	//   explore: true — hand over the picker
+	// If no step uses `place`, nobody is piled and every face starts in place.
+	const STEPS = $derived.by(() => {
+		const raw = (steps ?? [])
 			.filter((step) => (step.text ?? "").trim())
 			.map((step) => ({
-				names: (step.names ?? step.words ?? "")
-					.split(",")
-					.map((n) => n.trim())
-					.filter(Boolean),
+				names: list(step.names ?? step.words),
+				place: list(step.place),
 				explore: step.explore === true || step.explore === "true",
 				html: step.text ?? ""
-			}))
-	);
+			}));
+		const staged = raw.some((step) => step.place.length);
+		let placed = staged ? [] : null;
+		return raw.map((step) => {
+			if (placed !== null) {
+				if (step.explore || step.place.some((n) => n.toLowerCase() === "all"))
+					placed = null;
+				else placed = [...placed, ...step.place];
+			}
+			return { ...step, placed };
+		});
+	});
 
 	let index = $state(0);
 	let current = $derived(STEPS[index ?? 0] ?? STEPS[0]);
@@ -27,6 +47,7 @@
 		<OutletGapBeeswarm
 			highlight={current.explore ? null : current.names}
 			bare={!current.explore}
+			placed={current.placed}
 		/>
 	</div>
 
@@ -57,6 +78,10 @@
 	}
 	.sticky :global(.outlet-gap-beeswarm) {
 		width: min(920px, 97vw);
+	}
+	/* the swarm is tall; let height, not width, bind it in the frame */
+	.sticky :global(svg) {
+		max-height: 88vh;
 	}
 
 	.steps {

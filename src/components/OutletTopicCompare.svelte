@@ -1,11 +1,12 @@
 <script>
-	// Small multiples: one yearly line per outlet, with the average of the
-	// non-Fox outlets drawn in every panel for reference
+	// Small multiples: one yearly line per outlet, with the outlet's own
+	// all-years average ruled across the panel and quoted beside its logo
 	import { base } from "$app/paths";
 	import rows from "$data/outlet_topics.csv";
 
 	// `dots` is a leftover Doc prop from the logo dot plot this replaced
-	let { topic = "polrace", method: start = "body", dots = null } = $props();
+	// full text only; `method: headline` from the Doc would switch the source
+	let { topic = "polrace", method = "body", dots = null } = $props();
 
 	const data = { topics: {} };
 	for (const r of rows) {
@@ -23,8 +24,9 @@
 	const MAIN =
 		topic === "lgbtq" ? "var(--color-lgbtq)" : "var(--color-politics)";
 	const MIN_N = 10;
+	const AVG = "#1a1a1a"; // the average rule, apart from either topic colour
 
-	// panel order: Fox first, then its NBA baseline, then the sports press
+	// the outlets with panels (shown most-to-least by their all-years average)
 	const ORDER = [
 		FOX,
 		NBA,
@@ -52,11 +54,25 @@
 	};
 	const LEAGUE_TAG = { "Fox News": "WNBA", "Fox News (NBA)": "NBA" };
 
-	let method = $state(start);
 	let byOutlet = $derived(data.topics[topic][method]);
-	// The Athletic, CBS and USA Today are headline-only corpora, so they have no
-	// full-text panel
-	let outlets = $derived(ORDER.filter((o) => byOutlet[o]));
+	// the reference: the outlet's share pooled over every year with enough articles
+	function overall(outlet) {
+		let n = 0,
+			hit = 0;
+		for (const v of Object.values(byOutlet[outlet] ?? {})) {
+			if (v.n < MIN_N) continue;
+			n += v.n;
+			hit += v.hit;
+		}
+		return n ? { n, hit, share: hit / n } : null;
+	}
+	// The Athletic is headline-only, so it has no full-text panel; the rest are
+	// ordered most-to-least by their average
+	let outlets = $derived(
+		ORDER.filter((o) => overall(o)).toSorted(
+			(a, b) => overall(b).share - overall(a).share
+		)
+	);
 
 	let years = $derived(
 		[
@@ -77,27 +93,7 @@
 			.map((p) => ({ ...p, share: p.v.hit / p.v.n }));
 	}
 
-	// the reference line: the unweighted mean, each year, of the sports outlets'
-	// shares — Fox (and its NBA baseline) left out, so Fox is measured against
-	// everyone else
-	let average = $derived.by(() => {
-		const pts = [];
-		years.forEach((year, index) => {
-			const shares = outlets
-				.filter((o) => o !== FOX && o !== NBA)
-				.map((o) => byOutlet[o]?.[year])
-				.filter((v) => v && v.n >= MIN_N)
-				.map((v) => v.hit / v.n);
-			if (shares.length >= 2)
-				pts.push({
-					year,
-					index,
-					share: shares.reduce((a, b) => a + b, 0) / shares.length,
-					count: shares.length
-				});
-		});
-		return pts;
-	});
+	const pct = (share) => `${(share * 100).toFixed(share < 0.02 ? 1 : 0)}%`;
 
 	// one y scale for every panel, so the lines are comparable at a glance
 	let yTop = $derived.by(() => {
@@ -150,23 +146,16 @@
 <svelte:window bind:innerWidth={viewportWidth} />
 
 <div class="otc" class:mobile>
-	<div class="method">
-		<button class:on={method === "body"} onclick={() => (method = "body")}
-			>FULL TEXT</button
-		>
-		<button
-			class:on={method === "headline"}
-			onclick={() => (method = "headline")}>HEADLINES</button
-		>
-	</div>
 	<div class="key">
-		<span class="swatch line" style="background:{MAIN}"></span> this outlet
-		<span class="swatch avg"></span> average of the other sports outlets
+		<span class="swatch line" style="background:{MAIN}"></span> by year
+		<span class="swatch avg" style="background:{AVG}"></span> the outlet's average,
+		all years
 	</div>
 
 	<div class="grid">
 		{#each outlets as outlet (outlet)}
 			{@const pts = lineFor(outlet)}
+			{@const avg = overall(outlet)}
 			<div class="pane" class:fox={outlet === FOX}>
 				<div class="pane-hed">
 					<img
@@ -177,6 +166,11 @@
 					/>
 					{#if LEAGUE_TAG[outlet]}
 						<span class="league-tag">{LEAGUE_TAG[outlet]}</span>
+					{/if}
+					{#if avg}
+						<span class="avg-chip" style="color:{AVG}"
+							>avg {pct(avg.share)}</span
+						>
 					{/if}
 				</div>
 				<svg
@@ -207,15 +201,26 @@
 						y2={M.top + plotH}
 					/>
 					{#each years as year, index}
-						<text
-							class="tick year"
-							x={xMid(index)}
-							y={H - 6}
-							text-anchor="middle">{"’" + year.slice(2)}</text
-						>
+						{#if +year % 2 === 0}
+							<text
+								class="tick year"
+								x={xMid(index)}
+								y={H - 6}
+								text-anchor="middle">{year}</text
+							>
+						{/if}
 					{/each}
 
-					<path class="avg-line" d={pathFor(average)} />
+					{#if avg}
+						<line
+							class="avg-line"
+							x1={M.left}
+							x2={W - M.right}
+							y1={pctY(avg.share)}
+							y2={pctY(avg.share)}
+							stroke={AVG}
+						/>
+					{/if}
 					<path class="topic-line" d={pathFor(pts)} stroke={MAIN} />
 					{#each pts as p (p.year)}
 						<circle cx={xMid(p.index)} cy={pctY(p.share)} r="3" fill={MAIN} />
@@ -237,7 +242,7 @@
 	</div>
 
 	{#if tip}
-		{@const avg = average.find((p) => p.year === tip.year)}
+		{@const avg = overall(tip.outlet)}
 		<div
 			class="tooltip"
 			class:flip={tip.flip}
@@ -250,9 +255,7 @@
 				{((tip.hit / tip.n) * 100).toFixed(tip.hit / tip.n < 0.02 ? 1 : 0)}% —
 				{TOPIC_PHRASE}.
 				{#if avg}
-					The {avg.count} other sports outlets averaged {(
-						avg.share * 100
-					).toFixed(avg.share < 0.02 ? 1 : 0)}% that year.
+					Its average over all years: {pct(avg.share)}.
 				{/if}
 			</p>
 		</div>
@@ -264,31 +267,6 @@
 		position: relative;
 		max-width: 880px;
 		margin: 6px auto 4px;
-	}
-	.method {
-		display: flex;
-		justify-content: center;
-		margin-bottom: 8px;
-		border-radius: 6px;
-		overflow: hidden;
-		width: fit-content;
-		margin-left: auto;
-		margin-right: auto;
-	}
-	.method button {
-		border: 0;
-		background: var(--color-paper);
-		color: var(--color-ink);
-		padding: 6px 13px;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 12px;
-		font-weight: 700;
-		cursor: pointer;
-	}
-	.method button.on,
-	.method button:hover {
-		background: var(--color-ink);
-		color: var(--color-paper);
 	}
 	.key {
 		display: flex;
@@ -309,13 +287,14 @@
 	.key .swatch.avg {
 		margin-left: 10px;
 		height: 0;
-		border-top: 2px dashed rgba(42, 21, 3, 0.55);
+		border-top: 2.4px dotted #1a1a1a;
+		background: none !important;
 	}
 
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 14px 16px;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 16px 22px;
 	}
 	.mobile .grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -324,9 +303,11 @@
 	.pane {
 		min-width: 0;
 	}
-	.pane.fox svg {
-		background: rgba(255, 253, 248, 0.35);
-		border-radius: 4px;
+	/* the panel the piece is about: boxed, header and all */
+	.pane.fox {
+		outline: 1.5px solid #1a1a1a;
+		outline-offset: 4px;
+		border-radius: 2px;
 	}
 	svg {
 		width: 100%;
@@ -351,7 +332,7 @@
 	}
 
 	.grid-line {
-		stroke: rgba(42, 21, 3, 0.22);
+		stroke: rgba(42, 21, 3, 0.1);
 		stroke-width: 1;
 	}
 	.axis {
@@ -372,11 +353,16 @@
 		stroke-linecap: round;
 	}
 	.avg-line {
-		fill: none;
-		stroke: rgba(42, 21, 3, 0.55);
-		stroke-width: 1.6;
-		stroke-dasharray: 4 3;
-		stroke-linejoin: round;
+		stroke-width: 2.4;
+		stroke-linecap: round;
+		stroke-dasharray: 1 5;
+	}
+	.avg-chip {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 11px;
+		font-weight: 800;
+		letter-spacing: 0.02em;
+		margin-left: 4px;
 	}
 
 	.tooltip {

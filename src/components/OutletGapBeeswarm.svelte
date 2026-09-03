@@ -52,7 +52,16 @@
 	const THEM = "#6b4bb0";
 
 	let them = $derived(against === ALL ? "other outlets" : against);
-	let { highlight = null, bare = false, against: start = ALL } = $props();
+	// `placed`: the players that have moved to their spot; the rest wait in a
+	// pile at the equal line, biggest face on top. null = everyone placed.
+	let {
+		highlight = null,
+		bare = false,
+		against: start = ALL,
+		placed = null
+	} = $props();
+	let placedSet = $derived(placed === null ? null : new Set(placed.map(key)));
+	const isPlaced = (name) => placedSet === null || placedSet.has(key(name));
 	let against = $state(start);
 	// a parent may change the starting outlet later (the Doc, or a scrolly step)
 	$effect(() => {
@@ -126,7 +135,7 @@
 	let WIDTH = $derived(narrow ? 460 : 900);
 	// taller than the framing swarm: the names under the faces need the room
 	// tall: the crowd between 1× and 2× stacks vertically rather than spreading
-	let HEIGHT = $derived(narrow ? 860 : 700);
+	let HEIGHT = $derived(narrow ? 1000 : 880);
 	let PAD = $derived(
 		narrow
 			? { top: 30, right: 26, bottom: 80, left: 26 }
@@ -138,19 +147,17 @@
 	let sizeScale = $derived(
 		scaleLinear()
 			.domain([0, Math.sqrt(biggest)])
-			.range([0, narrow ? 26 : 38])
+			.range([0, narrow ? 26 : 34])
 	);
-	const radiusOf = (person) =>
-		(narrow ? 15 : 16) + sizeScale(Math.sqrt(person.foxN));
+	const radiusOf = (person) => 15 + sizeScale(Math.sqrt(person.foxN));
 
-	// 5× theirs … 5× Fox always; stretched only when someone sits beyond that
-	// (Cunningham against Just Women's Sports)
+	// 5× theirs … 5× Fox always; stretched equally both ways when someone sits
+	// beyond that (Cunningham against Just Women's Sports)
 	let xScale = $derived.by(() => {
-		const values = people.map((p) => p.times);
-		const lo = Math.min(-4.4, Math.min(...values) - 0.4);
-		const hi = Math.max(4.4, Math.max(...values) + 0.4);
+		// symmetric about equal, so 1× is always the centre of the box
+		const reach = Math.max(4.4, ...people.map((p) => Math.abs(p.times) + 0.4));
 		return scaleLinear()
-			.domain([lo, hi])
+			.domain([-reach, reach])
 			.range([PAD.left, WIDTH - PAD.right]);
 	});
 
@@ -160,10 +167,10 @@
 	// or down, never sideways, so the axis stays honest. Each face claims a box
 	// as wide as itself or its name and tall enough for the name beneath it.
 	const LABEL_H = 24;
+	let ceiling = $derived(PAD.top + 6);
+	let floor = $derived(baselineY - 8);
+	let middle = $derived((ceiling + floor) / 2);
 	let nodes = $derived.by(() => {
-		const ceiling = PAD.top + 6;
-		const floor = baselineY - 8;
-		const middle = (ceiling + floor) / 2;
 		const boxOf = (d, y) => {
 			const r = radiusOf(d);
 			const w = Math.max(2 * r, 2 * labelHalf(d)) + 4;
@@ -220,6 +227,16 @@
 		}
 		return placed;
 	});
+
+	// drawn smallest-first so the pile shows its biggest face on top (Clark, then
+	// Reese …); the order is fixed so the CSS transitions survive each step
+	let drawn = $derived(nodes.toSorted((a, b) => radiusOf(a) - radiusOf(b)));
+	let pile = $derived(drawn.filter((d) => !isPlaced(d.name)));
+	let pileTop = $derived(pile[pile.length - 1] ?? null);
+	const spot = (person) =>
+		isPlaced(person.name)
+			? { x: person.x, y: person.y }
+			: { x: xScale(0), y: middle };
 
 	let ticks = $derived.by(() => {
 		const [lo, hi] = xScale.domain();
@@ -330,8 +347,8 @@
 		>
 		<line
 			class="zero"
-			x1={xScale(0.5)}
-			x2={xScale(0.5)}
+			x1={xScale(0)}
+			x2={xScale(0)}
 			y1={PAD.top}
 			y2={baselineY}
 		/>
@@ -350,52 +367,63 @@
 			fill={FOX}>More Fox News →</text
 		>
 
-		{#each nodes as person (person.name)}
+		{#each drawn as person, i (person.name)}
 			{@const size = radiusOf(person)}
 			{@const slug = slugOf(person.name)}
+			{@const on = isPlaced(person.name)}
+			{@const at = spot(person)}
 			<g
 				class="face"
 				class:faded={hovered && hovered !== person.name}
-				class:dim={!isLit(person.name)}
-				onpointerenter={(e) => showTooltip(e, person)}
-				onpointermove={(e) => showTooltip(e, person)}
+				class:dim={on && !isLit(person.name)}
+				class:piled={!on}
+				style:transform="translate({at.x}px, {at.y}px)"
+				style:transition-delay="{on ? (i % 8) * 45 : 0}ms"
+				onpointerenter={(e) => on && showTooltip(e, person)}
+				onpointermove={(e) => on && showTooltip(e, person)}
 				onpointerleave={hideTooltip}
 			>
 				<clipPath id="gap-swarm-{slug}">
-					<circle cx={person.x} cy={person.y} r={Math.max(0, size - 1)} />
+					<circle cx="0" cy="0" r={Math.max(0, size - 1)} />
 				</clipPath>
 				{#if faceFiles[slug]}
-					<circle cx={person.x} cy={person.y} r={size} fill="#f7f2e6" />
+					<circle cx="0" cy="0" r={size} fill="#f7f2e6" />
 					<image
 						href="{base}/net/{slug}{faceFiles[slug]}"
-						x={person.x - size * 1.2}
-						y={person.y - size * 1.05}
+						x={-size * 1.2}
+						y={-size * 1.05}
 						width={size * 2.4}
 						height={size * 2.4}
 						preserveAspectRatio="xMidYMid slice"
 						clip-path="url(#gap-swarm-{slug})"
 					/>
 				{:else}
-					<circle cx={person.x} cy={person.y} r={size} fill="#d8cdb6" />
+					<circle cx="0" cy="0" r={size} fill="#d8cdb6" />
 				{/if}
 				<circle
-					cx={person.x}
-					cy={person.y}
+					cx="0"
+					cy="0"
 					r={size}
 					class="ring"
 					style="stroke:{ringColor(person)}"
 				/>
-				<text
-					class="label"
-					class:full={lit.size && isLit(person.name)}
-					x={person.x}
-					y={person.y + size + 11}
-					text-anchor="middle"
-				>
-					{#each nameLines(person.name) as line, i}
-						<tspan x={person.x} dy={i ? "1.1em" : 0}>{line}</tspan>
-					{/each}
-				</text>
+				{#if on || person === pileTop}
+					<text
+						class="label"
+						class:full={lit.size && isLit(person.name)}
+						x="0"
+						y={size + 11}
+						text-anchor="middle"
+					>
+						{#if on || pile.length === drawn.length}
+							{#each nameLines(person.name) as line, j}
+								<tspan x="0" dy={j ? "1.1em" : 0}>{line}</tspan>
+							{/each}
+						{:else}
+							<tspan x="0">{pile.length} more players</tspan>
+						{/if}
+					</text>
+				{/if}
 			</g>
 		{/each}
 	</svg>
@@ -477,7 +505,17 @@
 
 	.face {
 		cursor: default;
-		transition: opacity 300ms ease;
+		transition:
+			transform 900ms cubic-bezier(0.22, 0.8, 0.3, 1),
+			opacity 300ms ease;
+	}
+	.face.piled {
+		cursor: default;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.face {
+			transition: opacity 300ms ease;
+		}
 	}
 	.face.faded {
 		opacity: 0.25;
