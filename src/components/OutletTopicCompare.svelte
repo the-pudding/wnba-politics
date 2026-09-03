@@ -1,9 +1,11 @@
 <script>
-	// Side-by-side yearly lines for topics
+	// Small multiples: one yearly line per outlet, with the average of the
+	// non-Fox outlets drawn in every panel for reference
 	import { base } from "$app/paths";
 	import rows from "$data/outlet_topics.csv";
 
-	let { topic = "polrace", dots = null } = $props();
+	// `dots` is a leftover Doc prop from the logo dot plot this replaced
+	let { topic = "polrace", method: start = "body", dots = null } = $props();
 
 	const data = { topics: {} };
 	for (const r of rows) {
@@ -13,6 +15,7 @@
 	}
 
 	const FOX = "Fox News";
+	const NBA = "Fox News (NBA)";
 	const TOPIC_PHRASE =
 		topic === "lgbtq"
 			? "mention LGBTQ topics"
@@ -21,31 +24,90 @@
 		topic === "lgbtq" ? "var(--color-lgbtq)" : "var(--color-politics)";
 	const MIN_N = 10;
 
+	// panel order: Fox first, then its NBA baseline, then the sports press
+	const ORDER = [
+		FOX,
+		NBA,
+		"ESPN",
+		// Yahoo's pool is ~96% syndicated wire copy; left out of the panels
+		"Just Women's Sports",
+		"The Athletic",
+		"CBS Sports",
+		"USA Today"
+	];
 	const LOGOS = {
-		"Fox News": { file: "fox-news.svg", w: 30 },
-		"Fox News (NBA)": { file: "fox-news.svg", w: 30 },
-		"Yahoo Sports (syndicated pool)": { file: "yahoo.svg", w: 52 },
-		ESPN: { file: "espn.svg", w: 48 },
-		"Just Women's Sports": { file: "jws.png", w: 28 },
-		"The Athletic": { file: "the-athletic.png", w: 28 },
-		"CBS Sports": { file: "cbs-sports.svg", w: 48 },
-		"USA Today": { file: "usa-today.svg", w: 56 }
+		"Fox News": { file: "fox-news.svg", h: 20 },
+		"Fox News (NBA)": { file: "fox-news.svg", h: 20 },
+		"Yahoo Sports (syndicated pool)": { file: "yahoo.svg", h: 16 },
+		ESPN: { file: "espn.svg", h: 15 },
+		"Just Women's Sports": { file: "jws.png", h: 22 },
+		"The Athletic": { file: "the-athletic.png", h: 22 },
+		"CBS Sports": { file: "cbs-sports.svg", h: 15 },
+		"USA Today": { file: "usa-today.svg", h: 15 }
 	};
 	const SHORT_NAME = {
 		"Yahoo Sports (syndicated pool)": "Yahoo (pool)",
 		"Just Women's Sports": "JWS",
 		"Fox News (NBA)": "Fox (NBA)"
 	};
+	const LEAGUE_TAG = { "Fox News": "WNBA", "Fox News (NBA)": "NBA" };
 
-	let method = $state("body");
-	let outlets = $derived(data.topics[topic][method]);
-	let others = $derived(Object.keys(outlets).filter((o) => o !== FOX));
-	let against = $state("");
-	$effect(() => {
-		if (!others.includes(against))
-			against = others.includes("Just Women's Sports")
-				? "Just Women's Sports"
-				: others[0];
+	let method = $state(start);
+	let byOutlet = $derived(data.topics[topic][method]);
+	// The Athletic, CBS and USA Today are headline-only corpora, so they have no
+	// full-text panel
+	let outlets = $derived(ORDER.filter((o) => byOutlet[o]));
+
+	let years = $derived(
+		[
+			...new Set(
+				outlets.flatMap((o) =>
+					Object.entries(byOutlet[o])
+						.filter(([, v]) => v.n >= MIN_N)
+						.map(([y]) => y)
+				)
+			)
+		].sort()
+	);
+
+	function lineFor(outlet) {
+		return years
+			.map((year, index) => ({ year, index, v: byOutlet[outlet]?.[year] }))
+			.filter(({ v }) => v && v.n >= MIN_N)
+			.map((p) => ({ ...p, share: p.v.hit / p.v.n }));
+	}
+
+	// the reference line: the unweighted mean, each year, of the sports outlets'
+	// shares — Fox (and its NBA baseline) left out, so Fox is measured against
+	// everyone else
+	let average = $derived.by(() => {
+		const pts = [];
+		years.forEach((year, index) => {
+			const shares = outlets
+				.filter((o) => o !== FOX && o !== NBA)
+				.map((o) => byOutlet[o]?.[year])
+				.filter((v) => v && v.n >= MIN_N)
+				.map((v) => v.hit / v.n);
+			if (shares.length >= 2)
+				pts.push({
+					year,
+					index,
+					share: shares.reduce((a, b) => a + b, 0) / shares.length,
+					count: shares.length
+				});
+		});
+		return pts;
+	});
+
+	// one y scale for every panel, so the lines are comparable at a glance
+	let yTop = $derived.by(() => {
+		let peak = 0;
+		for (const outlet of outlets)
+			for (const p of lineFor(outlet)) peak = Math.max(peak, p.share);
+		// tops whose halves are round numbers, since the ticks sit at ½ and 1
+		for (const nice of [0.02, 0.04, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1])
+			if (nice >= peak * 1.05) return nice;
+		return 1;
 	});
 
 	let viewportWidth = $state(
@@ -53,48 +115,16 @@
 	);
 	let mobile = $derived(viewportWidth < 640);
 
-	let years = $derived(
-		[
-			...new Set([
-				...Object.entries(outlets[FOX])
-					.filter(([, v]) => v.n >= MIN_N)
-					.map(([y]) => y),
-				...Object.entries(outlets[against] ?? {})
-					.filter(([, v]) => v.n >= MIN_N)
-					.map(([y]) => y)
-			])
-		].sort()
-	);
-
-	let yTop = $derived.by(() => {
-		let peak = 0;
-		for (const outlet of [FOX, against]) {
-			for (const [, v] of Object.entries(outlets[outlet] ?? {})) {
-				if (v.n >= MIN_N) peak = Math.max(peak, v.hit / v.n);
-			}
-		}
-		for (const nice of [0.05, 0.1, 0.15, 0.2, 0.25, 0.5, 0.75, 1]) {
-			if (nice >= peak * 1.05) return nice;
-		}
-		return 1;
-	});
-
-	const W = 420,
-		H = 300;
-	const M = { left: 46, right: 14, top: 26, bottom: 30 };
+	const W = 220,
+		H = 150;
+	const M = { left: 34, right: 8, top: 10, bottom: 22 };
 	const plotW = W - M.left - M.right;
 	const plotH = H - M.top - M.bottom;
 	let colW = $derived(plotW / Math.max(1, years.length));
 	let pctY = $derived((pct) => M.top + plotH * (1 - pct / yTop));
 	let xMid = $derived((index) => M.left + (index + 0.5) * colW);
-	let yTicks = $derived([0.25, 0.5, 0.75, 1].map((f) => f * yTop));
+	let yTicks = $derived([0.5, 1].map((f) => f * yTop));
 
-	function lineFor(outlet) {
-		return years
-			.map((year, index) => ({ year, index, v: (outlets[outlet] ?? {})[year] }))
-			.filter(({ v }) => v && v.n >= MIN_N)
-			.map((p) => ({ ...p, share: p.v.hit / p.v.n }));
-	}
 	const pathFor = (pts) =>
 		pts
 			.map(
@@ -115,63 +145,6 @@
 			flip: event.clientX - box.left > box.width - 250
 		};
 	}
-
-	// logo dot plot: every outlet's aggregate share on one axis
-	let dotOutlets = $derived.by(() => {
-		if (!dots) return [];
-		const src = data.topics[dots][method];
-		const rows = [];
-		for (const [name, yearsOf] of Object.entries(src)) {
-			let n = 0,
-				hit = 0;
-			for (const v of Object.values(yearsOf)) {
-				n += v.n;
-				hit += v.hit;
-			}
-			if (n >= 50) rows.push({ name, n, hit, share: hit / n });
-		}
-		return rows.sort((a, b) => a.share - b.share);
-	});
-	let dotCap = $derived.by(() => {
-		const peak = Math.max(0.02, ...dotOutlets.map((o) => o.share));
-		for (const nice of [0.05, 0.1, 0.15, 0.2, 0.25, 0.5])
-			if (nice >= peak * 1.1) return nice;
-		return 1;
-	});
-	let dotStep = $derived(dotCap <= 0.05 ? 0.01 : dotCap <= 0.25 ? 0.05 : 0.1);
-	let dotTicks = $derived.by(() => {
-		const out = [];
-		for (let t = 0; t <= dotCap + 1e-9; t += dotStep) out.push(t);
-		return out;
-	});
-	const DW = 860;
-	const DML = 24,
-		DMR = 34;
-	let dotX = $derived((share) => DML + (share / dotCap) * (DW - DML - DMR));
-
-	// crowded logos stack vertically; a dashed leader keeps the true position
-	const LEVEL_H = 34;
-	let dotPlaced = $derived.by(() => {
-		const placed = [];
-		for (const o of dotOutlets) {
-			const x = dotX(o.share);
-			const w = LOGOS[o.name]?.w ?? 28;
-			let level = 0;
-			while (
-				placed.some(
-					(q) => q.level === level && Math.abs(q.x - x) < (q.w + w) / 2 + 6
-				)
-			)
-				level++;
-			placed.push({ ...o, x, w, level });
-		}
-		return placed;
-	});
-	let maxLevel = $derived(Math.max(0, ...dotPlaced.map((o) => o.level)));
-	// the drawing grows to fit the tallest stack (+ room for the WNBA/NBA tags)
-	let DH = $derived(96 + (maxLevel + 1) * 0 + maxLevel * LEVEL_H + 14);
-	let dotMid = $derived(DH - 32);
-	const LEAGUE_TAG = { "Fox News": "WNBA", "Fox News (NBA)": "NBA" };
 </script>
 
 <svelte:window bind:innerWidth={viewportWidth} />
@@ -186,43 +159,26 @@
 			onclick={() => (method = "headline")}>HEADLINES</button
 		>
 	</div>
+	<div class="key">
+		<span class="swatch line" style="background:{MAIN}"></span> this outlet
+		<span class="swatch avg"></span> average of the other sports outlets
+	</div>
 
-	<div class="panes">
-		{#each [FOX, against] as outlet (outlet)}
-			<div class="pane">
-				{#if outlet === FOX}
-					<div class="pane-hed">
-						<img
-							src="{base}/logos/{LOGOS[FOX].file}"
-							alt="Fox News"
-							style:height="24px"
-						/>
-					</div>
-				{:else}
-					<div class="pane-hed">
-						{#if LOGOS[outlet]}
-							<img
-								src="{base}/logos/{LOGOS[outlet].file}"
-								alt={outlet}
-								style:height="22px"
-								style:filter={outlet === "Fox News (NBA)"
-									? "grayscale(1) opacity(0.75)"
-									: ""}
-							/>
-						{/if}
-
-						<select
-							id="outlet-select"
-							class="picker"
-							bind:value={against}
-							aria-label="Compare outlet"
-						>
-							{#each others as name}<option value={name}
-									>{SHORT_NAME[name] ?? name}</option
-								>{/each}
-						</select>
-					</div>
-				{/if}
+	<div class="grid">
+		{#each outlets as outlet (outlet)}
+			{@const pts = lineFor(outlet)}
+			<div class="pane" class:fox={outlet === FOX}>
+				<div class="pane-hed">
+					<img
+						src="{base}/logos/{LOGOS[outlet].file}"
+						alt={SHORT_NAME[outlet] ?? outlet}
+						style:height="{LOGOS[outlet].h}px"
+						style:filter={outlet === NBA ? "grayscale(1) opacity(0.75)" : ""}
+					/>
+					{#if LEAGUE_TAG[outlet]}
+						<span class="league-tag">{LEAGUE_TAG[outlet]}</span>
+					{/if}
+				</div>
 				<svg
 					viewBox="0 0 {W} {H}"
 					role="img"
@@ -230,7 +186,7 @@
 				>
 					{#each yTicks as pct}
 						<line
-							class="grid"
+							class="grid-line"
 							x1={M.left}
 							x2={W - M.right}
 							y1={pctY(pct)}
@@ -238,7 +194,7 @@
 						/>
 						<text
 							class="tick"
-							x={M.left - 6}
+							x={M.left - 5}
 							y={pctY(pct) + 4}
 							text-anchor="end">{Math.round(pct * 100)}%</text
 						>
@@ -250,7 +206,21 @@
 						y1={M.top + plotH}
 						y2={M.top + plotH}
 					/>
-					{#each lineFor(outlet) as p (p.year)}
+					{#each years as year, index}
+						<text
+							class="tick year"
+							x={xMid(index)}
+							y={H - 6}
+							text-anchor="middle">{"’" + year.slice(2)}</text
+						>
+					{/each}
+
+					<path class="avg-line" d={pathFor(average)} />
+					<path class="topic-line" d={pathFor(pts)} stroke={MAIN} />
+					{#each pts as p (p.year)}
+						<circle cx={xMid(p.index)} cy={pctY(p.share)} r="3" fill={MAIN} />
+					{/each}
+					{#each pts as p (p.year)}
 						<rect
 							x={M.left + p.index * colW}
 							width={colW}
@@ -261,87 +231,29 @@
 							onpointerleave={() => (tip = null)}
 						/>
 					{/each}
-					<path class="topic-line" d={pathFor(lineFor(outlet))} stroke={MAIN} />
-					{#each lineFor(outlet) as p (p.year)}
-						<circle
-							cx={xMid(p.index)}
-							cy={pctY(p.share)}
-							r="4"
-							fill={MAIN}
-							onpointermove={(e) => showTip(e, outlet, p.year, p.v)}
-							onpointerleave={() => (tip = null)}
-						/>
-						<text
-							class="tick year"
-							x={xMid(p.index)}
-							y={H - 10}
-							text-anchor="middle">{"’" + p.year.slice(2)}</text
-						>
-					{/each}
 				</svg>
 			</div>
 		{/each}
 	</div>
 
-	{#if dots && dotOutlets.length}
-		<div class="dots-hed">Every outlet, all years since 2019</div>
-		<svg
-			class="dots"
-			viewBox="0 0 {DW} {DH}"
-			role="img"
-			aria-label="Each outlet's overall share of articles touching the topic"
-		>
-			<line x1={DML} x2={DW - DMR} y1={dotMid} y2={dotMid} class="axis" />
-			{#each dotTicks as t}
-				<line
-					x1={dotX(t)}
-					x2={dotX(t)}
-					y1={dotMid - 5}
-					y2={dotMid + 5}
-					class="axis"
-				/>
-				<text class="tick" x={dotX(t)} y={dotMid + 22} text-anchor="middle"
-					>{Math.round(t * 100)}%</text
-				>
-			{/each}
-			{#each dotPlaced as o (o.name)}
-				{@const y = dotMid - 34 - o.level * LEVEL_H}
-				{#if o.level > 0}
-					<line x1={o.x} x2={o.x} y1={y + 30} y2={dotMid} class="leader" />
-				{/if}
-				<image
-					href="{base}/logos/{LOGOS[o.name]?.file}"
-					x={o.x - o.w / 2}
-					{y}
-					width={o.w}
-					style={o.name === "Fox News (NBA)"
-						? "filter: grayscale(1) opacity(0.75)"
-						: ""}
-					onpointermove={(e) =>
-						showTip(e, SHORT_NAME[o.name] ?? o.name, "2019–2026", o)}
-					onpointerleave={() => (tip = null)}
-				/>
-				{#if LEAGUE_TAG[o.name]}
-					<text class="tick league-tag" x={o.x} y={y - 5} text-anchor="middle"
-						>{LEAGUE_TAG[o.name]}</text
-					>
-				{/if}
-			{/each}
-		</svg>
-	{/if}
-
 	{#if tip}
+		{@const avg = average.find((p) => p.year === tip.year)}
 		<div
 			class="tooltip"
 			class:flip={tip.flip}
 			style="left:{tip.x}px; top:{tip.y}px"
 		>
-			<strong>{tip.outlet} · {tip.year}</strong>
+			<strong>{SHORT_NAME[tip.outlet] ?? tip.outlet} · {tip.year}</strong>
 			<p class="line">
 				{tip.hit} of {tip.n.toLocaleString()}
 				{method === "headline" ? "headlines" : "articles"} —
 				{((tip.hit / tip.n) * 100).toFixed(tip.hit / tip.n < 0.02 ? 1 : 0)}% —
 				{TOPIC_PHRASE}.
+				{#if avg}
+					The {avg.count} other sports outlets averaged {(
+						avg.share * 100
+					).toFixed(avg.share < 0.02 ? 1 : 0)}% that year.
+				{/if}
 			</p>
 		</div>
 	{/if}
@@ -362,7 +274,6 @@
 		width: fit-content;
 		margin-left: auto;
 		margin-right: auto;
-		/* border: 1.5px solid var(--color-ink); */
 	}
 	.method button {
 		border: 0;
@@ -374,24 +285,48 @@
 		font-weight: 700;
 		cursor: pointer;
 	}
-	.method button.on {
-		background: var(--color-ink);
-		color: var(--color-paper);
-	}
+	.method button.on,
 	.method button:hover {
 		background: var(--color-ink);
 		color: var(--color-paper);
 	}
-	.panes {
+	.key {
 		display: flex;
-		gap: 18px;
+		justify-content: center;
+		align-items: center;
+		gap: 6px;
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 11.5px;
+		color: rgba(42, 21, 3, 0.7);
+		margin-bottom: 10px;
+	}
+	.key .swatch {
+		display: inline-block;
+		width: 18px;
+		height: 3px;
+		border-radius: 2px;
+	}
+	.key .swatch.avg {
+		margin-left: 10px;
+		height: 0;
+		border-top: 2px dashed rgba(42, 21, 3, 0.55);
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 14px 16px;
+	}
+	.mobile .grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 12px 10px;
 	}
 	.pane {
-		flex: 1 1 0;
 		min-width: 0;
 	}
-	.mobile .panes {
-		flex-direction: column;
+	.pane.fox svg {
+		background: rgba(255, 253, 248, 0.35);
+		border-radius: 4px;
 	}
 	svg {
 		width: 100%;
@@ -404,67 +339,50 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 8px;
-		height: 30px;
-		margin-bottom: 4px;
+		gap: 6px;
+		height: 26px;
+		margin-bottom: 2px;
 	}
-
-	.picker {
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		border-radius: 4px;
-		/* background: var(--color-paper); */
-		padding: 3px 6px;
-		font-size: 12.5px;
+	.league-tag {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 10.5px;
+		font-weight: 800;
+		color: var(--color-ink);
 	}
 
-	.grid {
-		stroke: rgba(42, 21, 3, 0.35);
+	.grid-line {
+		stroke: rgba(42, 21, 3, 0.22);
 		stroke-width: 1;
 	}
 	.axis {
 		stroke: var(--color-ink);
-		stroke-width: 1.5;
+		stroke-width: 1.2;
 	}
 	.tick {
-		font-size: 15.5px;
-		fill: var(--color-ink);
+		font-size: 11px;
+		fill: rgba(42, 21, 3, 0.75);
 	}
 	.mobile .tick {
-		font-size: 16px;
+		font-size: 12px;
 	}
 	.topic-line {
 		fill: none;
-		stroke-width: 2.8;
+		stroke-width: 2.4;
 		stroke-linejoin: round;
 		stroke-linecap: round;
 	}
-
-	.dots-hed {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 13px;
-		font-weight: 700;
-		color: var(--color-ink);
-		text-align: center;
-		margin: 18px 0 2px;
-	}
-	.dots {
-		overflow: visible;
-	}
-	.leader {
-		stroke: rgba(42, 21, 3, 0.35);
-		stroke-width: 1;
-		stroke-dasharray: 2 3;
-	}
-	.league-tag {
-		font-weight: 800;
-		font-size: 12px;
+	.avg-line {
+		fill: none;
+		stroke: rgba(42, 21, 3, 0.55);
+		stroke-width: 1.6;
+		stroke-dasharray: 4 3;
+		stroke-linejoin: round;
 	}
 
 	.tooltip {
 		position: absolute;
 		transform: translate(14px, -50%);
-		width: 230px;
+		width: 240px;
 		background: var(--color-paper);
 		border: 1px solid rgba(42, 21, 3, 0.14);
 		border-left: 3px solid rgba(42, 21, 3, 0.35);

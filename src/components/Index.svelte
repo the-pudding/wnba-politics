@@ -11,6 +11,8 @@
 	import TernaryScrolly from "$components/TernaryScrolly.svelte";
 	import FightinWordsScrolly from "$components/FightinWordsScrolly.svelte";
 	import OutletGapScrolly from "$components/OutletGapScrolly.svelte";
+	import OutletGapBeeswarm from "$components/OutletGapBeeswarm.svelte";
+	import OutletGapBeeswarmScrolly from "$components/OutletGapBeeswarmScrolly.svelte";
 	import FightinWordsVerbsAdj from "$components/FightinWordsVerbsAdj.svelte";
 	import NetworkScrolly from "$components/NetworkScrolly.svelte";
 	import FramingTabs from "$components/FramingTabs.svelte";
@@ -25,6 +27,7 @@
 		// Doc block names = component names (same pattern as kids-book-animals)
 		Toc, TimelineBars, TimelineDotsScrolly, OutletTopicCompare, NgramChart,
 		TernaryStatic, TernaryScrolly, FightinWordsScrolly, OutletGapScrolly,
+		OutletGapBeeswarm, OutletGapBeeswarmScrolly,
 		FightinWordsVerbsAdj, NetworkScrolly, FramingTabs, HeadlineTable,
 		// legacy Doc ids — delete once the Doc carries component names
 		toc: Toc,

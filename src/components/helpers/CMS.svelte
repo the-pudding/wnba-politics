@@ -9,7 +9,7 @@
 
 	// scrollytelling charts take the full viewport width
 	const FULL_BLEED = new Set(["NetworkScrolly", "FightinWordsScrolly", "TernaryScrolly",
-		"OutletGapScrolly", "TimelineDotsScrolly", "FightinWordsVerbsAdj",
+		"OutletGapScrolly", "OutletGapBeeswarmScrolly", "TimelineDotsScrolly", "FightinWordsVerbsAdj",
 		// legacy Doc ids
 		"network-story", "fightin-words-scrolly", "ternary-scrolly",
 		"outlet-gap-scrolly", "timeline-scrolly", "player-words-scrolly"]);
