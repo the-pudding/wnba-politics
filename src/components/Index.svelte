@@ -17,6 +17,8 @@
 	import NetworkScrolly from "$components/NetworkScrolly.svelte";
 	import FramingTabs from "$components/FramingTabs.svelte";
 	import HeadlineTable from "$components/HeadlineTable.svelte";
+	import ChyronSegments from "$components/ChyronSegments.svelte";
+	import BoxScore from "$components/BoxScore.svelte";
 
 	const copy = getContext("copy");
 	const { body } = copy;
@@ -25,10 +27,23 @@
 	// Doc `chart:` names -> components
 	const components = {
 		// Doc block names = component names (same pattern as kids-book-animals)
-		Toc, TimelineBars, TimelineDotsScrolly, OutletTopicCompare, NgramChart,
-		TernaryStatic, TernaryScrolly, FightinWordsScrolly, OutletGapScrolly,
-		OutletGapBeeswarm, OutletGapBeeswarmScrolly,
-		FightinWordsVerbsAdj, NetworkScrolly, FramingTabs, HeadlineTable,
+		Toc,
+		TimelineBars,
+		TimelineDotsScrolly,
+		OutletTopicCompare,
+		NgramChart,
+		TernaryStatic,
+		TernaryScrolly,
+		FightinWordsScrolly,
+		OutletGapScrolly,
+		OutletGapBeeswarm,
+		OutletGapBeeswarmScrolly,
+		FightinWordsVerbsAdj,
+		NetworkScrolly,
+		FramingTabs,
+		HeadlineTable,
+		ChyronSegments,
+		BoxScore,
 		// legacy Doc ids — delete once the Doc carries component names
 		toc: Toc,
 		"timeline-clark": TimelineBars,
@@ -53,8 +68,11 @@
 		<header class="story-header">
 			{#if meta.headerImg}
 				<!-- two layers: the gilt frame sways, the league stays upright -->
-				<div class="hero-frame" role="img"
-					aria-label="The WNBA logo hung inside a crooked gilt picture frame">
+				<div
+					class="hero-frame"
+					role="img"
+					aria-label="The WNBA logo hung inside a crooked gilt picture frame"
+				>
 					<img class="frame" src="{base}/images/gilt-frame.png" alt="" />
 					<img class="logo" src="{base}/images/wnba-logo.png" alt="" />
 				</div>
@@ -74,26 +92,49 @@
 		margin: 0 auto;
 		padding: 40px 16px 96px;
 	}
-	.story-header { text-align: center; margin-bottom: 40px; }
-	.hero-frame { position: relative; max-width: 270px; margin: 0 auto 18px; }
+	.story-header {
+		text-align: center;
+		margin-bottom: 40px;
+	}
+	.hero-frame {
+		position: relative;
+		max-width: 270px;
+		margin: 0 auto 18px;
+	}
 	.hero-frame .frame {
-		display: block; width: 100%;
+		display: block;
+		width: 100%;
 		transform-origin: 50% 42%;
 		/* two poses, no tween: crooked, snap straight, snap back */
 		animation: sway 2.6s steps(1, end) infinite;
 	}
-	.hero-frame .logo { position: absolute; inset: 0; width: 100%; }
+	.hero-frame .logo {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+	}
 	@keyframes sway {
-		0% { transform: rotate(6deg); }
-		50% { transform: rotate(0deg); }
-		100% { transform: rotate(6deg); }
+		0% {
+			transform: rotate(6deg);
+		}
+		50% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(6deg);
+		}
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.hero-frame .frame { animation: none; transform: rotate(6deg); }
+		.hero-frame .frame {
+			animation: none;
+			transform: rotate(6deg);
+		}
 	}
 	.story-header h1 {
-		font-size: clamp(36px, 6vw, 56px); margin-bottom: 12px;
-		color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.08);
+		font-size: clamp(36px, 6vw, 56px);
+		margin-bottom: 12px;
+		color: #fff;
+		text-shadow: 0 2px 0 rgba(0, 0, 0, 0.08);
 	}
 	.dek {
 		font-size: 19px;

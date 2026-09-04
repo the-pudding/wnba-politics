@@ -31,16 +31,6 @@
 		"Just Women's Sports": "jws.png"
 	};
 	const RATIO_CAP = 9; // 10× and beyond sit at the edge
-	const COUNT_WORDS = [
-		"",
-		"one",
-		"two",
-		"three",
-		"four",
-		"five",
-		"six",
-		"seven"
-	];
 	// "2020-01-30" -> "Jan 2020"
 	const monthYear = (iso) =>
 		new Date(iso + "T12:00:00").toLocaleDateString("en-US", {
@@ -135,7 +125,7 @@
 	let WIDTH = $derived(narrow ? 460 : 900);
 	// taller than the framing swarm: the names under the faces need the room
 	// tall: the crowd between 1× and 2× stacks vertically rather than spreading
-	let HEIGHT = $derived(narrow ? 1000 : 880);
+	let HEIGHT = $derived(narrow ? 1270 : 1000);
 	let PAD = $derived(
 		narrow
 			? { top: 30, right: 26, bottom: 80, left: 26 }
@@ -147,9 +137,9 @@
 	let sizeScale = $derived(
 		scaleLinear()
 			.domain([0, Math.sqrt(biggest)])
-			.range([0, narrow ? 26 : 34])
+			.range([0, narrow ? 26 : 38])
 	);
-	const radiusOf = (person) => 15 + sizeScale(Math.sqrt(person.foxN));
+	const radiusOf = (person) => 16 + sizeScale(Math.sqrt(person.foxN));
 
 	// 5× theirs … 5× Fox always; stretched equally both ways when someone sits
 	// beyond that (Cunningham against Just Women's Sports)
@@ -166,15 +156,40 @@
 	// Every face sits at its exact x; overlaps are resolved by moving faces up
 	// or down, never sideways, so the axis stays honest. Each face claims a box
 	// as wide as itself or its name and tall enough for the name beneath it.
-	const LABEL_H = 24;
+	const LABEL_H = 32; // the two-line name above the face (wide layout)
+	const TAG_H = 16; // the "3.2× Fox" read-out below it
+	// a phone's column is too tall for stacked names: there the name sits
+	// beside the face, one line, on its outer side
+	let sideLabels = $derived(narrow);
+	const nameWidth = (name) => name.length * 5.8 + 8;
+	// +1: name to the right of the face, −1: to the left. The outer side (away
+	// from equal) unless that would run off the edge of the drawing.
+	const labelSide = (d) => {
+		const outer = d.times >= 0 ? 1 : -1;
+		const end = d.x + outer * (radiusOf(d) + 7 + nameWidth(d.name));
+		return end > WIDTH - 4 || end < 4 ? -outer : outer;
+	};
 	let ceiling = $derived(PAD.top + 6);
 	let floor = $derived(baselineY - 8);
 	let middle = $derived((ceiling + floor) / 2);
 	let nodes = $derived.by(() => {
 		const boxOf = (d, y) => {
 			const r = radiusOf(d);
+			if (sideLabels) {
+				// the face plus its name to one side
+				const w = 2 * r + 6 + nameWidth(d.name);
+				const x = labelSide(d) > 0 ? d.x - r - 2 : d.x + r + 2 - w;
+				return { x, w, y: y - r - 3, h: 2 * r + 6 };
+			}
 			const w = Math.max(2 * r, 2 * labelHalf(d)) + 4;
-			return { x: d.x - w / 2, w, y: y - r - 2, h: 2 * r + LABEL_H + 2 };
+			return {
+				x: d.x - w / 2,
+				w,
+				y: y - r - LABEL_H - 2,
+				// the ratio tag below is not reserved: it shows for a highlighted
+				// face only, and the column is too crowded to hold a slot for all
+				h: 2 * r + LABEL_H + 2
+			};
 		};
 		const clear = (b, taken) =>
 			!taken.some(
@@ -194,8 +209,8 @@
 		for (const person of order) {
 			const d = { ...person, x: xScale(person.times), y: middle };
 			const r = radiusOf(d);
-			const low = ceiling + r,
-				high = floor - r - LABEL_H;
+			const low = ceiling + r + (sideLabels ? 4 : LABEL_H),
+				high = floor - r - TAG_H;
 			let best = null;
 			for (let step = 0; step < 600 && best === null; step += 3) {
 				for (const y of step ? [middle - step, middle + step] : [middle]) {
@@ -233,10 +248,19 @@
 	let drawn = $derived(nodes.toSorted((a, b) => radiusOf(a) - radiusOf(b)));
 	let pile = $derived(drawn.filter((d) => !isPlaced(d.name)));
 	let pileTop = $derived(pile[pile.length - 1] ?? null);
-	const spot = (person) =>
-		isPlaced(person.name)
-			? { x: person.x, y: person.y }
-			: { x: xScale(0), y: middle };
+	// a placed face sits at its spot; the pile sits on the equal line, with each
+	// buried face nudged a few px past the top face's rim in its own direction,
+	// so the stack shows a jagged edge that hints how many are in there
+	const spot = (person, i) => {
+		if (isPlaced(person.name)) return { x: person.x, y: person.y };
+		const x0 = xScale(0),
+			y0 = middle;
+		if (person === pileTop) return { x: x0, y: y0 };
+		const angle = i * 2.399963; // the golden angle: no two nudges alike
+		const reach =
+			Math.max(0, radiusOf(pileTop) - radiusOf(person)) + 3 + (i % 3) * 2;
+		return { x: x0 + Math.cos(angle) * reach, y: y0 + Math.sin(angle) * reach };
+	};
 
 	let ticks = $derived.by(() => {
 		const [lo, hi] = xScale.domain();
@@ -271,6 +295,23 @@
 		tooltip = null;
 	};
 
+	const SHORT = {
+		ESPN: "ESPN",
+		"CBS Sports": "CBS",
+		"USA Today": "USA Today",
+		"The Athletic": "Athletic",
+		"Just Women's Sports": "JWS"
+	};
+	let themShort = $derived(
+		against === ALL ? "others" : (SHORT[against] ?? against)
+	);
+	// "3.1× Fox" or "2.4× ESPN" — the ratio, read off for a named player so the
+	// reader need not squint at the axis
+	const ratioTag = (person) => {
+		const k = Math.abs(person.times) + 1;
+		if (Math.abs(person.times) < 0.05) return "1× (equal)";
+		return `${k.toFixed(k < 10 ? 1 : 0)}× ${person.times > 0 ? "Fox" : themShort}`;
+	};
 	const ringColor = (person) =>
 		person.times > 0.12
 			? FOX
@@ -286,8 +327,7 @@
 		<button
 			class="all"
 			class:active={against === ALL}
-			onclick={() => (against = ALL)}
-			>all {COUNT_WORDS[outlets.length] ?? outlets.length}</button
+			onclick={() => (against = ALL)}>all</button
 		>
 		{#each outlets as outlet}
 			<button
@@ -371,7 +411,7 @@
 			{@const size = radiusOf(person)}
 			{@const slug = slugOf(person.name)}
 			{@const on = isPlaced(person.name)}
-			{@const at = spot(person)}
+			{@const at = spot(person, i)}
 			<g
 				class="face"
 				class:faded={hovered && hovered !== person.name}
@@ -407,22 +447,47 @@
 					class="ring"
 					style="stroke:{ringColor(person)}"
 				/>
-				{#if on || person === pileTop}
+				{#if !on && !(person === pileTop && lit.size > 0 && isLit(person.name))}
+					<!-- the pile is dimmed with a veil, not opacity, so buried faces stay
+					     hidden behind the top one and only their rims peek out -->
+					<circle cx="0" cy="0" r={size + 1.5} class="veil" />
+				{/if}
+				{#if on && ((lit.size > 0 && isLit(person.name)) || hovered === person.name)}
 					<text
-						class="label"
-						class:full={lit.size && isLit(person.name)}
+						class="ratio"
 						x="0"
-						y={size + 11}
+						y={size + 15}
 						text-anchor="middle"
+						fill={ringColor(person)}>{ratioTag(person)}</text
 					>
-						{#if on || pile.length === drawn.length}
-							{#each nameLines(person.name) as line, j}
-								<tspan x="0" dy={j ? "1.1em" : 0}>{line}</tspan>
-							{/each}
-						{:else}
-							<tspan x="0">{pile.length} more players</tspan>
-						{/if}
-					</text>
+				{/if}
+				{#if on || person === pileTop}
+					{#if sideLabels && on}
+						<text
+							class="label"
+							class:full={lit.size && isLit(person.name)}
+							x={labelSide(person) > 0 ? size + 7 : -size - 7}
+							y="4"
+							text-anchor={labelSide(person) > 0 ? "start" : "end"}
+							>{person.name}</text
+						>
+					{:else}
+						<text
+							class="label"
+							class:full={lit.size && isLit(person.name)}
+							x="0"
+							y={-size - 21}
+							text-anchor="middle"
+						>
+							{#if on || pile.length === drawn.length}
+								{#each nameLines(person.name) as line, j}
+									<tspan x="0" dy={j ? "1.1em" : 0}>{line}</tspan>
+								{/each}
+							{:else}
+								<tspan x="0">{pile.length} more players</tspan>
+							{/if}
+						</text>
+					{/if}
 				{/if}
 			</g>
 		{/each}
@@ -472,8 +537,17 @@
 		stroke-dasharray: 4 4;
 	}
 	.axis {
-		font-size: 11px;
-		fill: rgba(42, 21, 3, 0.6);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: rgba(42, 21, 3, 0.72);
+	}
+	.ratio {
+		font-size: 13.5px;
+		font-weight: 800;
+		paint-order: stroke;
+		stroke: var(--color-page-orange, #f9a660);
+		stroke-width: 4px;
+		stroke-linejoin: round;
 	}
 	.axis.sub {
 		font-size: 9.5px;
@@ -511,6 +585,14 @@
 	}
 	.face.piled {
 		cursor: default;
+	}
+	.veil {
+		fill: var(--color-page-orange, #f9a660);
+		opacity: 0.72;
+		transition: opacity 300ms ease;
+	}
+	.face.piled .label {
+		opacity: 0.75;
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.face {

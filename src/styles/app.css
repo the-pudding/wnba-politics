@@ -26,7 +26,7 @@
 	--radius-sm: 0.25rem;
 	--radius-md: 0.5rem;
 	--radius-lg: 1rem;
-	
+
 	--color-bg: var(--color-white);
 	--color-fg: var(--color-gray-900);
 	--color-fg-light: var(--color-gray-500);
@@ -103,4 +103,119 @@ svg {
 	display: block;
 	width: 100%;
 	height: auto;
+}
+/* ((Name)) in Doc text: the player's portrait inline, as on the charts */
+.face-name {
+	white-space: nowrap;
+}
+.face-inline {
+	display: inline-block;
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 50%;
+	object-fit: cover;
+	object-position: 50% 20%;
+	vertical-align: -0.4em;
+	margin: 0 0.25em 0 0.05em;
+	background: #f7f2e6;
+	border: 2px solid var(--color-fox);
+	box-shadow: 0 0 0 1.5px var(--color-paper);
+}
+
+/* [[tag | date | color | headline]] in Doc text: a FOX tag that pops the headline on hover */
+.clip-pop {
+	position: relative;
+	display: inline-block;
+}
+.clip-tag {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 9.5px;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	line-height: 1;
+	color: #fff;
+	background: #003366;
+	border: 0;
+	border-radius: 2px;
+	padding: 3px 5px 2px;
+	margin: 0 0.15em;
+	vertical-align: 0.15em;
+	cursor: pointer;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+.clip-tag:hover,
+.clip-tag:focus-visible {
+	background: #0b4a8c;
+	outline: none;
+}
+.pop-card {
+	display: none;
+	position: absolute;
+	left: 50%;
+	bottom: calc(100% + 10px);
+	transform: translateX(-50%);
+	width: 300px;
+	max-width: 86vw;
+	background: var(--color-paper);
+	border: 1px solid #e6dcc3;
+	box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+	padding: 9px 13px 11px;
+	z-index: 20;
+	text-align: left;
+	font-family: Georgia, serif;
+	font-size: 14.5px;
+	font-weight: 700;
+	line-height: 1.4;
+	color: #1a1a1a;
+	white-space: normal;
+}
+.clip-pop:hover .pop-card,
+.clip-pop:focus-within .pop-card {
+	display: block;
+}
+.pop-source {
+	display: inline-block;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 9.5px;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #fff;
+	background: #003366;
+	border-radius: 2px;
+	padding: 3px 6px 2px;
+	margin-right: 8px;
+}
+.pop-date {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+	color: rgba(42, 21, 3, 0.55);
+}
+.pop-title {
+	display: block;
+	margin-top: 5px;
+}
+.pop-title mark {
+	color: inherit;
+	padding: 0 3px;
+	border-radius: 2px;
+}
+.pop-image {
+	width: 340px;
+	padding: 6px;
+}
+.pop-image img {
+	display: block;
+	width: 100%;
+	border-radius: 2px;
+}
+.pop-caption {
+	display: block;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: rgba(42, 21, 3, 0.7);
+	padding: 6px 4px 2px;
 }

@@ -39,7 +39,9 @@
     "fox": "#c0392b",
     "ink": "#2a1503",
     "paper": "#fffdf8",
-    "page-orange": "#f9a660"
+    "page-orange": "#f9a660",
+    "cnn": "#5b4b9c",
+    "msnbc": "#1d4f9c"
   },
   "": {
     "12px": "0.75rem",

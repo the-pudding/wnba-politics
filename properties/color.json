@@ -92,6 +92,12 @@
 		},
 		"page-orange": {
 			"value": "#f9a660"
+		},
+		"cnn": {
+			"value": "#5b4b9c"
+		},
+		"msnbc": {
+			"value": "#1d4f9c"
 		}
 	}
 }

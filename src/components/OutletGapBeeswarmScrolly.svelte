@@ -1,45 +1,24 @@
 <script>
+	import { base } from "$app/paths";
 	// Head-to-head beeswarm walked through — OutletGapScrolly with the swarm in the frame
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import OutletGapBeeswarm from "$components/OutletGapBeeswarm.svelte";
+	import { stageSteps } from "$utils/gapSteps.js";
+	import { faces, clipPops } from "$utils/clips.js";
+	import HeadlineClip from "$components/HeadlineClip.svelte";
 
 	let { steps = null } = $props();
 
-	const list = (value) =>
-		String(value ?? "")
-			.split(",")
-			.map((n) => n.trim())
-			.filter(Boolean);
-
-	// Doc fields per step:
-	//   names:   who to highlight
-	//   place:   who moves from the pile to her spot (accumulates down the
-	//            steps; `all` scatters everyone; the explore step implies all)
-	//   explore: true — hand over the picker
-	// If no step uses `place`, nobody is piled and every face starts in place.
-	const STEPS = $derived.by(() => {
-		const raw = (steps ?? [])
-			.filter((step) => (step.text ?? "").trim())
-			.map((step) => ({
-				names: list(step.names ?? step.words),
-				place: list(step.place),
-				explore: step.explore === true || step.explore === "true",
-				html: step.text ?? ""
-			}));
-		const staged = raw.some((step) => step.place.length);
-		let placed = staged ? [] : null;
-		return raw.map((step) => {
-			if (placed !== null) {
-				if (step.explore || step.place.some((n) => n.toLowerCase() === "all"))
-					placed = null;
-				else placed = [...placed, ...step.place];
-			}
-			return { ...step, placed };
-		});
-	});
+	const STEPS = $derived(stageSteps(steps));
 
 	let index = $state(0);
-	let current = $derived(STEPS[index ?? 0] ?? STEPS[0]);
+	// once no card is in view (scrolled past the end, or back above the start)
+	// the chart keeps its last state instead of snapping back to step one
+	let last = $state(0);
+	$effect(() => {
+		if (index !== undefined && index !== null) last = index;
+	});
+	let current = $derived(STEPS[last] ?? STEPS[0]);
 </script>
 
 <section class="gap-scrolly">
@@ -55,10 +34,17 @@
 		<Scrolly bind:value={index}>
 			{#each STEPS as step, i}
 				<div class="step" class:active={index === i}>
-					<p class="card">{@html step.html}</p>
+					<div class="stack">
+						<p class="card">{@html clipPops(faces(step.html, base), base)}</p>
+						{#if step.clip}
+							<div class="clip-wrap"><HeadlineClip clip={step.clip} /></div>
+						{/if}
+					</div>
 				</div>
 			{/each}
 		</Scrolly>
+		<!-- a beat after the last card, so the chart stays put while the reader explores -->
+		<div class="linger"></div>
 	</div>
 </section>
 
@@ -76,12 +62,18 @@
 		align-items: center;
 		justify-content: center;
 	}
+	/* the frame is a column: the picker on top, the swarm taking the height left */
 	.sticky :global(.outlet-gap-beeswarm) {
 		width: min(920px, 97vw);
+		height: 96vh;
+		display: flex;
+		flex-direction: column;
 	}
-	/* the swarm is tall; let height, not width, bind it in the frame */
-	.sticky :global(svg) {
-		max-height: 88vh;
+	.sticky :global(.outlet-gap-beeswarm > svg) {
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
 	}
 
 	.steps {
@@ -90,14 +82,27 @@
 		margin-top: -100vh;
 		pointer-events: none;
 	}
+	.linger {
+		height: 70vh;
+	}
 	.step {
 		height: 100vh;
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
 	}
-	.card {
+	.stack {
 		max-width: 300px;
+		opacity: 0.3;
+		transition: opacity 250ms ease;
+	}
+	.step.active .stack {
+		opacity: 1;
+	}
+	.clip-wrap {
+		margin-top: 14px;
+	}
+	.card {
 		margin: 0;
 		background: rgba(255, 253, 248, 0.94);
 		border-left: 3px solid var(--color-fox);
@@ -107,15 +112,10 @@
 		line-height: 1.5;
 		color: var(--color-ink);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
-		opacity: 0.3;
-		transition: opacity 250ms ease;
-	}
-	.step.active .card {
-		opacity: 1;
 	}
 
 	@media (max-width: 860px) {
-		.card {
+		.stack {
 			max-width: 84vw;
 		}
 	}

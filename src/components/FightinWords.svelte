@@ -34,16 +34,28 @@
 			);
 	}
 
+	// the logos drawn under "use this more ↓" for each comparison pool
 	const LOGOS = {
-		"all outlets": ["yahoo", "espn", "cbs-sports", "usa-today"],
-		"Yahoo + ESPN": ["yahoo", "espn"],
-		"CBS + USA Today": ["cbs-sports", "usa-today"]
+		"all outlets": [
+			"espn.svg",
+			"cbs-sports.svg",
+			"usa-today.svg",
+			"the-athletic.png",
+			"jws.png"
+		],
+		ESPN: ["espn.svg"],
+		"CBS + USA Today": ["cbs-sports.svg", "usa-today.svg"],
+		"Just Women's Sports": ["jws.png"],
+		// older data files
+		"Yahoo + ESPN": ["yahoo.svg", "espn.svg"]
 	};
 	const LOGO_WIDTH = {
-		yahoo: 44,
-		espn: 42,
-		"cbs-sports": 44,
-		"usa-today": 56,
+		"yahoo.svg": 44,
+		"espn.svg": 42,
+		"cbs-sports.svg": 44,
+		"usa-today.svg": 56,
+		"the-athletic.png": 13,
+		"jws.png": 13,
 		"fox-news": 22
 	};
 
@@ -442,7 +454,7 @@
 			<g transform="translate({PAD.left + 6},{HEIGHT - PAD.bottom - 20})">
 				{#each LOGOS[against] ?? [] as logo, i}
 					<image
-						href="{base}/logos/{logo}.svg"
+						href="{base}/logos/{logo}"
 						x={(LOGOS[against] ?? [])
 							.slice(0, i)
 							.reduce((sum, l) => sum + LOGO_WIDTH[l] + 8, 0)}
@@ -525,11 +537,12 @@
 			href="https://github.com/jmhessel/FightingWords"
 			target="_blank"
 			rel="noreferrer">Jack Hessel's implementation</a
-		>, over headlines from April 2023 on. &ldquo;All outlets&rdquo; pools Yahoo
-		Sports, ESPN, CBS Sports and USA Today, which together publish far more than
-		Fox — so the horizontal axis, which counts both archives at once, is mostly
-		theirs. Hover any word for the split. The shaded band is |z| &lt; 1.96,
-		where the difference is not distinguishable from chance.
+		>, over headlines from April 2023 on. &ldquo;All outlets&rdquo; pools ESPN,
+		CBS Sports, USA Today, Just Women's Sports and The Athletic, which together
+		publish far more than Fox — so the horizontal axis, which counts both
+		archives at once, is mostly theirs. Hover any word for the split. The shaded
+		band is |z| &lt; 1.96, where the difference is not distinguishable from
+		chance.
 	</p>
 </div>
 
