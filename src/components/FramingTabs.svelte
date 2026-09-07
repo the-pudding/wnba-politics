@@ -46,6 +46,8 @@
 		performance: "performance"
 	};
 
+	// the player clicked on the chart; the table beneath shows only her headlines
+	let picked = $state(null);
 	let view = $state(
 		words[0] && VIEWS.some((v) => v.key === words[0]) ? words[0] : "tone"
 	);
@@ -65,8 +67,26 @@
 	</div>
 	<p class="blurb">{current.blurb}</p>
 
-	<FacesBeeswarm metric={view} />
-	<HeadlineTable embedded frame={FRAME_OF[view]} />
+	<FacesBeeswarm
+		metric={view}
+		selected={picked}
+		onselect={(name) => (picked = name)}
+	/>
+	<p class="pick-note">
+		{#if picked}
+			Showing headlines naming <b>{picked}</b>.
+			<button class="clear" onclick={() => (picked = null)}
+				>show everyone</button
+			>
+		{:else}
+			Click a face to see only her headlines.
+		{/if}
+	</p>
+	<HeadlineTable
+		embedded
+		frame={FRAME_OF[view]}
+		players={picked ? [picked] : []}
+	/>
 </div>
 
 <style>
@@ -102,5 +122,22 @@
 		font-size: 12.5px;
 		color: rgba(42, 21, 3, 0.65);
 		margin: 0 0 14px;
+	}
+	.pick-note {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 12.5px;
+		color: rgba(42, 21, 3, 0.65);
+		text-align: center;
+		margin: 6px 0 0;
+	}
+	.pick-note .clear {
+		font: inherit;
+		border: 1px solid rgba(42, 21, 3, 0.3);
+		background: transparent;
+		color: rgba(42, 21, 3, 0.7);
+		border-radius: 4px;
+		padding: 1px 8px;
+		margin-left: 6px;
+		cursor: pointer;
 	}
 </style>

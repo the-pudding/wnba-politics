@@ -47,7 +47,10 @@
 		"Diana Taurasi",
 		"Sabrina Ionescu",
 		"Chennedy Carter",
-		"Nneka Ogwumike"
+		"Nneka Ogwumike",
+		"Candace Parker",
+		"Cameron Brink",
+		"Kelsey Plum"
 	]);
 
 	let {
@@ -86,8 +89,8 @@
 	// of ratio, like a dribbled ball, and lands on its value. The axis
 	// stretching under a face that is already placed still slides it (the
 	// CSS transition); only the placement itself bounces.
-	const HOP_MS = 380;
-	const HOP_HEIGHT = 26;
+	const HOP_MS = 580;
+	const HOP_HEIGHT = 96;
 	// a face landing beyond this ratio gets one more, smaller bounce in place
 	const SETTLE_OVER = 5; // 5× and up
 	const SETTLE_HEIGHT = 0.45; // of a hop
@@ -96,7 +99,6 @@
 	function hop(node, params) {
 		let prev = params;
 		let anim = null;
-		let pending = 0;
 		let timers = [];
 		const clearTimers = () => {
 			for (const t of timers) clearTimeout(t);
@@ -170,15 +172,14 @@
 				if (!next.on && anim) anim.cancel();
 				if (placedNow && !still) {
 					next.count(1);
-					// let the axis settle first: it may stretch for this very step
-					cancelAnimationFrame(pending);
-					pending = requestAnimationFrame(() => {
-						pending = requestAnimationFrame(run);
-					});
+					// straight away, in the same frame as the placement: waiting even
+					// two frames let the slide transition start first, which on a
+					// phone showed as a stutter before the first bounce
+					node.classList.add("hopping");
+					run();
 				}
 			},
 			destroy() {
-				cancelAnimationFrame(pending);
 				clearTimers();
 				anim?.cancel();
 			}
@@ -188,7 +189,7 @@
 	$effect(() => {
 		against = start;
 	});
-	let them = $derived(against === ALL ? "other outlets" : against);
+	let them = $derived(against === ALL ? "everybody else" : against);
 	// the Doc types A’ja with a curly apostrophe, the data with a straight one
 	const key = (name) => name.toLowerCase().replace(/[’‘]/g, "'");
 	let lit = $derived(new Set((highlight ?? []).map(key)));
@@ -251,29 +252,40 @@
 	});
 
 	// one size for every face; the row spacing follows it
-	let R = $derived(narrow ? 20 : 21);
-	const radiusOf = () => R;
-	let MAX_R = $derived(R);
+	// Sized like the kids-book dot plot: in pixels. The frame is measured
+	// (see measure()), the axis takes its full width, the rows share its
+	// height, and faces and type are fixed pixel sizes rather than scaling
+	// with the drawing.
+	const FACE_R = { phone: 30, desktop: 40 }; // the most a face may be
+	const FACE_OF_ROW = 0.62; // else its radius as a share of the row height
+	let frame = $state({ w: 0, h: 0 });
+	let WIDTH = $derived(frame.w || (narrow ? 375 : 1000));
+	let avail = $derived(frame.h || (narrow ? 560 : 720));
 
-	// a column left of the names where unplaced faces wait, off the axis
-	// entirely so they cannot be read as a value
-	let LEFT = $derived(2 * R + 14);
-	let NAMES = $derived(LEFT + (narrow ? 112 : 170));
-	let PLOT = $derived(narrow ? 380 : wide ? 760 : 600);
-	let ROW = $derived(2 * MAX_R + 8);
 	// the header strip opens only when a clipping lives there
 	let headerClip = $derived(
 		clipAt === "header" && !narrow && Boolean(clip || clipSlot)
 	);
 	let TOP = $derived(44 + (headerClip ? 70 : 0));
 	const BOTTOM = 62;
-	let WIDTH = $derived(NAMES + PLOT + 20);
+	// the names start at the left edge; the plot takes the rest of the width
+	let LEFT = $derived(narrow ? 2 : 6);
+	let NAMES = $derived(LEFT + (narrow ? 90 : 190));
+	let PLOT = $derived(Math.max(200, WIDTH - NAMES - (narrow ? 8 : 24)));
+	let ROW = $derived(
+		Math.max(28, (avail - TOP - BOTTOM) / Math.max(1, people.length))
+	);
+	let R = $derived(
+		Math.min(narrow ? FACE_R.phone : FACE_R.desktop, ROW * FACE_OF_ROW)
+	);
+	const radiusOf = () => R;
+	let MAX_R = $derived(R);
 	let height = $derived(TOP + people.length * ROW + BOTTOM);
 
 	// symmetric about equal and fixed at 5× either way. Anyone beyond that
 	// (Cunningham at 7.5×) lands past the edge line, outside the plot, on a
 	// gentler scale so she stays on screen — the tag carries the real number
-	const REACH = 4.4;
+	const REACH = 7.4; // 8× either way, so everyone is inside the axis
 	let reach = REACH;
 	let x = $derived(
 		scaleLinear()
@@ -294,8 +306,9 @@
 	let rowY = $derived((index) => TOP + index * ROW + ROW / 2);
 	let ticks = $derived.by(() => {
 		const [lo, hi] = x.domain();
-		const out = [{ at: 0, label: "1×", sub: "equal" }];
-		for (let k = 1; k <= RATIO_CAP; k++) {
+		const out = [{ at: 0, label: "Equal", sub: "" }];
+		// 4×, 6× and 8×: enough to read the scale, not a ruler
+		for (const k of [3, 5, 7]) {
 			if (k <= hi) out.push({ at: k, label: `${k + 1}×` });
 			if (-k >= lo) out.push({ at: -k, label: `${k + 1}×` });
 		}
@@ -389,6 +402,21 @@
 		// ResizeObserver callback alone would not track them)
 		const shifting = centerLine && !narrow;
 		const measure = () => {
+			const box = svgEl.closest(".outlet-gap");
+			if (!box) return;
+			const head = box.querySelector(".head");
+			const slot = box.querySelector(".clip-slot");
+			const w = Math.round(box.clientWidth);
+			const h = Math.round(
+				box.clientHeight -
+					(head?.offsetHeight ?? 0) -
+					(slot?.offsetHeight ?? 0) -
+					10
+			);
+			// a static frame (no fixed height) reports the drawing's own height:
+			// keep the natural rows then
+			const next = { w, h: box.clientHeight > 0 && h > 200 ? h : 0 };
+			if (next.w !== frame.w || next.h !== frame.h) frame = next;
 			const r = svgEl.getBoundingClientRect();
 			if (!r.width || !r.height) return;
 			const scale = Math.min(r.width / WIDTH, r.height / height);
@@ -400,16 +428,26 @@
 			}
 			// how far left the box must move for the line to sit at its centre,
 			// but never past the viewport's left edge
-			const box = svgEl.closest(".outlet-gap").getBoundingClientRect();
-			const baseLeft = box.left - shift;
-			shift = Math.max(box.width / 2 - equalLeft, -(baseLeft - 8));
+			const bb = box.getBoundingClientRect();
+			const baseLeft = bb.left - shift;
+			shift = Math.max(bb.width / 2 - equalLeft, -(baseLeft - 8));
 		};
 		measure();
+		// the frame's size is set by the page, so watching it cannot loop
 		const ro = new ResizeObserver(measure);
-		ro.observe(svgEl);
+		ro.observe(svgEl.closest(".outlet-gap"));
 		return () => ro.disconnect();
 	});
 
+	// drawing order: plain faces first, the step's highlighted ones and the
+	// hovered one last, so they sit in front
+	const stackOrder = (person) =>
+		hovered === person.name
+			? 2
+			: (lit.size > 0 && isLit(person.name)) ||
+				  centeredSet.has(key(person.name))
+				? 1
+				: 0;
 	let hovered = $state(null);
 	let tooltip = $state(null);
 	function showFace(event, person) {
@@ -428,6 +466,7 @@
 
 <div
 	class="outlet-gap"
+	class:narrow
 	style:transform={shift ? `translateX(${shift}px)` : undefined}
 >
 	<!-- on screen and live for the whole scrolly, so the reader can switch at any step -->
@@ -439,6 +478,7 @@
 			: `${equalLeft}px`}"
 	>
 		<h4 class="vs">Fox News vs. {against === ALL ? "All Outlets" : against}</h4>
+		<p class="sub">Mentions in headlines (2020–2026)</p>
 		<div class="picker">
 			<button
 				class="all"
@@ -474,19 +514,24 @@
 		<svg
 			bind:this={svgEl}
 			viewBox="0 0 {WIDTH} {height}"
-			style="aspect-ratio: {WIDTH} / {height}"
+			width={WIDTH}
+			{height}
 			role="img"
 			aria-label="Whether Fox News or {against} gives each player a larger share of its WNBA headlines"
 		>
 			<text
 				class="head"
-				x={x(0) - 14}
-				y={TOP - 22}
-				text-anchor="end"
-				fill={THEM}>← More {them}</text
+				x={narrow ? NAMES + 24 + 10 : x(0) - 22}
+				y={TOP - (narrow ? 22 : 0)}
+				text-anchor={narrow ? "start" : "end"}
+				fill={THEM}>← More {narrow ? themShort : them}</text
 			>
-			<text class="head" x={x(0) + 14} y={TOP - 22} fill={FOX}
-				>More Fox News →</text
+			<text
+				class="head"
+				x={narrow ? NAMES + PLOT - 10 : x(0) + 22}
+				y={TOP - (narrow ? 22 : 0)}
+				text-anchor={narrow ? "end" : "start"}
+				fill={FOX}>{narrow ? "More Fox →" : "More Fox News →"}</text
 			>
 			<!-- the ends of the axis, in each side's colour -->
 			<line
@@ -506,7 +551,8 @@
 				stroke={FOX}
 			/>
 			{#each ticks as tick (tick.at)}
-				{#if tick.at === 0}
+				{#if tick.at === 0 || Math.abs(tick.at) === 3 || Math.abs(tick.at) === 5}
+					<!-- the equal line, and faint lines at 4× and 6× either way -->
 					<line
 						class="grid"
 						class:middle={tick.at === 0}
@@ -527,13 +573,12 @@
 					{/if}
 				</g>
 			{/each}
-			<text
+			<!-- <text
 				class="note"
 				x={(NAMES + 24 + NAMES + PLOT) / 2}
 				y={axisY + 46}
-				text-anchor="middle"
-				>Share of each outlet's WNBA headlines naming her, {PERIOD}</text
-			>
+				text-anchor="middle">{PERIOD}</text
+			> -->
 
 			{#each people as person, index (person.name)}
 				{@const slug = slugOf(person.name)}
@@ -563,7 +608,30 @@
 					>
 						{narrow ? person.name.split(" ").slice(-1)[0] : person.name}
 					</text>
+				</g>
+			{/each}
 
+			<!-- the faces in a second pass, so they sit over every row's rule and
+			     name; the highlighted (and hovered) ones drawn last, on top -->
+			{#each people.toSorted((a, b) => stackOrder(a) - stackOrder(b)) as person (person.name)}
+				{@const index = people.indexOf(person)}
+				{@const slug = slugOf(person.name)}
+				{@const y = rowY(index)}
+				{@const r = radiusOf(person)}
+				{@const on = isPlaced(person.name)}
+				<!-- a centered player is shown bright, named or not: she is the point of the step -->
+				{@const named =
+					(lit.size > 0 && isLit(person.name)) ||
+					centeredSet.has(key(person.name))}
+				<g
+					class="row"
+					class:lit={hovered === person.name}
+					class:dim={on && !isLit(person.name)}
+					class:waiting={!on && !named}
+					onmouseenter={() => (hovered = person.name)}
+					onmouseleave={() => (hovered = null)}
+					role="presentation"
+				>
 					<g
 						class="face-mark"
 						style:transform="translate({on ? xOf(person.times) : x(0)}px, {y}px)"
@@ -676,7 +744,7 @@
 <style>
 	.outlet-gap {
 		position: relative;
-		max-width: 1000px;
+		max-width: 1040px;
 		margin: 0 auto;
 	}
 	svg {
@@ -740,8 +808,14 @@
 		font-size: 30px;
 		font-weight: 800;
 		line-height: 1.15;
-		margin: 0 0 10px;
+		margin: 0 0 4px;
 		color: var(--color-ink);
+	}
+	.sub {
+		text-align: center;
+		font-size: 14px;
+		color: rgba(42, 21, 3, 0.65);
+		margin: 0 0 10px;
 	}
 	@media (max-width: 640px) {
 		.vs {
@@ -795,7 +869,7 @@
 	   for the title and pills to fit), and the pills shrink and may wrap */
 	@media (max-width: 640px) {
 		.head > * {
-			left: 50%;
+			/* left: 50%; */
 			max-width: 100%;
 		}
 		.picker {
@@ -883,7 +957,7 @@
 	}
 
 	.head {
-		font-size: 12.5px;
+		font-size: 14px;
 		font-weight: 800;
 	}
 	.grid {
@@ -905,12 +979,12 @@
 		stroke-dasharray: 3 4;
 	}
 	.tick {
-		font-size: 12.5px;
+		font-size: 15px;
 		font-weight: 600;
 		fill: rgba(42, 21, 3, 0.72);
 	}
 	.ratio {
-		font-size: 13.5px;
+		font-size: 13px;
 		font-weight: 800;
 		paint-order: stroke;
 		stroke: var(--color-page-orange, #f9a660);
@@ -922,16 +996,20 @@
 		fill: rgba(42, 21, 3, 0.5);
 	}
 	.note {
-		font-size: 11px;
+		font-size: 13px;
 		fill: rgba(42, 21, 3, 0.55);
 	}
 
 	.name {
-		font-size: 13.5px;
+		font-size: 17px;
 		fill: rgba(42, 21, 3, 0.85);
 	}
 	.name.short {
-		font-size: 17px;
+		font-size: 15px;
+	}
+	/* a phone's axis is short: the direction labels shrink to fit beside each other */
+	.narrow .head {
+		font-size: 12px;
 	}
 	.row.lit .name {
 		fill: var(--color-ink);

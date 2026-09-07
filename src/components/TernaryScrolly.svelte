@@ -570,8 +570,6 @@
 			width: min(660px, 92vw);
 			flex: 0 1 auto;
 			min-height: 0;
-			max-height: 50vh;
-			overflow-y: auto;
 			font-size: 14.5px;
 		}
 		/* inside a scrolling panel the suggestions sit in flow, not floating */

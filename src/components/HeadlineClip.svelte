@@ -6,7 +6,8 @@
 	// no step has chosen one). When a new headline arrives in focus, its
 	// letters scramble into place over half a second.
 	import FoxBadge from "$components/FoxBadge.svelte";
-	import { hl, CLIP_BLUE } from "$utils/clips.js";
+	import { base } from "$app/paths";
+	import { hl, faces, CLIP_BLUE } from "$utils/clips.js";
 
 	let {
 		clip,
@@ -18,7 +19,9 @@
 
 	const escape = (t) =>
 		t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-	const plain = (t) => (t ?? "").replace(/==/g, "");
+	// the text as letters: no highlight marks, and a ((Name|face)) token is just the name
+	const plain = (t) =>
+		(t ?? "").replace(/\(\(([^()|]+)\|[^()]+\)\)/g, "$1").replace(/==/g, "");
 	const LETTERS = "abcdefghijklmnopqrstuvwxyz";
 
 	let shown = $state("");
@@ -33,7 +36,7 @@
 
 	$effect(() => {
 		const title = clip?.title ?? "";
-		const final = hl(title, CLIP_BLUE);
+		const final = hl(faces(title, base), CLIP_BLUE);
 		if (blurred || reduced) {
 			shown = final;
 			return;

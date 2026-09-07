@@ -45,8 +45,10 @@
 		caption = "",
 		// set by the framing tabs: which measure's headlines to show
 		frame: frameProp = null,
-		// under the beeswarm: no lede, the tabs' width
-		embedded = false
+		// under the beeswarm: no lede, the tabs' width, no player chips
+		embedded = false,
+		// set from outside (a face clicked on the beeswarm): the players to show
+		players: playersProp = null
 	} = $props();
 
 	const PLAYER_COLORS = {
@@ -62,6 +64,20 @@
 
 	const players = words.length ? words : Object.keys(PLAYER_COLORS);
 
+	// on a phone the embedded table hides behind a bar: a tall scroll region
+	// in the middle of the page catches the finger and stops the page scrolling
+	let narrow = $state(false);
+	let open = $state(false);
+	$effect(() => {
+		const query = window.matchMedia("(max-width: 640px)");
+		const sync = () => (narrow = query.matches);
+		sync();
+		query.addEventListener("change", sync);
+		return () => query.removeEventListener("change", sync);
+	});
+	// on a phone the table always starts collapsed, embedded or not
+	let collapsed = $derived(narrow && !open);
+
 	let search = $state("");
 	let activePlayers = $state([]);
 	let sortBy = $state("date");
@@ -70,6 +86,9 @@
 	let frame = $state("all");
 	$effect(() => {
 		if (frameProp !== null) frame = frameProp;
+	});
+	$effect(() => {
+		if (playersProp !== null) activePlayers = playersProp;
 	});
 
 	const scoreOf = (headline) => sentiment.scores[headline];
@@ -243,7 +262,7 @@
 		</div>
 	</div>
 
-	<div class="chips">
+	<div class="chips" class:hidden={embedded}>
 		{#each players as name}
 			<button
 				class="chip"
@@ -259,7 +278,13 @@
 
 	<p class="count" aria-live="polite">{summary}</p>
 
-	<div class="scroller">
+	{#if narrow}
+		<button class="reveal" onclick={() => (open = !open)} aria-expanded={open}>
+			{open ? "Hide the headlines" : "See the headlines"}
+			<span class="caret">{open ? "▴" : "▾"}</span>
+		</button>
+	{/if}
+	<div class="scroller" class:short={narrow} hidden={collapsed}>
 		<table>
 			<thead>
 				<tr>
@@ -386,6 +411,31 @@
 		width: 100%;
 		margin: 14px 0 0;
 		transform: none;
+	}
+	.reveal {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		width: 100%;
+		padding: 10px 14px;
+		border: 1px solid var(--rule);
+		border-radius: 6px;
+		background: #fff;
+		font: inherit;
+		font-size: 13.5px;
+		font-weight: 700;
+		color: var(--ink);
+		cursor: pointer;
+	}
+	.reveal .caret {
+		margin-left: auto;
+	}
+	.scroller.short {
+		max-height: 45vh;
+		margin-top: 8px;
+	}
+	.chips.hidden {
+		display: none;
 	}
 
 	.lede {

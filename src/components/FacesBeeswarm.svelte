@@ -78,7 +78,13 @@
 		};
 	}
 
-	let { metric = "tone", minHeadlines = 8 } = $props();
+	let {
+		metric = "tone",
+		minHeadlines = 8,
+		// the picked player (her ring lit), and the click that picks or clears
+		selected = null,
+		onselect = null
+	} = $props();
 
 	const groupOf = Object.fromEntries(
 		network.nodes.map((n) => [n.name, n.group])
@@ -346,9 +352,19 @@
 			<g
 				class="face"
 				class:faded={hovered && hovered !== person.name}
+				class:picked={selected === person.name}
+				class:pickable={Boolean(onselect)}
 				onpointerenter={(e) => showTooltip(e, person)}
 				onpointermove={(e) => showTooltip(e, person)}
 				onpointerleave={hideTooltip}
+				onclick={() =>
+					onselect?.(selected === person.name ? null : person.name)}
+				role={onselect ? "button" : undefined}
+				tabindex={onselect ? 0 : undefined}
+				onkeydown={(e) =>
+					onselect &&
+					(e.key === "Enter" || e.key === " ") &&
+					onselect(selected === person.name ? null : person.name)}
 			>
 				<clipPath id="swarm-{metric}-{slug}">
 					<circle cx={person.x} cy={person.y} r={Math.max(0, size - 1)} />
@@ -534,5 +550,19 @@
 	.tip .none {
 		color: #bdbdb5;
 		border-left-color: rgba(255, 255, 255, 0.3);
+	}
+	/* a face that can be clicked, and the one that has been */
+	.face.pickable {
+		cursor: pointer;
+	}
+	.face.picked .ring {
+		stroke-width: 6;
+		stroke: var(--color-ink) !important;
+	}
+	.face:focus-visible {
+		outline: none;
+	}
+	.face:focus-visible .ring {
+		stroke-width: 5;
 	}
 </style>

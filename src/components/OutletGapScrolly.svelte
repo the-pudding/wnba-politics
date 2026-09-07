@@ -67,7 +67,9 @@
 	/* the frame is a column: title, pills and clipping on top, and the drawing
 	   takes exactly the height that is left, so nothing is ever cut off */
 	.sticky :global(.outlet-gap) {
-		width: min(1000px, 97vw);
+		/* the kids-book chart's column is about 32em (its widest 48em); this is that
+		   width class, with the faces and rows in fixed pixels inside it */
+		width: min(1040px, 97vw);
 		height: 96vh;
 		display: flex;
 		flex-direction: column;
@@ -81,9 +83,10 @@
 		min-height: 0;
 	}
 	.sticky :global(.outlet-gap > .plot > svg) {
+		/* pixel-true: the drawing is already the frame's size */
 		width: 100%;
 		height: auto;
-		max-height: 100%;
+		display: block;
 	}
 
 	.steps {

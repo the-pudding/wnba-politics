@@ -1,17 +1,7 @@
 <script>
-	// An old-school box score for the corpus. From the Doc:
+	// An box score for the corpus or other tables. From the Doc:
 	//
-	//   {.BoxScore}
-	//   title: The corpus
-	//   caption: Every article is a headline; full text where the outlet allows it.
-	//   [.rows]
-	//   outlet: Fox News
-	//   articles: 2,498
-	//   full_text: 2,498
-	//   from: Dec 2018
-	//   ...
-	//   []
-	//   {}
+
 	//
 	// The first row's keys (after `outlet`) become the columns, in that order;
 	// underscores become spaces. A row whose outlet is "Total" is set in bold.
@@ -107,7 +97,7 @@
 <style>
 	.box-score {
 		margin: 22px auto 28px;
-		max-width: 640px;
+		max-width: 340px;
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 	}
 	.scroll {

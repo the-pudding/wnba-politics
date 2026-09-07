@@ -50,7 +50,7 @@
 	},
 	"A'ja Wilson": {
 		"group": "players",
-		"rx": "a'?ja wilson",
+		"rx": "a['’]?ja wilson",
 		"face": "a-ja-wilson.png",
 		"bio": "A'ja Riyadh Wilson is an American professional basketball player for the Las Vegas Aces of the Women's National Basketball Association (WNBA).",
 		"slug": "a-ja-wilson"

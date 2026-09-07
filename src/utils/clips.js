@@ -52,7 +52,7 @@ export const clipPops = (html, base = "") =>
 			);
 		}
 		const clip = parseClip(inner);
-		const title = hl(clip.title ?? "", CLIP_BLUE);
+		const title = hl(faces(clip.title ?? "", base), CLIP_BLUE);
 		const date = clip.date
 			? `<span class="pop-date">${escapeAttr(clip.date)}</span>`
 			: "";
@@ -84,11 +84,17 @@ export const hl = (html, color = "#d55181") =>
 	);
 
 export function parseClip(v) {
-	const p = String(v ?? "")
-		.split("|")
-		.map((s) => s.trim());
+	// a ((Name|face)) token carries a pipe of its own: shield it from the split
+	const shielded = String(v ?? "").replace(
+		/\(\(([^()|]+)\|([^()]+)\)\)/g,
+		(_, name, flag) => `((${name}\u00a6${flag}))`
+	);
+	const p = shielded.split("|").map((s) => s.trim().replace(/\u00a6/g, "|"));
 	if (p.length >= 4 && (PALETTE[p[2]] || /^#/.test(p[2])))
 		return { tag: p[0], date: p[1], title: p.slice(3).join(" | ") };
+	// "June 2026 | pink | headline": a colour in the second slot, so no tag
+	if (p.length >= 3 && (PALETTE[p[1]] || /^#/.test(p[1])))
+		return { date: p[0], title: p.slice(2).join(" | ") };
 	if (p.length >= 3)
 		return { tag: p[0], date: p[1], title: p.slice(2).join(" | ") };
 	if (p.length === 2) return { date: p[0], title: p[1] };

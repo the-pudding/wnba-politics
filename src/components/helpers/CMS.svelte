@@ -39,7 +39,9 @@
 		"TimelineDotsScrolly",
 		"HeadlineTable",
 		"timeline-scrolly",
-		"headline-table"
+		"headline-table",
+		"Gallery",
+		"HeadlineGallery"
 	]);
 
 	// one-liner: `chart: name | key: value | …`
@@ -145,7 +147,9 @@
 						<div class="clip" style="--rot: {ROTS[j % ROTS.length]}deg">
 							<FoxBadge />
 							{#if c.date}<span class="clip-date">{c.date}</span>{/if}
-							<p class="clip-title">{@html hl(c.title, CLIP_BLUE)}</p>
+							<p class="clip-title">
+								{@html hl(faces(c.title, base), CLIP_BLUE)}
+							</p>
 						</div>
 					{/each}
 				</div>
