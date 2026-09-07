@@ -74,11 +74,116 @@
 		// slide the whole chart so the equal line, not the box, is centred on
 		// the page (the scrolly turns this on); off on phones, where the
 		// parked-faces column would leave the screen
-		centerLine = false
+		centerLine = false,
+		// a wider axis on desktop, for the scrolly with no clipping beside it
+		wide = false
 	} = $props();
-	// unplaced players wait in the column left of their name; a `centered` one
-	// sits on the equal line instead, to show where equal coverage would put her
+	// unplaced players wait on the equal line, veiled; a `centered` one is shown
+	// bright there, to make the point that equal coverage would put her at 1×
 	let centeredSet = $derived(new Set((centered ?? []).map(key)));
+
+	// A face that gets placed hops out from the equal line, one bounce per 1×
+	// of ratio, like a dribbled ball, and lands on its value. The axis
+	// stretching under a face that is already placed still slides it (the
+	// CSS transition); only the placement itself bounces.
+	const HOP_MS = 380;
+	const HOP_HEIGHT = 26;
+	// a face landing beyond this ratio gets one more, smaller bounce in place
+	const SETTLE_OVER = 5; // 5× and up
+	const SETTLE_HEIGHT = 0.45; // of a hop
+	// while a face hops, its tag counts the bounces: 1×, 2×, 3× … then the value
+	let counting = $state({});
+	function hop(node, params) {
+		let prev = params;
+		let anim = null;
+		let pending = 0;
+		let timers = [];
+		const clearTimers = () => {
+			for (const t of timers) clearTimeout(t);
+			timers = [];
+		};
+		const still =
+			typeof window !== "undefined" &&
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		const run = () => {
+			// pos(k): where k units of ratio sit (signed); past the axis the
+			// hops shorten, like a ball running out of bounce
+			const { pos, units, y, unit } = prev;
+			const to = pos(units);
+			const n = Math.max(1, Math.ceil(Math.abs(units) - 1e-6));
+			const dir = Math.sign(units) || 1;
+			const frames = [];
+			for (let i = 0; i < n; i++) {
+				const a = pos(dir * Math.min(Math.abs(units), i));
+				const b = pos(dir * Math.min(Math.abs(units), i + 1));
+				// a shorter hop is a smaller bounce
+				const h = HOP_HEIGHT * Math.sqrt(Math.min(1, Math.abs(b - a) / unit));
+				frames.push({
+					offset: i / n,
+					transform: `translate(${a}px, ${y}px)`,
+					easing: "ease-out"
+				});
+				frames.push({
+					offset: (i + 0.5) / n,
+					transform: `translate(${(a + b) / 2}px, ${y - h}px)`,
+					easing: "ease-in"
+				});
+			}
+			const settle = Math.abs(units) + 1 >= SETTLE_OVER;
+			const total = n + (settle ? 1 : 0);
+			// the frames so far were laid out over n hops; re-space them over the
+			// total, then add the settle bounce on the landing spot
+			for (const f of frames) f.offset = (f.offset * n) / total;
+			if (settle) {
+				frames.push({
+					offset: n / total,
+					transform: `translate(${to}px, ${y}px)`,
+					easing: "ease-out"
+				});
+				frames.push({
+					offset: (n + 0.5) / total,
+					transform: `translate(${to}px, ${y - HOP_HEIGHT * SETTLE_HEIGHT}px)`,
+					easing: "ease-in"
+				});
+			}
+			frames.push({ offset: 1, transform: `translate(${to}px, ${y}px)` });
+			anim?.cancel();
+			clearTimers();
+			node.classList.add("hopping");
+			anim = node.animate(frames, { duration: total * HOP_MS, fill: "none" });
+			// each landing but the last ticks the tag up by one; the true value
+			// shows on the real landing, before any settle bounce
+			for (let i = 1; i < n; i++)
+				timers.push(setTimeout(() => prev.count(i + 1), i * HOP_MS));
+			if (settle) timers.push(setTimeout(() => prev.count(null), n * HOP_MS));
+			anim.onfinish = anim.oncancel = () => {
+				node.classList.remove("hopping");
+				clearTimers();
+				prev.count(null);
+				anim = null;
+			};
+		};
+		return {
+			update(next) {
+				const placedNow = next.on && !prev.on;
+				prev = next;
+				if (!next.on && anim) anim.cancel();
+				if (placedNow && !still) {
+					next.count(1);
+					// let the axis settle first: it may stretch for this very step
+					cancelAnimationFrame(pending);
+					pending = requestAnimationFrame(() => {
+						pending = requestAnimationFrame(run);
+					});
+				}
+			},
+			destroy() {
+				cancelAnimationFrame(pending);
+				clearTimers();
+				anim?.cancel();
+			}
+		};
+	}
 	let against = $state(start);
 	$effect(() => {
 		against = start;
@@ -154,7 +259,7 @@
 	// entirely so they cannot be read as a value
 	let LEFT = $derived(2 * R + 14);
 	let NAMES = $derived(LEFT + (narrow ? 112 : 170));
-	let PLOT = $derived(narrow ? 380 : 600);
+	let PLOT = $derived(narrow ? 380 : wide ? 760 : 600);
 	let ROW = $derived(2 * MAX_R + 8);
 	// the header strip opens only when a clipping lives there
 	let headerClip = $derived(
@@ -165,14 +270,27 @@
 	let WIDTH = $derived(NAMES + PLOT + 20);
 	let height = $derived(TOP + people.length * ROW + BOTTOM);
 
-	// symmetric about equal, stretched equally both ways when someone sits
-	// beyond 5× (Cunningham against Just Women's Sports)
-	let x = $derived.by(() => {
-		const reach = Math.max(4.4, ...people.map((p) => Math.abs(p.times) + 0.4));
-		return scaleLinear()
+	// symmetric about equal and fixed at 5× either way. Anyone beyond that
+	// (Cunningham at 7.5×) lands past the edge line, outside the plot, on a
+	// gentler scale so she stays on screen — the tag carries the real number
+	const REACH = 4.4;
+	let reach = REACH;
+	let x = $derived(
+		scaleLinear()
 			.domain([-reach, reach])
-			.range([NAMES + 24, NAMES + PLOT]);
+			.range([NAMES + 24, NAMES + PLOT])
+	);
+	let unit = $derived(x(1) - x(0));
+	let overflowScale = $derived(narrow ? 0.35 : 0.5);
+	// where a value sits: on the axis, or past its end
+	let xOf = $derived((times) => {
+		const clamped = Math.max(-reach, Math.min(reach, times));
+		const beyond = Math.abs(times) - reach;
+		if (beyond <= 0) return x(clamped);
+		const extra = Math.min(beyond * unit * overflowScale, R * 2.2);
+		return x(clamped) + Math.sign(times) * extra;
 	});
+	const beyondAxis = (person) => Math.abs(person.times) > reach;
 	let rowY = $derived((index) => TOP + index * ROW + ROW / 2);
 	let ticks = $derived.by(() => {
 		const [lo, hi] = x.domain();
@@ -267,13 +385,16 @@
 	let shift = $state(0);
 	$effect(() => {
 		if (!svgEl) return;
+		// read these here so the effect re-runs when the layout flips (the
+		// ResizeObserver callback alone would not track them)
+		const shifting = centerLine && !narrow;
 		const measure = () => {
 			const r = svgEl.getBoundingClientRect();
 			if (!r.width || !r.height) return;
 			const scale = Math.min(r.width / WIDTH, r.height / height);
 			const offset = (r.width - WIDTH * scale) / 2;
 			equalLeft = offset + x(0) * scale;
-			if (!centerLine || narrow) {
+			if (!shifting) {
 				shift = 0;
 				return;
 			}
@@ -353,6 +474,7 @@
 		<svg
 			bind:this={svgEl}
 			viewBox="0 0 {WIDTH} {height}"
+			style="aspect-ratio: {WIDTH} / {height}"
 			role="img"
 			aria-label="Whether Fox News or {against} gives each player a larger share of its WNBA headlines"
 		>
@@ -366,7 +488,24 @@
 			<text class="head" x={x(0) + 14} y={TOP - 22} fill={FOX}
 				>More Fox News →</text
 			>
-			{#each ticks as tick}
+			<!-- the ends of the axis, in each side's colour -->
+			<line
+				class="edge"
+				x1={NAMES + 24}
+				x2={NAMES + 24}
+				y1={TOP - 14}
+				y2={axisY}
+				stroke={THEM}
+			/>
+			<line
+				class="edge"
+				x1={NAMES + PLOT}
+				x2={NAMES + PLOT}
+				y1={TOP - 14}
+				y2={axisY}
+				stroke={FOX}
+			/>
+			{#each ticks as tick (tick.at)}
 				{#if tick.at === 0}
 					<line
 						class="grid"
@@ -377,17 +516,16 @@
 						y2={axisY}
 					/>
 				{/if}
-				<text class="tick" x={x(tick.at)} y={axisY + 16} text-anchor="middle"
-					>{tick.label}</text
-				>
-				{#if tick.sub}
-					<text
-						class="tick sub"
-						x={x(tick.at)}
-						y={axisY + 27}
-						text-anchor="middle">{tick.sub}</text
+				<g class="tick-g" style="transform: translate({x(tick.at)}px, 0)">
+					<text class="tick" x="0" y={axisY + 16} text-anchor="middle"
+						>{tick.label}</text
 					>
-				{/if}
+					{#if tick.sub}
+						<text class="tick sub" x="0" y={axisY + 27} text-anchor="middle"
+							>{tick.sub}</text
+						>
+					{/if}
+				</g>
 			{/each}
 			<text
 				class="note"
@@ -428,11 +566,18 @@
 
 					<g
 						class="face-mark"
-						style:transform="translate({on
-							? x(person.times)
-							: centeredSet.has(key(person.name))
-								? x(0)
-								: LEFT / 2}px, {y}px)"
+						style:transform="translate({on ? xOf(person.times) : x(0)}px, {y}px)"
+						use:hop={{
+							on,
+							pos: xOf,
+							units: person.times,
+							y,
+							unit,
+							count: (k) => {
+								if (k) counting[person.name] = k;
+								else delete counting[person.name];
+							}
+						}}
 						onpointerenter={(e) => on && showFace(e, person)}
 						onpointermove={(e) => on && showFace(e, person)}
 						onpointerleave={hideFace}
@@ -467,12 +612,18 @@
 							<circle cx="0" cy="0" r={r + 1.5} class="veil" />
 						{/if}
 						{#if on && (named || hovered === person.name)}
+							<!-- the tag sits right of the face — on the "others" side that keeps
+							     it clear of her name — unless she is off the Fox end of the axis -->
+							{@const rightOf = !(person.times >= 0 && beyondAxis(person))}
 							<text
 								class="ratio"
-								x={person.times >= 0 ? r + 9 : -r - 9}
+								x={rightOf ? r + 9 : -r - 9}
 								y="4.5"
-								text-anchor={person.times >= 0 ? "start" : "end"}
-								fill={ringColor(person)}>{ratioTag(person)}</text
+								text-anchor={rightOf ? "start" : "end"}
+								fill={ringColor(person)}
+								>{counting[person.name]
+									? `${counting[person.name].toFixed(1)}× ${person.times > 0 ? "Fox" : themShort}`
+									: ratioTag(person)}</text
 							>
 						{/if}
 					</g>
@@ -525,7 +676,7 @@
 <style>
 	.outlet-gap {
 		position: relative;
-		max-width: 860px;
+		max-width: 1000px;
 		margin: 0 auto;
 	}
 	svg {
@@ -640,8 +791,13 @@
 		padding: 3px 9px;
 		font-size: 11px;
 	}
-	/* a phone: the pills shrink, and wrap to stay centred on the line */
+	/* a phone: the header centres on the box (the equal line sits too far right
+	   for the title and pills to fit), and the pills shrink and may wrap */
 	@media (max-width: 640px) {
+		.head > * {
+			left: 50%;
+			max-width: 100%;
+		}
 		.picker {
 			gap: 3px;
 			flex-wrap: wrap;
@@ -735,8 +891,13 @@
 		stroke-width: 1;
 	}
 	.grid.middle {
-		stroke: rgba(42, 21, 3, 0.5);
-		stroke-dasharray: 4 4;
+		stroke: rgba(42, 21, 3, 0.75);
+		stroke-width: 2.5;
+		stroke-dasharray: 6 5;
+	}
+	.edge {
+		stroke-width: 3;
+		stroke-linecap: round;
 	}
 	.guide {
 		stroke: rgba(42, 21, 3, 0.3);
@@ -795,9 +956,25 @@
 		cursor: default;
 		transition: transform 900ms cubic-bezier(0.22, 0.8, 0.3, 1);
 	}
+	/* mid-hop the animation owns the transform; no slide on top of it */
+	.face-mark.hopping {
+		transition: none;
+	}
+	/* the ticks slide with the axis as it stretches; new ones fade in */
+	.tick-g {
+		transition: transform 900ms cubic-bezier(0.22, 0.8, 0.3, 1);
+		animation: tick-in 600ms ease both;
+	}
+	@keyframes tick-in {
+		from {
+			opacity: 0;
+		}
+	}
 	@media (prefers-reduced-motion: reduce) {
-		.face-mark {
+		.face-mark,
+		.tick-g {
 			transition: none;
+			animation: none;
 		}
 	}
 	.ring {

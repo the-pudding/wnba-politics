@@ -35,6 +35,8 @@
 	}
 
 	// the logos drawn under "use this more ↓" for each comparison pool
+	// the logos each comparison group stands for (the footnote), and the one
+	// logo each outlet's pill shows
 	const LOGOS = {
 		"all outlets": [
 			"espn.svg",
@@ -44,10 +46,18 @@
 			"jws.png"
 		],
 		ESPN: ["espn.svg"],
-		"CBS + USA Today": ["cbs-sports.svg", "usa-today.svg"],
+		"CBS Sports": ["cbs-sports.svg"],
+		"USA Today": ["usa-today.svg"],
+		"The Athletic": ["the-athletic.png"],
 		"Just Women's Sports": ["jws.png"],
-		// older data files
-		"Yahoo + ESPN": ["yahoo.svg", "espn.svg"]
+		"CBS + USA Today": ["cbs-sports.svg", "usa-today.svg"]
+	};
+	const PILL_LOGO = {
+		ESPN: "espn.svg",
+		"CBS Sports": "cbs-sports.svg",
+		"USA Today": "usa-today.svg",
+		"The Athletic": "the-athletic.png",
+		"Just Women's Sports": "jws.png"
 	};
 	const LOGO_WIDTH = {
 		"yahoo.svg": 44,
@@ -67,6 +77,9 @@
 		mode = null,
 		source = null
 	} = $props();
+
+	// the outlet pills, as on the dot plot: "all", then one logo per outlet
+	const ALL_OUTLETS = "all outlets";
 
 	let HIGHLIGHT = $derived(
 		new Set((highlight ?? []).map((w) => w.toLowerCase()))
@@ -166,10 +179,26 @@
 	);
 	let sizeScale = $derived(scaleSqrt().domain([0, reach]).range([1.4, 6]));
 
+	// real label widths, measured in the chart's own font once it is on the page
+	let rootEl = $state(null);
+	let measureCtx = null;
+	function textWidth(word, size, weight) {
+		if (typeof document === "undefined" || !rootEl)
+			return word.length * size * 0.5;
+		if (!measureCtx)
+			measureCtx = document.createElement("canvas").getContext("2d");
+		measureCtx.font = `${weight} ${size}px ${getComputedStyle(rootEl).fontFamily}`;
+		return measureCtx.measureText(word).width;
+	}
+
 	let labelled = $derived.by(() => {
-		// n >= 10: frequent enough that not separating the sides is itself worth seeing
+		rootEl; // re-run once the font can be measured
+		// a player chart has few enough words to label them all: the weak ones
+		// (near the middle: both sides use the word about equally) in a lighter
+		// hand, so the strong ones still read first. The big archive chart
+		// labels only what clears the threshold.
 		const strong = source
-			? points.filter((p) => Math.abs(p.z) > SIGNIFICANT || p.n >= 10)
+			? points
 			: points.filter((p) => Math.abs(p.z) > SIGNIFICANT);
 		const isLit = (p) =>
 			HIGHLIGHT.has(p.word.toLowerCase()) || HIGHLIGHT.has(p.word);
@@ -180,23 +209,86 @@
 				.sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
 		];
 		const placed = [];
+		// a label's box, for the clash test
+		const boxFor = (point, px, py, side, size, weight, rowH) => {
+			// plus the paint-order halo on each side
+			const w = textWidth(point.word, size, weight) + 18;
+			return {
+				x0: side < 0 ? px - 6 - w : px + 6,
+				x1: side < 0 ? px - 6 : px + 6 + w,
+				y0: py - rowH / 2,
+				y1: py + rowH / 2
+			};
+		};
+		const clashes = (box) =>
+			placed.some(
+				(o) =>
+					box.x0 < o.box.x1 &&
+					o.box.x0 < box.x1 &&
+					box.y0 < o.box.y1 &&
+					o.box.y0 < box.y1
+			);
 		for (const point of ranked) {
 			const lit = isLit(point);
 			if (beating && !lit) continue;
 			if (!source && placed.length > 34 && !lit) continue;
 			const px = xScale(point.n),
 				py = yScale(point.z);
-			const charW = source ? (mobile ? 7 : 8.5) : mobile ? 5.6 : 5.9;
-			const rowH = source ? (mobile ? 24 : 27) : mobile ? 19 : 21;
-			const clash = placed.some(
-				(other) =>
-					Math.abs(other.px - px) <
-						(other.word.length + point.word.length) * charW &&
-					Math.abs(other.py - py) < rowH
-			);
-			if (clash) continue;
-			const flip = px > WIDTH - PAD.right - 70;
-			placed.push({ ...point, px, py, lit, flip });
+			const weak = Boolean(source) && Math.abs(point.z) <= SIGNIFICANT;
+			// the label's font, as the stylesheet sets it (.big for player charts)
+			const size = source
+				? weak
+					? 17
+					: lit
+						? 28
+						: 24
+				: mobile
+					? lit
+						? 18.5
+						: 15.5
+					: lit
+						? 22
+						: 18;
+			const weight = lit ? 800 : weak ? 500 : 600;
+			const rowH = size * 1.3;
+			// on a player chart every word gets a label: try beside the dot, then
+			// the other side, then a row up or down, before giving up. The big
+			// archive chart only labels what fits in place.
+			const nearRight = px > WIDTH - PAD.right - 70;
+			const sides = nearRight ? [-1, 1] : [1, -1];
+			const shifts = source
+				? [0, -0.8, 0.8, -1.6, 1.6, -2.4, 2.4, -3.2, 3.2]
+				: [0];
+			let spot = null;
+			for (const dy of shifts) {
+				for (const side of sides) {
+					const box = boxFor(
+						point,
+						px,
+						py + dy * rowH,
+						side,
+						size,
+						weight,
+						rowH
+					);
+					if (box.x0 < PAD.left || box.x1 > WIDTH - PAD.right + 4) continue;
+					if (!clashes(box)) {
+						spot = { side, dy, box };
+						break;
+					}
+				}
+				if (spot) break;
+			}
+			if (!spot) continue;
+			placed.push({
+				...point,
+				px,
+				py: py + spot.dy * rowH,
+				lit,
+				flip: spot.side < 0,
+				weak,
+				box: spot.box
+			});
 		}
 		return placed;
 	});
@@ -294,16 +386,42 @@
 
 <svelte:window bind:innerWidth={viewportWidth} />
 
-<div class="fightin-words" class:bare class:mobile class:big={!!source}>
+<div
+	class="fightin-words"
+	class:bare
+	class:mobile
+	class:big={!!source}
+	bind:this={rootEl}
+>
 	{#if !source}
 		<div class="controls">
 			<span class="label">Fox News compared with</span>
-			<div class="toggle-group" role="group" aria-label="Outlet">
+			<div class="picker" role="group" aria-label="Outlet">
 				{#each outletsHere as outlet}
-					<button
-						class:active={against === outlet}
-						onclick={() => (against = outlet)}>{outlet}</button
-					>
+					{#if outlet === ALL_OUTLETS}
+						<button
+							class="all"
+							class:active={against === outlet}
+							onclick={() => (against = outlet)}>all</button
+						>
+					{:else if PILL_LOGO[outlet]}
+						<button
+							class:active={against === outlet}
+							class:pooled={against === ALL_OUTLETS}
+							class:square={PILL_LOGO[outlet].endsWith(".png")}
+							title={outlet}
+							aria-label={outlet}
+							onclick={() => (against = outlet)}
+						>
+							<img src="{base}/logos/{PILL_LOGO[outlet]}" alt="" />
+						</button>
+					{:else}
+						<button
+							class="named"
+							class:active={against === outlet}
+							onclick={() => (against = outlet)}>{outlet}</button
+						>
+					{/if}
 				{/each}
 			</div>
 		</div>
@@ -498,6 +616,7 @@
 			<text
 				class="word"
 				class:lit={point.lit}
+				class:weak={point.weak}
 				x={point.px + (point.flip ? -6 : 6)}
 				y={point.py + 3.5}
 				text-anchor={point.flip ? "end" : "start"}
@@ -614,6 +733,55 @@
 		font-size: 13px;
 		color: var(--color-ink);
 	}
+	/* the outlet pills, styled as on the dot plot */
+	.picker {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		flex-wrap: wrap;
+	}
+	.picker button {
+		display: inline-flex;
+		align-items: center;
+		border: 1px solid rgba(42, 21, 3, 0.3);
+		border-radius: 999px;
+		background: rgba(255, 253, 248, 0.35);
+		padding: 3px 8px;
+		cursor: pointer;
+		font: inherit;
+		font-size: 12px;
+		color: var(--color-ink);
+		opacity: 0.6;
+		transition:
+			opacity 150ms ease,
+			background 150ms ease;
+	}
+	.picker button:hover {
+		opacity: 0.9;
+	}
+	.picker button.pooled {
+		opacity: 0.85;
+	}
+	.picker button.active {
+		opacity: 1;
+		background: rgba(255, 253, 248, 0.95);
+		border-color: var(--color-ink);
+		font-weight: 800;
+		box-shadow: 0 1px 4px rgba(42, 21, 3, 0.18);
+	}
+	.picker img {
+		display: block;
+		height: 12px;
+		width: auto;
+	}
+	.picker button.square img {
+		height: 15px;
+	}
+	.picker .all,
+	.picker .named {
+		padding: 3px 9px;
+		font-size: 11px;
+	}
 	.toggle-group {
 		display: inline-flex;
 		border: 1px solid rgba(42, 21, 3, 0.3);
@@ -672,6 +840,18 @@
 		font-size: 22px;
 		font-weight: 800;
 		stroke-width: 5.5px;
+	}
+	/* a word both sides use about equally: labelled, but in a lighter hand */
+	.word.weak {
+		font-size: 14px;
+		font-weight: 500;
+		opacity: 0.72;
+	}
+	.mobile .word.weak {
+		font-size: 12.5px;
+	}
+	.big .word.weak {
+		font-size: 17px;
 	}
 
 	.mobile .axis {

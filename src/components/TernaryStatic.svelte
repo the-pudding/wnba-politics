@@ -176,6 +176,11 @@
 	function leave() {
 		hovered = null;
 	}
+	// a tap on the drawing shows the nearest word (touch never hovers); a click
+	// anywhere else takes it away again
+	function away(event) {
+		if (svgEl && !svgEl.contains(event.target)) hovered = null;
+	}
 	let focused = $derived(
 		focus
 			? (terms.find((t) => t.term === String(focus).toLowerCase()) ?? null)
@@ -193,6 +198,8 @@
 	);
 </script>
 
+<svelte:window onclick={away} />
+
 <div class="ternary-static" class:big>
 	<svg
 		bind:this={svgEl}
@@ -200,6 +207,7 @@
 		role="img"
 		aria-label="Ternary plot of WNBA chyron words across Fox News, CNN and MSNBC"
 		onpointermove={track}
+		onpointerdown={track}
 		onpointerleave={leave}
 	>
 		<polygon

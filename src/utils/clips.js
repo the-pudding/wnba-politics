@@ -22,20 +22,29 @@ const byName = new Map(
 	Object.entries(roster).map(([name, p]) => [key(name), p])
 );
 // Inline pop-ups in Doc text:
-//   [[race | June 2026 | pink | Who is X? ... ==word== ...]]  -> a small FOX tag;
+//   [[race | June 2026 | pink | Who is X? ... ==word== ...]]  -> a small newspaper badge;
 //       hovering (or tapping) it pops the headline card up
-//   [[img: file.png | a caption]]  -> the same FOX tag, popping the picture
+//   [[img: file.png | a caption]]  -> a lower-third badge, popping the picture
 //       (from static/images) with its caption
+//   [[icon]]  -> the newspaper badge on its own (no pop-up), to introduce it earlier
 const escapeAttr = (t) =>
 	t.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+// the badge glyphs: a folded newspaper (headline pops) and a lower-third bar (image pops)
+const NEWSPAPER =
+	'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h14v2h2v13a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V4h1zm2 2v13a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8h-2V6H6zm2 2h5v5H8V8zm7 0h2v2h-2V8zm0 3h2v2h-2v-2zM8 14h9v2H8v-2z"/></svg>';
+const CHYRON =
+	'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5h20v14H2V5zm2 2v10h16V7H4zm2 7h12v2H6v-2zm0-3h7v1.5H6V11z"/></svg>';
 export const clipPops = (html, base = "") =>
 	String(html ?? "").replace(/\[\[([^\[\]]+?)\]\]/g, (_, inner) => {
+		// [[icon]] on its own: the badge with no pop-up, for introducing it in the text
+		if (/^\s*(icon|ref)\s*$/i.test(inner))
+			return `<span class="clip-tag static" aria-hidden="true">${NEWSPAPER}</span>`;
 		const img = inner.match(/^\s*img:\s*([^|]+?)\s*(?:\|\s*([^]*?))?\s*$/i);
 		if (img) {
 			const [, file, caption = ""] = img;
 			return (
 				`<span class="clip-pop">` +
-				`<button type="button" class="clip-tag" aria-label="Show the Fox News clip">FOX</button>` +
+				`<button type="button" class="clip-tag" aria-label="Show the Fox News clip">${CHYRON}</button>` +
 				`<span class="pop-card pop-image" role="tooltip">` +
 				`<img src="${base}/images/${escapeAttr(file.trim())}" alt="${escapeAttr(caption)}" loading="lazy" />` +
 				(caption ? `<span class="pop-caption">${caption}</span>` : "") +
@@ -49,7 +58,7 @@ export const clipPops = (html, base = "") =>
 			: "";
 		return (
 			`<span class="clip-pop">` +
-			`<button type="button" class="clip-tag" aria-label="Show the Fox News headline">FOX</button>` +
+			`<button type="button" class="clip-tag" aria-label="Show the Fox News headline">${NEWSPAPER}</button>` +
 			`<span class="pop-card" role="tooltip"><span class="pop-source">Fox News</span>${date}` +
 			`<span class="pop-title">${title}</span></span></span>`
 		);

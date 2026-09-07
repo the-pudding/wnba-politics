@@ -16,10 +16,6 @@
 			.filter(([, p]) => p.bio)
 			.map(([n, p]) => [n, p.bio])
 	);
-	import sentimentRows from "$data/headline_sentiment.csv";
-	const sentimentScores = Object.fromEntries(
-		sentimentRows.map((r) => [r.headline, +r.score])
-	);
 	import { scaleSqrt } from "d3-scale";
 	import {
 		forceSimulation,
@@ -38,19 +34,6 @@
 
 	const net = source === "article" ? articleNet : headlineNet;
 	const LINK_WORD = source === "article" ? "article" : "headline";
-
-	const GROUP_COLORS = {
-		players: "#2a78d6",
-		league: "#eda100",
-		politics: "#1f9d6e",
-		media: "#d55181"
-	};
-	const GROUP_LABELS = {
-		players: "WNBA players",
-		league: "the league",
-		politics: "politicians",
-		media: "media voices"
-	};
 
 	// lean coloring is an editorial judgment
 	const RIGHT_LEANING = new Set([
@@ -75,14 +58,18 @@
 		"LeBron James",
 		"Megan Rapinoe"
 	]);
+	// the league's own orange for its players; coaches and the front office in grey
+	const WNBA_ORANGE = "#f26f21";
 	const LEAN_COLORS = {
+		player: WNBA_ORANGE,
 		league: "#8d8578",
 		right: "var(--color-fox)",
 		left: "#2a6fd6",
 		unaligned: "#cbc3b4"
 	};
 	const LEAN_LABELS = {
-		league: "WNBA players & league",
+		player: "WNBA players",
+		league: "coaches & the league",
 		right: "right-leaning voices",
 		left: "left-leaning voices",
 		unaligned: "no clear lean"
@@ -92,33 +79,12 @@
 	const leanOf = (node) => {
 		if (RIGHT_LEANING.has(node.name)) return "right";
 		if (LEFT_LEANING.has(node.name)) return "left";
-		if (node.group === "players" || node.group === "league") return "league";
+		if (node.group === "players") return "player";
+		if (node.group === "league") return "league";
 		return "unaligned";
 	};
 
-	let colorMode = $state("lean"); // "lean" | "role"
-	let edgeMode = $state("weight"); // "weight" | "sentiment"
-
-	// mean RoBERTa sentiment (-1…+1) of the edge's headlines
-	function edgeSentiment(edge) {
-		const scored = (edge.heads ?? [edge.ex])
-			.map((headline) => sentimentScores[headline])
-			.filter((score) => score !== undefined);
-		if (!scored.length) return null;
-		return scored.reduce((sum, score) => sum + score, 0) / scored.length;
-	}
-
-	function edgeColor(edge) {
-		if (edgeMode !== "sentiment") return null;
-		const mood = edgeSentiment(edge);
-		if (mood === null) return "rgba(42,21,3,0.25)";
-		const strength = Math.min(1, Math.abs(mood) / 0.4);
-		if (mood < -0.05) return `rgba(192, 57, 43, ${0.3 + strength * 0.6})`;
-		if (mood > 0.05) return `rgba(31, 157, 110, ${0.3 + strength * 0.6})`;
-		return "rgba(42,21,3,0.28)";
-	}
-	const colorOf = (node) =>
-		colorMode === "lean" ? LEAN_COLORS[leanOf(node)] : GROUP_COLORS[node.group];
+	const colorOf = (node) => LEAN_COLORS[leanOf(node)];
 
 	// portrait files in viz/static/net — regenerate with fetch_portraits.py
 	const IMG_EXT = faceFiles;
@@ -153,6 +119,15 @@
 	}));
 
 	let stepIndex = $state(0);
+	// phones get a headline drawer instead of hover panels and controls
+	let narrow = $state(false);
+	onMount(() => {
+		const mq = window.matchMedia("(max-width: 860px)");
+		const sync = () => (narrow = mq.matches);
+		sync();
+		mq.addEventListener("change", sync);
+		return () => mq.removeEventListener("change", sync);
+	});
 	// explore is a synthetic step past the last Doc step, so the mode switch changes no data
 	let current = $derived(
 		STEPS[Math.min(stepIndex ?? 0, STEPS.length - 1)] ?? STEPS[0]
@@ -226,27 +201,30 @@
 			? []
 			: selectedNames.length
 				? selectedNames
-				: hovered
+				: hovered && !narrow
 					? [hovered]
 					: []
 	);
 
-	let selectedHeadlines = $derived.by(() => {
-		if (!tableNames.length) return [];
+	// the headlines naming these people (all of them, when two or more); with no
+	// names, every headline in the range
+	function headlinesFor(names) {
 		const rows = [];
 		for (const year of yearsShown) {
 			for (const edge of net.edges[year] ?? []) {
-				const touches = tableNames.filter((n) => n === edge.a || n === edge.b);
-				if (!touches.length) continue;
-				const both =
-					tableNames.length > 1
-						? tableNames.every((n) => n === edge.a || n === edge.b)
-						: true;
-				if (tableNames.length > 1 && !both) continue;
+				if (names.length) {
+					const touches = names.filter((n) => n === edge.a || n === edge.b);
+					if (!touches.length) continue;
+					if (
+						names.length > 1 &&
+						!names.every((n) => n === edge.a || n === edge.b)
+					)
+						continue;
+				}
 				const partner =
-					tableNames.includes(edge.a) && !tableNames.includes(edge.b)
+					names.includes(edge.a) && !names.includes(edge.b)
 						? edge.b
-						: tableNames.includes(edge.b) && !tableNames.includes(edge.a)
+						: names.includes(edge.b) && !names.includes(edge.a)
 							? edge.a
 							: null;
 				for (const headline of edge.heads ?? [edge.ex]) {
@@ -260,9 +238,16 @@
 				}
 			}
 		}
-		// fallback: no shared headlines — show their solo ones
-		if (tableNames.length === 1 && rows.length === 0) {
-			const node = nodeByName.get(tableNames[0]);
+		// one person with no shared headlines: their solo ones. Everyone: solo
+		// headlines too, so the drawer is the whole archive in this range
+		const solo =
+			names.length === 1 && rows.length === 0
+				? names
+				: names.length
+					? []
+					: net.nodes.map((n) => n.name);
+		for (const name of solo) {
+			const node = nodeByName.get(name);
 			for (const own of node?.headlines ?? []) {
 				const year = own.d.slice(0, 4);
 				if (yearsShown.includes(year))
@@ -274,7 +259,11 @@
 		return rows
 			.sort((x, y) => (x.year < y.year ? 1 : -1))
 			.filter((r) => !seen.has(r.headline) && seen.add(r.headline));
-	});
+	}
+	// the phone drawer: filtered to the tapped faces, else everything
+	let drawerOpen = $state(false);
+	let drawerRows = $derived(exploring ? headlinesFor(tableNames) : []);
+	const DRAWER_CAP = 200;
 
 	// longest names first so "Caitlin Clark" wins over "Clark"
 	const NAME_PATTERNS = net.nodes
@@ -290,6 +279,23 @@
 
 	const escapeHtml = (text) =>
 		text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+	// the people a headline names, for the drawer's names column
+	function namesIn(headline) {
+		const out = [];
+		const used = new Set();
+		for (const { text, node } of NAME_PATTERNS) {
+			if (used.has(node.name)) continue;
+			const pattern = new RegExp(
+				`\\b${text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+				"i"
+			);
+			if (!pattern.test(headline)) continue;
+			used.add(node.name);
+			out.push({ name: node.name, color: colorOf(node) });
+		}
+		return out;
+	}
 
 	function highlightNames(headline) {
 		let html = escapeHtml(headline);
@@ -412,9 +418,11 @@
 			)
 			.on("tick", () => {
 				// mutate in place: $state tracks x/y per node
+				// whole faces stay on the canvas, not just their centres
 				for (const node of nodes) {
-					node.x = Math.max(28, Math.min(WIDTH - 28, node.x));
-					node.y = Math.max(24, Math.min(HEIGHT - 24, node.y));
+					const r = radius(node) + 4;
+					node.x = Math.max(r, Math.min(WIDTH - r, node.x));
+					node.y = Math.max(r, Math.min(HEIGHT - r, node.y));
 				}
 			});
 		return () => simulation?.stop();
@@ -578,7 +586,7 @@
 </script>
 
 <section class="network-scrolly" class:exploring={atFinalStep}>
-	<div class="sticky" class:with-table={tableNames.length > 0}>
+	<div class="sticky">
 		<p class="year-label">
 			Fox News WNBA {LINK_WORD}s, 2019–<strong>{shownYear}</strong>
 		</p>
@@ -662,9 +670,7 @@
 						class="edge"
 						class:highlight={edgeLit(edge)}
 						class:faded={edgeDimmed(edge)}
-						class:moody={edgeMode === "sentiment"}
-						style="stroke-width:{0.8 + Math.sqrt(edge.n / maxWeight) * 7};
-							{edgeColor(edge) ? `stroke:${edgeColor(edge)}` : ''}"
+						style="stroke-width:{0.8 + Math.sqrt(edge.n / maxWeight) * 7}"
 					/>
 				{/if}
 			{/each}
@@ -686,7 +692,7 @@
 							cx={node.x}
 							cy={node.y}
 							r={size}
-							fill="#f7f2e6"
+							fill={leanOf(node) === "player" ? WNBA_ORANGE : "#f7f2e6"}
 							class="portrait"
 							class:faded={dim}
 						/>
@@ -712,11 +718,7 @@
 						class:faded={dim}
 						class:spotlight={litNames.has(node.name) && !hoverSet && !exploring}
 						class:grabbable={true}
-						stroke-width={colorMode === "lean"
-							? leanOf(node) === "league"
-								? 3
-								: 7
-							: 2.5}
+						stroke-width={leanOf(node) === "league" ? 3 : leanOf(node) === "player" ? 5 : 7}
 						onpointerdown={(e) => {
 							e.stopPropagation();
 							startDrag(e, node);
@@ -740,96 +742,95 @@
 			{/each}
 		</svg>
 
-		{#if edgeMode === "sentiment"}
-			<div class="legend edge-legend">
-				<span
-					><i style="background:var(--color-fox)"></i>negative headlines</span
-				>
-				<span><i style="background:rgba(42,21,3,0.28)"></i>neutral</span>
-				<span><i style="background:#1f9d6e"></i>positive</span>
-			</div>
-		{/if}
-
 		<div class="legend">
-			{#if colorMode === "lean"}
-				{#each Object.keys(LEAN_LABELS) as key}
-					<span
-						><i style="background:{LEAN_COLORS[key]}"></i>{LEAN_LABELS[
-							key
-						]}</span
-					>
-				{/each}
-			{:else}
-				{#each Object.keys(GROUP_LABELS) as group}
-					<span
-						><i style="background:{GROUP_COLORS[group]}"></i>{GROUP_LABELS[
-							group
-						]}</span
-					>
-				{/each}
-			{/if}
-			<button
-				class="color-toggle"
-				onclick={() => (colorMode = colorMode === "role" ? "lean" : "role")}
-			>
-				color by {colorMode === "role" ? "political lean" : "role"}
-			</button>
-			<button
-				class="color-toggle"
-				onclick={() =>
-					(edgeMode = edgeMode === "weight" ? "sentiment" : "weight")}
-			>
-				{edgeMode === "weight" ? "color links by sentiment" : "plain links"}
-			</button>
+			{#each Object.keys(LEAN_LABELS) as key}
+				<span
+					><i style="background:{LEAN_COLORS[key]}"></i>{LEAN_LABELS[key]}</span
+				>
+			{/each}
 		</div>
 
-		{#if !tableNames.length}
-			<p class="explore-hint">
-				Hover a face for their headlines · click to pin them, click a second to
-				see only what they share · drag to rearrange
-			</p>
-		{/if}
+		<!-- always in the layout: if it came and went with the hover the drawing
+		     would grow and shrink beneath the pointer -->
+		<p class="explore-hint">
+			Hover a face for their headlines · click to pin them, click a second to
+			see only what they share · drag to rearrange · headlines below
+		</p>
 
-		{#if tableNames.length}
-			<div class="headline-table">
-				<div class="table-head">
-					<strong>{tableNames.join(" + ")}</strong>
-					<span>
-						{selectedHeadlines.length}
-						{tableNames.length > 1
-							? LINK_WORD === "article"
-								? "articles naming both"
-								: "headlines naming both"
-							: LINK_WORD === "article"
-								? "articles"
-								: "headlines"}
-						through {shownYear}
-					</span>
-					<button
-						class="close"
-						onclick={() => (selectedNames = [])}
-						aria-label="Close">×</button
+		{#if exploring}
+			<!-- the headlines live in a drawer along the bottom, filtered to
+			     whichever faces are clicked (or, on desktop, hovered) -->
+			<div class="drawer" class:open={drawerOpen}>
+				<button
+					class="drawer-toggle"
+					onclick={() => (drawerOpen = !drawerOpen)}
+					aria-expanded={drawerOpen}
+				>
+					<strong
+						>{tableNames.length
+							? tableNames.join(" + ")
+							: "See headlines"}</strong
 					>
-				</div>
-				<div class="table-body">
-					{#each selectedHeadlines as row, rowIndex}
-						<div class="table-row">
-							<span class="row-left">
-								<span class="cdate">{row.year}</span>
-							</span>
-							<p>{@html highlightNames(row.headline)}</p>
-							{#each row.sentences as sentence}
-								<p class="row-sentence">{@html highlightNames(sentence)}</p>
-							{/each}
-						</div>
-					{:else}
-						<p class="row-meta">
-							{tableNames.length > 1
-								? `Fox never put these names in the same ${LINK_WORD} in this range.`
-								: "Nothing yet in this range."}
-						</p>
-					{/each}
-				</div>
+					<span class="count">
+						{drawerRows.length.toLocaleString()}
+						{drawerRows.length === 1 ? LINK_WORD : LINK_WORD + "s"}
+						{tableNames.length > 1 ? "naming both" : ""}
+					</span>
+					<span class="caret" aria-hidden="true">{drawerOpen ? "▴" : "▾"}</span>
+				</button>
+				{#if drawerOpen}
+					{#if selectedNames.length}
+						<button class="drawer-all" onclick={() => (selectedNames = [])}
+							>show all {LINK_WORD}s</button
+						>
+					{/if}
+					<!-- the same table as the browser at the end of the piece, in a
+					     small scrolling window -->
+					<div class="scroller">
+						<table class="hl">
+							<thead>
+								<tr>
+									<th class="col-year">Year</th>
+									<th class="col-head"
+										>{LINK_WORD === "article" ? "Article" : "Headline"}</th
+									>
+									<th class="col-who">Names</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each drawerRows.slice(0, DRAWER_CAP) as row}
+									<tr>
+										<td class="col-year">{row.year}</td>
+										<td class="col-head">{row.headline}</td>
+										<td class="col-who">
+											{#each namesIn(row.headline) as who (who.name)}
+												<span class="tag" style="background:{who.color}">
+													{who.name.split(" ").slice(-1)[0]}
+												</span>
+											{/each}
+										</td>
+									</tr>
+								{:else}
+									<tr>
+										<td class="empty" colspan="3">
+											{tableNames.length > 1
+												? `Fox never put these names in the same ${LINK_WORD} in this range.`
+												: "Nothing yet in this range."}
+										</td>
+									</tr>
+								{/each}
+								{#if drawerRows.length > DRAWER_CAP}
+									<tr>
+										<td class="empty" colspan="3">
+											The first {DRAWER_CAP} of {drawerRows.length.toLocaleString()}.
+											Click faces to narrow them down.
+										</td>
+									</tr>
+								{/if}
+							</tbody>
+						</table>
+					</div>
+				{/if}
 			</div>
 		{/if}
 	</div>
@@ -842,7 +843,6 @@
 						<p class="step-text">{@html step.text}</p>
 						{#if stepIndex === i && stepHeadline}
 							<div class="headline-clip">
-								<span class="tag">{stepHeadline.pair}</span>
 								{#if stepHeadline.n > 1}<span class="cdate"
 										>{stepHeadline.n} headlines</span
 									>{/if}
@@ -896,8 +896,7 @@
 		top: 0;
 		height: 100vh;
 		padding: 10px 0;
-		/* nudged right: the headline panel opens on the left */
-		padding-left: 56px;
+		box-sizing: border-box;
 	}
 	/* hidden, not removed, so the page keeps its scroll height */
 	.network-scrolly.exploring .steps {
@@ -929,6 +928,12 @@
 			padding-left: 0;
 			padding-right: 0;
 		}
+		/* no year animation or people pickers on phones: the faces need the room */
+		/* !important: their later display:flex rules would win otherwise */
+		.compare-bar,
+		.explore-bar {
+			display: none !important;
+		}
 	}
 	@media (max-width: 640px) {
 		/* !important: .legend's later display:flex rule would win otherwise */
@@ -951,17 +956,121 @@
 		min-height: 0;
 		max-height: 100%;
 	}
-	@media (min-width: 861px) {
-		.network-scrolly.exploring .sticky.with-table > .headline-table {
-			position: absolute;
-			left: 0;
-			top: 84px;
-			width: 300px;
-			max-height: 62vh;
-			z-index: 3;
-			background: rgba(255, 253, 248, 0.96);
-			box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
-		}
+	.drawer {
+		flex: 0 0 auto;
+		width: min(100%, 700px);
+		margin: 8px auto 0;
+		display: flex;
+		flex-direction: column;
+		background: var(--color-paper);
+		border: 1px solid #e6dcc3;
+		border-radius: 6px;
+		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.12);
+		overflow: hidden;
+	}
+	.drawer-toggle {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+		width: 100%;
+		flex: 0 0 auto;
+		padding: 12px 14px;
+		border: 0;
+		background: transparent;
+		font: inherit;
+		font-size: 14px;
+		color: var(--color-ink);
+		text-align: left;
+		cursor: pointer;
+	}
+	.drawer-toggle .count {
+		color: rgba(42, 21, 3, 0.6);
+		font-size: 12.5px;
+	}
+	.drawer-toggle .caret {
+		margin-left: auto;
+		font-size: 14px;
+	}
+	.drawer-all {
+		align-self: flex-start;
+		margin: 0 14px 6px;
+		border: 1px solid rgba(42, 21, 3, 0.3);
+		background: transparent;
+		color: rgba(42, 21, 3, 0.7);
+		font-size: 12px;
+		padding: 3px 9px;
+		border-radius: 4px;
+		cursor: pointer;
+	}
+	/* the table's window: white, ruled, scrolling under a sticky header */
+	.drawer .scroller {
+		/* a fixed window: the table scrolls inside it, the page does not grow */
+		height: min(240px, 30vh);
+		overflow-y: auto;
+		background: #fff;
+		border-top: 2px solid var(--color-ink);
+	}
+	.hl {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	.hl thead th {
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		background: #fff;
+		text-align: left;
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 10px;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: rgba(42, 21, 3, 0.6);
+		font-weight: 700;
+		padding: 8px 12px 7px 0;
+		border-bottom: 1px solid rgba(42, 21, 3, 0.14);
+		white-space: nowrap;
+	}
+	.hl thead th:first-child,
+	.hl tbody td:first-child {
+		padding-left: 14px;
+	}
+	.hl thead th:last-child,
+	.hl tbody td:last-child {
+		padding-right: 14px;
+	}
+	.hl tbody td {
+		padding: 8px 12px 8px 0;
+		vertical-align: baseline;
+		border-bottom: 1px solid rgba(42, 21, 3, 0.1);
+	}
+	.hl tbody tr:hover td {
+		background: rgba(28, 25, 23, 0.045);
+	}
+	.hl .col-year {
+		width: 44px;
+		white-space: nowrap;
+	}
+	.hl tbody .col-year {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 11px;
+		font-variant-numeric: tabular-nums;
+		letter-spacing: 0.03em;
+		color: rgba(42, 21, 3, 0.6);
+	}
+	.hl tbody .col-head {
+		font-family: Georgia, "Times New Roman", serif;
+		font-size: 14px;
+		line-height: 1.35;
+		color: var(--color-ink);
+	}
+	.hl .col-who {
+		width: 132px;
+	}
+	.hl .empty {
+		text-align: center;
+		padding: 22px 12px;
+		color: rgba(42, 21, 3, 0.6);
+		font-size: 13px;
 	}
 
 	.edge {
@@ -1010,11 +1119,6 @@
 		pointer-events: none;
 	}
 
-	.legend.edge-legend i {
-		width: 16px;
-		height: 3px;
-		border-radius: 2px;
-	}
 	.legend {
 		display: flex;
 		justify-content: center;
@@ -1164,15 +1268,6 @@
 		background: var(--color-ink);
 		color: #fff;
 	}
-	.color-toggle {
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		background: transparent;
-		color: var(--color-ink);
-		font-size: 12px;
-		padding: 3px 9px;
-		border-radius: 4px;
-		cursor: pointer;
-	}
 	.table-row :global(mark) {
 		background: transparent;
 		color: inherit;
@@ -1206,39 +1301,6 @@
 		background: transparent;
 		color: rgba(42, 21, 3, 0.5);
 		border: 1px solid rgba(42, 21, 3, 0.3);
-	}
-	.headline-table {
-		flex: 0 0 auto;
-		margin-top: 8px;
-		background: var(--color-paper);
-		border: 1px solid #e6dcc3;
-		border-radius: 6px;
-		max-height: 19vh;
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-	}
-	.table-head {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-		padding: 6px 12px;
-		border-bottom: 1px solid #e6dcc3;
-		font-size: 13px;
-		color: var(--color-ink);
-	}
-	.table-head span {
-		color: rgba(42, 21, 3, 0.6);
-		font-size: 12px;
-	}
-	.table-head .close {
-		margin-left: auto;
-		border: 0;
-		background: transparent;
-		font-size: 18px;
-		line-height: 1;
-		cursor: pointer;
-		color: rgba(42, 21, 3, 0.6);
 	}
 	.table-body {
 		overflow-y: auto;

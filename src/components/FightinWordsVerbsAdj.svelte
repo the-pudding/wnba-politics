@@ -3,9 +3,13 @@
 	// Each step takes: who, rel, vs, pair, words, text
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import FightinWords from "$components/FightinWords.svelte";
-	import { playerWordsSource } from "../utils/playerWords.js";
+	import {
+		playerWordsSource,
+		playerWordsPeople
+	} from "../utils/playerWords.js";
 	import { base } from "$app/paths";
 	import roster from "$data/people.json";
+	import data from "$data/player_words.json";
 	const faceFiles = Object.fromEntries(
 		Object.values(roster)
 			.filter((p) => p.face)
@@ -31,22 +35,71 @@
 				words: list(step.words),
 				// title: optional Doc heading replacing the generated one
 				title: (step.title ?? "").trim(),
+				// explore: true — the reader picks the player and the relation
+				explore: step.explore === true || step.explore === "true",
 				html: step.text ?? ""
 			}))
 	);
 
 	let index = $state(0);
-	let current = $derived(STEPS[index ?? 0] ?? STEPS[0]);
-	let source = $derived(playerWordsSource(current));
+	// once no card is in view the chart keeps its last state
+	let last = $state(0);
+	$effect(() => {
+		if (index !== undefined && index !== null) last = index;
+	});
+	let current = $derived(STEPS[last] ?? STEPS[0]);
+
+	// --- the picker: any featured player, any relation, at any step ----------
+	// The Doc's steps set it as the reader scrolls; the reader can change it at
+	// any time, and the next step sets it again.
+	const RELATIONS = [
+		["describe", "how she's described"],
+		["subject", "what she does"],
+		["object", "what's done to her"],
+		["all", "every word"]
+	];
+	// players with a Fox-versus-the-other-outlets comparison stored
+	const PEOPLE = playerWordsPeople();
+	let pickedWho = $state(PEOPLE[0] ?? "");
+	let pickedRel = $state("describe");
+	$effect(() => {
+		const step = current;
+		if (step.who && PEOPLE.includes(step.who)) pickedWho = step.who;
+		if (step.rel) pickedRel = step.rel;
+	});
+	// a smaller cast member has too few attachments for some relations; those
+	// buttons grey out, and the choice falls back to every word
+	let available = $derived(
+		new Set(Object.keys(data.players?.[pickedWho]?.vsOutlets ?? {}))
+	);
+	$effect(() => {
+		if (available.size && !available.has(pickedRel)) pickedRel = "all";
+	});
+	// what the chart shows: the picker's choice; the step's own title, words
+	// and pair comparison apply while the choice still matches the step
+	let onStep = $derived(pickedWho === current.who && pickedRel === current.rel);
+	let shown = $derived(
+		onStep
+			? current
+			: {
+					who: pickedWho,
+					rel: pickedRel,
+					vs: "outlets",
+					pair: null,
+					words: [],
+					title: ""
+				}
+	);
+	let source = $derived(playerWordsSource(shown));
 	const slugOf = (name) =>
 		name
 			.toLowerCase()
 			.replace(/[^a-z0-9]+/g, "-")
 			.replace(/^-|-$/g, "");
 	let faces = $derived(
-		(current.vs === "pair" && current.pair
-			? current.pair.split(" vs ")
-			: [current.who]
+		(shown.vs === "pair" && shown.pair
+			? shown.pair.split(" vs ")
+			: [shown.who]
 		).map((name) => ({
 			name,
 			file: faceFiles[slugOf(name.trim())],
@@ -65,8 +118,8 @@
 					{/if}
 				{/each}
 				<p class="heading">
-					{#if current.title}
-						{@html current.title}
+					{#if shown.title}
+						{@html shown.title}
 					{:else}
 						<b>{source.relation}</b><br />
 						{source.topLabel} <span class="vs">against</span>
@@ -74,10 +127,33 @@
 					{/if}
 				</p>
 			</div>
-			<FightinWords {source} highlight={current.words} bare controls={false} />
+			<!-- the picker, live at every step: the Doc sets it, the reader can change it -->
+			<div class="pick">
+				<label>
+					<span class="pick-label">Player</span>
+					<select bind:value={pickedWho}>
+						{#each PEOPLE as name (name)}
+							<option value={name}>{name}</option>
+						{/each}
+					</select>
+				</label>
+				<div class="toggle-group" role="group" aria-label="Kind of word">
+					{#each RELATIONS as [rel, label] (rel)}
+						<button
+							class:active={pickedRel === rel}
+							disabled={!available.has(rel)}
+							title={available.has(rel)
+								? ""
+								: `Too few ${label.replace("she's", "she is")} words for ${pickedWho}`}
+							onclick={() => (pickedRel = rel)}>{label}</button
+						>
+					{/each}
+				</div>
+			</div>
+			<FightinWords {source} highlight={shown.words} bare controls={false} />
 		{:else}
 			<p class="heading">
-				No comparison stored for {current.who} · {current.rel}
+				No comparison stored for {shown.who} · {shown.rel}
 			</p>
 		{/if}
 	</div>
@@ -85,7 +161,11 @@
 	<div class="steps">
 		<Scrolly bind:value={index}>
 			{#each STEPS as step, i}
-				<div class="step" class:active={index === i}>
+				<div
+					class="step"
+					class:active={last === i}
+					class:explore={step.explore}
+				>
 					<p class="card">{@html step.html}</p>
 				</div>
 			{/each}
@@ -137,6 +217,64 @@
 	.heading .vs {
 		color: rgba(42, 21, 3, 0.55);
 	}
+
+	/* the explore step's picker, live above the chart */
+	.pick {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		flex-wrap: wrap;
+		margin: 4px 0 8px;
+		pointer-events: auto;
+	}
+	.pick label {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 13px;
+		color: var(--color-ink);
+	}
+	.pick-label {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 11px;
+		font-weight: 800;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: rgba(42, 21, 3, 0.65);
+	}
+	.pick select {
+		font: inherit;
+		font-size: 13.5px;
+		padding: 5px 8px;
+		border: 1px solid rgba(42, 21, 3, 0.3);
+		border-radius: 4px;
+		background: var(--color-paper);
+		color: var(--color-ink);
+	}
+	.toggle-group {
+		display: inline-flex;
+		border: 1px solid rgba(42, 21, 3, 0.3);
+		border-radius: 4px;
+		overflow: hidden;
+	}
+	.toggle-group button {
+		border: 0;
+		background: transparent;
+		color: var(--color-ink);
+		padding: 5px 10px;
+		font-size: 12.5px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+	.toggle-group button.active {
+		background: var(--color-ink);
+		color: #fff;
+	}
+	.toggle-group button:disabled {
+		color: rgba(42, 21, 3, 0.35);
+		cursor: not-allowed;
+	}
 	.sticky :global(svg) {
 		max-height: 74vh;
 	}
@@ -169,6 +307,12 @@
 	}
 	.step.active .card {
 		opacity: 1;
+	}
+	/* the explore card keeps out of the chart's way */
+	.step.explore {
+		align-items: flex-end;
+		padding-bottom: 6vh;
+		box-sizing: border-box;
 	}
 
 	@media (max-width: 860px) {

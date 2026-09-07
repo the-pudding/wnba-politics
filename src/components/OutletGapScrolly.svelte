@@ -4,7 +4,6 @@
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import OutletGapDotPlot from "$components/OutletGapDotPlot.svelte";
 	import { stageSteps } from "$utils/gapSteps.js";
-	import HeadlineClip from "$components/HeadlineClip.svelte";
 	import { faces, clipPops } from "$utils/clips.js";
 
 	let { steps = null } = $props();
@@ -20,27 +19,8 @@
 	});
 	let current = $derived(STEPS[last] ?? STEPS[0]);
 
-	// Where a step's headline clipping goes:
-	//   wide desktop  — beside the chart, in the empty margin to its right
-	//   narrower      — the slot above the plot
-	//   phone         — under the step's text card
-	let viewportWidth = $state(
-		typeof window === "undefined" ? 1200 : window.innerWidth
-	);
-	let clipWhere = $derived(
-		viewportWidth >= 1280 ? "side" : viewportWidth >= 640 ? "top" : "card"
-	);
-	let hasClips = $derived(STEPS.some((step) => step.clip));
-	// the side card slides in with the first step that quotes a headline and
-	// stays from then on: this step's clipping, else the last one shown (blurred)
-	let lastClip = $state(null);
-	$effect(() => {
-		if (current.clip) lastClip = current.clip;
-	});
-	let sideClip = $derived(current.clip ?? lastClip);
+	// the Doc may still carry `clip:` fields; the dot plot shows none of them
 </script>
-
-<svelte:window bind:innerWidth={viewportWidth} />
 
 <section class="gap-scrolly">
 	<div class="sticky">
@@ -49,19 +29,9 @@
 			bare={!current.explore}
 			placed={current.placed}
 			centered={current.center}
-			clip={clipWhere === "top" ? current.clip : null}
-			clipSlot={clipWhere === "top" && hasClips}
 			centerLine
-			clipHidden={current.explore}
-			clipPlaceholder={STEPS.find((step) => step.clip)?.clip ?? null}
+			wide
 		/>
-		{#if clipWhere === "side" && sideClip && !current.explore}
-			<!-- wide screens: the clipping sits just right of the chart, blurred
-			     between the steps that quote one -->
-			<div class="side-clip">
-				<HeadlineClip clip={sideClip} rot={1.2} blurred={!current.clip} />
-			</div>
-		{/if}
 	</div>
 
 	<div class="steps">
@@ -70,11 +40,6 @@
 				<div class="step" class:active={index === i}>
 					<div class="stack">
 						<p class="card">{@html clipPops(faces(step.html, base), base)}</p>
-						{#if clipWhere === "card" && step.clip}
-							<div class="clip-wrap">
-								<HeadlineClip clip={step.clip} small />
-							</div>
-						{/if}
 					</div>
 				</div>
 			{/each}
@@ -102,38 +67,23 @@
 	/* the frame is a column: title, pills and clipping on top, and the drawing
 	   takes exactly the height that is left, so nothing is ever cut off */
 	.sticky :global(.outlet-gap) {
-		width: min(860px, 97vw);
+		width: min(1000px, 97vw);
 		height: 96vh;
 		display: flex;
 		flex-direction: column;
+		justify-content: center;
 	}
+	/* the drawing keeps its own proportions: as wide as the box on a tall
+	   screen, and shrunk to the height left on a short one — never a box
+	   taller than the drawing with the slack above it */
 	.sticky :global(.outlet-gap > .plot) {
-		flex: 1 1 auto;
+		flex: 0 1 auto;
 		min-height: 0;
 	}
 	.sticky :global(.outlet-gap > .plot > svg) {
 		width: 100%;
-		height: 100%;
-	}
-
-	/* just right of the chart box: its right edge sits about 350px past the
-	   page centre once the chart is slid to centre its equal line */
-	.side-clip {
-		position: absolute;
-		left: min(calc(50% + 300px), calc(100% - 300px));
-		top: 50%;
-		transform: translateY(-50%);
-		width: 280px;
-		animation: slide-in 700ms cubic-bezier(0.22, 0.8, 0.3, 1);
-	}
-	@keyframes slide-in {
-		from {
-			opacity: 0;
-			transform: translate(60vw, -50%);
-		}
-	}
-	.clip-wrap {
-		margin-top: 12px;
+		height: auto;
+		max-height: 100%;
 	}
 
 	.steps {

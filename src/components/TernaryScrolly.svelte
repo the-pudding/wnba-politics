@@ -123,13 +123,16 @@
 	let minTotal = $derived(
 		Math.round(MIN_TOTAL * Math.pow(biggest / MIN_TOTAL, slider / 100))
 	);
-	let visibleCount = $derived(
-		vocabulary.filter((t) => t.total >= minTotal).length
-	);
 
 	// the chip being hovered (or tapped) pins its tooltip on the triangle; on the
 	// explore step the exact match being typed, else the last word kept, is pinned
 	let focus = $state(null);
+	// clicking away from the chips and the panel unpins whatever was pinned
+	function unpin(event) {
+		if (event.target.closest?.(".chip, .panel")) return;
+		focus = null;
+		lastKept = null;
+	}
 	let pinned = $derived(
 		focus ?? (current.search ? (exact?.term ?? lastKept) : null)
 	);
@@ -147,7 +150,9 @@
 	);
 </script>
 
-<section class="ternary-scrolly">
+<svelte:window onclick={unpin} />
+
+<section class="ternary-scrolly" class:explore={current.search}>
 	<div class="sticky">
 		<TernaryStatic
 			{groups}
@@ -158,116 +163,107 @@
 			focus={pinned}
 			minTotal={current.search ? minTotal : 0}
 		/>
+
+		{#if current.search}
+			<!-- the explore step's controls stay put: beside the triangle on wide
+			     screens, under it on phones, so they never sit over the points -->
+			<aside class="panel">
+				{#if current.title}<h4 class="card-title">{current.title}</h4>{/if}
+				{#if current.html}<p class="card-text">
+						{@html clipPops(faces(current.html, base), base)}
+					</p>{/if}
+				<label class="control">
+					<span class="control-label"
+						>Minimum uses: <b>{minTotal.toLocaleString()}</b></span
+					>
+					<input type="range" min="0" max="100" step="1" bind:value={slider} />
+					<span class="ends" aria-hidden="true">
+						<span>1</span><span>{biggest.toLocaleString()}</span>
+					</span>
+				</label>
+				<label class="control">
+					<span class="control-label">Find a word</span>
+					<div class="search-box">
+						<input
+							type="search"
+							placeholder="Search for a word…"
+							bind:value={query}
+							autocomplete="off"
+							spellcheck="false"
+							onfocus={() => (open = true)}
+							onblur={() => (open = false)}
+							oninput={() => ((open = true), (cursor = -1))}
+							onkeydown={onKey}
+						/>
+						{#if open && q && suggestions.length}
+							<ul class="suggest" role="listbox">
+								{#each suggestions as t, i (t.term)}
+									<li
+										role="option"
+										aria-selected={i === cursor}
+										class:on={i === cursor}
+										onpointerdown={(e) => (e.preventDefault(), choose(t.term))}
+									>
+										<span class="term">{t.term}</span>
+										<span class="uses">{t.total.toLocaleString()}</span>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+					{#if q && !exact}
+						<span class="control-note">
+							{#if !partial.length}
+								No word contains “{q}”.
+							{:else if partial.length > MAX_LIT}
+								{partial.length} words contain “{q}”; the {MAX_LIT} most common are
+								lit.
+							{:else}
+								{partial.length}
+								{partial.length === 1 ? "word contains" : "words contain"} “{q}”.
+							{/if}
+						</span>
+					{:else if exact}
+						<span class="control-note">Press Enter to keep “{exact.term}”.</span
+						>
+					{/if}
+				</label>
+				{#if picked.length}
+					<div class="chips">
+						{#each picked as word (word)}
+							<span
+								class="chip"
+								class:on={pinned === word}
+								role="button"
+								tabindex="0"
+								onpointerenter={() => (focus = word)}
+								onpointerleave={() => (focus = null)}
+							>
+								{word}
+								<button
+									class="x"
+									aria-label="remove {word}"
+									onclick={() => drop(word)}>×</button
+								>
+							</span>
+						{/each}
+					</div>
+				{/if}
+			</aside>
+		{/if}
 	</div>
 
 	<div class="steps">
 		<Scrolly bind:value={index}>
 			{#each STEPS as step, i}
 				<div class="step" class:active={last === i}>
-					{#if step.img}
-						<!-- the step's image scrolls with the card, centred over the chart -->
-						<img
-							class="figure"
-							src="{base}/images/{step.img}"
-							alt=""
-							loading="lazy"
-						/>
-					{/if}
-					<div class="card">
-						{#if step.title}<h4 class="card-title">{step.title}</h4>{/if}
-						{#if step.html}<p class="card-text">
-								{@html clipPops(faces(step.html, base), base)}
-							</p>{/if}
-
-						{#if step.search}
-							<label class="control">
-								<span class="control-label">Filter by number of uses</span>
-								<input
-									type="range"
-									min="0"
-									max="100"
-									step="1"
-									bind:value={slider}
-								/>
-								<span class="control-note">
-									at least {minTotal.toLocaleString()} · {visibleCount.toLocaleString()}
-									words shown
-								</span>
-							</label>
-							<label class="control">
-								<span class="control-label">Find a word</span>
-								<div class="search-box">
-									<input
-										type="search"
-										placeholder="Search for a word…"
-										bind:value={query}
-										autocomplete="off"
-										spellcheck="false"
-										onfocus={() => (open = true)}
-										onblur={() => (open = false)}
-										oninput={() => ((open = true), (cursor = -1))}
-										onkeydown={onKey}
-									/>
-									{#if open && q && suggestions.length}
-										<ul class="suggest" role="listbox">
-											{#each suggestions as t, i (t.term)}
-												<li
-													role="option"
-													aria-selected={i === cursor}
-													class:on={i === cursor}
-													onpointerdown={(e) => (
-														e.preventDefault(),
-														choose(t.term)
-													)}
-												>
-													<span class="term">{t.term}</span>
-													<span class="uses">{t.total.toLocaleString()}</span>
-												</li>
-											{/each}
-										</ul>
-									{/if}
-								</div>
-								{#if q && !exact}
-									<span class="control-note">
-										{#if !partial.length}
-											No word contains “{q}”.
-										{:else if partial.length > MAX_LIT}
-											{partial.length} words contain “{q}”; the {MAX_LIT} most common
-											are lit.
-										{:else}
-											{partial.length}
-											{partial.length === 1 ? "word contains" : "words contain"} “{q}”.
-										{/if}
-									</span>
-								{:else if exact}
-									<span class="control-note"
-										>Press Enter to keep “{exact.term}”.</span
-									>
-								{/if}
-							</label>
-							{#if picked.length}
-								<div class="chips">
-									{#each picked as word (word)}
-										<span
-											class="chip"
-											class:on={pinned === word}
-											role="button"
-											tabindex="0"
-											onpointerenter={() => (focus = word)}
-											onpointerleave={() => (focus = null)}
-										>
-											{word}
-											<button
-												class="x"
-												aria-label="remove {word}"
-												onclick={() => drop(word)}>×</button
-											>
-										</span>
-									{/each}
-								</div>
-							{/if}
-						{:else if step.groups.length}
-							{#each step.groups as group, g}
+					{#if !step.search}
+						<div class="card">
+							{#if step.title}<h4 class="card-title">{step.title}</h4>{/if}
+							{#if step.html}<p class="card-text">
+									{@html clipPops(faces(step.html, base), base)}
+								</p>{/if}
+							{#each step.groups as group}
 								<div class="chips">
 									{#each group as word}
 										<button
@@ -282,8 +278,18 @@
 									{/each}
 								</div>
 							{/each}
+						</div>
+						{#if step.img}
+							<!-- the step's image scrolls with the card: centred over the
+							     chart on wide screens, directly under the card on phones -->
+							<img
+								class="figure"
+								src="{base}/images/{step.img}"
+								alt=""
+								loading="lazy"
+							/>
 						{/if}
-					</div>
+					{/if}
 				</div>
 			{/each}
 		</Scrolly>
@@ -327,6 +333,25 @@
 	}
 	.step.active .figure {
 		opacity: 1;
+	}
+
+	/* the explore panel: a card that stays put, at the left like the cards */
+	.panel {
+		position: absolute;
+		left: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 300px;
+		box-sizing: border-box;
+		background: rgba(255, 253, 248, 0.96);
+		border-left: 3px solid var(--color-fox);
+		padding: 14px 16px 15px;
+		border-radius: 3px;
+		font-size: 15.5px;
+		line-height: 1.5;
+		color: var(--color-ink);
+		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
+		z-index: 2;
 	}
 
 	.steps {
@@ -441,6 +466,19 @@
 	.control input[type="range"] {
 		width: 100%;
 		accent-color: var(--color-fox);
+		margin: 4px 0 0;
+	}
+	.control-label b {
+		color: var(--color-ink);
+	}
+	/* the slider's ends: one use on the left, the most-used word on the right */
+	.ends {
+		display: flex;
+		justify-content: space-between;
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 11px;
+		color: rgba(42, 21, 3, 0.55);
+		margin-top: 2px;
 	}
 	.control input[type="search"] {
 		width: 100%;
@@ -502,6 +540,45 @@
 	@media (max-width: 860px) {
 		.card {
 			max-width: 84vw;
+		}
+		/* card, then its image right underneath */
+		.step {
+			flex-direction: column;
+			justify-content: center;
+			gap: 12px;
+		}
+		.figure {
+			position: static;
+			transform: none;
+			width: 84vw;
+			max-height: 40vh;
+		}
+		/* the explore step: triangle on top, the controls under it */
+		.explore .sticky {
+			flex-direction: column;
+			justify-content: flex-start;
+			gap: 8px;
+			padding-top: 6px;
+			box-sizing: border-box;
+		}
+		.explore .sticky :global(svg) {
+			max-height: 44vh;
+		}
+		.panel {
+			position: static;
+			transform: none;
+			width: min(660px, 92vw);
+			flex: 0 1 auto;
+			min-height: 0;
+			max-height: 50vh;
+			overflow-y: auto;
+			font-size: 14.5px;
+		}
+		/* inside a scrolling panel the suggestions sit in flow, not floating */
+		.suggest {
+			position: static;
+			margin-top: 4px;
+			box-shadow: none;
 		}
 	}
 </style>

@@ -129,6 +129,79 @@
 			)
 			.join("");
 
+	// --- the reveal, once the block scrolls into view ------------------------
+	// The panels come in one at a time, lowest average first: each dotted
+	// average marches in while its chip unscrambles, then its year-line wipes
+	// across. Fox News waits for a beat and comes last, alone.
+	const STEP_MS = 550; // between one panel's start and the next
+	const AVG_MS = 1000; // the march and the unscramble
+	const BEAT_MS = 900; // the pause before Fox
+	let started = $state(null);
+	let elapsed = $state(0);
+	let root = $state(null);
+	let still = $state(false);
+	$effect(() => {
+		if (!root) return;
+		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			still = true;
+			return;
+		}
+		let raf;
+		const io = new IntersectionObserver(
+			(entries) => {
+				if (!entries.some((e) => e.isIntersecting)) return;
+				io.disconnect();
+				started = performance.now();
+				const frame = (now) => {
+					elapsed = now - started;
+					if (elapsed < lastStart + AVG_MS + 100)
+						raf = requestAnimationFrame(frame);
+				};
+				raf = requestAnimationFrame(frame);
+			},
+			{ threshold: 0.35 }
+		);
+		io.observe(root);
+		return () => {
+			io.disconnect();
+			cancelAnimationFrame(raf);
+		};
+	});
+	// when each panel starts: the sports outlets from the lowest average up,
+	// then a beat, then Fox
+	let startAt = $derived.by(() => {
+		const others = outlets.filter((o) => o !== FOX).toReversed();
+		const at = {};
+		others.forEach((o, i) => (at[o] = i * STEP_MS));
+		if (outlets.includes(FOX)) at[FOX] = others.length * STEP_MS + BEAT_MS;
+		return at;
+	});
+	let lastStart = $derived(Math.max(0, ...Object.values(startAt)));
+	// a panel's stage and its chip's unscramble, from the clock
+	const stageOf = (outlet) => {
+		if (still) return "lines";
+		if (started === null) return "blank";
+		const t = elapsed - startAt[outlet];
+		return t < 0 ? "blank" : t < AVG_MS ? "avg" : "lines";
+	};
+	const revealOf = (outlet) => {
+		if (still) return 1;
+		if (started === null) return 0;
+		return Math.min(1, Math.max(0, (elapsed - startAt[outlet]) / AVG_MS));
+	};
+	const GLYPHS = "0123456789";
+	// the digits settle left to right; letters and the % sign never scramble
+	function scrambled(text, progress) {
+		const settled = Math.floor(progress * text.length + 1e-6);
+		return [...text]
+			.map((c, i) =>
+				i < settled || !/\d/.test(c)
+					? c
+					: GLYPHS[Math.floor(Math.random() * GLYPHS.length)]
+			)
+			.join("");
+	}
+
 	let tip = $state(null);
 	function showTip(event, outlet, year, v) {
 		const box = event.currentTarget.closest(".otc").getBoundingClientRect();
@@ -145,18 +218,14 @@
 
 <svelte:window bind:innerWidth={viewportWidth} />
 
-<div class="otc" class:mobile>
-	<div class="key">
-		<span class="swatch line" style="background:{MAIN}"></span> by year
-		<span class="swatch avg" style="background:{AVG}"></span> the outlet's average,
-		all years
-	</div>
-
+<div class="otc" class:mobile bind:this={root}>
 	<div class="grid">
-		{#each outlets as outlet (outlet)}
+		{#each outlets as outlet, index (outlet)}
 			{@const pts = lineFor(outlet)}
 			{@const avg = overall(outlet)}
-			<div class="pane" class:fox={outlet === FOX}>
+			{@const stage = stageOf(outlet)}
+			{@const reveal = revealOf(outlet)}
+			<div class="pane" class:fox={outlet === FOX} data-stage={stage}>
 				<div class="pane-hed">
 					<img
 						src="{base}/logos/{LOGOS[outlet].file}"
@@ -168,8 +237,11 @@
 						<span class="league-tag">{LEAGUE_TAG[outlet]}</span>
 					{/if}
 					{#if avg}
-						<span class="avg-chip" style="color:{AVG}"
-							>avg {pct(avg.share)}</span
+						<span
+							class="avg-chip"
+							class:blurred={reveal < 1}
+							style="color:{AVG}"
+							>{scrambled(`avg ${pct(avg.share)}`, reveal)}</span
 						>
 					{/if}
 				</div>
@@ -212,8 +284,24 @@
 					{/each}
 
 					{#if avg}
+						<!-- at its height from the start; a clip opening left to right
+						     lets the dots march across the panel -->
+						<clipPath id="march-{topic}-{method}-{index}">
+							<rect
+								class="march"
+								x={M.left}
+								y="0"
+								width={plotW}
+								height={H}
+								style="transform-origin: {M.left}px 0; transform: scaleX({stage ===
+								'blank'
+									? 0
+									: 1})"
+							/>
+						</clipPath>
 						<line
 							class="avg-line"
+							clip-path="url(#march-{topic}-{method}-{index})"
 							x1={M.left}
 							x2={W - M.right}
 							y1={pctY(avg.share)}
@@ -221,10 +309,26 @@
 							stroke={AVG}
 						/>
 					{/if}
-					<path class="topic-line" d={pathFor(pts)} stroke={MAIN} />
-					{#each pts as p (p.year)}
-						<circle cx={xMid(p.index)} cy={pctY(p.share)} r="3" fill={MAIN} />
-					{/each}
+					<!-- the line and its dots wipe in behind a clip that opens left to right -->
+					<clipPath id="wipe-{topic}-{method}-{index}">
+						<rect
+							class="wipe"
+							x={M.left}
+							y="0"
+							width={plotW}
+							height={H}
+							style="transform-origin: {M.left}px 0; transform: scaleX({stage ===
+							'lines'
+								? 1
+								: 0})"
+						/>
+					</clipPath>
+					<g clip-path="url(#wipe-{topic}-{method}-{index})">
+						<path class="topic-line" d={pathFor(pts)} stroke={MAIN} />
+						{#each pts as p (p.year)}
+							<circle cx={xMid(p.index)} cy={pctY(p.share)} r="3" fill={MAIN} />
+						{/each}
+					</g>
 					{#each pts as p (p.year)}
 						<rect
 							x={M.left + p.index * colW}
@@ -268,29 +372,6 @@
 		max-width: 880px;
 		margin: 6px auto 4px;
 	}
-	.key {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		gap: 6px;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 11.5px;
-		color: rgba(42, 21, 3, 0.7);
-		margin-bottom: 10px;
-	}
-	.key .swatch {
-		display: inline-block;
-		width: 18px;
-		height: 3px;
-		border-radius: 2px;
-	}
-	.key .swatch.avg {
-		margin-left: 10px;
-		height: 0;
-		border-top: 2.4px dotted #1a1a1a;
-		background: none !important;
-	}
-
 	.grid {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -303,11 +384,16 @@
 	.pane {
 		min-width: 0;
 	}
-	/* the panel the piece is about: boxed, header and all */
+	/* Fox on its own row at the top, centred, the size of one column; the
+	   six comparison outlets in two rows of three beneath */
 	.pane.fox {
-		outline: 1.5px solid #1a1a1a;
-		outline-offset: 4px;
-		border-radius: 2px;
+		grid-column: 1 / -1;
+		width: calc((100% - 44px) / 3);
+		margin: 0 auto 6px;
+	}
+	.mobile .pane.fox {
+		width: calc((100% - 10px) / 2);
+		margin-bottom: 2px;
 	}
 	svg {
 		width: 100%;
@@ -357,12 +443,31 @@
 		stroke-linecap: round;
 		stroke-dasharray: 1 5;
 	}
+	/* the average's march: its clip opens across the panel, steadily */
+	.march {
+		transition: transform 1000ms linear;
+	}
+	/* the wipe: a clip that opens across the years, left to right */
+	.wipe {
+		transition: transform 1800ms cubic-bezier(0.3, 0, 0.2, 1);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.march,
+		.wipe {
+			transition: none;
+		}
+	}
 	.avg-chip {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 		font-size: 11px;
 		font-weight: 800;
 		letter-spacing: 0.02em;
 		margin-left: 4px;
+		font-variant-numeric: tabular-nums;
+		transition: filter 700ms ease;
+	}
+	.avg-chip.blurred {
+		filter: blur(2px);
 	}
 
 	.tooltip {

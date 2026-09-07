@@ -157,6 +157,15 @@
 					<img src="{base}/images/{src}" {alt} loading="lazy" />
 					{#if caption}<figcaption>{@html caption}</figcaption>{/if}
 				</figure>
+			{:else if /^(quote|blockquote|pullquote)$/i.test(b.type)}
+				<!-- quote: the words | who said it, where -->
+				{@const [words, who = ""] = String(b.value)
+					.split(/\s\|\s/)
+					.map((s) => s.trim())}
+				<blockquote class="quote">
+					<p>{@html hl(clipPops(faces(words, base), base))}</p>
+					{#if who}<cite>{@html who}</cite>{/if}
+				</blockquote>
 			{:else if /^embed$/i.test(b.type)}
 				{@const [url, caption = ""] = b.value.split("|").map((s) => s.trim())}
 				{@const id = youtubeId(url)}
@@ -251,6 +260,33 @@
 	.clip-date {
 		font-size: 12px;
 		color: rgba(42, 21, 3, 0.55);
+	}
+
+	/* quote: … | … — a pull quote with the Fox red bar the cards use */
+	.quote {
+		margin: 18px auto 24px;
+		max-width: 560px;
+		padding: 2px 0 2px 18px;
+		border-left: 4px solid var(--color-fox);
+	}
+	.quote p {
+		font-size: 17px;
+		line-height: 1.65;
+		font-style: italic;
+		margin: 0;
+		color: var(--color-ink);
+	}
+	.quote cite {
+		display: block;
+		margin-top: 10px;
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-style: normal;
+		font-size: 12.5px;
+		letter-spacing: 0.02em;
+		color: rgba(42, 21, 3, 0.65);
+	}
+	.quote cite::before {
+		content: "— ";
 	}
 
 	.photo {
