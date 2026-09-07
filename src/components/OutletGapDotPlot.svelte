@@ -790,7 +790,7 @@
 	}
 	/* title and pills sit centred over the equal line, not the whole box */
 	.head {
-		position: relative;
+		/* position: relative; */
 	}
 	.head > * {
 		position: relative;

@@ -20,6 +20,7 @@
 	import ChyronSegments from "$components/ChyronSegments.svelte";
 	import BoxScore from "$components/BoxScore.svelte";
 	import HeadlineGallery from "$components/HeadlineGallery.svelte";
+	import TvSet from "$components/TvSet.svelte";
 
 	const copy = getContext("copy");
 	const { body } = copy;
@@ -47,6 +48,7 @@
 		BoxScore,
 		HeadlineGallery,
 		Gallery: HeadlineGallery,
+		TvSet,
 		// legacy Doc ids — delete once the Doc carries component names
 		toc: Toc,
 		"timeline-clark": TimelineBars,

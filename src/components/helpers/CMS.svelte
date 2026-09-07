@@ -41,7 +41,8 @@
 		"timeline-scrolly",
 		"headline-table",
 		"Gallery",
-		"HeadlineGallery"
+		"HeadlineGallery",
+		"TvSet"
 	]);
 
 	// one-liner: `chart: name | key: value | …`
