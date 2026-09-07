@@ -1,6 +1,7 @@
 <script>
 	// How Fox frames each player — tone / political / appearance / celebrity —
 	import FacesBeeswarm from "$components/FacesBeeswarm.svelte";
+	import HeadlineTable from "$components/HeadlineTable.svelte";
 
 	let { words = [] } = $props();
 
@@ -28,8 +29,22 @@
 			label: "Celebrity",
 			blurb:
 				"Share of her Fox headlines about private life, appearance, and celebrity."
+		},
+		{
+			key: "performance",
+			label: "Performance",
+			blurb:
+				"Share of her Fox headlines about her actual play: points, rebounds, assists, records."
 		}
 	];
+	// the table under the chart filters to the tab's measure (tone has no filter)
+	const FRAME_OF = {
+		tone: "all",
+		political: "political",
+		appearance: "appearance",
+		celebrity: "celebrity",
+		performance: "performance"
+	};
 
 	let view = $state(
 		words[0] && VIEWS.some((v) => v.key === words[0]) ? words[0] : "tone"
@@ -51,6 +66,7 @@
 	<p class="blurb">{current.blurb}</p>
 
 	<FacesBeeswarm metric={view} />
+	<HeadlineTable embedded frame={FRAME_OF[view]} />
 </div>
 
 <style>

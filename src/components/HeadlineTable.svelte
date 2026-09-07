@@ -13,12 +13,19 @@
 		}))
 	};
 	// which measures each headline triggered (from the player-framing notebook)
-	const FRAMES = ["political", "appearance", "celebrity", "victim"];
+	const FRAMES = [
+		"political",
+		"appearance",
+		"celebrity",
+		"victim",
+		"performance"
+	];
 	const FRAME_COLORS = {
 		political: "var(--color-politics)",
 		appearance: "var(--color-race)",
 		celebrity: "var(--color-lgbtq)",
-		victim: "var(--color-fox)"
+		victim: "var(--color-fox)",
+		performance: "#1f9d6e"
 	};
 	const frames = Object.fromEntries(
 		labelRows.map((r) => [r.headline, FRAMES.filter((f) => r[f])])
@@ -32,7 +39,15 @@
 		labels: Object.fromEntries(sentimentRows.map((r) => [r.headline, r.label]))
 	};
 
-	let { words = [], title = "", caption = "" } = $props();
+	let {
+		words = [],
+		title = "",
+		caption = "",
+		// set by the framing tabs: which measure's headlines to show
+		frame: frameProp = null,
+		// under the beeswarm: no lede, the tabs' width
+		embedded = false
+	} = $props();
 
 	const PLAYER_COLORS = {
 		"Caitlin Clark": "#2a78d6",
@@ -53,6 +68,9 @@
 	let ascending = $state(true);
 	let mood = $state("all");
 	let frame = $state("all");
+	$effect(() => {
+		if (frameProp !== null) frame = frameProp;
+	});
 
 	const scoreOf = (headline) => sentiment.scores[headline];
 	const labelOf = (headline) => sentiment.labels[headline] ?? "unscored";
@@ -173,7 +191,7 @@
 		if (mood !== "all") bits.push(`scored ${mood}`);
 		if (frame !== "all")
 			bits.push(
-				`about ${frame === "victim" ? "victim framing" : frame === "political" ? "politics" : frame}`
+				`about ${frame === "victim" ? "victim framing" : frame === "political" ? "politics" : frame === "performance" ? "her play" : frame}`
 			);
 		return `${rows.length.toLocaleString()} of ${total} headlines ${bits.join(", ")}.`;
 	});
@@ -186,16 +204,17 @@
 	};
 </script>
 
-<section class="headline-browser">
-	<header class="lede">
-		<p class="kicker">The data</p>
-		<h3>{title ? title : "Read every headline yourself"}</h3>
-		<p class="standfirst">
-			All <strong>{data.rows.length.toLocaleString()}</strong> WNBA headlines Fox
-			News published between July 2019 and August 2026, with the sentiment score the
-			model gave each one. Search it, sort it, and follow any row back to the article.
-		</p>
-	</header>
+<section class="headline-browser" class:embedded>
+	{#if !embedded}<header class="lede">
+			<p class="kicker">The data</p>
+			<h3>{title ? title : "Read every headline yourself"}</h3>
+			<p class="standfirst">
+				All <strong>{data.rows.length.toLocaleString()}</strong> WNBA headlines Fox
+				News published between July 2019 and August 2026, with the sentiment score
+				the model gave each one. Search it, sort it, and follow any row back to the
+				article.
+			</p>
+		</header>{/if}
 
 	<div class="controls">
 		<input
@@ -361,6 +380,12 @@
 		transform: translateX(-50%);
 		font-family: var(--sans);
 		color: var(--ink);
+	}
+	/* under the framing beeswarm: its width, no title */
+	.headline-browser.embedded {
+		width: 100%;
+		margin: 14px 0 0;
+		transform: none;
 	}
 
 	.lede {

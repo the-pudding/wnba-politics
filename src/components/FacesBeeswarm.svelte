@@ -11,6 +11,7 @@
 	const appearanceRows = byMetric("appearance");
 	const celebrityRows = byMetric("celebrity");
 	const agencyRows = byMetric("agency");
+	const performanceRows = byMetric("performance");
 	import versusRows from "$data/sentiment_outlets.csv";
 	import network from "$data/headline_network.json";
 	import roster from "$data/people.json";
@@ -58,6 +59,11 @@
 		(r) => ({ hits: +r.hits, share: +r.share }),
 		(r) => r.example_title && { d: r.example_date, t: r.example_title }
 	);
+	const performance = regroup(
+		performanceRows,
+		(r) => ({ hits: +r.hits, share: +r.share }),
+		(r) => r.example_title && { d: r.example_date, t: r.example_title }
+	);
 	const agency = regroup(
 		agencyRows,
 		(r) => ({ victim: +r.victim, victimRate: +r.victim_rate }),
@@ -102,6 +108,7 @@
 			celebrity.people.map((p) => [p.name, p])
 		);
 		const framing = Object.fromEntries(agency.people.map((p) => [p.name, p]));
+		const play = Object.fromEntries(performance.people.map((p) => [p.name, p]));
 		// Yahoo is the comparison: the biggest pool of real headlines
 		const versus = outletSentiment.byPlayer ?? {};
 
@@ -124,6 +131,9 @@
 					politicalExample: politics[name]?.examples?.[0] ?? "",
 					appearanceExample: looks[name]?.examples?.[0]?.t ?? "",
 					celebrityExample: tabloid[name]?.examples?.[0]?.t ?? "",
+					performance: play[name]?.share ?? 0,
+					performanceN: play[name]?.hits ?? 0,
+					performanceExample: play[name]?.examples?.[0]?.t ?? "",
 					victim: framing[name]?.victimRate ?? 0,
 					victimN: framing[name]?.victim ?? 0,
 					victimExample: framing[name]?.examples?.[0] ?? "",
@@ -162,6 +172,12 @@
 			left: "← less about celebrity life",
 			right: "more about celebrity  life →",
 			format: (v) => `${(v * 100).toFixed(1)}%`,
+			centred: false
+		},
+		performance: {
+			left: "← rarely about her play",
+			right: "more about points and rebounds →",
+			format: (v) => `${(v * 100).toFixed(0)}%`,
 			centred: false
 		},
 		victim: {
@@ -268,6 +284,8 @@
 		}
 		if (metric === "victim")
 			return valueOf(person) > 0 ? "var(--color-fox)" : "rgba(42,21,3,0.3)";
+		if (metric === "performance")
+			return valueOf(person) > 0 ? "#1f9d6e" : "rgba(42,21,3,0.3)";
 		if (metric === "differential") {
 			return person.differential < -0.02
 				? "var(--color-fox)"
@@ -400,6 +418,14 @@
 					</div>
 				{:else}<div class="example none">
 						Fox never wrote about her private life or her looks.
+					</div>{/if}
+			{:else if metric === "performance"}
+				<p>
+					{person.performanceN} of her {person.count} headlines are about her play
+					({axis.format(person.performance)}).
+				</p>
+				{#if person.performanceExample}<div class="example">
+						{person.performanceExample}
 					</div>{/if}
 			{:else if metric === "differential"}
 				<div class="stat">
