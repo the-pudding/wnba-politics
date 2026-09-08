@@ -88,6 +88,12 @@
 
 	// portrait files in viz/static/net — regenerate with fetch_portraits.py
 	const IMG_EXT = faceFiles;
+	// every face in the roster, keyed by slug; a cut-out sits on a white disc
+	const PORTRAIT = Object.fromEntries(
+		Object.values(roster)
+			.filter((p) => p.face)
+			.map((p) => [p.slug, { file: p.face }])
+	);
 	const slugOf = (name) =>
 		name
 			.toLowerCase()
@@ -108,14 +114,37 @@
 	]);
 
 	const rawSteps = steps ?? [];
+	// focus: names, or a keyword for a whole side of the network —
+	//   wnba (players, coaches and the league) / outside (everyone else)
+	const WNBA_GROUPS = new Set(["players", "league"]);
+	const FOCUS_KEYWORDS = {
+		wnba: (n) => WNBA_GROUPS.has(n.group),
+		league: (n) => WNBA_GROUPS.has(n.group),
+		outside: (n) => !WNBA_GROUPS.has(n.group),
+		"not-wnba": (n) => !WNBA_GROUPS.has(n.group),
+		"non-wnba": (n) => !WNBA_GROUPS.has(n.group)
+	};
+	function expandFocus(value) {
+		const out = [];
+		for (const raw of String(value ?? "").split(",")) {
+			const f = raw.trim();
+			if (!f) continue;
+			const pick = FOCUS_KEYWORDS[f.toLowerCase()];
+			if (pick) out.push(...net.nodes.filter(pick).map((n) => n.name));
+			else out.push(f);
+		}
+		return [...new Set(out)];
+	}
+
 	const STEPS = rawSteps.map((s) => ({
 		year: String(s.year ?? ""),
-		focus: (s.focus ?? "")
-			.split(",")
-			.map((f) => f.trim())
-			.filter(Boolean),
+		focus: expandFocus(s.focus),
 		text: s.text ?? "",
-		headline: (s.headline ?? "").trim() // optional: pin the receipt shown
+		// optional: pin the receipt(s) shown — several headlines split on // or |
+		headlines: String(s.headline ?? "")
+			.split(/\s*(?:\/\/|\|)\s*/)
+			.map((h) => h.trim())
+			.filter(Boolean)
 	}));
 
 	let stepIndex = $state(0);
@@ -318,6 +347,7 @@
 		return html;
 	}
 
+	// headlines through the shown month: who is in the network at all
 	let counts = $derived.by(() => {
 		const out = {};
 		for (const node of net.nodes) {
@@ -331,11 +361,24 @@
 		}
 		return out;
 	});
+	// headlines in the last twelve months shown: how big each face is now, so
+	// the early years have their own big names rather than everyone starting small
+	let recentCounts = $derived.by(() => {
+		const window = new Set(monthsShown.toSorted().slice(-12));
+		const out = {};
+		for (const node of net.nodes) {
+			const monthly = net.solo_monthly?.[node.name];
+			out[node.name] = monthly
+				? [...window].reduce((sum, m) => sum + (monthly[m] ?? 0), 0)
+				: (node.counts[net.years.indexOf(shownYear)] ?? 0);
+		}
+		return out;
+	});
 
 	let stepHeadline = $derived.by(() => {
 		// Doc can pin via headline:; else the busiest pairing among the focused people
-		if (current.headline) {
-			return { text: current.headline, pair: current.focus.join(" + "), n: 1 };
+		if (current.headlines.length) {
+			return { texts: current.headlines, pair: current.focus.join(" + "), n: 1 };
 		}
 		if (!current.focus.length) return null;
 		const withinFocus = edges
@@ -346,11 +389,11 @@
 			.sort((x, y) => y.n - x.n);
 		const pick = withinFocus[0] ?? touchingFocus[0];
 		if (pick)
-			return { text: pick.ex, pair: `${pick.a} + ${pick.b}`, n: pick.n };
+			return { texts: [pick.ex], pair: `${pick.a} + ${pick.b}`, n: pick.n };
 		for (const name of current.focus) {
 			const node = net.nodes.find((n) => n.name === name);
 			const solo = node?.examples?.[current.year];
-			if (solo) return { text: solo, pair: name, n: 1 };
+			if (solo) return { texts: [solo], pair: name, n: 1 };
 		}
 		return null;
 	});
@@ -379,16 +422,20 @@
 		HEIGHT = MOBILE_NET ? 860 : 620;
 	const CENTER_X = WIDTH / 2,
 		CENTER_Y = HEIGHT / 2;
-	// area tracks headline count, pinned to the all-years max so playback grows nodes
-	const BIGGEST_TOTAL = Math.max(...net.nodes.map((node) => node.total));
+	// area tracks the last year's headline count, scaled to that year's own
+	// leader, so every year has its big names; a face with old headlines but
+	// none this year stays, at the smallest size
 	const SMALLEST_R = MOBILE_NET ? 30 : 20,
 		BIGGEST_R = MOBILE_NET ? 120 : 82;
-	const nodeRadius = scaleSqrt()
-		.domain([0, BIGGEST_TOTAL])
-		.range([0, BIGGEST_R - SMALLEST_R]);
+	let recentMax = $derived(Math.max(1, ...Object.values(recentCounts)));
+	let nodeRadius = $derived(
+		scaleSqrt()
+			.domain([0, recentMax])
+			.range([0, BIGGEST_R - SMALLEST_R])
+	);
 	const radius = (node) => {
-		const count = counts[node.name] ?? 0;
-		return count === 0 ? 0 : SMALLEST_R + nodeRadius(count);
+		if (!(counts[node.name] ?? 0)) return 0;
+		return SMALLEST_R + nodeRadius(recentCounts[node.name] ?? 0);
 	};
 
 	let nodes = $state(
@@ -687,17 +734,17 @@
 							r={Math.max(0, size - 1)}
 						/></clipPath
 					>
-					{#if IMG_EXT[slug]}
+					{#if PORTRAIT[slug]}
 						<circle
 							cx={node.x}
 							cy={node.y}
 							r={size}
-							fill={leanOf(node) === "player" ? WNBA_ORANGE : "#f7f2e6"}
+							fill={leanOf(node) === "player" ? "#ffffff" : "#f7f2e6"}
 							class="portrait"
 							class:faded={dim}
 						/>
 						<image
-							href="{base}/net/{slug}{IMG_EXT[slug]}"
+							href="{base}/net/{PORTRAIT[slug].file}"
 							x={node.x - size * (HEADSHOT.has(slug) ? 1.15 : 1.25)}
 							y={node.y - size * (HEADSHOT.has(slug) ? 1.0 : 1.1)}
 							width={size * (HEADSHOT.has(slug) ? 2.3 : 2.5)}
@@ -712,13 +759,17 @@
 						cx={node.x}
 						cy={node.y}
 						r={size}
-						fill={IMG_EXT[slug] ? "transparent" : colorOf(node)}
+						fill={PORTRAIT[slug] ? "transparent" : colorOf(node)}
 						stroke={colorOf(node)}
 						class="ring face-hit"
 						class:faded={dim}
 						class:spotlight={litNames.has(node.name) && !hoverSet && !exploring}
 						class:grabbable={true}
-						stroke-width={leanOf(node) === "league" ? 3 : leanOf(node) === "player" ? 5 : 7}
+						stroke-width={leanOf(node) === "league"
+							? 3
+							: leanOf(node) === "player"
+								? 5
+								: 7}
 						onpointerdown={(e) => {
 							e.stopPropagation();
 							startDrag(e, node);
@@ -842,12 +893,14 @@
 					<div class="card">
 						<p class="step-text">{@html step.text}</p>
 						{#if stepIndex === i && stepHeadline}
-							<div class="headline-clip">
-								{#if stepHeadline.n > 1}<span class="cdate"
-										>{stepHeadline.n} headlines</span
-									>{/if}
-								<p>{@html highlightNames(stepHeadline.text)}</p>
-							</div>
+							{#each stepHeadline.texts as text, j (text)}
+								<div class="headline-clip" class:alt={j % 2 === 1}>
+									{#if j === 0 && stepHeadline.n > 1}<span class="cdate"
+											>{stepHeadline.n} headlines</span
+										>{/if}
+									<p>{@html highlightNames(text)}</p>
+								</div>
+							{/each}
 						{/if}
 					</div>
 				</div>
@@ -1168,6 +1221,13 @@
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 		padding: 10px 15px;
 		transform: rotate(-1deg);
+	}
+	/* a second clipping leans the other way */
+	.headline-clip.alt {
+		transform: rotate(0.8deg);
+	}
+	.headline-clip + .headline-clip {
+		margin-top: 14px;
 	}
 	.headline-clip p {
 		font-family: Georgia, serif;

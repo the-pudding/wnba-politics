@@ -312,7 +312,8 @@
 			style="left:{tip.x}%; top:{tip.y}%; border-left-color:{tip.term.lit ??
 				'var(--color-ink)'}"
 		>
-			<strong>“{tip.term.term}” · {tip.term.total.toLocaleString()} uses</strong
+			<strong
+				>“{tip.term.term}” · {tip.term.total.toLocaleString()} total uses</strong
 			>
 			<div class="rows">
 				{#each channels as channel, i}
@@ -320,10 +321,8 @@
 						<span class="who" style="color:{CHANNEL_COLORS[channel]}"
 							>{channel}</span
 						>
-						<span class="pct"
-							>{(tip.term.counts?.[i] ?? 0).toLocaleString()}
-							<em>{Math.round(tip.term.shares[i] * 100)}%</em></span
-						>
+						<!-- each outlet's share of the word's uses; the counts stay in the data -->
+						<span class="pct">{Math.round(tip.term.shares[i] * 100)}%</span>
 					</div>
 				{/each}
 			</div>
@@ -440,12 +439,6 @@
 		font-weight: 600;
 		color: var(--color-ink);
 		font-variant-numeric: tabular-nums;
-	}
-	.row .pct em {
-		font-style: normal;
-		font-weight: 400;
-		color: rgba(42, 21, 3, 0.55);
-		margin-left: 6px;
 	}
 	.example {
 		margin: 7px 0 0;

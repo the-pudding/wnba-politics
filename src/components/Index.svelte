@@ -10,10 +10,12 @@
 	import TernaryStatic from "$components/TernaryStatic.svelte";
 	import TernaryScrolly from "$components/TernaryScrolly.svelte";
 	import FightinWordsScrolly from "$components/FightinWordsScrolly.svelte";
+	import FightinWordsBarsScrolly from "$components/FightinWordsBarsScrolly.svelte";
 	import OutletGapScrolly from "$components/OutletGapScrolly.svelte";
 	import OutletGapBeeswarm from "$components/OutletGapBeeswarm.svelte";
 	import OutletGapBeeswarmScrolly from "$components/OutletGapBeeswarmScrolly.svelte";
 	import FightinWordsVerbsAdj from "$components/FightinWordsVerbsAdj.svelte";
+	import FightinWordsBars from "$components/FightinWordsBars.svelte";
 	import NetworkScrolly from "$components/NetworkScrolly.svelte";
 	import FramingTabs from "$components/FramingTabs.svelte";
 	import HeadlineTable from "$components/HeadlineTable.svelte";
@@ -37,10 +39,12 @@
 		TernaryStatic,
 		TernaryScrolly,
 		FightinWordsScrolly,
+		FightinWordsBarsScrolly,
 		OutletGapScrolly,
 		OutletGapBeeswarm,
 		OutletGapBeeswarmScrolly,
 		FightinWordsVerbsAdj,
+		FightinWordsBars,
 		NetworkScrolly,
 		FramingTabs,
 		HeadlineTable,

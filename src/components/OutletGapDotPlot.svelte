@@ -89,8 +89,12 @@
 	// of ratio, like a dribbled ball, and lands on its value. The axis
 	// stretching under a face that is already placed still slides it (the
 	// CSS transition); only the placement itself bounces.
+	// how a face gets to its value when placed: "hop" (one bounce per 1×) or
+	// "slide" (the CSS transition, slowed). The hop code stays either way.
+	const PLACE_MOTION = "slide";
+	const SLIDE_MS = 3500; // how long the slide takes (also the CSS transition)
 	const HOP_MS = 580;
-	const HOP_HEIGHT = 96;
+	const HOP_HEIGHT = 46;
 	// a face landing beyond this ratio gets one more, smaller bounce in place
 	const SETTLE_OVER = 5; // 5× and up
 	const SETTLE_HEIGHT = 0.45; // of a hop
@@ -170,7 +174,7 @@
 				const placedNow = next.on && !prev.on;
 				prev = next;
 				if (!next.on && anim) anim.cancel();
-				if (placedNow && !still) {
+				if (placedNow && !still && PLACE_MOTION === "hop") {
 					next.count(1);
 					// straight away, in the same frame as the placement: waiting even
 					// two frames let the slide transition start first, which on a
@@ -271,7 +275,11 @@
 	// the names start at the left edge; the plot takes the rest of the width
 	let LEFT = $derived(narrow ? 2 : 6);
 	let NAMES = $derived(LEFT + (narrow ? 90 : 190));
-	let PLOT = $derived(Math.max(200, WIDTH - NAMES - (narrow ? 8 : 24)));
+	// on a phone the frame is the screen, so the far Fox end keeps room for a
+	// whole face (Cunningham sits past the edge line)
+	let PLOT = $derived(
+		Math.max(200, WIDTH - NAMES - (narrow ? FACE_R.phone + 6 : 24))
+	);
 	let ROW = $derived(
 		Math.max(28, (avail - TOP - BOTTOM) / Math.max(1, people.length))
 	);
@@ -440,14 +448,25 @@
 	});
 
 	// drawing order: plain faces first, the step's highlighted ones and the
-	// hovered one last, so they sit in front
+	// hovered one last, so they sit in front. The highlight part waits until
+	// the faces have finished moving: reordering means re-inserting the
+	// element, which would cut its slide short (a hover never coincides with
+	// a move, so that part is immediate)
+	const SETTLE_MS = SLIDE_MS + 300;
+	let litSettled = $state(new Set());
+	$effect(() => {
+		const next = new Set(
+			people
+				.filter(
+					(p) => (lit.size > 0 && isLit(p.name)) || centeredSet.has(key(p.name))
+				)
+				.map((p) => p.name)
+		);
+		const timer = setTimeout(() => (litSettled = next), SETTLE_MS);
+		return () => clearTimeout(timer);
+	});
 	const stackOrder = (person) =>
-		hovered === person.name
-			? 2
-			: (lit.size > 0 && isLit(person.name)) ||
-				  centeredSet.has(key(person.name))
-				? 1
-				: 0;
+		hovered === person.name ? 2 : litSettled.has(person.name) ? 1 : 0;
 	let hovered = $state(null);
 	let tooltip = $state(null);
 	function showFace(event, person) {
@@ -468,6 +487,7 @@
 	class="outlet-gap"
 	class:narrow
 	style:transform={shift ? `translateX(${shift}px)` : undefined}
+	style:--slide="{SLIDE_MS}ms"
 >
 	<!-- on screen and live for the whole scrolly, so the reader can switch at any step -->
 	<!-- the matchup as a title, centred on the equal line; the pills below switch it -->
@@ -587,7 +607,7 @@
 				{@const on = isPlaced(person.name)}
 				<!-- a centered player is shown bright, named or not: she is the point of the step -->
 				{@const named =
-					(lit.size > 0 && isLit(person.name)) ||
+					(lit.size > 0 ? isLit(person.name) : on) ||
 					centeredSet.has(key(person.name))}
 				<g
 					class="row"
@@ -621,7 +641,7 @@
 				{@const on = isPlaced(person.name)}
 				<!-- a centered player is shown bright, named or not: she is the point of the step -->
 				{@const named =
-					(lit.size > 0 && isLit(person.name)) ||
+					(lit.size > 0 ? isLit(person.name) : on) ||
 					centeredSet.has(key(person.name))}
 				<g
 					class="row"
@@ -679,19 +699,24 @@
 							<!-- waiting on the equal line: veiled, unless this step names her -->
 							<circle cx="0" cy="0" r={r + 1.5} class="veil" />
 						{/if}
-						{#if on && (named || hovered === person.name)}
-							<!-- the tag sits right of the face — on the "others" side that keeps
-							     it clear of her name — unless she is off the Fox end of the axis -->
-							{@const rightOf = !(person.times >= 0 && beyondAxis(person))}
+						{#if on && ((named && lit.size > 0) || hovered === person.name)}
+							<!-- the tag, for the players a step names (the closing step lights
+							     everyone and needs none). It sits right of the face — on the
+							     "others" side that keeps it clear of her name — unless she is off
+							     the Fox end of the axis or it would run past the frame -->
+							{@const label = counting[person.name]
+								? `${counting[person.name].toFixed(1)}× ${person.times > 0 ? "Fox" : themShort}`
+								: ratioTag(person)}
+							{@const fits =
+								xOf(person.times) + r + 9 + label.length * 7.5 <= WIDTH}
+							{@const rightOf =
+								fits && !(person.times >= 0 && beyondAxis(person))}
 							<text
 								class="ratio"
 								x={rightOf ? r + 9 : -r - 9}
 								y="4.5"
 								text-anchor={rightOf ? "start" : "end"}
-								fill={ringColor(person)}
-								>{counting[person.name]
-									? `${counting[person.name].toFixed(1)}× ${person.times > 0 ? "Fox" : themShort}`
-									: ratioTag(person)}</text
+								fill={ringColor(person)}>{label}</text
 							>
 						{/if}
 					</g>
@@ -792,6 +817,10 @@
 	.head {
 		/* position: relative; */
 	}
+	/* the title, subtitle and pills centred on the whole frame, as on the
+	   kids-book chart, rather than over the equal line */
+	/* desktop: the title, subtitle and pills centred over the equal line;
+	   a phone centres them on the frame instead (see the media query) */
 	.head > * {
 		position: relative;
 		left: var(--equal, 50%);
@@ -805,17 +834,19 @@
 	}
 	.vs {
 		text-align: center;
-		font-size: 30px;
+		font-size: 32px;
 		font-weight: 800;
-		line-height: 1.15;
-		margin: 0 0 4px;
+		line-height: 1.05;
+		margin: 0 0 6px;
 		color: var(--color-ink);
 	}
 	.sub {
 		text-align: center;
-		font-size: 14px;
-		color: rgba(42, 21, 3, 0.65);
-		margin: 0 0 10px;
+		font-size: 20px;
+		font-weight: 400;
+		line-height: 1.3;
+		color: var(--color-ink);
+		margin: 0 0 16px;
 	}
 	@media (max-width: 640px) {
 		.vs {
@@ -869,8 +900,13 @@
 	   for the title and pills to fit), and the pills shrink and may wrap */
 	@media (max-width: 640px) {
 		.head > * {
-			/* left: 50%; */
+			left: 50%;
 			max-width: 100%;
+		}
+		.head > .vs,
+		.head > .sub {
+			width: 100%;
+			text-align: center;
 		}
 		.picker {
 			gap: 3px;
@@ -1032,7 +1068,7 @@
 
 	.face-mark {
 		cursor: default;
-		transition: transform 900ms cubic-bezier(0.22, 0.8, 0.3, 1);
+		transition: transform var(--slide, 1500ms) cubic-bezier(0.22, 0.8, 0.3, 1);
 	}
 	/* mid-hop the animation owns the transform; no slide on top of it */
 	.face-mark.hopping {

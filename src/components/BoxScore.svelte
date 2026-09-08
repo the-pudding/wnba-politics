@@ -10,7 +10,16 @@
 	// `names: true` prints every outlet's name next to its logo; by default only
 	// outlets whose logo is a bare icon (Fox, The Athletic, JWS) get the name,
 	// since the wordmarks already say who they are
-	let { caption = "", rows = [], names = false } = $props();
+	// `abbrev: true` shows counts in thousands (2,498 → 2.5k, 48,917 → 48.9k)
+	let { caption = "", rows = [], names = false, abbrev = false } = $props();
+	const short = (v) => {
+		const raw = String(v ?? "").trim();
+		if (!abbrev || !/^[\d,]+$/.test(raw)) return raw;
+		const n = Number(raw.replace(/,/g, ""));
+		if (n < 1000) return raw;
+		const k = n / 1000;
+		return (k >= 100 ? k.toFixed(0) : k.toFixed(1).replace(/\.0$/, "")) + "k";
+	};
 
 	// logos that carry the outlet's name in the artwork
 	const WORDMARK = new Set([
@@ -82,9 +91,7 @@
 							{#if showName(row)}{row.outlet}{/if}
 						</td>
 						{#each columns as col}
-							<td class:num={numericCol(col)}
-								>{String(row[col] ?? "").trim() || "—"}</td
-							>
+							<td class:num={numericCol(col)}>{short(row[col]) || "—"}</td>
 						{/each}
 					</tr>
 				{/each}

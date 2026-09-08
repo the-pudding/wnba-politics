@@ -20,18 +20,21 @@
 	const FULL_BLEED = new Set([
 		"NetworkScrolly",
 		"FightinWordsScrolly",
+		"FightinWordsBarsScrolly",
 		"TernaryScrolly",
 		"OutletGapScrolly",
 		"OutletGapBeeswarmScrolly",
 		"TimelineDotsScrolly",
 		"FightinWordsVerbsAdj",
+		"FightinWordsBars",
 		// legacy Doc ids
 		"network-story",
 		"fightin-words-scrolly",
 		"ternary-scrolly",
 		"outlet-gap-scrolly",
 		"timeline-scrolly",
-		"player-words-scrolly"
+		"player-words-scrolly",
+		"TvSet"
 	]);
 	// these draw their own title and caption
 	const SELF_CAPTIONED = new Set([

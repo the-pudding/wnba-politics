@@ -23,7 +23,14 @@ const list = (value) =>
 
 export function stageSteps(steps) {
 	const raw = (steps ?? [])
-		.filter((step) => (step.text ?? "").trim())
+		// a step needs text to show a card — except the closing explore step,
+		// which may be wordless: it just hands the chart over
+		.filter(
+			(step) =>
+				(step.text ?? "").trim() ||
+				step.explore === true ||
+				step.explore === "true"
+		)
 		.map((step) => ({
 			names: list(step.names ?? step.words),
 			place: list(step.place),

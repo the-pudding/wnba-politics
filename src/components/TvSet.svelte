@@ -1,45 +1,88 @@
 <script>
-	// A retro TV with Fox clips playing on its screen. The set is a cut-out
-	// PNG whose screen is a transparent hole; the video sits behind it,
-	// sized to that hole, so the bezel does the masking. Click the set to
-	// play with sound; click again to pause.
+	// A retro TV with Fox clips playing on its screen. Each set is a cut-out
+	// PNG whose screen is a transparent hole; the video sits behind it, sized
+	// to that hole, so the bezel does the masking. It starts on its own,
+	// muted, when it scrolls into view; a click turns the sound on or off.
 	//
 	// In the Doc:
 	//   {.TvSet}
+	//   set: retro          (or crt, or big — the sets in static/images)
+	//   fit: cover          (or contain: the whole 16:9 clip, letterboxed)
 	//   caption: optional line under the set
 	//   {}
 	// The montage itself is cut by media/build-tv.py (edit its SEGMENTS).
 	import { base } from "$app/paths";
 
 	let {
+		set = "retro",
+		fit = "cover",
 		caption = "",
 		src = "video/fox-tv.mp4",
 		poster = "video/fox-tv.jpg"
 	} = $props();
 
-	// the screen hole in the image, as a share of its width and height
-	const SCREEN = { left: 26.2, top: 34.8, width: 36.8, height: 41 };
+	// each set: its image, its proportions, and the screen hole as a share
+	// of its width and height (measured from the image's alpha channel)
+	const SETS = {
+		retro: {
+			file: "tv-set.png",
+			ratio: "3 / 2",
+			width: 980,
+			screen: { left: 26.2, top: 34.8, width: 36.8, height: 41 }
+		},
+		crt: {
+			file: "tv-set-2.png",
+			ratio: "7778 / 5504",
+			width: 900,
+			screen: { left: 24.1, top: 16, width: 50.9, height: 54.2 }
+		},
+		// the JPEG set, keyed out: its screen is two thirds of the image
+		big: {
+			file: "tv-set-3.png",
+			ratio: "5 / 4",
+			width: 800,
+			screen: { left: 16.2, top: 12.2, width: 66.8, height: 64.1 }
+		}
+	};
+	let tv = $derived(SETS[set] ?? SETS.retro);
+	let screen = $derived(tv.screen);
 
 	let video = $state(null);
+	let muted = $state(true);
 	let playing = $state(false);
-	let started = $state(false);
-	function toggle() {
+	let root = $state(null);
+	// on screen: play (muted, so the browser allows it); off screen: pause
+	$effect(() => {
+		if (!root || !video) return;
+		const io = new IntersectionObserver(
+			(entries) => {
+				const on = entries.some((e) => e.isIntersecting);
+				if (on) video.play().catch(() => {});
+				else video.pause();
+			},
+			{ threshold: 0.4 }
+		);
+		io.observe(root);
+		return () => io.disconnect();
+	});
+	function toggleSound() {
 		if (!video) return;
-		if (video.paused) {
-			video.muted = false;
-			video.play();
-		} else video.pause();
+		muted = !muted;
+		video.muted = muted;
+		if (video.paused) video.play().catch(() => {});
 	}
 </script>
 
-<figure class="tv-set">
+<figure class="tv-set" style="max-width: {tv.width}px">
 	<div
 		class="set"
-		onclick={toggle}
-		onkeydown={(e) => (e.key === "Enter" || e.key === " ") && toggle()}
+		bind:this={root}
+		style="aspect-ratio: {tv.ratio}"
+		onclick={toggleSound}
+		onkeydown={(e) => (e.key === "Enter" || e.key === " ") && toggleSound()}
 		role="button"
 		tabindex="0"
-		aria-label={playing ? "Pause the clips" : "Play the Fox News clips"}
+		aria-label={muted ? "Turn the sound on" : "Turn the sound off"}
 	>
 		<!-- svelte-ignore a11y_media_has_caption -->
 		<video
@@ -47,28 +90,24 @@
 			src="{base}/{src}"
 			poster="{base}/{poster}"
 			loop
+			muted
 			playsinline
-			preload="metadata"
-			style="left:{SCREEN.left}%; top:{SCREEN.top}%; width:{SCREEN.width}%; height:{SCREEN.height}%"
-			onplay={() => ((playing = true), (started = true))}
+			preload="auto"
+			style="left:{screen.left}%; top:{screen.top}%; width:{screen.width}%; height:{screen.height}%; object-fit:{fit}"
+			onplay={() => (playing = true)}
 			onpause={() => (playing = false)}
 		></video>
-		<img
-			class="shell"
-			src="{base}/images/tv-set.png"
-			alt=""
-			draggable="false"
-		/>
-		{#if !playing}
-			<div
-				class="play"
-				style="left:{SCREEN.left + SCREEN.width / 2}%; top:{SCREEN.top +
-					SCREEN.height / 2}%"
-			>
-				<span class="button" aria-hidden="true">▶</span>
-				<span class="hint">{started ? "paused" : "watch with sound"}</span>
-			</div>
-		{/if}
+		<img class="shell" src="{base}/images/{tv.file}" alt="" draggable="false" />
+		<!-- the sound toggle: an emoji in the screen's top-right corner -->
+		<div
+			class="sound"
+			class:off={muted}
+			style="left:{screen.left + screen.width - 2}%; top:{screen.top + 2}%"
+			aria-hidden="true"
+		>
+			<span class="icon">{muted ? "🔇" : "🔊"}</span>
+			<span class="hint">{muted ? "tap for sound" : "sound on"}</span>
+		</div>
 	</div>
 	{#if caption}<figcaption>{@html caption}</figcaption>{/if}
 </figure>
@@ -76,13 +115,12 @@
 <style>
 	.tv-set {
 		margin: 14px auto 26px;
-		max-width: 760px;
+		/* wider than the text column, so the screen gets real room; each set
+		   sets its own max-width inline */
 	}
 	.set {
 		position: relative;
 		width: 100%;
-		/* the image's own proportions */
-		aspect-ratio: 3 / 2;
 		cursor: pointer;
 		outline: none;
 	}
@@ -105,37 +143,39 @@
 		pointer-events: none;
 		user-select: none;
 	}
-	.play {
+	/* a small sound toggle in the screen's corner */
+	.sound {
 		position: absolute;
 		z-index: 2;
-		transform: translate(-50%, -50%);
-		display: flex;
-		flex-direction: column;
+		transform: translate(-100%, 0);
+		display: inline-flex;
 		align-items: center;
 		gap: 6px;
-		pointer-events: none;
-		color: #fff;
-		text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
-	}
-	.play .button {
-		width: 54px;
-		height: 54px;
-		border-radius: 50%;
+		padding: 5px 10px 5px 8px;
+		border-radius: 999px;
 		background: rgba(0, 0, 0, 0.55);
-		border: 2px solid rgba(255, 255, 255, 0.85);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 22px;
-		padding-left: 4px;
-		box-sizing: border-box;
-	}
-	.play .hint {
+		color: #fff;
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 11px;
+		font-size: 10.5px;
 		font-weight: 700;
-		letter-spacing: 0.08em;
+		letter-spacing: 0.06em;
 		text-transform: uppercase;
+		line-height: 1;
+		pointer-events: none;
+		opacity: 0.9;
+		transition: opacity 250ms ease;
+	}
+	.sound .icon {
+		font-size: 15px;
+	}
+	.set:hover .sound {
+		opacity: 1;
+	}
+	.sound:not(.off) {
+		opacity: 0;
+	}
+	.set:hover .sound:not(.off) {
+		opacity: 0.9;
 	}
 	figcaption {
 		font-size: 12.5px;
@@ -144,13 +184,11 @@
 		margin-top: 4px;
 	}
 	@media (max-width: 640px) {
-		.play .button {
-			width: 42px;
-			height: 42px;
-			font-size: 17px;
+		.sound .hint {
+			display: none;
 		}
-		.play .hint {
-			font-size: 10px;
+		.sound {
+			padding: 4px 6px;
 		}
 	}
 </style>

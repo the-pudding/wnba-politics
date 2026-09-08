@@ -1,6 +1,7 @@
 <script>
 	// Fightin' Words plot (Monroe, Colaresi & Quinn)
 	import { scaleLinear, scaleLog, scaleSqrt } from "d3-scale";
+	import WordBars from "$components/WordBars.svelte";
 	import { base } from "$app/paths";
 	import fw from "$data/fighting_words.json";
 	const data = fw.grid;
@@ -75,7 +76,9 @@
 		bare = false,
 		controls = true,
 		mode = null,
-		source = null
+		source = null,
+		// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
+		chart = "scatter"
 	} = $props();
 
 	// the outlet pills, as on the dot plot: "all", then one logo per outlet
@@ -327,6 +330,22 @@
 		}
 	}
 
+	// the bars take the same points, with short side names for their heads
+	let barSource = $derived(
+		source ?? {
+			points,
+			topShort: "in Fox News",
+			bottomShort:
+				against === ALL_OUTLETS ? "in the other outlets" : `in ${against}`
+		}
+	);
+	// a bar's example on hover, from the same stores as the scatter's card
+	function barExample(word) {
+		const mode = bodyMode ? "articles" : "headlines";
+		const hit = litExamples[mode]?.[word] ?? fullExamples?.[mode]?.[word];
+		return hit?.[0] ? { s: hit[0], w: hit[1] } : null;
+	}
+
 	let cardEx = $derived.by(() => {
 		if (!tip) return null;
 		if (source) return tip.eg ? { s: tip.eg, w: tip.egw } : null;
@@ -480,174 +499,189 @@
 		</p>
 	{/if}
 
-	<svg
-		viewBox="0 0 {WIDTH} {HEIGHT}"
-		role="img"
-		aria-label="Weighted log-odds z-score against word frequency, Fox News versus {against}"
-	>
-		<!-- the band where a difference isn't distinguishable from chance -->
-		<rect
-			x={PAD.left}
-			y={yScale(SIGNIFICANT)}
-			width={WIDTH - PAD.right - PAD.left}
-			height={yScale(-SIGNIFICANT) - yScale(SIGNIFICANT)}
-			fill="rgba(42,21,3,0.05)"
+	{#if chart === "bars"}
+		<!-- the same words as mirrored bars: the strongest on each side -->
+		<WordBars
+			source={barSource}
+			{highlight}
+			top={mobile ? 10 : 14}
+			example={barExample}
+			onhover={() => {
+				if (!source) ensureExamples();
+			}}
 		/>
+	{:else}
+		<svg
+			viewBox="0 0 {WIDTH} {HEIGHT}"
+			role="img"
+			aria-label="Weighted log-odds z-score against word frequency, Fox News versus {against}"
+		>
+			<!-- the band where a difference isn't distinguishable from chance -->
+			<rect
+				x={PAD.left}
+				y={yScale(SIGNIFICANT)}
+				width={WIDTH - PAD.right - PAD.left}
+				height={yScale(-SIGNIFICANT) - yScale(SIGNIFICANT)}
+				fill="rgba(42,21,3,0.05)"
+			/>
 
-		{#each tickValues as tick}
-			{#if tick >= xScale.domain()[0] && tick <= xScale.domain()[1]}
-				<line
-					class="grid"
-					x1={xScale(tick)}
-					x2={xScale(tick)}
-					y1={PAD.top}
-					y2={HEIGHT - PAD.bottom}
-				/>
+			{#each tickValues as tick}
+				{#if tick >= xScale.domain()[0] && tick <= xScale.domain()[1]}
+					<line
+						class="grid"
+						x1={xScale(tick)}
+						x2={xScale(tick)}
+						y1={PAD.top}
+						y2={HEIGHT - PAD.bottom}
+					/>
+					<text
+						class="axis"
+						x={xScale(tick)}
+						y={HEIGHT - PAD.bottom + 16}
+						text-anchor="middle"
+					>
+						{tick.toLocaleString()}
+					</text>
+				{/if}
+			{/each}
+			{#each yScale.ticks(7) as tick}
 				<text
 					class="axis"
-					x={xScale(tick)}
-					y={HEIGHT - PAD.bottom + 16}
-					text-anchor="middle"
+					x={PAD.left - 8}
+					y={yScale(tick) + 3.5}
+					text-anchor="end">{tick}</text
 				>
-					{tick.toLocaleString()}
+			{/each}
+
+			<line
+				class="axis-line"
+				x1={PAD.left}
+				x2={WIDTH - PAD.right}
+				y1={yScale(0)}
+				y2={yScale(0)}
+			/>
+
+			<text
+				class="axis-name"
+				x={(PAD.left + WIDTH - PAD.right) / 2}
+				y={HEIGHT - 10}
+				text-anchor="middle"
+			>
+				how often the word is used, both archives together →
+			</text>
+			<text
+				class="axis-name"
+				transform="rotate(-90)"
+				x={-(HEIGHT / 2)}
+				y="14"
+				text-anchor="middle"
+			>
+				weighted log-odds z-score
+			</text>
+			{#if source}
+				<text class="side" x={PAD.left + 6} y={PAD.top + 2} fill={FOX}>
+					{source.topLabel} ↑
 				</text>
-			{/if}
-		{/each}
-		{#each yScale.ticks(7) as tick}
-			<text
-				class="axis"
-				x={PAD.left - 8}
-				y={yScale(tick) + 3.5}
-				text-anchor="end">{tick}</text
-			>
-		{/each}
-
-		<line
-			class="axis-line"
-			x1={PAD.left}
-			x2={WIDTH - PAD.right}
-			y1={yScale(0)}
-			y2={yScale(0)}
-		/>
-
-		<text
-			class="axis-name"
-			x={(PAD.left + WIDTH - PAD.right) / 2}
-			y={HEIGHT - 10}
-			text-anchor="middle"
-		>
-			how often the word is used, both archives together →
-		</text>
-		<text
-			class="axis-name"
-			transform="rotate(-90)"
-			x={-(HEIGHT / 2)}
-			y="14"
-			text-anchor="middle"
-		>
-			weighted log-odds z-score
-		</text>
-		{#if source}
-			<text class="side" x={PAD.left + 6} y={PAD.top + 2} fill={FOX}>
-				{source.topLabel} ↑
-			</text>
-			<text
-				class="side"
-				x={PAD.left + 6}
-				y={HEIGHT - PAD.bottom - 8}
-				fill={OTHER}
-			>
-				{source.bottomLabel} ↓
-			</text>
-		{:else}
-			<g transform="translate({PAD.left + 6},{PAD.top + 2})">
-				<image
-					href="{base}/logos/fox-news.svg"
-					width="20"
-					height="20"
-					y="-14"
-				/>
-				<text class="side" x="26" y="2" fill={FOX}>uses this more ↑</text>
-			</g>
-			<g transform="translate({PAD.left + 6},{HEIGHT - PAD.bottom - 20})">
-				{#each LOGOS[against] ?? [] as logo, i}
+				<text
+					class="side"
+					x={PAD.left + 6}
+					y={HEIGHT - PAD.bottom - 8}
+					fill={OTHER}
+				>
+					{source.bottomLabel} ↓
+				</text>
+			{:else}
+				<g transform="translate({PAD.left + 6},{PAD.top + 2})">
 					<image
-						href="{base}/logos/{logo}"
-						x={(LOGOS[against] ?? [])
-							.slice(0, i)
-							.reduce((sum, l) => sum + LOGO_WIDTH[l] + 8, 0)}
-						y="0"
-						width={LOGO_WIDTH[logo]}
-						height="13"
+						href="{base}/logos/fox-news.svg"
+						width="20"
+						height="20"
+						y="-14"
 					/>
-				{/each}
-				<text class="side" x="0" y="28" fill={OTHER}>use this more ↓</text>
-			</g>
-		{/if}
-
-		{#each points as point (point.word)}
-			<circle
-				cx={xScale(point.n)}
-				cy={yScale(point.z)}
-				r={Math.abs(point.z) < SIGNIFICANT ? 1.5 : sizeScale(Math.abs(point.z))}
-				fill={colorOf(point.z)}
-				opacity={beating && !HIGHLIGHT.has(point.word.toLowerCase())
-					? 0.16
-					: hovered && hovered !== point.word
-						? 0.25
-						: 0.75}
-				onpointerenter={(e) => showTip(e, point)}
-				onpointerleave={hideTip}
-				role="presentation"
-			/>
-			<!-- a generous invisible target, because a 2px dot is unhittable -->
-			<circle
-				cx={xScale(point.n)}
-				cy={yScale(point.z)}
-				r="7"
-				fill="transparent"
-				onpointerenter={(e) => showTip(e, point)}
-				onpointerleave={hideTip}
-				role="presentation"
-			/>
-		{/each}
-
-		{#each labelled as point (point.word)}
-			<text
-				class="word"
-				class:lit={point.lit}
-				class:weak={point.weak}
-				x={point.px + (point.flip ? -6 : 6)}
-				y={point.py + 3.5}
-				text-anchor={point.flip ? "end" : "start"}
-				fill={colorOf(point.z)}
-				opacity={hovered && hovered !== point.word ? 0.3 : 1}
-				onpointerenter={(e) => showTip(e, point)}
-				onpointermove={(e) => showTip(e, point)}
-				onpointerleave={hideTip}
-				role="presentation"
-			>
-				{point.word}
-			</text>
-		{/each}
-	</svg>
-
-	{#if tip && cardEx}
-		{@const side = tip.z > 0 ? FOX : OTHER}
-		<div
-			class="tip-card"
-			class:flip={tip.cx > tip.boxW - 350}
-			style="left:{tip.cx}px; top:{Math.min(
-				Math.max(70, tip.cy),
-				(tip.boxH || 500) - 70
-			)}px;
-				border-left-color:{side}"
-		>
-			<span class="tip-head" style="color:{side}">{tip.word}</span>
-			{#if cardEx.s}
-				<p>{@html markWord(cardEx.s, tip.word, side, cardEx.w)}</p>
+					<text class="side" x="26" y="2" fill={FOX}>uses this more ↑</text>
+				</g>
+				<g transform="translate({PAD.left + 6},{HEIGHT - PAD.bottom - 20})">
+					{#each LOGOS[against] ?? [] as logo, i}
+						<image
+							href="{base}/logos/{logo}"
+							x={(LOGOS[against] ?? [])
+								.slice(0, i)
+								.reduce((sum, l) => sum + LOGO_WIDTH[l] + 8, 0)}
+							y="0"
+							width={LOGO_WIDTH[logo]}
+							height="13"
+						/>
+					{/each}
+					<text class="side" x="0" y="28" fill={OTHER}>use this more ↓</text>
+				</g>
 			{/if}
-		</div>
+
+			{#each points as point (point.word)}
+				<circle
+					cx={xScale(point.n)}
+					cy={yScale(point.z)}
+					r={Math.abs(point.z) < SIGNIFICANT
+						? 1.5
+						: sizeScale(Math.abs(point.z))}
+					fill={colorOf(point.z)}
+					opacity={beating && !HIGHLIGHT.has(point.word.toLowerCase())
+						? 0.16
+						: hovered && hovered !== point.word
+							? 0.25
+							: 0.75}
+					onpointerenter={(e) => showTip(e, point)}
+					onpointerleave={hideTip}
+					role="presentation"
+				/>
+				<!-- a generous invisible target, because a 2px dot is unhittable -->
+				<circle
+					cx={xScale(point.n)}
+					cy={yScale(point.z)}
+					r="7"
+					fill="transparent"
+					onpointerenter={(e) => showTip(e, point)}
+					onpointerleave={hideTip}
+					role="presentation"
+				/>
+			{/each}
+
+			{#each labelled as point (point.word)}
+				<text
+					class="word"
+					class:lit={point.lit}
+					class:weak={point.weak}
+					x={point.px + (point.flip ? -6 : 6)}
+					y={point.py + 3.5}
+					text-anchor={point.flip ? "end" : "start"}
+					fill={colorOf(point.z)}
+					opacity={hovered && hovered !== point.word ? 0.3 : 1}
+					onpointerenter={(e) => showTip(e, point)}
+					onpointermove={(e) => showTip(e, point)}
+					onpointerleave={hideTip}
+					role="presentation"
+				>
+					{point.word}
+				</text>
+			{/each}
+		</svg>
+
+		{#if tip && cardEx}
+			{@const side = tip.z > 0 ? FOX : OTHER}
+			<div
+				class="tip-card"
+				class:flip={tip.cx > tip.boxW - 350}
+				style="left:{tip.cx}px; top:{Math.min(
+					Math.max(70, tip.cy),
+					(tip.boxH || 500) - 70
+				)}px;
+					border-left-color:{side}"
+			>
+				<span class="tip-head" style="color:{side}">{tip.word}</span>
+				{#if cardEx.s}
+					<p>{@html markWord(cardEx.s, tip.word, side, cardEx.w)}</p>
+				{/if}
+			</div>
+		{/if}
 	{/if}
 
 	<p class="note">

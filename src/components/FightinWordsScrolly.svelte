@@ -3,7 +3,8 @@
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import FightinWords from "$components/FightinWords.svelte";
 
-	let { steps = null } = $props();
+	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
+	let { steps = null, chart = "scatter" } = $props();
 
 	const STEPS = $derived(
 		(steps ?? [])
@@ -33,6 +34,7 @@
 			bare
 			controls={current.explore}
 			mode="articles"
+			{chart}
 		/>
 	</div>
 

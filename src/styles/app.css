@@ -239,3 +239,16 @@ svg {
 	color: rgba(42, 21, 3, 0.7);
 	padding: 6px 4px 2px;
 }
+
+/* inline colour in the Doc's text, as the kids-book copy does with he/she:
+   <span class="fox">4.5x more</span> in the dot plot's Fox navy,
+   <span class="others">1.3x less</span> in its other-outlets purple */
+span.fox {
+	color: #003366;
+	font-weight: 700;
+}
+span.others,
+span.other {
+	color: #6b4bb0;
+	font-weight: 700;
+}

@@ -110,6 +110,9 @@
 		typeof window === "undefined" ? 1200 : window.innerWidth
 	);
 	let mobile = $derived(viewportWidth < 640);
+	// the comparison panes in grid order, and the grid's column count
+	let others = $derived(outlets.filter((o) => o !== FOX));
+	let cols = $derived(mobile ? 2 : 3);
 
 	const W = 220,
 		H = 150;
@@ -120,6 +123,8 @@
 	let pctY = $derived((pct) => M.top + plotH * (1 - pct / yTop));
 	let xMid = $derived((index) => M.left + (index + 0.5) * colW);
 	let yTicks = $derived([0.5, 1].map((f) => f * yTop));
+	// fainter lines halfway between the labelled ones
+	let yMinor = $derived([0.25, 0.75].map((f) => f * yTop));
 
 	const pathFor = (pts) =>
 		pts
@@ -225,6 +230,11 @@
 			{@const avg = overall(outlet)}
 			{@const stage = stageOf(outlet)}
 			{@const reveal = revealOf(outlet)}
+			<!-- the six panes under Fox share their axes: the year labels only on
+			     the bottom row, the percentages only down the left column -->
+			{@const pos = others.indexOf(outlet)}
+			{@const showY = outlet === FOX || pos % cols === 0}
+			{@const showX = outlet === FOX || pos >= others.length - cols}
 			<div class="pane" class:fox={outlet === FOX} data-stage={stage}>
 				<div class="pane-hed">
 					<img
@@ -258,12 +268,23 @@
 							y1={pctY(pct)}
 							y2={pctY(pct)}
 						/>
-						<text
-							class="tick"
-							x={M.left - 5}
-							y={pctY(pct) + 4}
-							text-anchor="end">{Math.round(pct * 100)}%</text
-						>
+						{#if showY}
+							<text
+								class="tick"
+								x={M.left - 5}
+								y={pctY(pct) + 4}
+								text-anchor="end">{Math.round(pct * 100)}%</text
+							>
+						{/if}
+					{/each}
+					{#each yMinor as pct}
+						<line
+							class="grid-line minor"
+							x1={M.left}
+							x2={W - M.right}
+							y1={pctY(pct)}
+							y2={pctY(pct)}
+						/>
 					{/each}
 					<line
 						class="axis"
@@ -272,8 +293,18 @@
 						y1={M.top + plotH}
 						y2={M.top + plotH}
 					/>
+					<!-- a tick for every year, in every pane; the labels only where shown -->
 					{#each years as year, index}
-						{#if +year % 2 === 0}
+						<line
+							class="axis-tick"
+							x1={xMid(index)}
+							x2={xMid(index)}
+							y1={M.top + plotH}
+							y2={M.top + plotH + (+year % 2 === 0 ? 4 : 2.5)}
+						/>
+					{/each}
+					{#each years as year, index}
+						{#if showX && +year % 2 === 0}
 							<text
 								class="tick year"
 								x={xMid(index)}
@@ -421,9 +452,17 @@
 		stroke: rgba(42, 21, 3, 0.1);
 		stroke-width: 1;
 	}
+	.grid-line.minor {
+		stroke: rgba(42, 21, 3, 0.055);
+	}
 	.axis {
 		stroke: var(--color-ink);
 		stroke-width: 1.2;
+	}
+	.axis-tick {
+		stroke: var(--color-ink);
+		stroke-width: 1;
+		opacity: 0.7;
 	}
 	.tick {
 		font-size: 11px;

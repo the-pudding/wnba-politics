@@ -3,6 +3,7 @@
 	// Each step takes: who, rel, vs, pair, words, text
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import FightinWords from "$components/FightinWords.svelte";
+	import WordBars from "$components/WordBars.svelte";
 	import {
 		playerWordsSource,
 		playerWordsPeople
@@ -16,7 +17,8 @@
 			.map((p) => [p.slug, p.face.slice(p.slug.length)])
 	);
 
-	let { steps = null } = $props();
+	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
+	let { steps = null, chart = "scatter" } = $props();
 
 	const list = (value) =>
 		(value ?? "")
@@ -150,7 +152,11 @@
 					{/each}
 				</div>
 			</div>
-			<FightinWords {source} highlight={shown.words} bare controls={false} />
+			{#if chart === "bars"}
+				<WordBars {source} highlight={shown.words} top={12} />
+			{:else}
+				<FightinWords {source} highlight={shown.words} bare controls={false} />
+			{/if}
 		{:else}
 			<p class="heading">
 				No comparison stored for {shown.who} · {shown.rel}
@@ -188,7 +194,8 @@
 		align-items: center;
 		justify-content: center;
 	}
-	.sticky :global(.fightin-words) {
+	.sticky :global(.fightin-words),
+	.sticky :global(.word-bars) {
 		width: min(900px, 96vw);
 	}
 	.who {

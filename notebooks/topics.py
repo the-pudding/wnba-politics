@@ -12,6 +12,8 @@ TERMS_CSV = Path(__file__).resolve().parent.parent / "data" / "topic_terms.csv"
 
 UNIONS = {
     "politics or race": ["race / racism", "politics / protest"],
+    # the outlet chart's LGBTQ+ topic: sexuality and trans terms together
+    "LGBTQ or trans": ["LGBTQ / sexuality", "transgender / trans"],
 }
 
 

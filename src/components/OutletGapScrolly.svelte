@@ -38,9 +38,11 @@
 		<Scrolly bind:value={index}>
 			{#each STEPS as step, i}
 				<div class="step" class:active={index === i}>
-					<div class="stack">
-						<p class="card">{@html clipPops(faces(step.html, base), base)}</p>
-					</div>
+					{#if step.html.trim()}
+						<div class="stack">
+							<p class="card">{@html clipPops(faces(step.html, base), base)}</p>
+						</div>
+					{/if}
 				</div>
 			{/each}
 		</Scrolly>
