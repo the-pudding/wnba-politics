@@ -324,7 +324,7 @@
 	"LeBron James": {
 		"group": "media",
 		"rx": "lebron",
-		"face": "lebron-james.jpg",
+		"face": "lebron-james.png",
 		"bio": "LeBron Raymone James Sr. is an American professional basketball player for the Philadelphia 76ers of the National Basketball Association (NBA).",
 		"slug": "lebron-james"
 	},
@@ -345,8 +345,104 @@
 	"Candace Parker": {
 		"group": "players",
 		"rx": "candace parker",
-		"face": "candace-parker.jpg",
+		"face": "candace-parker.png",
 		"bio": "Candace Nicole Parker, nicknamed \"Ace\", is an American former professional basketball player.",
 		"slug": "candace-parker"
+	},
+	"JuJu Watkins": {
+		"group": "players",
+		"rx": "juju watkins|\\bjuju\\b",
+		"face": "juju-watkins.png",
+		"bio": "Judea Skies \"JuJu\" Watkins is an American college basketball player for the USC Trojans of the Big Ten Conference.",
+		"slug": "juju-watkins",
+		"network": false
+	},
+	"Lexie Hull": {
+		"group": "players",
+		"rx": "lexie hull|\\bhull\\b",
+		"face": "lexie-hull.png",
+		"bio": "Lexie Lauren Hull is an American model and professional basketball player for the Indiana Fever of the Women's National Basketball Association (WNBA) and Rose of Unrivaled. She played college basketball for the Stanford Cardinal, with whom ",
+		"slug": "lexie-hull",
+		"network": false
+	},
+	"Elena Delle Donne": {
+		"group": "players",
+		"rx": "delle donne",
+		"face": "elena-delle-donne.png",
+		"bio": "Elena Delle Donne is an American former professional basketball player. Delle Donne played college basketball for the Delaware Blue Hens from 2009 to 2013. She was drafted by the Chicago Sky with the second overall pick of the 2013 WNBA dra",
+		"slug": "elena-delle-donne",
+		"network": false
+	},
+	"Kamilla Cardoso": {
+		"group": "players",
+		"rx": "cardoso",
+		"face": "kamilla-cardoso.png",
+		"bio": "Kamilla Soares Cardoso is a Brazilian professional basketball player for the Chicago Sky of the Women's National Basketball Association (WNBA) and the Guangdong Vermilion Birds of the Women's Chinese Basketball Association (WCBA). She playe",
+		"slug": "kamilla-cardoso",
+		"network": false
+	},
+	"Liz Cambage": {
+		"group": "players",
+		"rx": "cambage",
+		"face": "liz-cambage.jpg",
+		"bio": "Elizabeth Folake Cambage is an Australian professional basketball player for the Sichuan Yuanda of the Women's Chinese Basketball Association. She won the Women's National Basketball League in 2011 and 2014 and the Women's Chinese Basketbal",
+		"slug": "liz-cambage",
+		"network": false
+	},
+	"Azzi Fudd": {
+		"group": "players",
+		"rx": "\\bfudd\\b",
+		"face": "azzi-fudd.jpg",
+		"bio": "Azzi Jazlyn Fudd is an American professional basketball player for the Dallas Wings of the Women's National Basketball Association (WNBA). She played college basketball for the UConn Huskies.",
+		"slug": "azzi-fudd",
+		"network": false
+	},
+	"DeWanna Bonner": {
+		"group": "players",
+		"rx": "dewanna|\\bbonner\\b",
+		"face": "dewanna-bonner.png",
+		"bio": "DeWanna Bonner is an American professional basketball player for the Atlanta Dream of the Women's National Basketball Association (WNBA). Bonner played college basketball for Auburn University. After a successful college career at Auburn, s",
+		"slug": "dewanna-bonner",
+		"network": false
+	},
+	"Dawn Staley": {
+		"group": "league",
+		"rx": "\\bstaley\\b",
+		"face": "dawn-staley.jpg",
+		"bio": "Dawn Michelle Staley is an American basketball coach and former player who is the head coach for the South Carolina Gamecocks women's basketball team. A point guard, she played college basketball for the Virginia Cavaliers and spent eight s",
+		"slug": "dawn-staley",
+		"network": false
+	},
+	"Becky Hammon": {
+		"group": "league",
+		"rx": "\\bhammon\\b",
+		"face": "becky-hammon.jpg",
+		"bio": "Rebecca Lynn Hammon is an American-Russian professional basketball coach and former player who is the head coach of the Las Vegas Aces of the Women's National Basketball Association (WNBA). She is considered one of the greatest players and ",
+		"slug": "becky-hammon",
+		"network": false
+	},
+	"Cheryl Reeve": {
+		"group": "league",
+		"rx": "\\breeve\\b",
+		"face": "cheryl-reeve.jpg",
+		"bio": "Cheryl Ann Reeve is an American basketball head coach and President of Basketball Operations for the Minnesota Lynx of the WNBA. Reeve has coached the Lynx to four league championships. In WNBA history, she is first in career wins including",
+		"slug": "cheryl-reeve",
+		"network": false
+	},
+	"Geno Auriemma": {
+		"group": "league",
+		"rx": "auriemma",
+		"face": "geno-auriemma.jpg",
+		"bio": "Luigi \"Geno\" Auriemma is an Italian-born American basketball coach who is the head coach of the UConn Huskies women's basketball team. He holds the NCAA basketball records for wins and winning percentage with a minimum of 10 seasons. Auriem",
+		"slug": "geno-auriemma",
+		"network": false
+	},
+	"Kim Mulkey": {
+		"group": "league",
+		"rx": "mulkey",
+		"face": "kim-mulkey.jpg",
+		"bio": "Kimberly Duane Mulkey is an American college basketball coach and former player. Since 2021, she has been the head coach for Louisiana State University's LSU women's basketball team. A Pan-American gold medalist in 1983 and Olympic gold med",
+		"slug": "kim-mulkey",
+		"network": false
 	}
 }

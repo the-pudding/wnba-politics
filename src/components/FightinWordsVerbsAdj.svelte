@@ -4,6 +4,7 @@
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import FightinWords from "$components/FightinWords.svelte";
 	import WordBars from "$components/WordBars.svelte";
+	import FacePicker from "$components/helpers/FacePicker.svelte";
 	import {
 		playerWordsSource,
 		playerWordsPeople
@@ -60,8 +61,21 @@
 		["object", "what's done to her"],
 		["all", "every word"]
 	];
-	// players with a Fox-versus-the-other-outlets comparison stored
+	// players with a Fox-versus-the-other-outlets comparison stored, listed
+	// by surname in the picker
 	const PEOPLE = playerWordsPeople();
+	const slugOf = (name) =>
+		name
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-|-$/g, "");
+	const bySurname = (a, b) =>
+		a.split(" ").pop().localeCompare(b.split(" ").pop()) || a.localeCompare(b);
+	const PICKABLE = [...PEOPLE].sort(bySurname);
+	const faceUrl = (name) => {
+		const slug = slugOf(name);
+		return faceFiles[slug] ? `${base}/net/${slug}${faceFiles[slug]}` : null;
+	};
 	let pickedWho = $state(PEOPLE[0] ?? "");
 	let pickedRel = $state("describe");
 	$effect(() => {
@@ -93,11 +107,6 @@
 				}
 	);
 	let source = $derived(playerWordsSource(shown));
-	const slugOf = (name) =>
-		name
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, "-")
-			.replace(/^-|-$/g, "");
 	let faces = $derived(
 		(shown.vs === "pair" && shown.pair
 			? shown.pair.split(" vs ")
@@ -110,7 +119,7 @@
 	);
 </script>
 
-<section class="words-scrolly">
+<section class="words-scrolly" class:bars={chart === "bars"}>
 	<div class="sticky">
 		{#if source}
 			<div class="who">
@@ -131,14 +140,7 @@
 			</div>
 			<!-- the picker, live at every step: the Doc sets it, the reader can change it -->
 			<div class="pick">
-				<label>
-					<span class="pick-label">Player</span>
-					<select bind:value={pickedWho}>
-						{#each PEOPLE as name (name)}
-							<option value={name}>{name}</option>
-						{/each}
-					</select>
-				</label>
+				<FacePicker names={PICKABLE} bind:value={pickedWho} faceOf={faceUrl} />
 				<div class="toggle-group" role="group" aria-label="Kind of word">
 					{#each RELATIONS as [rel, label] (rel)}
 						<button
@@ -193,6 +195,13 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+	}
+	/* the bars hang from a fixed top: a step with more or fewer words only
+	   lengthens the chart downward, instead of re-centring everything */
+	.words-scrolly.bars .sticky {
+		justify-content: flex-start;
+		padding-top: 4vh;
+		box-sizing: border-box;
 	}
 	.sticky :global(.fightin-words),
 	.sticky :global(.word-bars) {
@@ -249,15 +258,6 @@
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		color: rgba(42, 21, 3, 0.65);
-	}
-	.pick select {
-		font: inherit;
-		font-size: 13.5px;
-		padding: 5px 8px;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		border-radius: 4px;
-		background: var(--color-paper);
-		color: var(--color-ink);
 	}
 	.toggle-group {
 		display: inline-flex;

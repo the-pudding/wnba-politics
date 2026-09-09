@@ -181,3 +181,41 @@ victim,by_her_verb,hacks?
 victim,by_her_verb,jabs?
 appearance,adjective,naked
 celebrity,noun,tiktok followers
+performance,word,rebounds?
+performance,word,boards
+performance,word,assists?
+performance,word,steals?
+performance,word,blocks?
+performance,word,double-double
+performance,word,triple-double
+performance,word,career[- ]high
+performance,word,scor(?:es|ed|ing)
+performance,word,ppg
+performance,word,three-pointers?
+performance,word,3-pointers?
+performance,word,threes
+performance,word,buzzer-beater
+performance,word,game-winner
+performance,word,game-winning
+performance,word,field goals?
+performance,word,free throws?
+performance,word,Rookie of the Year
+performance,word,stat line
+performance,word,record-breaking
+performance,word,(?:sets?|breaks?|broke) (?:a |the )?(?:new )?(?:\w+ )?record
+performance,word,drops? \d+
+performance,word,\d+ points
+performance,word,\d+-point
+performance,word,dominat(?:es|ed|ing)
+performance,word,franchise record
+performance,word,league record
+performance,word,WNBA record
+performance,word,milestone
+performance,word,\d+(?:\.\d+)? (?:points?|pts|rebounds?|boards|assists?|dimes|steals?|blocks?|turnovers|threes|3s|minutes|mins)
+performance,word,\d+-for-\d+
+performance,word,\d+ of \d+ (?:from|shooting|shots|attempts)
+performance,word,"\d{2,3}-\d{2,3}"
+performance,word,(?:double|triple)-digit
+performance,word,\d+(?:\.\d+)? ?(?:percent|%) (?:from|shooting|on)
+performance,word,\d+ (?:straight|consecutive)
+performance,word,\d+-game

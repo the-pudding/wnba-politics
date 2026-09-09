@@ -8,8 +8,8 @@
 	// story-word examples ship inline; the full 17k-word set loads on first hover
 	const litExamples = fw.lit;
 
-	const FOX = "var(--color-fox)";
-	const OTHER = "var(--color-ink)";
+	const FOX = "#003366"; // navy, as on the bar charts
+	const OTHER = "#6b4bb0"; // the other outlets' purple
 	const SIGNIFICANT = 1.96;
 	const SANS = '"Helvetica Neue", Helvetica, Arial, sans-serif';
 
@@ -84,10 +84,15 @@
 	// the outlet pills, as on the dot plot: "all", then one logo per outlet
 	const ALL_OUTLETS = "all outlets";
 
+	// the words lit on the chart: a step's list, plus whatever the explore
+	// step's search box finds or keeps
 	let HIGHLIGHT = $derived(
-		new Set((highlight ?? []).map((w) => w.toLowerCase()))
+		new Set([
+			...(highlight ?? []).map((w) => w.toLowerCase()),
+			...searchLit
+		])
 	);
-	let beating = $derived(Boolean(highlight?.length));
+	let beating = $derived(HIGHLIGHT.size > 0);
 
 	const ALL = "all coverage";
 	let text = $state(mode ?? "headlines");
@@ -130,6 +135,59 @@
 				: data.playerN?.[player]?.[against]) ?? null
 	);
 	let floor = $derived(player === ALL ? 5 : 3);
+
+	// --- the explore step's search box (as on the ternary) -----------------
+	// typing lights the words containing the text (an exact match on its
+	// own); Enter or a click keeps a word as a chip
+	const MAX_LIT = 30;
+	let query = $state("");
+	let picked = $state([]);
+	let q = $derived(query.trim().toLowerCase());
+	let vocabulary = $derived(
+		[...points]
+			.map((pt) => ({ term: pt.word.toLowerCase(), n: pt.n, z: pt.z }))
+			.sort((a, b) => b.n - a.n)
+	);
+	let exact = $derived(q ? (vocabulary.find((t) => t.term === q) ?? null) : null);
+	let partial = $derived(
+		q && !exact ? vocabulary.filter((t) => t.term.includes(q)) : []
+	);
+	let suggestions = $derived.by(() => {
+		if (!q) return [];
+		const starts = vocabulary.filter((t) => t.term.startsWith(q));
+		const inside = vocabulary.filter(
+			(t) => !t.term.startsWith(q) && t.term.includes(q)
+		);
+		return [...starts, ...inside].slice(0, 8);
+	});
+	let searchLit = $derived([
+		...picked,
+		...(exact ? [exact.term] : partial.slice(0, MAX_LIT).map((t) => t.term))
+	]);
+	let open = $state(false);
+	let cursor = $state(-1);
+	const choose = (word) => {
+		if (!picked.includes(word)) picked = [...picked, word];
+		query = "";
+		cursor = -1;
+	};
+	const unpick = (word) => (picked = picked.filter((w) => w !== word));
+	function onKey(e) {
+		if (e.key === "ArrowDown") {
+			cursor = Math.min(cursor + 1, suggestions.length - 1);
+			e.preventDefault();
+		} else if (e.key === "ArrowUp") {
+			cursor = Math.max(cursor - 1, -1);
+			e.preventDefault();
+		} else if (e.key === "Enter") {
+			const word = cursor >= 0 ? suggestions[cursor]?.term : exact?.term;
+			if (word) choose(word);
+			e.preventDefault();
+		} else if (e.key === "Escape") {
+			query = "";
+			cursor = -1;
+		}
+	}
 
 	let points = $derived(
 		source
@@ -212,6 +270,10 @@
 				.sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
 		];
 		const placed = [];
+		// the more words a step names, the smaller their labels: a dozen at
+		// full size, forty at about two thirds
+		const litSize = (full) =>
+			Math.round(full * Math.max(0.68, 1 - Math.max(0, HIGHLIGHT.size - 12) * 0.011) * 2) / 2;
 		// a label's box, for the clash test
 		const boxFor = (point, px, py, side, size, weight, rowH) => {
 			// plus the paint-order halo on each side
@@ -235,6 +297,10 @@
 			const lit = isLit(point);
 			if (beating && !lit) continue;
 			if (!source && placed.length > 34 && !lit) continue;
+			// the archive chart: a word nobody named needs a real score to earn
+			// a label, so a lone weak word at the edge does not get one just
+			// because it has room
+			if (!source && !lit && Math.abs(point.z) < 8) continue;
 			const px = xScale(point.n),
 				py = yScale(point.z);
 			const weak = Boolean(source) && Math.abs(point.z) <= SIGNIFICANT;
@@ -247,21 +313,25 @@
 						: 24
 				: mobile
 					? lit
-						? 18.5
+						? litSize(18.5)
 						: 15.5
 					: lit
-						? 22
+						? litSize(22)
 						: 18;
 			const weight = lit ? 800 : weak ? 500 : 600;
 			const rowH = size * 1.3;
-			// on a player chart every word gets a label: try beside the dot, then
-			// the other side, then a row up or down, before giving up. The big
-			// archive chart only labels what fits in place.
+			// try beside the dot, then the other side, then a row up or down,
+			// before giving up; a player chart tries harder, since every word
+			// there gets a label
 			const nearRight = px > WIDTH - PAD.right - 70;
 			const sides = nearRight ? [-1, 1] : [1, -1];
+			// a named word on the archive chart searches a long way for room:
+			// the step's words must all show
+			// a label may move a row or two to find room, no further: a word
+			// that finds none is left unlabelled (its dot still lights)
 			const shifts = source
 				? [0, -0.8, 0.8, -1.6, 1.6, -2.4, 2.4, -3.2, 3.2]
-				: [0];
+				: [0, -0.8, 0.8, -1.6, 1.6];
 			let spot = null;
 			for (const dy of shifts) {
 				for (const side of sides) {
@@ -275,6 +345,8 @@
 						rowH
 					);
 					if (box.x0 < PAD.left || box.x1 > WIDTH - PAD.right + 4) continue;
+					// never outside the drawing: a label pushed off the top or bottom is no label
+					if (box.y0 < 2 || box.y1 > HEIGHT - PAD.bottom + 6) continue;
 					if (!clashes(box)) {
 						spot = { side, dy, box };
 						break;
@@ -285,8 +357,12 @@
 			if (!spot) continue;
 			placed.push({
 				...point,
+				size,
 				px,
 				py: py + spot.dy * rowH,
+				// where the dot is, and whether the label had to leave it
+				dotY: py,
+				moved: Math.abs(spot.dy) >= 1.6,
 				lit,
 				flip: spot.side < 0,
 				weak,
@@ -445,44 +521,52 @@
 			</div>
 		</div>
 	{/if}
-	{#if controls && (data.articleWords ?? []).length && !source}
-		<div class="controls">
-			<span class="label">measured over</span>
-			<div
-				class="toggle-group"
-				role="group"
-				aria-label="Headlines or full text"
-			>
-				<button
-					class:active={text === "headlines"}
-					onclick={() => (text = "headlines")}>headlines</button
-				>
-				<button
-					class:active={text === "articles"}
-					onclick={() => {
-						text = "articles";
-						player = ALL;
-					}}
-				>
-					whole articles
-				</button>
+	{#if controls && !source}
+		<!-- the explore step: find a word on the chart -->
+		<div class="controls find">
+			<span class="label">Find a word</span>
+			<div class="search-box">
+				<input
+					type="search"
+					placeholder="Search for a word…"
+					bind:value={query}
+					autocomplete="off"
+					spellcheck="false"
+					onfocus={() => (open = true)}
+					onblur={() => (open = false)}
+					oninput={() => ((open = true), (cursor = -1))}
+					onkeydown={onKey}
+				/>
+				{#if open && q && suggestions.length}
+					<ul class="suggest" role="listbox">
+						{#each suggestions as t, i (t.term)}
+							<li
+								role="option"
+								aria-selected={i === cursor}
+								class:on={i === cursor}
+								onpointerdown={(e) => (e.preventDefault(), choose(t.term))}
+							>
+								<span class="term">{t.term}</span>
+								<span class="uses" style="color:{t.z > 0 ? FOX : OTHER}"
+									>{t.z > 0 ? "Fox" : "others"} · {t.n.toLocaleString()}</span
+								>
+							</li>
+						{/each}
+					</ul>
+				{/if}
 			</div>
-		</div>
-	{/if}
-
-	<div class="controls" class:dimmed={bodyMode} hidden={!controls || !!source}>
-		<span class="label">in headlines about</span>
-		<div class="toggle-group" role="group" aria-label="Player">
-			<button class:active={player === ALL} onclick={() => (player = ALL)}
-				>everyone</button
-			>
-			{#each data.players ?? [] as name}
-				<button class:active={player === name} onclick={() => (player = name)}
-					>{name}</button
-				>
+			{#each picked as word (word)}
+				<span class="kept">
+					{word}
+					<button
+						type="button"
+						aria-label="Remove {word}"
+						onclick={() => unpick(word)}>×</button
+					>
+				</span>
 			{/each}
 		</div>
-	</div>
+	{/if}
 
 	{#if sample && !source}
 		<p class="sample">
@@ -503,7 +587,7 @@
 		<!-- the same words as mirrored bars: the strongest on each side -->
 		<WordBars
 			source={barSource}
-			{highlight}
+			highlight={[...HIGHLIGHT]}
 			top={mobile ? 10 : 14}
 			example={barExample}
 			onhover={() => {
@@ -653,6 +737,7 @@
 					x={point.px + (point.flip ? -6 : 6)}
 					y={point.py + 3.5}
 					text-anchor={point.flip ? "end" : "start"}
+					style:font-size="{point.size}px"
 					fill={colorOf(point.z)}
 					opacity={hovered && hovered !== point.word ? 0.3 : 1}
 					onpointerenter={(e) => showTip(e, point)}
@@ -834,6 +919,90 @@
 	.toggle-group button.active {
 		background: var(--color-ink);
 		color: #fff;
+	}
+	/* the search box, as on the ternary's explore step */
+	.controls.find {
+		gap: 8px;
+	}
+	.search-box {
+		position: relative;
+		width: min(260px, 60vw);
+	}
+	.search-box input[type="search"] {
+		width: 100%;
+		box-sizing: border-box;
+		font: inherit;
+		font-size: 14px;
+		padding: 6px 9px;
+		border: 1px solid rgba(42, 21, 3, 0.3);
+		border-radius: 3px;
+		background: #fff;
+		color: var(--color-ink);
+	}
+	.search-box input[type="search"]:focus {
+		outline: 2px solid var(--color-fox);
+		outline-offset: 1px;
+	}
+	.suggest {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: calc(100% + 4px);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		background: #fff;
+		border: 1px solid rgba(42, 21, 3, 0.2);
+		border-radius: 3px;
+		box-shadow: 0 6px 18px rgba(42, 21, 3, 0.18);
+		z-index: 6;
+		overflow: hidden;
+		text-align: left;
+	}
+	.suggest li {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		padding: 6px 10px;
+		font-size: 14px;
+		cursor: pointer;
+	}
+	.suggest li + li {
+		border-top: 1px solid rgba(42, 21, 3, 0.08);
+	}
+	.suggest li:hover,
+	.suggest li.on {
+		background: rgba(42, 21, 3, 0.07);
+	}
+	.suggest .term {
+		font-weight: 700;
+	}
+	.suggest .uses {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 11px;
+	}
+	/* a kept word */
+	.kept {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 12px;
+		font-weight: 700;
+		color: var(--color-ink);
+		background: rgba(255, 253, 248, 0.85);
+		border: 1px solid rgba(42, 21, 3, 0.25);
+		border-radius: 999px;
+		padding: 2px 6px 2px 9px;
+	}
+	.kept button {
+		border: 0;
+		background: transparent;
+		color: rgba(42, 21, 3, 0.6);
+		font-size: 14px;
+		line-height: 1;
+		padding: 0 2px;
+		cursor: pointer;
 	}
 
 	svg {

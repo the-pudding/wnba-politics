@@ -21,6 +21,7 @@
 		"NetworkScrolly",
 		"FightinWordsScrolly",
 		"FightinWordsBarsScrolly",
+		"FramingScrolly",
 		"TernaryScrolly",
 		"OutletGapScrolly",
 		"OutletGapBeeswarmScrolly",
@@ -39,6 +40,7 @@
 	// these draw their own title and caption
 	const SELF_CAPTIONED = new Set([
 		"BoxScore",
+		"SimpleBars",
 		"TimelineDotsScrolly",
 		"HeadlineTable",
 		"timeline-scrolly",
@@ -135,6 +137,10 @@
 					{#if props.title && !SELF_CAPTIONED.has(name)}
 						<h4 class="chart-title">{@html hl(props.title)}</h4>
 					{/if}
+					<!-- subtitle: a plain line under the title, in the ink colour -->
+					{#if props.subtitle && !SELF_CAPTIONED.has(name)}
+						<p class="chart-subtitle">{@html props.subtitle}</p>
+					{/if}
 					{#if C}<C {name} {...props} />{:else}<p class="missing">
 							Unknown chart: “{name}”
 						</p>{/if}
@@ -230,6 +236,15 @@
 		font-size: 19px;
 		text-align: center;
 		margin: 0 0 10px;
+		color: var(--color-ink);
+	}
+	.chart-title + .chart-subtitle {
+		margin-top: -6px;
+	}
+	.chart-subtitle {
+		font-size: 15px;
+		text-align: center;
+		margin: 0 0 12px;
 		color: var(--color-ink);
 	}
 	.chart-caption {

@@ -79,6 +79,11 @@
 	// the example on hover, as on the scatter: the word's sentence with the
 	// form it took marked
 	let hovered = $state(null);
+	// a tap shows a bar's card and nothing on touch hides it: a click anywhere
+	// outside the bars takes it away
+	function clickAway(event) {
+		if (!event.target.closest?.(".word-bars .bar")) hovered = null;
+	}
 	const escapeHtml = (s) =>
 		s.replace(
 			/[&<>"']/g,
@@ -92,7 +97,7 @@
 				})[c]
 		);
 	function excerpt(sentence, form) {
-		const MAX = 230;
+		const MAX = 170;
 		if (sentence.length <= MAX) return sentence;
 		const at = sentence.toLowerCase().indexOf((form ?? "").toLowerCase());
 		const start = Math.max(0, Math.min(at - 90, sentence.length - MAX));
@@ -123,28 +128,47 @@
 			if (i < 0) continue;
 			const p = list[i];
 			const w = Math.max(len(p.z), textWidth(p.word) + 14);
-			const CARD = 320;
-			// beside the bar's end, or across the axis when there is no room there
-			let left, flip;
-			if (sign > 0) {
-				left = mid + GAP + w + 48;
-				flip = left + CARD > WIDTH;
-				if (flip) left = mid - GAP;
-			} else {
-				left = mid - GAP - w - 48;
-				flip = left - CARD >= 0;
-				if (!flip) left = mid + GAP;
-			}
+			// the card is anchored to the bar itself: over its middle, an arrow
+			// pointing down at it; below the bar only when the screen has no
+			// room above, and slid sideways to stay inside the frame
+			const x = sign > 0 ? mid + GAP + w / 2 : mid - GAP - w / 2;
 			const eg = p.eg ? { s: p.eg, w: p.egw } : (example?.(p.word) ?? null);
-			return { p, sign, y: yOf(i), left, flip, eg };
+			return { p, sign, y: yOf(i), x, eg };
 		}
 		return null;
 	});
+	// the card's own size, measured once it renders, places it
+	let cardW = $state(320);
+	let cardH = $state(120);
+	const ARROW = 9; // the pointer's height, and the gap it makes
+	let tipBox = $derived.by(() => {
+		if (!tip) return null;
+		const left = Math.max(0, Math.min(WIDTH - cardW, tip.x - cardW / 2));
+		// room above is measured on the screen, not in the frame: the chart
+		// sits in a sticky box, so the frame's top may be off the screen
+		const frameTop = el?.getBoundingClientRect().top ?? 0;
+		const above = frameTop + tip.y - ROW / 2 - ARROW - cardH >= 4;
+		return {
+			left,
+			top: above ? tip.y - ROW / 2 - ARROW - cardH : tip.y + ROW / 2 + ARROW,
+			above,
+			// the arrow stays on the bar even when the card has been slid
+			arrow: Math.max(14, Math.min(cardW - 14, tip.x - left))
+		};
+	});
 </script>
+
+<svelte:window onclick={clickAway} />
 
 <div class="word-bars" bind:this={el}>
 	{#if source}
-		<svg width={WIDTH} {height} viewBox="0 0 {WIDTH} {height}">
+		<svg
+			width={WIDTH}
+			{height}
+			viewBox="0 0 {WIDTH} {height}"
+			onmouseleave={() => (hovered = null)}
+			role="presentation"
+		>
 			<!-- column heads -->
 			<text class="head others" x={mid - GAP} y="16" text-anchor="end"
 				>← {source.bottomShort ?? "everyone else"}</text
@@ -180,14 +204,6 @@
 						onmouseleave={() => (hovered = null)}
 						role="presentation"
 					>
-						<!-- a wider hit area than the bar, so thin bars are easy to hover -->
-						<rect
-							class="hit"
-							x={sign > 0 ? mid : 0}
-							y={y - ROW / 2}
-							width={mid}
-							height={ROW}
-						/>
 						<rect
 							class="fill"
 							x={sign > 0 ? foot : end}
@@ -224,8 +240,10 @@
 			{@const color = tip.sign > 0 ? FOX : OTHERS}
 			<div
 				class="tip-card"
-				class:flip={tip.flip}
-				style="left:{tip.left}px; top:{tip.y}px; border-left-color:{color}"
+				bind:clientWidth={cardW}
+				bind:clientHeight={cardH}
+				class:below={!tipBox.above}
+				style="left:{tipBox.left}px; top:{tipBox.top}px; border-left-color:{color}; --arrow:{tipBox.arrow}px"
 			>
 				<span class="tip-head" style="color:{color}">{tip.p.word}</span>
 				<span class="tip-count"
@@ -270,9 +288,6 @@
 		stroke: rgba(42, 21, 3, 0.45);
 		stroke-width: 1.5;
 	}
-	.hit {
-		fill: transparent;
-	}
 	.bar .fill {
 		opacity: 0.88;
 		transition: opacity 250ms ease;
@@ -313,18 +328,14 @@
 		position: absolute;
 		z-index: 8;
 		pointer-events: none;
-		width: 320px;
+		width: 300px;
 		max-width: 80vw;
-		transform: translate(0, -50%);
 		background: var(--color-paper);
 		border: 1px solid rgba(42, 21, 3, 0.14);
 		border-left: 3px solid var(--color-fox);
 		border-radius: 3px;
 		padding: 10px 13px 11px;
 		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
-	}
-	.tip-card.flip {
-		transform: translate(-100%, -50%);
 	}
 	.tip-head {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -340,10 +351,39 @@
 		margin-left: 6px;
 	}
 	.tip-card p {
-		margin: 6px 0 0;
-		font-size: 13.5px;
-		line-height: 1.5;
+		margin: 5px 0 0;
+		font-size: 13px;
+		line-height: 1.45;
 		color: var(--color-ink);
+	}
+	/* the pointer: a paper triangle with the same hairline, at the bar */
+	.tip-card::after,
+	.tip-card::before {
+		content: "";
+		position: absolute;
+		left: var(--arrow, 50%);
+		transform: translateX(-50%);
+		border: 8px solid transparent;
+	}
+	.tip-card::before {
+		bottom: -17px;
+		border-top-color: rgba(42, 21, 3, 0.18);
+	}
+	.tip-card::after {
+		bottom: -15px;
+		border-top-color: var(--color-paper);
+	}
+	.tip-card.below::before {
+		bottom: auto;
+		top: -17px;
+		border-top-color: transparent;
+		border-bottom-color: rgba(42, 21, 3, 0.18);
+	}
+	.tip-card.below::after {
+		bottom: auto;
+		top: -15px;
+		border-top-color: transparent;
+		border-bottom-color: var(--color-paper);
 	}
 	.note {
 		margin: 6px 0 0;

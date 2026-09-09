@@ -10,6 +10,7 @@
 	);
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import headlineNet from "$data/headline_network.json";
+	import castGap from "$data/cast_gap.json";
 	import articleNet from "$data/article_network.json";
 	const bios = Object.fromEntries(
 		Object.entries(roster)
@@ -29,8 +30,11 @@
 
 	let {
 		steps = null,
-		source = "headline" // or "article": named anywhere in the same article
+		source = "headline", // or "article": named anywhere in the same article
+		// size: "count" (area by the last year's headlines) or "equal"
+		size = "count"
 	} = $props();
+	const EQUAL_SIZE = String(size).trim().toLowerCase() === "equal";
 
 	const net = source === "article" ? articleNet : headlineNet;
 	const LINK_WORD = source === "article" ? "article" : "headline";
@@ -115,14 +119,29 @@
 
 	const rawSteps = steps ?? [];
 	// focus: names, or a keyword for a whole side of the network —
-	//   wnba (players, coaches and the league) / outside (everyone else)
+	//   wnba (players, coaches and the league) / outside (everyone else) /
+	//   fox-only (people who never appear in the other outlets' WNBA headlines)
 	const WNBA_GROUPS = new Set(["players", "league"]);
+	// the cast whose headline count across the five sports outlets is zero
+	// (notebooks/cast_gap.py; Yahoo's syndicated pool is left out, as in the
+	// dot plot)
+	const FOX_ONLY = new Set(
+		(castGap.people ?? [])
+			.filter((p) =>
+				castGap.baseline
+					.filter((o) => o !== "Yahoo Sports")
+					.every((o) => !(p.byOutlet?.[o]?.n > 0))
+			)
+			.map((p) => p.name)
+	);
 	const FOCUS_KEYWORDS = {
 		wnba: (n) => WNBA_GROUPS.has(n.group),
 		league: (n) => WNBA_GROUPS.has(n.group),
 		outside: (n) => !WNBA_GROUPS.has(n.group),
 		"not-wnba": (n) => !WNBA_GROUPS.has(n.group),
-		"non-wnba": (n) => !WNBA_GROUPS.has(n.group)
+		"non-wnba": (n) => !WNBA_GROUPS.has(n.group),
+		"fox-only": (n) => FOX_ONLY.has(n.name),
+		foxonly: (n) => FOX_ONLY.has(n.name)
 	};
 	function expandFocus(value) {
 		const out = [];
@@ -135,10 +154,20 @@
 		}
 		return [...new Set(out)];
 	}
+	// a keyword focus lights a whole side of the network: its faces, not the
+	// web of lines between them
+	const isGroupFocus = (value) =>
+		String(value ?? "")
+			.split(",")
+			.some((f) => FOCUS_KEYWORDS[f.trim().toLowerCase()]);
 
 	const STEPS = rawSteps.map((s) => ({
 		year: String(s.year ?? ""),
 		focus: expandFocus(s.focus),
+		groupFocus: isGroupFocus(s.focus),
+		// links: with two or more people focused, "between" (default) lights
+		// only what they share; "all" lights every line touching any of them
+		links: String(s.links ?? "").trim().toLowerCase(),
 		text: s.text ?? "",
 		// optional: pin the receipt(s) shown — several headlines split on // or |
 		headlines: String(s.headline ?? "")
@@ -375,28 +404,12 @@
 		return out;
 	});
 
-	let stepHeadline = $derived.by(() => {
-		// Doc can pin via headline:; else the busiest pairing among the focused people
-		if (current.headlines.length) {
-			return { texts: current.headlines, pair: current.focus.join(" + "), n: 1 };
-		}
-		if (!current.focus.length) return null;
-		const withinFocus = edges
-			.filter((e) => current.focus.includes(e.a) && current.focus.includes(e.b))
-			.sort((x, y) => y.n - x.n);
-		const touchingFocus = edges
-			.filter((e) => current.focus.includes(e.a) || current.focus.includes(e.b))
-			.sort((x, y) => y.n - x.n);
-		const pick = withinFocus[0] ?? touchingFocus[0];
-		if (pick)
-			return { texts: [pick.ex], pair: `${pick.a} + ${pick.b}`, n: pick.n };
-		for (const name of current.focus) {
-			const node = net.nodes.find((n) => n.name === name);
-			const solo = node?.examples?.[current.year];
-			if (solo) return { texts: [solo], pair: name, n: 1 };
-		}
-		return null;
-	});
+	// the clipping under a step's text: only what the Doc pins with headline:
+	let stepHeadline = $derived(
+		current.headlines.length
+			? { texts: current.headlines, pair: current.focus.join(" + "), n: 1 }
+			: null
+	);
 
 	let focusSet = $derived(
 		new Set(
@@ -406,7 +419,7 @@
 	let connectedToFocus = $derived.by(() => {
 		if (!focusSet.size) return null;
 		if (selectedNames.length >= 2) return new Set(selectedNames);
-		if (!selectedNames.length && current.focus.length >= 2)
+		if (!selectedNames.length && current.focus.length >= 2 && current.links !== "all")
 			return new Set(current.focus);
 		const set = new Set(focusSet);
 		for (const e of edges) {
@@ -425,16 +438,18 @@
 	// area tracks the last year's headline count, scaled to that year's own
 	// leader, so every year has its big names; a face with old headlines but
 	// none this year stays, at the smallest size
-	const SMALLEST_R = MOBILE_NET ? 30 : 20,
-		BIGGEST_R = MOBILE_NET ? 120 : 82;
+	const SMALLEST_R = MOBILE_NET ? 26 : 20,
+		BIGGEST_R = MOBILE_NET ? 100 : 82;
 	let recentMax = $derived(Math.max(1, ...Object.values(recentCounts)));
 	let nodeRadius = $derived(
 		scaleSqrt()
 			.domain([0, recentMax])
 			.range([0, BIGGEST_R - SMALLEST_R])
 	);
+	const EQUAL_R = MOBILE_NET ? 44 : 36;
 	const radius = (node) => {
 		if (!(counts[node.name] ?? 0)) return 0;
+		if (EQUAL_SIZE) return EQUAL_R;
 		return SMALLEST_R + nodeRadius(recentCounts[node.name] ?? 0);
 	};
 
@@ -617,9 +632,13 @@
 		return `M${from.x},${from.y} Q${cx},${cy} ${to.x},${to.y}`;
 	}
 
-	// two+ people lit: only the link between them
+	// two+ people lit: only the link between them; a whole-side focus lights
+	// no lines at all (hovering or picking someone still does)
 	function edgeLit(edge) {
-		if (litNames.size > 1) return litNames.has(edge.a) && litNames.has(edge.b);
+		if (current.groupFocus && !hoverSet && !selectedNames.length) return false;
+		const allLinks = current.links === "all" && !hoverSet && !selectedNames.length;
+		if (litNames.size > 1 && !allLinks)
+			return litNames.has(edge.a) && litNames.has(edge.b);
 		return litNames.has(edge.a) || litNames.has(edge.b);
 	}
 
@@ -628,6 +647,9 @@
 		if (hovered && !selectedNames.length) {
 			return edge.a !== hovered && edge.b !== hovered;
 		}
+		// a whole-side focus (wnba / outside) lights faces only: the lines stay
+		// as they are, neither lit nor faded
+		if (current.groupFocus && !selectedNames.length) return false;
 		return Boolean(visible) && !(visible.has(edge.a) && visible.has(edge.b));
 	}
 </script>
@@ -708,7 +730,9 @@
 				}
 			}}
 		>
-			{#each shownEdges as edge (edge.a + edge.b)}
+			<!-- a whole-side focus (wnba / outside) shows faces only: no lines,
+			     unless the reader hovers or pins someone -->
+			{#each current.groupFocus && !hovered && !selectedNames.length ? [] : shownEdges as edge (edge.a + edge.b)}
 				{@const from = nodes.find((n) => n.name === edge.a)}
 				{@const to = nodes.find((n) => n.name === edge.b)}
 				{#if from && to}
@@ -800,13 +824,6 @@
 				>
 			{/each}
 		</div>
-
-		<!-- always in the layout: if it came and went with the hover the drawing
-		     would grow and shrink beneath the pointer -->
-		<p class="explore-hint">
-			Hover a face for their headlines · click to pin them, click a second to
-			see only what they share · drag to rearrange · headlines below
-		</p>
 
 		{#if exploring}
 			<!-- the headlines live in a drawer along the bottom, filtered to
@@ -981,6 +998,32 @@
 			padding-left: 0;
 			padding-right: 0;
 		}
+		/* the faces keep the phone's full width: the drawing never shrinks to
+		   make room for the headline table */
+		.network-scrolly.exploring svg {
+			flex: 0 0 auto;
+			max-height: none;
+		}
+		/* the open headline table is a sheet over the bottom of the screen,
+		   with its own scroll and the toggle to close it, so the network stays
+		   whole behind it */
+		.network-scrolly.exploring .drawer.open {
+			position: fixed;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			z-index: 20;
+			width: 100%;
+			max-height: 62vh;
+			margin: 0;
+			border-radius: 12px 12px 0 0;
+			box-shadow: 0 -6px 24px rgba(42, 21, 3, 0.25);
+		}
+		.network-scrolly.exploring .drawer.open .scroller {
+			height: auto;
+			max-height: calc(62vh - 52px);
+			overflow: auto;
+		}
 		/* no year animation or people pickers on phones: the faces need the room */
 		/* !important: their later display:flex rules would win otherwise */
 		.compare-bar,
@@ -990,8 +1033,7 @@
 	}
 	@media (max-width: 640px) {
 		/* !important: .legend's later display:flex rule would win otherwise */
-		.legend,
-		.explore-hint {
+		.legend {
 			display: none !important;
 		}
 	}
@@ -1332,12 +1374,6 @@
 		background: transparent;
 		color: inherit;
 		padding: 0 1px;
-	}
-	.explore-hint {
-		text-align: center;
-		font-size: 12.5px;
-		color: rgba(42, 21, 3, 0.6);
-		margin: 6px 0 0;
 	}
 	svg.interactive .ring.grabbable {
 		cursor: grab;

@@ -26,7 +26,7 @@
 	);
 </script>
 
-<section class="fw-scrolly">
+<section class="fw-scrolly" class:bars={chart === "bars"}>
 	<div class="sticky">
 		<!-- articles, not headlines: headline counts are too sparse for these words -->
 		<FightinWords
@@ -64,6 +64,13 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+	}
+	/* the bars hang from a fixed top: a step that adds rows or a card only
+	   lengthens the chart downward, instead of re-centring it */
+	.fw-scrolly.bars .sticky {
+		align-items: flex-start;
+		padding-top: 5vh;
+		box-sizing: border-box;
 	}
 	/* flex item shrinks to its content without this */
 	.sticky :global(.fightin-words) {

@@ -1,9 +1,47 @@
 <script>
 	// How Fox frames each player — tone / political / appearance / celebrity —
 	import FacesBeeswarm from "$components/FacesBeeswarm.svelte";
+	import FramingControls from "$components/FramingControls.svelte";
 	import HeadlineTable from "$components/HeadlineTable.svelte";
+	import framingRows from "$data/framing.csv";
+	import roster from "$data/people.json";
 
-	let { words = [] } = $props();
+	// everyone in the framing data, players first, each alphabetical by surname
+	const bySurname = (a, b) => a.split(" ").pop().localeCompare(b.split(" ").pop());
+	const PEOPLE = [...new Set(framingRows.map((r) => r.name))];
+	const PLAYERS = PEOPLE.filter((n) => roster[n]?.group === "players").sort(bySurname);
+
+	let {
+		words = [],
+		// the first picture: "rows" (a dot plot, one row per player) or "swarm"
+		layout: startLayout = "swarm",
+		// morph: true — start with the rows and, once the chart has been in
+		// view a moment, let the faces slide into the swarm
+		morph = false
+	} = $props();
+	const ROWS = new Set(["rows", "list", "dots", "dot", "dotplot"]);
+	let layout = $state(
+		ROWS.has(String(startLayout).trim().toLowerCase()) ? "rows" : "swarm"
+	);
+	const morphing = morph === true || String(morph).trim().toLowerCase() === "true";
+	let chartEl = $state(null);
+	$effect(() => {
+		if (!morphing || !chartEl || layout !== "rows") return;
+		let timer = null;
+		const io = new IntersectionObserver(
+			([entry]) => {
+				if (!entry.isIntersecting) return;
+				io.disconnect();
+				timer = setTimeout(() => (layout = "swarm"), 1800);
+			},
+			{ threshold: 0.35 }
+		);
+		io.observe(chartEl);
+		return () => {
+			io.disconnect();
+			clearTimeout(timer);
+		};
+	});
 
 	// the cross-outlet differential and receiving-end measures are still computed upstream
 	const VIEWS = [
@@ -48,6 +86,10 @@
 
 	// the player clicked on the chart; the table beneath shows only her headlines
 	let picked = $state(null);
+	// faces the same size, or sized by how many headlines name her
+	let sizing = $state("equal");
+	// measured over Fox's headlines, or over every Fox sentence naming her
+	let basis = $state("headlines");
 	let view = $state(
 		words[0] && VIEWS.some((v) => v.key === words[0]) ? words[0] : "tone"
 	);
@@ -55,23 +97,30 @@
 </script>
 
 <div class="framing-tabs">
-	<div class="tabs" role="group" aria-label="How to measure the framing">
-		{#each VIEWS as option}
-			<button
-				class:active={view === option.key}
-				onclick={() => (view = option.key)}
-			>
-				{option.label}
-			</button>
-		{/each}
-	</div>
-	<p class="blurb">{current.blurb}</p>
-
-	<FacesBeeswarm
-		metric={view}
-		selected={picked}
-		onselect={(name) => (picked = name)}
+	<!-- the picker, as on the player-words chart: who, and which measure -->
+	<FramingControls
+		players={PLAYERS}
+		views={VIEWS}
+		bind:picked
+		bind:view
+		bind:basis
+		bind:layout
+		bind:sizing
 	/>
+	<p class="blurb">
+		{basis === "sentences" ? current.blurb.replace("headline", "sentence").replace("headlines", "sentences") : current.blurb}
+	</p>
+
+	<div bind:this={chartEl}>
+		<FacesBeeswarm
+			metric={view}
+			{sizing}
+			{basis}
+			{layout}
+			selected={picked}
+			onselect={(name) => (picked = name)}
+		/>
+	</div>
 	<p class="pick-note">
 		{#if picked}
 			Showing headlines naming <b>{picked}</b>.
@@ -93,29 +142,6 @@
 	.framing-tabs {
 		max-width: 920px;
 		margin: 0 auto;
-	}
-	.tabs {
-		display: flex;
-		justify-content: center;
-		gap: 0;
-		margin-bottom: 6px;
-	}
-	.tabs button {
-		/* border: 1px solid rgba(42, 21, 3, 0.3); */
-		border-right-width: 0;
-		background: transparent;
-		color: var(--color-ink);
-		padding: 6px 16px;
-		font: inherit;
-		font-size: 13px;
-		font-weight: 600;
-		cursor: pointer;
-	}
-	/* .tabs button:first-child { border-radius: 4px 0 0 4px; }
-	.tabs button:last-child { border-right-width: 1px; border-radius: 0 4px 4px 0; } */
-	.tabs button.active {
-		background: var(--color-ink);
-		color: #fff;
 	}
 	.blurb {
 		text-align: center;

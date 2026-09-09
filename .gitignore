@@ -6,3 +6,4 @@ data/all_outlets_full.csv
 notebooks/.cache/
 notebooks/__pycache__/
 media/
+data/fox_wnba.unfiltered.csv

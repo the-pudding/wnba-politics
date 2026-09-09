@@ -9,7 +9,8 @@
 	import chy from "$data/chyrons.json";
 	import { faces, clipPops } from "$utils/clips.js";
 
-	let { steps = null } = $props();
+	// note: the line under the triangle (see TernaryStatic); {period} is filled in
+	let { steps = null, note = null } = $props();
 
 	// ArchieML gives "viktor, bout / merchant, death" — one group per slash
 	const parseGroups = (step) => {
@@ -156,6 +157,7 @@
 	<div class="sticky">
 		<TernaryStatic
 			{groups}
+			{note}
 			bare
 			big
 			highlightColor="var(--color-fox)"
@@ -293,6 +295,9 @@
 				</div>
 			{/each}
 		</Scrolly>
+		<!-- room after the last step, so the reader can scroll the final card
+		     clear of the triangle while the explore state holds -->
+		<div class="linger"></div>
 	</div>
 </section>
 
@@ -537,7 +542,13 @@
 		color: rgba(42, 21, 3, 0.55);
 	}
 
+	.linger {
+		height: 20vh;
+	}
 	@media (max-width: 860px) {
+		.linger {
+			height: 70vh;
+		}
 		.card {
 			max-width: 84vw;
 		}

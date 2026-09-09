@@ -5,7 +5,9 @@
 	// start on the equal line and glide out as the Doc places them.
 	import { base } from "$app/paths";
 	import { scaleLinear } from "d3-scale";
-	import data from "$data/outlet_gap.json";
+	import gapData from "$data/outlet_gap.json";
+	import pairData from "$data/pair_gap.json";
+	import castData from "$data/cast_gap.json";
 	import roster from "$data/people.json";
 	import HeadlineClip from "$components/HeadlineClip.svelte";
 	const faceFiles = Object.fromEntries(
@@ -36,10 +38,8 @@
 			month: "short",
 			year: "numeric"
 		});
-	const PERIOD = `${monthYear(data.window.from)} – ${monthYear(data.window.to)}`;
 	const FOX = "#003366"; // Fox's own navy, as on the headline clippings
 	const THEM = "#6b4bb0";
-	const RATIO_CAP = 9; // 10× and beyond sit at the edge
 	// left out of the dot plot for now, to keep the rows to the players the
 	// piece discusses; delete names here to bring them back
 	const HIDDEN = new Set([
@@ -54,6 +54,15 @@
 	]);
 
 	let {
+		// source: "players" (outlet_gap.json), "pairs" (pair_gap.json: two
+		// players named in the same headline, drawn as a pair of faces) or
+		// "cast" (cast_gap.json: the non-players around the league)
+		source = "players",
+		// reach: how far the axis runs either way, in k× − 1 (7.4 → 8×); the
+		// cast page runs to 20×
+		reach = 7.4,
+		// minFox: leave out rows with fewer Fox headlines than this (the pairs page)
+		minFox = 0,
 		highlight = null,
 		bare = false,
 		against: start = ALL,
@@ -81,6 +90,17 @@
 		// a wider axis on desktop, for the scrolly with no clipping beside it
 		wide = false
 	} = $props();
+	const data =
+		source === "pairs" ? pairData : source === "cast" ? castData : gapData;
+	const PERIOD = `${monthYear(data.window.from)} – ${monthYear(data.window.to)}`;
+	const pairs = source === "pairs";
+	const RATIO_CAP = reach + 1.6; // past the end of the axis, everyone sits at the edge
+	// a pair's short name: the two surnames
+	const shortName = (person) =>
+		person.names
+			? person.names.map((n) => n.split(" ").slice(-1)[0]).join(" + ")
+			: person.name.split(" ").slice(-1)[0];
+
 	// unplaced players wait on the equal line, veiled; a `centered` one is shown
 	// bright there, to make the point that equal coverage would put her at 1×
 	let centeredSet = $derived(new Set((centered ?? []).map(key)));
@@ -196,8 +216,6 @@
 	let them = $derived(against === ALL ? "everybody else" : against);
 	// the Doc types A’ja with a curly apostrophe, the data with a straight one
 	const key = (name) => name.toLowerCase().replace(/[’‘]/g, "'");
-	let lit = $derived(new Set((highlight ?? []).map(key)));
-	const isLit = (name) => !lit.size || lit.has(key(name));
 	let placedSet = $derived(placed === null ? null : new Set(placed.map(key)));
 	const isPlaced = (name) => placedSet === null || placedSet.has(key(name));
 
@@ -218,7 +236,8 @@
 	// k× Fox -> k − 1, k× theirs -> −(k − 1): uniform either way
 	let people = $derived(
 		data.people
-			.filter((person) => !HIDDEN.has(person.name))
+			.filter((person) => source !== "players" || !HIDDEN.has(person.name))
+			.filter((person) => (person.foxN ?? 0) >= minFox)
 			.map((person) => ({ ...person, them: pressShare(person) }))
 			.filter((person) => person.them && person.fox + person.them.share > 0)
 			.map((person) => ({
@@ -235,6 +254,12 @@
 			}))
 			.toSorted((a, b) => b.times - a.times)
 	);
+	// names: all — everyone lit, as a named list would be
+	let litAll = $derived((highlight ?? []).some((n) => key(n) === "all"));
+	let lit = $derived(
+		new Set(litAll ? people.map((p) => key(p.name)) : (highlight ?? []).map(key))
+	);
+	const isLit = (name) => !lit.size || lit.has(key(name));
 	let outlets = $derived(
 		OUTLETS.filter((o) => data.people.some((p) => p.byOutlet?.[o]))
 	);
@@ -293,8 +318,6 @@
 	// symmetric about equal and fixed at 5× either way. Anyone beyond that
 	// (Cunningham at 7.5×) lands past the edge line, outside the plot, on a
 	// gentler scale so she stays on screen — the tag carries the real number
-	const REACH = 7.4; // 8× either way, so everyone is inside the axis
-	let reach = REACH;
 	let x = $derived(
 		scaleLinear()
 			.domain([-reach, reach])
@@ -315,8 +338,10 @@
 	let ticks = $derived.by(() => {
 		const [lo, hi] = x.domain();
 		const out = [{ at: 0, label: "Equal", sub: "" }];
-		// 4×, 6× and 8×: enough to read the scale, not a ruler
-		for (const k of [3, 5, 7]) {
+		// 4×, 6× and 8×: enough to read the scale, not a ruler; a longer axis
+		// (the cast page) ticks every 5×
+		const marks = reach > 8 ? [4, 9, 14, 19, 24, 29] : [3, 5, 7];
+		for (const k of marks) {
 			if (k <= hi) out.push({ at: k, label: `${k + 1}×` });
 			if (-k >= lo) out.push({ at: -k, label: `${k + 1}×` });
 		}
@@ -481,7 +506,14 @@
 		};
 	}
 	const hideFace = () => (tooltip = null);
+	// a tap shows a face's tooltip and nothing hides it on touch: a click
+	// anywhere else takes it away
+	function clickAway(event) {
+		if (!event.target.closest?.(".face-mark")) tooltip = null;
+	}
 </script>
+
+<svelte:window onclick={clickAway} />
 
 <div
 	class="outlet-gap"
@@ -626,7 +658,7 @@
 						y={y + 4.5}
 						text-anchor="end"
 					>
-						{narrow ? person.name.split(" ").slice(-1)[0] : person.name}
+						{narrow || pairs ? shortName(person) : person.name}
 					</text>
 				</g>
 			{/each}
@@ -671,35 +703,68 @@
 						onpointerleave={hideFace}
 						role="presentation"
 					>
-						<clipPath id="gap-clip-{slug}">
-							<circle cx="0" cy="0" r={Math.max(0, r - 1)} />
-						</clipPath>
-						{#if faceFiles[slug]}
-							<circle cx="0" cy="0" {r} fill="#f7f2e6" />
-							<image
-								href="{base}/net/{slug}{faceFiles[slug]}"
-								x={-r * 1.2}
-								y={-r * 1.05}
-								width={r * 2.4}
-								height={r * 2.4}
-								clip-path="url(#gap-clip-{slug})"
-								preserveAspectRatio="xMidYMid slice"
-							/>
+						{#if person.names}
+							<!-- a pair: two smaller faces, side by side and overlapping -->
+							{#each person.names as who, k (who)}
+								{@const ws = slugOf(who)}
+								{@const rr = r * 0.78}
+								{@const dx = (k === 0 ? -1 : 1) * r * 0.55}
+								<clipPath id="gap-clip-{slug}-{k}">
+									<circle cx={dx} cy="0" r={Math.max(0, rr - 1)} />
+								</clipPath>
+								{#if faceFiles[ws]}
+									<circle cx={dx} cy="0" r={rr} fill="#f7f2e6" />
+									<image
+										href="{base}/net/{ws}{faceFiles[ws]}"
+										x={dx - rr * 1.2}
+										y={-rr * 1.05}
+										width={rr * 2.4}
+										height={rr * 2.4}
+										clip-path="url(#gap-clip-{slug}-{k})"
+										preserveAspectRatio="xMidYMid slice"
+									/>
+								{:else}
+									<circle cx={dx} cy="0" r={rr} fill="#d8cdb6" />
+								{/if}
+								<circle
+									cx={dx}
+									cy="0"
+									r={rr}
+									class="ring"
+									style="stroke:{ringColor(person)}"
+								/>
+							{/each}
 						{:else}
-							<circle cx="0" cy="0" {r} fill="#d8cdb6" />
+							<clipPath id="gap-clip-{slug}">
+								<circle cx="0" cy="0" r={Math.max(0, r - 1)} />
+							</clipPath>
+							{#if faceFiles[slug]}
+								<circle cx="0" cy="0" {r} fill="#f7f2e6" />
+								<image
+									href="{base}/net/{slug}{faceFiles[slug]}"
+									x={-r * 1.2}
+									y={-r * 1.05}
+									width={r * 2.4}
+									height={r * 2.4}
+									clip-path="url(#gap-clip-{slug})"
+									preserveAspectRatio="xMidYMid slice"
+								/>
+							{:else}
+								<circle cx="0" cy="0" {r} fill="#d8cdb6" />
+							{/if}
+							<circle
+								cx="0"
+								cy="0"
+								{r}
+								class="ring"
+								style="stroke:{ringColor(person)}"
+							/>
 						{/if}
-						<circle
-							cx="0"
-							cy="0"
-							{r}
-							class="ring"
-							style="stroke:{ringColor(person)}"
-						/>
 						{#if !on && !named}
 							<!-- waiting on the equal line: veiled, unless this step names her -->
 							<circle cx="0" cy="0" r={r + 1.5} class="veil" />
 						{/if}
-						{#if on && ((named && lit.size > 0) || hovered === person.name)}
+						{#if on && ((named && lit.size > 0 && !litAll) || hovered === person.name)}
 							<!-- the tag, for the players a step names (the closing step lights
 							     everyone and needs none). It sits right of the face — on the
 							     "others" side that keeps it clear of her name — unless she is off
@@ -753,15 +818,24 @@
 			<div>
 				<span class="swatch" style="background:{FOX}"></span>
 				{pct(tooltip.person.fox)} of Fox's WNBA headlines
-				<span class="count">({tooltip.person.foxN.toLocaleString()})</span>
+				<!-- raw counts only against one outlet: pooled, the totals are
+				     lopsided and the percentages are the comparison -->
+				{#if against !== ALL}
+					<span class="count">({tooltip.person.foxN.toLocaleString()})</span>
+				{/if}
 			</div>
 			<div>
 				<span class="swatch" style="background:{THEM}"></span>
 				{pct(tooltip.person.them.share)} of {them === "other outlets"
 					? "the other outlets'"
 					: them + "'s"}
-				<span class="count">({tooltip.person.them.n.toLocaleString()})</span>
+				{#if against !== ALL}
+					<span class="count">({tooltip.person.them.n.toLocaleString()})</span>
+				{/if}
 			</div>
+			{#if tooltip.person.ex}
+				<p class="ex">“{tooltip.person.ex.headline}” <span class="count">Fox, {tooltip.person.ex.date.slice(0, 4)}</span></p>
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -779,6 +853,13 @@
 		overflow: visible;
 	}
 
+	.tip .ex {
+		margin: 6px 0 0;
+		font-size: 12px;
+		line-height: 1.4;
+		font-weight: 400;
+		max-width: 260px;
+	}
 	.tip {
 		position: absolute;
 		transform: translate(-50%, -100%);

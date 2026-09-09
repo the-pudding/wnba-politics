@@ -19,7 +19,7 @@ politics / protest,kneel
 politics / protest,boycott
 politics / protest,police shooting
 politics / protest,shooting of
-politics / protest,\belection\b
+LGBTQ / sexuality,lgbt?\b
 politics / protest,indictment
 LGBTQ / sexuality,lgbtq?\b
 LGBTQ / sexuality,lesbian
@@ -35,3 +35,12 @@ LGBTQ / sexuality,bisexual
 LGBTQ / sexuality,non-?binary
 “woke”,\bwoke\b(?!\s+up\b)
 Trump,\btrump\b
+LGBTQ / sexuality,transgender
+LGBTQ / sexuality,trans athlete
+LGBTQ / sexuality,trans player
+LGBTQ / sexuality,trans wom[ae]n
+LGBTQ / sexuality,trans rights
+LGBTQ / sexuality,gender eligib
+LGBTQ / sexuality,biological (?:male|man|men|wom[ae]n|female)
+race / racism,black
+race / racism,discrimination

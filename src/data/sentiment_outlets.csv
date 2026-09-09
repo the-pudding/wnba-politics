@@ -1,7 +1,7 @@
 player,outlet,n,mean
 A'ja Wilson,CBS Sports,147,0.1983
 A'ja Wilson,ESPN,142,0.1544
-A'ja Wilson,Fox News,46,0.1029
+A'ja Wilson,Fox News,28,0.0911
 A'ja Wilson,Just Women's Sports,117,0.1705
 A'ja Wilson,The Athletic,86,0.1742
 A'ja Wilson,USA Today,82,0.1693
@@ -15,7 +15,7 @@ Aliyah Boston,USA Today,13,0.1256
 Aliyah Boston,Yahoo Sports,704,0.0883
 Alyssa Thomas,CBS Sports,48,0.1365
 Alyssa Thomas,ESPN,57,0.1153
-Alyssa Thomas,Fox News,23,0.0188
+Alyssa Thomas,Fox News,22,0.0184
 Alyssa Thomas,Just Women's Sports,22,0.0873
 Alyssa Thomas,The Athletic,23,0.0682
 Alyssa Thomas,USA Today,23,0.0764
@@ -27,6 +27,12 @@ Angel Reese,Just Women's Sports,119,0.1289
 Angel Reese,The Athletic,129,0.0904
 Angel Reese,USA Today,93,0.1103
 Angel Reese,Yahoo Sports,3698,0.0976
+Azzi Fudd,CBS Sports,24,0.1093
+Azzi Fudd,ESPN,19,0.0701
+Azzi Fudd,Just Women's Sports,50,0.0637
+Azzi Fudd,The Athletic,22,0.0875
+Azzi Fudd,USA Today,17,0.0545
+Azzi Fudd,Yahoo Sports,245,0.084
 Breanna Stewart,CBS Sports,107,0.1395
 Breanna Stewart,ESPN,129,0.111
 Breanna Stewart,Fox News,24,0.1306
@@ -52,10 +58,21 @@ Cameron Brink,CBS Sports,21,0.1282
 Cameron Brink,ESPN,12,0.0239
 Cameron Brink,Fox News,18,0.1163
 Cameron Brink,Yahoo Sports,81,0.1085
+Candace Parker,CBS Sports,48,0.2324
+Candace Parker,ESPN,71,0.1561
+Candace Parker,Fox News,20,0.159
+Candace Parker,Just Women's Sports,56,0.1615
+Candace Parker,The Athletic,25,0.1975
+Candace Parker,USA Today,34,0.1515
+Candace Parker,Yahoo Sports,284,0.1521
 Chennedy Carter,CBS Sports,13,0.0789
 Chennedy Carter,ESPN,35,0.0755
 Chennedy Carter,Just Women's Sports,12,0.1024
 Chennedy Carter,Yahoo Sports,135,0.0481
+DeWanna Bonner,CBS Sports,15,0.0755
+DeWanna Bonner,ESPN,21,0.1006
+DeWanna Bonner,USA Today,15,0.0875
+DeWanna Bonner,Yahoo Sports,106,0.0603
 DiJonai Carrington,CBS Sports,12,0.094
 DiJonai Carrington,Fox News,35,-0.0542
 DiJonai Carrington,Yahoo Sports,275,-0.0157
@@ -66,6 +83,14 @@ Diana Taurasi,Just Women's Sports,51,0.137
 Diana Taurasi,The Athletic,63,0.2107
 Diana Taurasi,USA Today,30,0.114
 Diana Taurasi,Yahoo Sports,196,0.1576
+Elena Delle Donne,CBS Sports,42,0.0985
+Elena Delle Donne,ESPN,80,0.1261
+Elena Delle Donne,Just Women's Sports,26,0.1248
+Elena Delle Donne,USA Today,40,0.1308
+Elena Delle Donne,Yahoo Sports,26,0.1629
+JuJu Watkins,Fox News,14,0.1142
+JuJu Watkins,Yahoo Sports,51,0.0977
+Kamilla Cardoso,Yahoo Sports,169,0.1082
 Kelsey Mitchell,CBS Sports,22,0.1245
 Kelsey Mitchell,ESPN,22,0.0899
 Kelsey Mitchell,Just Women's Sports,12,0.1344
@@ -78,6 +103,12 @@ Kelsey Plum,Just Women's Sports,49,0.0902
 Kelsey Plum,The Athletic,30,0.1638
 Kelsey Plum,USA Today,22,0.0992
 Kelsey Plum,Yahoo Sports,509,0.0745
+Lexie Hull,Yahoo Sports,228,0.1033
+Liz Cambage,CBS Sports,21,0.089
+Liz Cambage,ESPN,33,0.0658
+Liz Cambage,Just Women's Sports,24,0.027
+Liz Cambage,USA Today,13,0.1037
+Liz Cambage,Yahoo Sports,13,0.0513
 Napheesa Collier,CBS Sports,76,0.1107
 Napheesa Collier,ESPN,83,0.0654
 Napheesa Collier,Fox News,13,0.0845

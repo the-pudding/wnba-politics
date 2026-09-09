@@ -64,8 +64,17 @@ export const clipPops = (html, base = "") =>
 		);
 	});
 
+// Google Docs smart-quotes the `"` around an href (<a href="…”>), which
+// leaves the attribute open: the browser then swallows the rest of the
+// paragraph into it, the server and client trees disagree, and hydration
+// fails — blanking the whole story. Straighten the quotes inside tags.
+export const tidy = (html) =>
+	String(html ?? "").replace(/<[^<>]*>/g, (tag) =>
+		tag.replace(/[“”„‟]/g, '"').replace(/[‘’‚‛]/g, "'")
+	);
+
 export const faces = (html, base = "") =>
-	String(html ?? "").replace(
+	tidy(html).replace(
 		/\(\(([^()|]+?)(?:\|\s*(face)\s*)?\)\)/g,
 		(_, raw, only) => {
 			const name = raw.trim();
@@ -77,7 +86,7 @@ export const faces = (html, base = "") =>
 	);
 
 export const hl = (html, color = "#d55181") =>
-	String(html ?? "").replace(
+	tidy(html).replace(
 		/==(.+?)==/g,
 		(_, w) =>
 			`<mark style="background:${color}2e; box-shadow: inset 0 -2px 0 ${color}66">${w}</mark>`

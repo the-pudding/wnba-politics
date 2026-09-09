@@ -3,11 +3,15 @@
 	import { base } from "$app/paths";
 	import CMS from "$components/helpers/CMS.svelte";
 	import Toc from "$components/Toc.svelte";
+	import SimpleBars from "$components/SimpleBars.svelte";
+	import ScrollToc from "$components/ScrollToc.svelte";
 	import TimelineBars from "$components/TimelineBars.svelte";
 	import TimelineDotsScrolly from "$components/TimelineDotsScrolly.svelte";
 	import OutletTopicCompare from "$components/OutletTopicCompare.svelte";
+	import ChyronTopicHeatmap from "$components/ChyronTopicHeatmap.svelte";
 	import NgramChart from "$components/NgramChart.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
+	import TernaryPair from "$components/TernaryPair.svelte";
 	import TernaryScrolly from "$components/TernaryScrolly.svelte";
 	import FightinWordsScrolly from "$components/FightinWordsScrolly.svelte";
 	import FightinWordsBarsScrolly from "$components/FightinWordsBarsScrolly.svelte";
@@ -18,6 +22,7 @@
 	import FightinWordsBars from "$components/FightinWordsBars.svelte";
 	import NetworkScrolly from "$components/NetworkScrolly.svelte";
 	import FramingTabs from "$components/FramingTabs.svelte";
+	import FramingScrolly from "$components/FramingScrolly.svelte";
 	import HeadlineTable from "$components/HeadlineTable.svelte";
 	import ChyronSegments from "$components/ChyronSegments.svelte";
 	import BoxScore from "$components/BoxScore.svelte";
@@ -32,11 +37,14 @@
 	const components = {
 		// Doc block names = component names (same pattern as kids-book-animals)
 		Toc,
+		SimpleBars,
 		TimelineBars,
 		TimelineDotsScrolly,
 		OutletTopicCompare,
+		ChyronTopicHeatmap,
 		NgramChart,
 		TernaryStatic,
+		TernaryPair,
 		TernaryScrolly,
 		FightinWordsScrolly,
 		FightinWordsBarsScrolly,
@@ -47,6 +55,7 @@
 		FightinWordsBars,
 		NetworkScrolly,
 		FramingTabs,
+		FramingScrolly,
 		HeadlineTable,
 		ChyronSegments,
 		BoxScore,
@@ -72,7 +81,16 @@
 	};
 </script>
 
-<svelte:boundary onerror={(e) => console.error(e)}>
+<!-- a chart that throws must not take the text with it. A hydration failure
+     is not an Error but Svelte's sentinel: rethrow it, so the runtime discards
+     the server markup and renders on the client instead of showing nothing -->
+<svelte:boundary
+	onerror={(e) => {
+		if (!(e instanceof Error)) throw e;
+		console.error(e);
+	}}
+>
+	<ScrollToc />
 	<article id="story">
 		<header class="story-header">
 			{#if meta.headerImg}
