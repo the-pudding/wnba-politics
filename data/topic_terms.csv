@@ -44,3 +44,11 @@ LGBTQ / sexuality,gender eligib
 LGBTQ / sexuality,biological (?:male|man|men|wom[ae]n|female)
 LGBTQ / sexuality,gender
 race / racism,discrimination
+fouls,hip-?check
+fouls,\bpunch
+fouls,\bthroat\b
+fouls,\bpoke[ds]?\b
+fouls,\beye\b
+fouls,\bflagrant\b
+fouls,\bfouls?\b
+fouls,\bstrike\b

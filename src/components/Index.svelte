@@ -23,6 +23,8 @@
 	import NetworkScrolly from "$components/NetworkScrolly.svelte";
 	import FramingTabs from "$components/FramingTabs.svelte";
 	import FramingScrolly from "$components/FramingScrolly.svelte";
+	import WordTimeline from "$components/WordTimeline.svelte";
+	import WordCompare from "$components/WordCompare.svelte";
 	import HeadlineTable from "$components/HeadlineTable.svelte";
 	import ChyronSegments from "$components/ChyronSegments.svelte";
 	import BoxScore from "$components/BoxScore.svelte";
@@ -56,6 +58,8 @@
 		NetworkScrolly,
 		FramingTabs,
 		FramingScrolly,
+		WordTimeline,
+		WordCompare,
 		HeadlineTable,
 		ChyronSegments,
 		BoxScore,

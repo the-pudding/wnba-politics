@@ -101,19 +101,23 @@
 	// --- a topic's words and heat -------------------------------------------
 	const TOPIC_TERMS = {
 		polrace: ["race / racism", "politics / protest"],
-		lgbtq: ["LGBTQ / sexuality", "transgender / trans"]
+		lgbtq: ["LGBTQ / sexuality", "transgender / trans"],
+		// the contact words (the Sheet's "fouls" topic): hip-check, punch, throat…
+		fouls: ["fouls"]
 	};
 	const TOPIC_COLOR = {
 		polrace: "var(--color-politics)",
-		lgbtq: "var(--color-lgbtq)"
+		lgbtq: "var(--color-lgbtq)",
+		fouls: "#7a4a00"
 	};
 	const TOPIC_PHRASE = {
 		polrace: "race, politics and protest",
-		lgbtq: "LGBTQ+ and trans athletes"
+		lgbtq: "LGBTQ+ and trans athletes",
+		fouls: "fouls and physical play"
 	};
 	// chyron words are single tokens, so a vocabulary phrase like "trans athlete"
 	// never matches on its own; the bare word carries the topic here
-	const TOPIC_EXTRA = { lgbtq: ["trans"], polrace: [] };
+	const TOPIC_EXTRA = { lgbtq: ["trans"], polrace: [], fouls: [] };
 	let topicRx = $derived(
 		topic && TOPIC_TERMS[topic]
 			? new RegExp(

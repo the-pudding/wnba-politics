@@ -170,6 +170,7 @@
 				showBasis={false}
 				showLayout={false}
 				showSizing={false}
+				showPlayer={false}
 			/>
 			<FacesBeeswarm
 				metric={view}

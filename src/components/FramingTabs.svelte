@@ -111,6 +111,7 @@
 		showBasis={false}
 		showLayout={false}
 		showSizing={false}
+		showPlayer={false}
 	/>
 	<p class="blurb">
 		{basis === "sentences" ? current.blurb.replace("headline", "sentence").replace("headlines", "sentences") : current.blurb}
