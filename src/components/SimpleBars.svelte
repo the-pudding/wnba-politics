@@ -8,12 +8,14 @@
 	//   mode: count      (bars by count) or share (every outlet a full bar, the
 	//                    part about trans athletes filled in)
 	//   title: ...
+	//   note: ...        the line under the chart (replaces the built-in one;
+	//                    `note: none` drops it)
 	//   {}
 	import { base } from "$app/paths";
 	import segments from "$data/chyron_segments.json";
 	import trans from "$data/trans_by_outlet.json";
 
-	let { source = "cable", year = "2026", mode = "count" } = $props();
+	let { source = "cable", year = "2026", mode = "count", note = "" } = $props();
 	const SHARE = String(mode).trim().toLowerCase() === "share";
 
 	const COLOR = {
@@ -102,13 +104,15 @@
 			</div>
 		{/each}
 	</div>
+	{#if String(note).trim().toLowerCase() !== "none"}
 	<p class="note">
-		{source === "cable"
+		{#if String(note).trim()}{@html note}{:else}{source === "cable"
 			? `WNBA segments on each network's chyrons in ${year}, through ${segments.through}.`
 			: SHARE
 				? `Each bar is all of an outlet's WNBA articles in ${year}; the filled part are those that mention trans athletes.`
-				: `Articles about the WNBA that mention trans athletes in ${year}, of each outlet's WNBA articles that year.`}
+				: `Articles about the WNBA that mention trans athletes in ${year}, of each outlet's WNBA articles that year.`}{/if}
 	</p>
+	{/if}
 </div>
 
 <style>
