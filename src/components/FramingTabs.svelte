@@ -87,9 +87,9 @@
 	// the player clicked on the chart; the table beneath shows only her headlines
 	let picked = $state(null);
 	// faces the same size, or sized by how many headlines name her
-	let sizing = $state("equal");
+	let sizing = $state("count");
 	// measured over Fox's headlines, or over every Fox sentence naming her
-	let basis = $state("headlines");
+	let basis = $state("sentences");
 	let view = $state(
 		words[0] && VIEWS.some((v) => v.key === words[0]) ? words[0] : "tone"
 	);
@@ -98,6 +98,8 @@
 
 <div class="framing-tabs">
 	<!-- the picker, as on the player-words chart: who, and which measure -->
+	<!-- only the player and the measure: the chart is by sentence, sized by
+	     sentences, as a swarm -->
 	<FramingControls
 		players={PLAYERS}
 		views={VIEWS}
@@ -106,6 +108,9 @@
 		bind:basis
 		bind:layout
 		bind:sizing
+		showBasis={false}
+		showLayout={false}
+		showSizing={false}
 	/>
 	<p class="blurb">
 		{basis === "sentences" ? current.blurb.replace("headline", "sentence").replace("headlines", "sentences") : current.blurb}

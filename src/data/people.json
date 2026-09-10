@@ -359,7 +359,7 @@
 	},
 	"Lexie Hull": {
 		"group": "players",
-		"rx": "lexie hull|\\bhull\\b",
+		"rx": "lexie hull",
 		"face": "lexie-hull.png",
 		"bio": "Lexie Lauren Hull is an American model and professional basketball player for the Indiana Fever of the Women's National Basketball Association (WNBA) and Rose of Unrivaled. She played college basketball for the Stanford Cardinal, with whom ",
 		"slug": "lexie-hull",

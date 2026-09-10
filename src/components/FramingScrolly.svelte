@@ -16,6 +16,8 @@
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import FacesBeeswarm from "$components/FacesBeeswarm.svelte";
 	import FramingControls from "$components/FramingControls.svelte";
+	import HeadlineTable from "$components/HeadlineTable.svelte";
+	import { fade } from "svelte/transition";
 	import { faces, clipPops } from "$utils/clips.js";
 	import { base } from "$app/paths";
 	import framingRows from "$data/framing.csv";
@@ -24,7 +26,7 @@
 	import labelRows from "$data/labeled_headlines.csv";
 	import sentimentRows from "$data/headline_sentiment.csv";
 
-	let { steps = null, layout: firstLayout = "rows" } = $props();
+	let { steps = null, layout: firstLayout = "swarm" } = $props();
 
 	const VIEWS = [
 		{ key: "tone", label: "Tone" },
@@ -48,8 +50,8 @@
 		let prev = {
 			layout: ROWS.has(String(firstLayout).toLowerCase()) ? "rows" : "swarm",
 			metric: "tone",
-			basis: "headlines",
-			sizing: "equal"
+			basis: "sentences",
+			sizing: "count"
 		};
 		return (steps ?? [])
 			.filter(
@@ -88,9 +90,17 @@
 	// a reader can click it any time, and the next step takes over again
 	let picked = $state(null);
 	let view = $state("tone");
-	let basis = $state("headlines");
+	let basis = $state("sentences");
 	let layout = $state("swarm");
-	let sizing = $state("equal");
+	let sizing = $state("count");
+	// the closing table filters to the measure tab
+	const TABLE_FRAME = {
+		tone: "all",
+		political: "political",
+		appearance: "appearance",
+		celebrity: "celebrity",
+		performance: "performance"
+	};
 	let exploring = $derived(current?.explore ?? false);
 
 	// --- the headline drawer under the chart ------------------------------
@@ -157,6 +167,9 @@
 				bind:basis
 				bind:layout
 				bind:sizing
+				showBasis={false}
+				showLayout={false}
+				showSizing={false}
 			/>
 			<FacesBeeswarm
 				metric={view}
@@ -169,6 +182,17 @@
 				onselect={(name) => (picked = name)}
 				onhover={(name) => (hoveredFace = name)}
 			/>
+			{#if exploring}
+				<!-- the closing beat: the drawer gives way to the full browser,
+				     with its search box and filters -->
+				<div class="full-table" in:fade={{ duration: 400 }}>
+					<HeadlineTable
+						embedded
+						frame={TABLE_FRAME[view]}
+						players={picked ? [picked] : []}
+					/>
+				</div>
+			{:else}
 			<!-- the headlines, in a drawer along the bottom: closed, a bar with
 			     the count; open, a small scrolling table -->
 			<div class="drawer" class:open={drawerOpen}>
@@ -214,6 +238,7 @@
 					</div>
 				{/if}
 			</div>
+			{/if}
 		</div>
 	</div>
 
@@ -251,9 +276,22 @@
 	.chart :global(.faces-beeswarm svg) {
 		max-height: 72vh;
 	}
-	/* the open drawer takes its room from the drawing */
-	.chart.drawer-open :global(.faces-beeswarm svg) {
+	/* the open drawer, or the closing table, takes its room from the drawing */
+	.chart.drawer-open :global(.faces-beeswarm svg),
+	.chart.exploring :global(.faces-beeswarm svg) {
 		max-height: 44vh;
+	}
+	.full-table {
+		width: min(100%, 920px);
+		margin: 0 auto;
+		max-height: 48vh;
+		overflow-y: auto;
+		pointer-events: auto;
+		position: relative;
+		z-index: 2;
+	}
+	.full-table :global(.headline-browser.embedded) {
+		margin-top: 6px;
 	}
 	.drawer {
 		width: min(100%, 720px);
