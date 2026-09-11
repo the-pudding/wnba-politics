@@ -32,6 +32,8 @@
 		// three, a short last row centred) or "solo" (Fox alone on top, a
 		// third wide)
 		layout = "rows",
+		// from: the first year shown (e.g. 2024), when a topic only matters lately
+		from = "",
 		wordsLabel = "See the words included",
 		wordsNote = "An article counts when its headline or text contains any of these words or phrases."
 	} = $props();
@@ -48,14 +50,18 @@
 	const TOPIC_PHRASE =
 		topic === "lgbtq"
 			? "mention LGBTQ topics"
-			: "mention race or protest politics";
+			: topic === "fouls"
+				? "describe fouls and physical contact"
+				: "mention race or protest politics";
 	const COLOR_OF = {
 		lgbtq: "var(--color-lgbtq)",
-		polrace: "var(--color-politics)"
+		polrace: "var(--color-politics)",
+		fouls: "#7a4a00"
 	};
 	const PHRASE_OF = {
 		lgbtq: "LGBTQ+ topics",
-		polrace: "race or protest politics"
+		polrace: "race or protest politics",
+		fouls: "fouls and physical contact"
 	};
 	const MAIN = COLOR_OF[topic] ?? "var(--color-politics)";
 	const SECOND = second ? COLOR_OF[second] : null;
@@ -70,11 +76,19 @@
 			["Race", ["race / racism"]],
 			["Politics and protest", ["politics / protest"]]
 		],
-		lgbtq: [["LGBTQ+", ["LGBTQ / sexuality", "transgender / trans"]]]
+		lgbtq: [["LGBTQ+", ["LGBTQ / sexuality", "transgender / trans"]]],
+		fouls: [["Fouls and contact", ["fouls"]]]
 	};
 	// a few terms are regular expressions; these read better spelled out
 	const PRETTY = {
 		racis: "racism / racist",
+		"hip-?check": "hip-check",
+		"\\bpunch": "punch / punched",
+		"\\bthroat\\b": "throat",
+		"\\bpoke[ds]?\\b": "poke / poked",
+		"\\beye\\b": "eye",
+		"\\bflagrant\\b": "flagrant",
+		"\\bfouls?\\b": "foul / fouls",
 		"lgbtq?\\b": "LGBT / LGBTQ",
 		"\\bblm\\b": "BLM",
 		"non-?binary": "nonbinary",
@@ -213,7 +227,9 @@
 						.map(([y]) => y)
 				)
 			)
-		].sort()
+		]
+			.filter((y) => !String(from).trim() || y >= String(from).trim())
+			.sort()
 	);
 
 	function lineFor(outlet) {

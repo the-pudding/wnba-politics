@@ -47,7 +47,8 @@
 		"headline-table",
 		"Gallery",
 		"HeadlineGallery",
-		"TvSet"
+		"TvSet",
+		"WordCompare"
 	]);
 
 	// one-liner: `chart: name | key: value | …`

@@ -9,6 +9,16 @@
 	//   scope: any | headline | mentions  (articles with the word anywhere, in the
 	//                           headline, or every occurrence of the word)
 	//   scaleTo: Fox News      (keep the y-axis at that outlet's peak, so outlets compare)
+	//   chart: lines | stacked | area  (several words as lines or stacked bars;
+	//                           one word as bars, or as a line with its area shaded)
+	//   combine: true          (several words summed into one series)
+	//   color: #7a4a00         (the single series' colour)
+	//   label: all four words  (the combined series' name)
+	//   scaleWords: a, b, c    (y-axis at the peak of these words, so rows compare)
+	//   xaxis: false           (no date labels: a row above another that has them)
+	//   quiet: true            (no axis title, total or date label: a small row)
+	//   annotate: true         (with combine: each word named on the total line
+	//                           at the week it peaks)
 	//   by: week | day
 	//   from: 2024-01-01
 	//   to: 2026-08-31         (optional; the data's end by default)
@@ -24,6 +34,14 @@
 		outlet = "Fox News",
 		scope = "any",
 		scaleTo = "",
+		chart = "lines",
+		combine = false,
+		color = "var(--color-fox)",
+		label = "",
+		scaleWords = "",
+		xaxis = true,
+		quiet = false,
+		annotate = false,
 		// the drawing's size in its own units (type stays the same size, so a
 		// narrower drawing suits a small panel)
 		width = 900,
@@ -56,12 +74,38 @@
 			.map((w) => w.trim())
 			.filter((w) => w && source.words[w])
 	);
-	let multi = $derived(list.length > 1);
-	const entriesFor = (src) =>
-		(multi ? list : [String(word).trim()]).map((w, i) => {
+	const combined = combine === true || String(combine).trim().toLowerCase() === "true";
+	let multi = $derived(list.length > 1 && !combined);
+	let stacked = $derived(multi && String(chart).trim().toLowerCase() === "stacked");
+	let area = $derived(!multi && String(chart).trim().toLowerCase() === "area");
+	const entriesFor = (src) => {
+		if (combined && list.length) {
+			// one series: the articles that use any of the words, each counted
+			// once (from the per-article bit-sets); mentions simply add up
+			const counts = {}, examples = {};
+			const order = src.order ?? [];
+			const bits = list.reduce((m, w) => (order.includes(w) ? m | (1 << order.indexOf(w)) : m), 0);
+			if (field === "mentions" || !bits) {
+				for (const w of list) {
+					const e = src.words[w] ?? { any: {}, headline: {}, examples: {} };
+					for (const [day, n] of Object.entries(e[field] ?? {})) counts[day] = (counts[day] ?? 0) + n;
+				}
+			} else {
+				const sets = field === "headline" ? (src.headMasks ?? {}) : (src.masks ?? {});
+				for (const [day, arr] of Object.entries(sets)) {
+					const n = arr.filter((m) => m & bits).length;
+					if (n) counts[day] = n;
+				}
+			}
+			for (const w of list)
+				for (const [day, h] of Object.entries(src.words[w]?.examples ?? {})) examples[day] ??= h;
+			return [{ word: String(label).trim() || list.join(", "), color, counts, examples }];
+		}
+		return (multi ? list : [String(word).trim()]).map((w, i) => {
 			const e = src.words[w] ?? { any: {}, headline: {}, examples: {} };
-			return { word: w, color: PALETTE[i % PALETTE.length], counts: e[field] ?? {}, examples: e.examples ?? {} };
+			return { word: w, color: multi ? PALETTE[i % PALETTE.length] : color, counts: e[field] ?? {}, examples: e.examples ?? {} };
 		});
+	};
 	let entries = $derived(entriesFor(source));
 	const entry = $derived(entries[0]);
 	let end = $derived(
@@ -106,9 +150,29 @@
 	let bins = $derived(binsFor(source, entries));
 	// the y-axis: this outlet's peak, or another outlet's when `scaleTo` names one
 	let scaleSource = $derived(data.outlets[String(scaleTo).trim()] ?? null);
-	let scaleBins = $derived(scaleSource ? binsFor(scaleSource, entriesFor(scaleSource)) : null);
+	let scaleList = $derived(
+		String(scaleWords)
+			.split(",")
+			.map((w) => w.trim())
+			.filter((w) => w && source.words[w])
+	);
+	// the scale: another outlet's bins, and/or a set of words' bins, so rows
+	// and panels compare
+	let scaleBins = $derived.by(() => {
+		const base = scaleSource ?? source;
+		if (scaleList.length)
+			return scaleList.flatMap((w) =>
+				binsFor(base, [{ word: w, color, counts: base.words[w]?.[field] ?? {}, examples: {} }])
+			);
+		return scaleSource ? binsFor(scaleSource, entriesFor(scaleSource)) : null;
+	});
 	let peak = $derived(
-		Math.max(1, ...(scaleBins ?? bins).flatMap((b) => (multi ? b.each : [b.hits])))
+		Math.max(
+			1,
+			...(scaleBins ?? bins).flatMap((b) =>
+				stacked ? [b.each.reduce((a, v) => a + v, 0)] : multi ? b.each : [b.hits]
+			)
+		)
 	);
 	let total = $derived(bins.reduce((s, b) => s + b.hits, 0));
 	let totals = $derived(entries.map((_, j) => bins.reduce((s, b) => s + b.each[j], 0)));
@@ -139,7 +203,12 @@
 	// a small panel: a tick a year, and no date label on the mark
 	let small = $derived(WIDTH < 600);
 	// room above the plot for the legend row (several words) or the total
-	let PAD = $derived({ top: multi ? 34 : 26, right: 18, bottom: 40, left: axis ? 36 : 14 });
+	let PAD = $derived({
+		top: quiet ? 10 : multi ? 34 : 26,
+		right: 18,
+		bottom: xaxis ? 42 : 14,
+		left: axis ? 40 : 14
+	});
 	let plotW = $derived(WIDTH - PAD.left - PAD.right);
 	let plotH = $derived(HEIGHT - PAD.top - PAD.bottom);
 	let stepX = $derived(plotW / Math.max(1, bins.length));
@@ -176,6 +245,50 @@
 			}))
 	);
 	let yTicks = $derived([...new Set([0, Math.round(peak / 2), peak])]);
+	// with a combined total: where each word peaks, its name on the line
+	let notes = $derived.by(() => {
+		if (!(combined && (annotate === true || String(annotate) === "true"))) return [];
+		const out = [];
+		for (const w of list) {
+			const e = source.words[w] ?? {};
+			const rows = binsFor(source, [{ word: w, color, counts: e[field] ?? {}, examples: {} }]);
+			let top = 0;
+			rows.forEach((b, i) => {
+				if (b.hits > rows[top].hits) top = i;
+			});
+			if (!rows[top]?.hits) continue;
+			out.push({ word: w, i: top, x: xOf(top) + stepX / 2, y: yOf(bins[top].hits), peak: rows[top].hits });
+		}
+		// a label sits above its peak; one that would run off the top, or sit
+		// on the marked date, goes beside the spike instead, and labels that
+		// share a spike stack downward there
+		out.sort((a, b) => a.x - b.x);
+		const mx = markX;
+		let sideCount = 0;
+		let lastX = -Infinity, lastY = 0;
+		for (const n of out) {
+			n.ly = n.y - 10;
+			n.side = n.ly < PAD.top + 8 || (mx !== null && Math.abs(n.x - mx) < 40);
+			if (!n.side && n.x - lastX < 70) n.ly = Math.min(n.ly, lastY - 14);
+			if (n.side) {
+				n.ly = Math.max(PAD.top + 14, n.y + 4) + sideCount * 14;
+				n.lx = n.x - 10;
+				sideCount++;
+			} else {
+				n.lx = n.x;
+				lastX = n.x; lastY = n.ly;
+			}
+		}
+		return out;
+	});
+	// one word as a line with its area shaded
+	let areaPath = $derived.by(() => {
+		if (!area) return null;
+		const pts = bins.map((b, i) => [xOf(i) + stepX / 2, yOf(b.hits)]);
+		const line = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+		const base = PAD.top + plotH;
+		return { line, fill: `${line} L${pts.at(-1)[0].toFixed(1)},${base} L${pts[0][0].toFixed(1)},${base} Z` };
+	});
 
 	let tip = $state(null);
 	let el = $state(null);
@@ -204,23 +317,51 @@
 	};
 </script>
 
-<div class="word-timeline" bind:this={el}>
+<div class="word-timeline" class:small bind:this={el}>
 	<svg viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-label="Fox WNBA articles containing “{word}”, by {weekly ? 'week' : 'day'}" onpointerleave={() => (tip = null)}>
 		{#each yTicks as t}
 			<line class="grid" x1={PAD.left} x2={WIDTH - PAD.right} y1={yOf(t)} y2={yOf(t)} />
 			{#if axis}<text class="axis" x={PAD.left - 6} y={yOf(t) + 4} text-anchor="end">{t}</text>{/if}
 		{/each}
 		{#each ticks as t}
-			<line class="tick" x1={t.x} x2={t.x} y1={PAD.top + plotH} y2={PAD.top + plotH + 5} />
-			<text class="axis" x={t.x} y={PAD.top + plotH + 18} text-anchor="start">{t.label}</text>
+			<line class="tick" x1={t.x} x2={t.x} y1={PAD.top + plotH} y2={PAD.top + plotH + (xaxis ? 5 : 3)} />
+			{#if xaxis}<text class="axis" x={t.x} y={PAD.top + plotH + 20} text-anchor="start">{t.label}</text>{/if}
 		{/each}
 		<line class="baseline" x1={PAD.left} x2={WIDTH - PAD.right} y1={PAD.top + plotH} y2={PAD.top + plotH} />
-		{#if axis && !small}
+		{#if axis && !small && !quiet}
 			<text class="axis-title" x={PAD.left} y={PAD.top - 8} text-anchor="start"
-				>{unit === "mentions" ? "Mentions of the term, per week" : `Articles that mention the term, per ${weekly ? "week" : "day"}`}</text
+				>{unit === "mentions" ? "Mentions of" : "Articles that mention"}
+				{combined ? `any of the ${list.length} words` : multi ? "the term" : `“${entry.word}”`}, per {weekly ? "week" : "day"}{#if !multi}
+					{" "}· {total.toLocaleString()} total{/if}</text
 			>
 		{/if}
-		{#if multi}
+		{#if stacked}
+			<!-- a stack a week: each word a segment, in the lines' colours -->
+			{#each bins as bin, i (bin.start)}
+				{@const sum = bin.each.reduce((a, v) => a + v, 0)}
+				{#if sum}
+					{#each entries as e, j (e.word)}
+						{@const below = bin.each.slice(0, j).reduce((a, v) => a + v, 0)}
+						{#if bin.each[j]}
+							<rect
+								class="seg"
+								x={xOf(i) + 0.5}
+								y={yOf(below + bin.each[j])}
+								width={Math.max(1, stepX - 1)}
+								height={Math.max(0, yOf(below) - yOf(below + bin.each[j]) - (j ? 1 : 0))}
+								style="fill:{e.color}"
+							/>
+						{/if}
+					{/each}
+				{/if}
+			{/each}
+			<!-- the legend, since a stack has no line to label -->
+			{#each entries as e, j (e.word)}
+				<text class="legend" x={PAD.left + 4 + j * 150} y={PAD.top + 12} style="fill:{e.color}"
+					>■ {e.word} <tspan class="legend-n">{totals[j]} total {unit}</tspan></text
+				>
+			{/each}
+		{:else if multi}
 			{#each lines as l, j (l.word)}
 				<path class="line" d={l.d} style="stroke:{l.color}" />
 				{#if totals[j]}<text
@@ -228,7 +369,7 @@
 					x={l.label.x}
 					y={l.label.y}
 					text-anchor={l.label.anchor}
-					style="fill:{l.color}">{l.word} <tspan class="legend-n">{totals[j]} total {unit}</tspan></text
+					style="fill:{l.color}">{l.word}{#if !small} <tspan class="legend-n">{totals[j]} total {unit}</tspan>{/if}</text
 				>{/if}
 			{/each}
 			{#if tip}
@@ -236,8 +377,23 @@
 				<circle class="point" cx={tip.cx} cy={yOf(tip.bin.each[tip.j])} r="4.5" style="fill:{entries[tip.j].color}" />
 			{/if}
 		{/if}
+		{#if areaPath}
+			<path class="area" d={areaPath.fill} style="fill:{color}" />
+			<path class="line" d={areaPath.line} style="stroke:{color}" />
+			{#each notes as n (n.word)}
+				{#if !n.side}
+					<line class="note-tick" x1={n.x} x2={n.x} y1={n.y - 3} y2={n.ly + 3} style="stroke:{color}" />
+				{/if}
+				<text class="line-label" x={n.lx} y={n.ly} text-anchor={n.side ? "end" : "middle"} style="fill:{color}"
+					>{n.word}</text
+				>
+			{/each}
+			{#if tip}
+				<circle class="point" cx={tip.cx} cy={yOf(tip.bin.hits)} r="4" style="fill:{color}" />
+			{/if}
+		{/if}
 		{#each bins as bin, i (bin.start)}
-			{#if !multi}
+			{#if !multi && !area}
 				<rect
 					class="bar"
 					class:lit={tip?.bin === bin}
@@ -261,17 +417,14 @@
 		{/each}
 		{#if markX !== null}
 			<line class="mark" x1={markX} x2={markX} y1={PAD.top - 2} y2={PAD.top + plotH} />
-			{#if !small}
-				<text class="mark-label" x={markX - 6} y={PAD.top - 8} text-anchor="end"
+			{#if !small && !quiet}
+				{@const right = markX < WIDTH - PAD.right - 80}
+				<text class="mark-label" x={right ? markX + 6 : markX - 6} y={PAD.top - 8} text-anchor={right ? "start" : "end"}
 					>{String(markLabel).trim() || fmt(String(mark).trim())}</text
 				>
 			{/if}
 		{/if}
-		{#if !multi}
-			<text class="total" x={WIDTH - PAD.right} y={PAD.top - 10} text-anchor="end"
-				>{total.toLocaleString()} {unit === "mentions" ? "mentions of" : "articles say"} “{word}”</text
-			>
-		{/if}
+
 	</svg>
 	{#if tip}
 		<div class="tip" style="left:{tip.x}px; top:{tip.y}px; border-left-color:{multi ? entries[tip.j].color : 'var(--color-fox)'}">
@@ -314,6 +467,21 @@
 	.hit {
 		fill: transparent;
 	}
+	.seg {
+		pointer-events: none;
+	}
+	.area {
+		opacity: 0.22;
+		pointer-events: none;
+	}
+	.small .axis,
+	.small .line-label {
+		font-size: 11px;
+	}
+	.note-tick {
+		stroke-width: 1;
+		opacity: 0.6;
+	}
 	.line {
 		fill: none;
 		stroke-width: 2;
@@ -322,7 +490,7 @@
 	.line-label,
 	.legend {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 11.5px;
+		font-size: 14px;
 		font-weight: 700;
 		paint-order: stroke;
 		stroke: var(--color-bg, #f3b56b);
@@ -360,8 +528,8 @@
 	}
 	.axis {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 11px;
-		fill: rgba(42, 21, 3, 0.6);
+		font-size: 13px;
+		fill: rgba(42, 21, 3, 0.65);
 	}
 	.mark {
 		stroke: var(--color-ink);
@@ -370,13 +538,13 @@
 	}
 	.axis-title {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 11.5px;
-		fill: rgba(42, 21, 3, 0.6);
+		font-size: 12.5px;
+		fill: rgba(42, 21, 3, 0.65);
 	}
 	.mark-label,
 	.total {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-size: 11.5px;
+		font-size: 13px;
 		font-weight: 700;
 		fill: var(--color-ink);
 	}

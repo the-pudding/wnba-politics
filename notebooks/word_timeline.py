@@ -10,6 +10,10 @@ Writes src/data/word_timeline.json:
                               "words": {"hip-check": {"any": {day: n}, "headline": {day: n},
                                                       "examples": {day: "a headline"}}}}}}
 
+Each outlet also carries `masks`: per day, one bit-set per article that
+matched any word (bit i = word i of `order`), and `headMasks` the same for
+headlines, so a chart adding several words up can count an article once.
+
 Add a word to WORDS and rerun:  python3 notebooks/word_timeline.py
 """
 import csv, json, re
@@ -41,6 +45,8 @@ out = {"outlets": {}}
 for name, outlet in FILES:
     articles = Counter()
     hits = {w: {"any": Counter(), "headline": Counter(), "mentions": Counter(), "examples": {}} for w in WORDS}
+    masks, head_masks = defaultdict(list), defaultdict(list)
+    order = list(WORDS)
     for row in csv.DictReader((HERE / "data" / f"{name}.csv").open()):
         day = (row.get("date") or "")[:10]
         if len(day) < 10:
@@ -48,18 +54,29 @@ for name, outlet in FILES:
         articles[day] += 1
         head = row.get("headline") or ""
         text = head + " " + (row.get("body") or "")
+        m_any, m_head = 0, 0
         for w in WORDS:
             in_head = bool(rx[w].search(head))
             n = len(rx[w].findall(text))
             if in_head or n:
+                m_any |= 1 << order.index(w)
+                if in_head:
+                    m_head |= 1 << order.index(w)
                 hits[w]["any"][day] += 1
                 hits[w]["mentions"][day] += max(1, n)
                 if in_head:
                     hits[w]["headline"][day] += 1
                 if in_head or day not in hits[w]["examples"]:
                     hits[w]["examples"][day] = head
+        if m_any:
+            masks[day].append(m_any)
+        if m_head:
+            head_masks[day].append(m_head)
     out["outlets"][outlet] = {
         "articles": dict(sorted(articles.items())),
+        "order": order,
+        "masks": dict(sorted(masks.items())),
+        "headMasks": dict(sorted(head_masks.items())),
         "words": {w: {"any": dict(sorted(h["any"].items())), "headline": dict(sorted(h["headline"].items())),
                       "mentions": dict(sorted(h["mentions"].items())), "examples": h["examples"]} for w, h in hits.items()}}
     print(f"{outlet:20} " + "  ".join(f"{w} {sum(hits[w]['any'].values())}" for w in list(WORDS)[:4]))
