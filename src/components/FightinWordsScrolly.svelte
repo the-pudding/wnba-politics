@@ -4,7 +4,7 @@
 	import FightinWords from "$components/FightinWords.svelte";
 
 	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
-	let { steps = null, chart = "scatter" } = $props();
+	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false, ngrams = 1 } = $props();
 
 	const STEPS = $derived(
 		(steps ?? [])
@@ -15,6 +15,9 @@
 					.map((w) => w.trim())
 					.filter(Boolean),
 				explore: step.explore === true || step.explore === "true",
+				// a step can switch to two-word phrases (ngrams: 2) or back (ngrams: 1);
+				// unset, the block's own setting carries on
+				ngrams: String(step.ngrams ?? "").trim() || null,
 				html: step.text ?? ""
 			}))
 	);
@@ -35,6 +38,11 @@
 			controls={current.explore}
 			mode="articles"
 			{chart}
+			{labels}
+			{scale}
+			{caps}
+			{scores}
+			ngrams={current.ngrams ?? ngrams}
 		/>
 	</div>
 

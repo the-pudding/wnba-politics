@@ -790,8 +790,13 @@
 		stroke-width: 6;
 		stroke: var(--color-ink) !important;
 	}
+	/* the browser's focus ring (Safari draws a blue one on a clicked face);
+	   the thicker ink ring above is the selection mark */
+	.face,
+	.face:focus,
 	.face:focus-visible {
 		outline: none;
+		-webkit-tap-highlight-color: transparent;
 	}
 	.face:focus-visible .ring {
 		stroke-width: 5;

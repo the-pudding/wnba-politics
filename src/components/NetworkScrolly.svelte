@@ -3,6 +3,7 @@
 	import { onMount } from "svelte";
 	import { base } from "$app/paths";
 	import roster from "$data/people.json";
+	import foxHeadlines from "$data/fox_player_headlines.csv";
 	const faceFiles = Object.fromEntries(
 		Object.values(roster)
 			.filter((p) => p.face)
@@ -18,6 +19,9 @@
 			.map(([n, p]) => [n, p.bio])
 	);
 	import { scaleSqrt } from "d3-scale";
+	import { Tween } from "svelte/motion";
+	import { fade } from "svelte/transition";
+	import { cubicOut, cubicIn } from "svelte/easing";
 	import {
 		forceSimulation,
 		forceManyBody,
@@ -62,6 +66,14 @@
 		"LeBron James",
 		"Megan Rapinoe"
 	]);
+	// former WNBA players who are now coaches or on TV: still orange
+	const FORMER_PLAYERS = new Set([
+		"Sheryl Swoopes",
+		"Chiney Ogwumike",
+		"Stephanie White",
+		"Dawn Staley",
+		"Becky Hammon"
+	]);
 	// the league's own orange for its players; coaches and the front office in grey
 	const WNBA_ORANGE = "#f26f21";
 	const LEAN_COLORS = {
@@ -69,10 +81,10 @@
 		league: "#8d8578",
 		right: "var(--color-fox)",
 		left: "#2a6fd6",
-		unaligned: "#cbc3b4"
+		unaligned: "#1a1a1a"
 	};
 	const LEAN_LABELS = {
-		player: "WNBA players",
+		player: "WNBA players, past & present",
 		league: "coaches & the league",
 		right: "right-leaning voices",
 		left: "left-leaning voices",
@@ -83,7 +95,7 @@
 	const leanOf = (node) => {
 		if (RIGHT_LEANING.has(node.name)) return "right";
 		if (LEFT_LEANING.has(node.name)) return "left";
-		if (node.group === "players") return "player";
+		if (node.group === "players" || FORMER_PLAYERS.has(node.name)) return "player";
 		if (node.group === "league") return "league";
 		return "unaligned";
 	};
@@ -150,7 +162,13 @@
 			if (!f) continue;
 			const pick = FOCUS_KEYWORDS[f.toLowerCase()];
 			if (pick) out.push(...net.nodes.filter(pick).map((n) => n.name));
-			else out.push(f);
+			else {
+				// the Doc's spelling need not match the roster's case or
+				// punctuation: "Lebron James", "AJa Wilson"
+				const key = f.toLowerCase().replace(/[^a-z]/g, "");
+				const node = net.nodes.find((n) => n.name.toLowerCase().replace(/[^a-z]/g, "") === key);
+				out.push(node ? node.name : f);
+			}
 		}
 		return [...new Set(out)];
 	}
@@ -161,8 +179,21 @@
 			.split(",")
 			.some((f) => FOCUS_KEYWORDS[f.trim().toLowerCase()]);
 
+	// a step's year: "2021", or a month, "February 2021" / "2021-02"
+	const STEP_MONTHS = ["january", "february", "march", "april", "may", "june", "july",
+		"august", "september", "october", "november", "december"];
+	const stepMonth = (value) => {
+		const raw = String(value ?? "").trim();
+		const named = raw.match(/^([A-Za-z]+)\.?\s+(\d{4})$/);
+		if (named) {
+			const i = STEP_MONTHS.findIndex((m) => m.startsWith(named[1].toLowerCase().slice(0, 3)));
+			if (i >= 0) return `${named[2]}-${String(i + 1).padStart(2, "0")}`;
+		}
+		if (/^\d{4}-\d{2}$/.test(raw)) return raw;
+		return raw.slice(0, 4);
+	};
 	const STEPS = rawSteps.map((s) => ({
-		year: String(s.year ?? ""),
+		year: stepMonth(s.year),
 		focus: expandFocus(s.focus),
 		groupFocus: isGroupFocus(s.focus),
 		// links: with two or more people focused, "between" (default) lights
@@ -199,6 +230,7 @@
 	// animation runs on months; year buttons jump to the year's last month
 	const MONTHS = net.months ?? [];
 	const lastMonthOf = (year) => {
+		if (/^\d{4}-\d{2}$/.test(year)) return year;
 		const inYear = MONTHS.filter((m) => m.startsWith(year));
 		return inYear.length ? inYear[inYear.length - 1] : `${year}-12`;
 	};
@@ -214,17 +246,81 @@
 	function togglePlay() {
 		if (playing) return stopPlay();
 		playing = true;
-		exploreMonth = MONTHS[0];
+		// from the handle, or from the start once it has reached the end
+		if (exploreMonth >= MONTHS[MONTHS.length - 1]) exploreMonth = MONTHS[0];
 		playTimer = setInterval(() => {
-			const i = MONTHS.indexOf(exploreMonth);
-			if (i >= MONTHS.length - 1) return stopPlay();
-			exploreMonth = MONTHS[i + 1];
+			const next = MONTHS.find((m) => m > exploreMonth);
+			if (!next) return stopPlay();
+			exploreMonth = next;
 		}, 130);
 	}
 
+	// --- the scrubber: Fox headlines a month, under the network ------------
+	// every month from the first edge to the last, so the bars have no gaps
+	const ALL_MONTHS = (() => {
+		const out = [];
+		const first = MONTHS[0] ?? "2019-01", last = MONTHS[MONTHS.length - 1] ?? "2026-12";
+		let [y, m] = first.split("-").map(Number);
+		while (true) {
+			const key = `${y}-${String(m).padStart(2, "0")}`;
+			out.push(key);
+			if (key >= last) break;
+			m++; if (m > 12) { m = 1; y++; }
+		}
+		return out;
+	})();
+	const MONTH_COUNT = (() => {
+		const c = {};
+		for (const r of foxHeadlines) {
+			const k = (r.date ?? "").slice(0, 7);
+			if (k) c[k] = (c[k] ?? 0) + 1;
+		}
+		return c;
+	})();
+	const SCRUB_W = 600, SCRUB_H = 84, SCRUB_TOP = 20, SCRUB_BOTTOM = 14;
+	const scrubPeak = Math.max(1, ...ALL_MONTHS.map((m) => MONTH_COUNT[m] ?? 0));
+	const scrubStep = SCRUB_W / ALL_MONTHS.length;
+	const scrubX = (i) => i * scrubStep;
+	const scrubY = (n) => SCRUB_TOP + (SCRUB_H - SCRUB_TOP - SCRUB_BOTTOM) * (1 - n / scrubPeak);
+	const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+	const monthLabel = (m) => `${MONTH_NAMES[+m.slice(5, 7) - 1]} ${m.slice(0, 4)}`;
+	let scrubEl = $state(null);
+	let scrubbing = $state(false);
+	// a drag during the steps overrides the step's month until the next step
+	let dragged = $state(null);
+	$effect(() => {
+		stepIndex;
+		dragged = null;
+	});
+	function scrubTo(event) {
+		const box = scrubEl.getBoundingClientRect();
+		const i = Math.max(0, Math.min(ALL_MONTHS.length - 1,
+			Math.floor(((event.clientX - box.left) / box.width) * ALL_MONTHS.length)));
+		stopPlay();
+		exploreMonth = ALL_MONTHS[i];
+		dragged = ALL_MONTHS[i];
+	}
+	function scrubStart(event) {
+		scrubbing = true;
+		event.currentTarget.setPointerCapture?.(event.pointerId);
+		scrubTo(event);
+	}
+	function scrubMove(event) {
+		if (scrubbing) scrubTo(event);
+	}
+	function scrubEnd() {
+		scrubbing = false;
+	}
+
 	let cutoffMonth = $derived(
-		exploring ? exploreMonth : lastMonthOf(current.year)
+		exploring ? exploreMonth : (dragged ?? lastMonthOf(current.year))
 	);
+	let scrubIndex = $derived(
+		Math.max(0, ALL_MONTHS.findIndex((m) => m >= cutoffMonth) === -1
+			? ALL_MONTHS.length - 1
+			: ALL_MONTHS.findIndex((m) => m >= cutoffMonth))
+	);
+	let handleX = $derived(scrubX(scrubIndex) + scrubStep / 2);
 	let shownYear = $derived(cutoffMonth.slice(0, 4));
 	let monthsShown = $derived(MONTHS.filter((m) => m <= cutoffMonth));
 	let yearsShown = $derived(net.years.filter((y) => y <= shownYear));
@@ -296,10 +392,10 @@
 				}
 			}
 		}
-		// one person with no shared headlines: their solo ones. Everyone: solo
-		// headlines too, so the drawer is the whole archive in this range
+		// one person: their solo headlines too, so the drawer is everything that
+		// names them. Everyone: the whole archive in this range
 		const solo =
-			names.length === 1 && rows.length === 0
+			names.length === 1
 				? names
 				: names.length
 					? []
@@ -320,7 +416,12 @@
 	}
 	// the phone drawer: filtered to the tapped faces, else everything
 	let drawerOpen = $state(false);
-	let drawerRows = $derived(exploring ? headlinesFor(tableNames) : []);
+	let drawerAll = $derived(exploring ? headlinesFor(tableNames) : []);
+	// one person's list is capped, like the per-person archive the data carries
+	const SINGLE_CAP = 150;
+	let drawerRows = $derived(
+		tableNames.length === 1 ? drawerAll.slice(0, SINGLE_CAP) : drawerAll
+	);
 	const DRAWER_CAP = 200;
 
 	// longest names first so "Caitlin Clark" wins over "Clark"
@@ -466,6 +567,40 @@
 	const nodeByName = new Map(nodes.map((node) => [node.name, node]));
 	let simulation;
 
+	// faces grow, shrink and appear over a beat rather than popping when the
+	// step (or the scrubber) changes the month; the first paint is instant
+	const SIZE_MS = 900;
+	const sizeTweens = new Map(
+		net.nodes.map((node) => [node.name, new Tween(0, { duration: SIZE_MS, easing: cubicOut })])
+	);
+	let sizedOnce = false;
+	// faces leaving go faster than faces arriving, so the last little dots
+	// don't linger: a shrink accelerates and is done in half the time
+	const SHRINK_MS = 420;
+	// the last target sent to each tween: reading tween.current inside the
+	// effect would re-run it every frame and restart the tween each time
+	const sizeTarget = new Map();
+	$effect(() => {
+		for (const node of nodes) {
+			const tween = sizeTweens.get(node.name);
+			if (!tween) continue;
+			const target = radius(node);
+			const last = sizeTarget.get(node.name);
+			if (last === target) continue;
+			sizeTarget.set(node.name, target);
+			tween.set(
+				target,
+				!sizedOnce
+					? { duration: 0 }
+					: target < (last ?? 0)
+						? { duration: SHRINK_MS, easing: cubicIn }
+						: {}
+			);
+		}
+		sizedOnce = true;
+	});
+	const shownSize = (node) => sizeTweens.get(node.name)?.current ?? radius(node);
+
 	onMount(() => {
 		simulation = forceSimulation(nodes)
 			.force("charge", forceManyBody().strength(MOBILE_NET ? -280 : -420))
@@ -520,7 +655,8 @@
 					(node) => radius(node) + (MOBILE_NET ? 10 : 16)
 				).iterations(2)
 			)
-			.alpha(0.65)
+			.alpha(0.45)
+			.alphaDecay(0.02)
 			.restart();
 	});
 
@@ -642,6 +778,60 @@
 		return litNames.has(edge.a) || litNames.has(edge.b);
 	}
 
+	const TIP_W = MOBILE_NET ? 220 : 250,
+		TIP_MAX_H = 220;
+
+	// hovering a face, on any step: their latest headline within the months
+	// shown, preferring one that names somebody else in the network, so the
+	// receipt matches the period on the scrubber and shows a connection
+	let hoverTip = $derived.by(() => {
+		if (!hovered) return null;
+		const node = nodeByName.get(hovered);
+		if (!node) return null;
+		const own = (node.headlines ?? [])
+			.filter((h) => h.d && h.d.slice(0, 7) <= cutoffMonth)
+			.sort((a, b) => (a.d < b.d ? 1 : -1));
+		// first choice: a headline naming them with whoever else is lit on this
+		// step (the focus pair, or the faces the reader pinned); then any
+		// headline naming them with someone else; then a solo one
+		const partners = new Set([...focusSet].filter((n) => n !== hovered));
+		const withPartner = partners.size
+			? own.find((h) => namesIn(h.t).some((p) => partners.has(p.name)))
+			: null;
+		const shared = withPartner ?? own.find((h) => namesIn(h.t).some((p) => p.name !== hovered));
+		const pick = shared ?? own[0];
+		let text = pick?.t ?? "",
+			date = pick?.d ?? "";
+		if (!text) {
+			for (const year of [...yearsShown].reverse()) {
+				const hit = (net.edges[year] ?? []).find(
+					(e) => (e.a === hovered || e.b === hovered) && e.ex
+				);
+				if (hit) {
+					text = hit.ex;
+					date = year;
+					break;
+				}
+			}
+		}
+		if (!text) return null;
+		const r = shownSize(node);
+		// the card sits just off the face, clear of the name label below it
+		const gap = MOBILE_NET ? 10 : 14;
+		// the card grows away from the face: upward when there is room above
+		const above = node.y - r - gap > TIP_MAX_H * 0.45;
+		return {
+			text,
+			date,
+			above,
+			mx: node.x,
+			my: above ? node.y - r : node.y + r,
+			bx: Math.max(TIP_W / 2 + 6, Math.min(WIDTH - TIP_W / 2 - 6, node.x)),
+			by: above ? node.y - r - gap : node.y + r + gap + 22
+		};
+	});
+	let tip = $derived(hoverTip);
+
 	// neighbour-to-neighbour links must dim too, or they read as highlighted
 	function edgeDimmed(edge) {
 		if (hovered && !selectedNames.length) {
@@ -659,6 +849,13 @@
 		<p class="year-label">
 			Fox News WNBA {LINK_WORD}s, 2019–<strong>{shownYear}</strong>
 		</p>
+		<div class="legend">
+			{#each Object.keys(LEAN_LABELS) as key}
+				<span
+					><i style="background:{LEAN_COLORS[key]}"></i>{LEAN_LABELS[key]}</span
+				>
+			{/each}
+		</div>
 
 		<!-- present for layout; usable only once explore arms it -->
 		<div class="compare-bar" class:armed={exploring}>
@@ -693,27 +890,6 @@
 			{/if}
 		</div>
 
-		<div class="explore-bar" class:armed={exploring}>
-			<button
-				class="play"
-				onclick={togglePlay}
-				tabindex={exploring ? 0 : -1}
-				aria-label={playing ? "Pause" : "Play"}>{playing ? "❚❚" : "▶"}</button
-			>
-			<div class="toggle-group" role="group" aria-label="Year">
-				{#each net.years as y}
-					<button
-						class:active={shownYear === y}
-						tabindex={exploring ? 0 : -1}
-						onclick={() => {
-							stopPlay();
-							exploreMonth = lastMonthOf(y);
-						}}>{y}</button
-					>
-				{/each}
-			</div>
-		</div>
-
 		<svg
 			bind:this={svgEl}
 			viewBox="0 0 {WIDTH} {HEIGHT}"
@@ -737,6 +913,7 @@
 				{@const to = nodes.find((n) => n.name === edge.b)}
 				{#if from && to}
 					<path
+						transition:fade={{ duration: 600 }}
 						d={arcBetween(from, to)}
 						class="edge"
 						class:highlight={edgeLit(edge)}
@@ -747,9 +924,9 @@
 			{/each}
 
 			{#each nodes as node (node.name)}
-				{@const size = radius(node)}
+				{@const size = shownSize(node)}
 				{@const slug = slugOf(node.name)}
-				{#if size > 0}
+				{#if size > 1}
 					{@const dim = visible && !visible.has(node.name)}
 					<clipPath id="clip-{slug}"
 						><circle
@@ -815,14 +992,87 @@
 					{/if}
 				{/if}
 			{/each}
+			{#if tip}
+				<g class="line-tip" transition:fade={{ duration: 200 }}>
+					<foreignObject
+						x={tip.bx - TIP_W / 2}
+						y={tip.above ? tip.by - TIP_MAX_H : tip.by}
+						width={TIP_W}
+						height={TIP_MAX_H}
+					>
+						<div xmlns="http://www.w3.org/1999/xhtml" class="line-tip-box" class:below={!tip.above}>
+							<p>
+								{#if tip.date}<span class="when"
+										>{tip.date.length > 7 ? monthLabel(tip.date.slice(0, 7)) : tip.date}</span
+									>{/if}{tip.text}
+							</p>
+						</div>
+					</foreignObject>
+				</g>
+			{/if}
 		</svg>
 
-		<div class="legend">
-			{#each Object.keys(LEAN_LABELS) as key}
-				<span
-					><i style="background:{LEAN_COLORS[key]}"></i>{LEAN_LABELS[key]}</span
+		<!-- the scrubber: Fox headlines a month, the handle on the month shown;
+		     drag it (once explore arms it) to move the network back and forth -->
+		<div class="explore-bar" class:armed={exploring}>
+			<button
+				class="play"
+				onclick={togglePlay}
+				tabindex={exploring ? 0 : -1}
+				aria-label={playing ? "Pause" : "Play"}>{playing ? "❚❚" : "▶"}</button
+			>
+			<svg
+				class="scrubber live"
+				viewBox="0 0 {SCRUB_W} {SCRUB_H}"
+				bind:this={scrubEl}
+				onpointerdown={scrubStart}
+				onpointermove={scrubMove}
+				onpointerup={scrubEnd}
+				onpointercancel={scrubEnd}
+				role="slider"
+				aria-label="Month shown"
+				aria-valuetext={monthLabel(cutoffMonth)}
+				tabindex="0"
+				onkeydown={(e) => {
+					const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+					if (!d) return;
+					stopPlay();
+					exploreMonth = ALL_MONTHS[Math.max(0, Math.min(ALL_MONTHS.length - 1, scrubIndex + d))];
+					dragged = exploreMonth;
+					e.preventDefault();
+				}}
+			>
+				{#each ALL_MONTHS as m, i (m)}
+					<rect
+						class="scrub-bar"
+						class:past={i <= scrubIndex}
+						x={scrubX(i) + 0.5}
+						y={scrubY(MONTH_COUNT[m] ?? 0)}
+						width={Math.max(1, scrubStep - 1)}
+						height={SCRUB_H - SCRUB_BOTTOM - scrubY(MONTH_COUNT[m] ?? 0)}
+					/>
+				{/each}
+				{#each ALL_MONTHS as m, i (m)}
+					{#if m.endsWith("-01") || i === 0}
+						<text class="scrub-year" x={scrubX(i) + 2} y={SCRUB_H - 3}>{m.slice(0, 4)}</text>
+					{/if}
+				{/each}
+				<line
+					class="scrub-handle"
+					x1={scrubX(scrubIndex) + scrubStep / 2}
+					x2={scrubX(scrubIndex) + scrubStep / 2}
+					y1={SCRUB_TOP - 4}
+					y2={SCRUB_H - SCRUB_BOTTOM}
+				/>
+				<!-- the label flips to whichever side of the handle has room -->
+				<text
+					class="scrub-month"
+					x={handleX > SCRUB_W * 0.8 ? handleX - 6 : handleX < SCRUB_W * 0.2 ? handleX + 6 : handleX}
+					y={SCRUB_TOP - 8}
+					text-anchor={handleX > SCRUB_W * 0.8 ? "end" : handleX < SCRUB_W * 0.2 ? "start" : "middle"}
+					>{monthLabel(cutoffMonth)} · {(MONTH_COUNT[cutoffMonth] ?? 0)} {LINK_WORD}s</text
 				>
-			{/each}
+			</svg>
 		</div>
 
 		{#if exploring}
@@ -1256,6 +1506,53 @@
 		color: var(--color-ink);
 	}
 
+	/* the receipt beside a single lit line */
+	.line-tip {
+		pointer-events: none;
+	}
+	.line-tip line {
+		stroke: var(--color-ink);
+		stroke-width: 1.5;
+	}
+	.line-tip circle {
+		fill: var(--color-ink);
+	}
+	.line-tip foreignObject {
+		overflow: visible;
+	}
+	.line-tip-box {
+		display: flex;
+		align-items: flex-end;
+		height: 220px;
+	}
+	.line-tip-box.below {
+		align-items: flex-start;
+	}
+	.line-tip-box p {
+		margin: 0;
+		width: 100%;
+		box-sizing: border-box;
+		background: var(--color-paper);
+		border: 1px solid #e6dcc3;
+		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
+		padding: 8px 11px;
+		font-family: Georgia, serif;
+		font-size: 13px;
+		font-weight: 700;
+		line-height: 1.35;
+		color: #1a1a1a;
+	}
+	.line-tip-box .when {
+		display: block;
+		font-family: var(--sans);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: rgba(42, 21, 3, 0.55);
+		margin-bottom: 2px;
+	}
+
 	.headline-clip {
 		margin: 12px -4px 0;
 		background: var(--color-paper);
@@ -1340,6 +1637,62 @@
 	.explore-bar.armed {
 		opacity: 1;
 		pointer-events: auto;
+	}
+	/* the scrubber is live throughout: dragging it during a step overrides
+	   that step's month until the next step; the play button waits for explore */
+	.explore-bar {
+		opacity: 0.85;
+		width: min(100%, 760px);
+		margin: 4px auto 0;
+		flex-wrap: nowrap;
+	}
+	.explore-bar .scrubber {
+		pointer-events: auto;
+	}
+	.explore-bar:not(.armed) .play {
+		visibility: hidden;
+	}
+	.scrubber {
+		flex: 1 1 auto;
+		width: 100%;
+		height: auto;
+		display: block;
+		touch-action: none;
+		user-select: none;
+		-webkit-user-select: none;
+		cursor: default;
+	}
+	/* no focus ring on the drag surface; keyboard users still get one */
+	.scrubber:focus {
+		outline: none;
+	}
+	.scrubber:focus-visible {
+		outline: 2px solid rgba(42, 21, 3, 0.35);
+		outline-offset: 2px;
+	}
+	.scrubber.live {
+		cursor: ew-resize;
+	}
+	.scrub-bar {
+		fill: rgba(42, 21, 3, 0.18);
+	}
+	.scrub-bar.past {
+		fill: var(--color-fox);
+	}
+	.scrub-handle {
+		stroke: var(--color-ink);
+		stroke-width: 2;
+	}
+	.scrub-year {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 9px;
+		fill: rgba(42, 21, 3, 0.6);
+	}
+	.scrub-month {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 10px;
+		font-weight: 700;
+		fill: var(--color-ink);
 	}
 	.play {
 		border: 1px solid rgba(42, 21, 3, 0.4);

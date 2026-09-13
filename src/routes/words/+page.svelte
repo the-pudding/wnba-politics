@@ -4,7 +4,6 @@
 	import data from "$data/word_timeline.json";
 	const OUTLETS = ["Fox News", "ESPN", "CBS Sports", "USA Today", "The Athletic", "Just Women's Sports"];
 	const LOGOS = { "Fox News": "fox-news.svg", ESPN: "espn.svg", "CBS Sports": "cbs-sports.svg", "USA Today": "usa-today.svg", "The Athletic": "the-athletic.png", "Just Women's Sports": "jws.png" };
-	const HEADLINE_ONLY = new Set(["CBS Sports", "USA Today"]);
 	const ALL_WORDS = Object.keys(data.outlets["Fox News"].words);
 	let outlet = $state("Fox News");
 	let scope = $state("any");
@@ -55,7 +54,6 @@
 	</div>
 	<p class="note">
 		{outlet}: {total.toLocaleString()} WNBA articles in the corpus.
-		{#if HEADLINE_ONLY.has(outlet)}Headlines only for this outlet, so "anywhere" is the same as "in the headline".{/if}
 	</p>
 	{#key `${outlet}|${scope}|${by}|${from}|${mark}|${sameScale}|${chosen.join(",")}`}
 		<WordTimeline {outlet} {scope} {by} {from} {mark} scaleTo={sameScale ? "Fox News" : ""} words={chosen.length > 1 ? chosen.join(", ") : ""} word={chosen[0] ?? "hip-check"} />

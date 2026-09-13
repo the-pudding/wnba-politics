@@ -7,7 +7,8 @@
 	import FacePicker from "$components/helpers/FacePicker.svelte";
 	import {
 		playerWordsSource,
-		playerWordsPeople
+		playerWordsPeople,
+		playerPhrasesPeople
 	} from "../utils/playerWords.js";
 	import { base } from "$app/paths";
 	import roster from "$data/people.json";
@@ -19,7 +20,7 @@
 	);
 
 	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
-	let { steps = null, chart = "scatter" } = $props();
+	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false } = $props();
 
 	const list = (value) =>
 		(value ?? "")
@@ -57,10 +58,13 @@
 	// any time, and the next step sets it again.
 	const RELATIONS = [
 		["describe", "how she's described"],
+		["play", "how she plays"],
 		["subject", "what she does"],
 		["object", "what's done to her"],
-		["all", "every word"]
+		["all", "every word"],
+		["phrases", "phrases"]
 	];
+	const PHRASES = new Set(playerPhrasesPeople());
 	// players with a Fox-versus-the-other-outlets comparison stored, listed
 	// by surname in the picker
 	const PEOPLE = playerWordsPeople();
@@ -86,7 +90,10 @@
 	// a smaller cast member has too few attachments for some relations; those
 	// buttons grey out, and the choice falls back to every word
 	let available = $derived(
-		new Set(Object.keys(data.players?.[pickedWho]?.vsOutlets ?? {}))
+		new Set([
+			...Object.keys(data.players?.[pickedWho]?.vsOutlets ?? {}),
+			...(PHRASES.has(pickedWho) ? ["phrases"] : [])
+		])
 	);
 	$effect(() => {
 		if (available.size && !available.has(pickedRel)) pickedRel = "all";
@@ -155,7 +162,7 @@
 				</div>
 			</div>
 			{#if chart === "bars"}
-				<WordBars {source} highlight={shown.words} top={12} />
+				<WordBars {source} {labels} {scale} {caps} {scores} highlight={shown.words} top={12} />
 			{:else}
 				<FightinWords {source} highlight={shown.words} bare controls={false} />
 			{/if}

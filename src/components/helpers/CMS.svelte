@@ -48,7 +48,9 @@
 		"Gallery",
 		"HeadlineGallery",
 		"TvSet",
-		"WordCompare"
+		"WordCompare",
+		"WordNeighbors",
+		"WordPlayers"
 	]);
 
 	// one-liner: `chart: name | key: value | …`

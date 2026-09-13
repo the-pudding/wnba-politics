@@ -1,0 +1,19 @@
+{
+ "Caitlin Clark": {
+  "Fox News": {
+   "victim": 5,
+   "accused": 3
+  },
+  "others": {
+   "victim": 1
+  }
+ },
+ "Sophie Cunningham": {
+  "Fox News": {
+   "accused": 12
+  },
+  "others": {
+   "accused": 7
+  }
+ }
+}

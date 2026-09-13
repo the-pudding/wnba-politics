@@ -7,13 +7,21 @@
 // stores each side's list separately with an unsigned score, so the sign is put
 // back on and the two lists are merged.
 import data from "$data/player_words.json";
+import phrases from "$data/player_phrases.json";
 
 const RELATION = {
 	subject: "what she does",
 	object: "what is done to her",
 	describe: "how she is described",
-	all: "every word attached to her"
+	play: "how her play is described",
+	all: "every word attached to her",
+	phrases: "two-word phrases in sentences about her"
 };
+
+// the players with a phrases comparison (notebooks/player_phrases.py)
+export function playerPhrasesPeople() {
+	return Object.keys(phrases);
+}
 
 // the players a reader can pick: those with a Fox-versus-outlets comparison,
 // in the data's order (most attachments first)
@@ -33,6 +41,17 @@ export function playerWordsSource({ who, rel, vs, pair }) {
 			// surnames, for the tooltip's count line
 			topShort: "about " + entry.left.split(" ").pop(),
 			bottomShort: "about " + entry.right.split(" ").pop()
+		};
+	} else if (rel === "phrases") {
+		const entry = phrases[who];
+		if (!entry) return null;
+		block = {
+			scored: entry.scored,
+			counts: entry.counts,
+			top: `${who} in Fox News`,
+			bottom: "everyone else writing about her",
+			topShort: "in Fox News",
+			bottomShort: "in the other outlets"
 		};
 	} else {
 		const person = data.players?.[who];

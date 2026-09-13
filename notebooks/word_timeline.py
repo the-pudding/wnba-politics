@@ -2,8 +2,8 @@
 word-timeline chart ({.WordTimeline}) and the /words explore page. Each word
 is a pattern; an article counts once when it matches, counted two ways: in
 the headline alone, and anywhere (headline or body); `mentions` is every
-occurrence, for the explore page's intensity view. CBS Sports and USA
-Today are headline-only harvests, so their two counts are the same.
+occurrence, for the explore page's intensity view. Every outlet has full
+text for most articles (CBS Sports and USA Today for about 80–90% of theirs).
 Writes src/data/word_timeline.json:
 
     {"outlets": {"Fox News": {"articles": {"2024-06-01": 5, ...},

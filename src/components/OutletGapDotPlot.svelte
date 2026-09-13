@@ -67,6 +67,8 @@
 		bare = false,
 		against: start = ALL,
 		placed = null,
+		// speed: milliseconds for a face's slide into place (3500 by default)
+		speed = 3500,
 		centered = [],
 		// a Fox headline clipping for this step, shown under the picker; the
 		// slot is kept open (clipSlot) when any step in the scrolly has one, so
@@ -112,7 +114,9 @@
 	// how a face gets to its value when placed: "hop" (one bounce per 1×) or
 	// "slide" (the CSS transition, slowed). The hop code stays either way.
 	const PLACE_MOTION = "slide";
-	const SLIDE_MS = 3500; // how long the slide takes (also the CSS transition)
+	// how long a placement slide takes (also the CSS transition); the Doc can
+	// set it with `speed:` in milliseconds on the scrolly block
+	let SLIDE_MS = $derived(Math.max(100, +speed || 3500));
 	const HOP_MS = 580;
 	const HOP_HEIGHT = 46;
 	// a face landing beyond this ratio gets one more, smaller bounce in place
@@ -477,7 +481,7 @@
 	// the faces have finished moving: reordering means re-inserting the
 	// element, which would cut its slide short (a hover never coincides with
 	// a move, so that part is immediate)
-	const SETTLE_MS = SLIDE_MS + 300;
+	let SETTLE_MS = $derived(SLIDE_MS + 300);
 	let litSettled = $state(new Set());
 	$effect(() => {
 		const next = new Set(

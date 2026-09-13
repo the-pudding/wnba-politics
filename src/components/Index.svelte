@@ -25,6 +25,8 @@
 	import FramingScrolly from "$components/FramingScrolly.svelte";
 	import WordTimeline from "$components/WordTimeline.svelte";
 	import WordCompare from "$components/WordCompare.svelte";
+	import WordNeighbors from "$components/WordNeighbors.svelte";
+	import WordPlayers from "$components/WordPlayers.svelte";
 	import HeadlineTable from "$components/HeadlineTable.svelte";
 	import ChyronSegments from "$components/ChyronSegments.svelte";
 	import BoxScore from "$components/BoxScore.svelte";
@@ -60,6 +62,8 @@
 		FramingScrolly,
 		WordTimeline,
 		WordCompare,
+		WordNeighbors,
+		WordPlayers,
 		HeadlineTable,
 		ChyronSegments,
 		BoxScore,

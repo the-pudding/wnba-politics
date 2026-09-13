@@ -5,7 +5,8 @@ exclude = set(string.punctuation)
 
 def basic_sanitize(in_string):
     '''Returns a very roughly sanitized version of the input string.'''  
-    in_string = ''.join([ch for ch in in_string if ch not in exclude])
+    # punctuation goes, except a hyphen inside a word ("hip-check")
+    in_string = ''.join([ch for ch in in_string if ch not in exclude or ch in "-'"])
     in_string = in_string.lower()
     in_string = ' '.join(in_string.split())
     return in_string
@@ -30,7 +31,9 @@ def bayes_compare_language(l1, l2, ngram = 1, prior=.01, cv = None):
     l1 = [basic_sanitize(l) for l in l1]
     l2 = [basic_sanitize(l) for l in l2]
     if cv is None:
+        # a hyphenated word ("hip-check") stays one token, as in the cleaned text
         cv = CV(decode_error = 'ignore', min_df = 10, max_df = .5, ngram_range=(1,ngram),
+                token_pattern=r"(?u)\b\w[\w'-]*\w\b",
                 binary = False,
                 max_features = 15000)
     counts_mat = cv.fit_transform(l1+l2).toarray()

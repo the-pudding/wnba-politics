@@ -78,8 +78,20 @@
 		mode = null,
 		source = null,
 		// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
-		chart = "scatter"
+		chart = "scatter",
+		// labels, scale, caps: see WordBars
+		labels = "on",
+		scale = "linear",
+		caps = false,
+		scores = false,
+		// ngrams: 2 — two-word phrases instead of words (whole articles only)
+		ngrams = 1
 	} = $props();
+	// the explore step can flip this with the words/phrases pills
+	let bigrams = $state(false);
+	$effect(() => {
+		bigrams = String(ngrams).trim() === "2";
+	});
 
 	// the outlet pills, as on the dot plot: "all", then one logo per outlet
 	const ALL_OUTLETS = "all outlets";
@@ -106,7 +118,9 @@
 	);
 	let words = $derived(
 		bodyMode
-			? data.articleWords
+			? bigrams
+				? (data.articleBigrams ?? [])
+				: data.articleWords
 			: player === ALL
 				? data.words
 				: (data.byPlayer?.[player] ?? [])
@@ -417,18 +431,18 @@
 	);
 	// a bar's example on hover, from the same stores as the scatter's card
 	function barExample(word) {
-		const mode = bodyMode ? "articles" : "headlines";
+		const mode = bodyMode ? (bigrams ? "bigrams" : "articles") : "headlines";
 		const hit = litExamples[mode]?.[word] ?? fullExamples?.[mode]?.[word];
-		return hit?.[0] ? { s: hit[0], w: hit[1] } : null;
+		return hit?.[0] ? { s: hit[0], w: hit[1], o: hit[2] ?? null } : null;
 	}
 
 	let cardEx = $derived.by(() => {
 		if (!tip) return null;
-		if (source) return tip.eg ? { s: tip.eg, w: tip.egw } : null;
-		const mode = bodyMode ? "articles" : "headlines";
+		if (source) return tip.eg ? { s: tip.eg, w: tip.egw, o: tip.ego ?? null } : null;
+		const mode = bodyMode ? (bigrams ? "bigrams" : "articles") : "headlines";
 		const hit =
 			litExamples[mode]?.[tip.word] ?? fullExamples?.[mode]?.[tip.word];
-		return { s: hit?.[0] ?? null, w: hit?.[1] ?? null };
+		return { s: hit?.[0] ?? null, w: hit?.[1] ?? null, o: hit?.[2] ?? null };
 	});
 
 	// a beat swap can leave a stale tip captioned with the new side labels
@@ -524,6 +538,16 @@
 	{#if controls && !source}
 		<!-- the explore step: find a word on the chart -->
 		<div class="controls find">
+			{#if bodyMode && (data.articleBigrams ?? []).length}
+				<div class="picker ngram" role="group" aria-label="Words or phrases">
+					<button class="named" class:active={!bigrams} onclick={() => (bigrams = false)}
+						>words</button
+					>
+					<button class="named" class:active={bigrams} onclick={() => (bigrams = true)}
+						>phrases</button
+					>
+				</div>
+			{/if}
 			<span class="label">Find a word</span>
 			<div class="search-box">
 				<input
@@ -586,6 +610,10 @@
 	{#if chart === "bars"}
 		<!-- the same words as mirrored bars: the strongest on each side -->
 		<WordBars
+			{labels}
+			{scale}
+			{caps}
+			{scores}
 			source={barSource}
 			highlight={[...HIGHLIGHT]}
 			top={mobile ? 10 : 14}
@@ -750,7 +778,7 @@
 			{/each}
 		</svg>
 
-		{#if tip && cardEx}
+		{#if tip}
 			{@const side = tip.z > 0 ? FOX : OTHER}
 			<div
 				class="tip-card"
@@ -762,8 +790,13 @@
 					border-left-color:{side}"
 			>
 				<span class="tip-head" style="color:{side}">{tip.word}</span>
-				{#if cardEx.s}
+				<!-- the split behind the dot: uses on each side, and the score -->
+				<span class="tip-count"
+					>Fox {tip.nf.toLocaleString()} · others {tip.no.toLocaleString()} · z {tip.z > 0 ? "+" : ""}{tip.z.toFixed(1)}</span
+				>
+				{#if cardEx?.s}
 					<p>{@html markWord(cardEx.s, tip.word, side, cardEx.w)}</p>
+					{#if cardEx.o}<span class="tip-source">{cardEx.o}</span>{/if}
 				{/if}
 			</div>
 		{/if}
@@ -805,6 +838,22 @@
 	}
 	.tip-card.flip {
 		transform: translate(calc(-100% - 14px), -50%);
+	}
+	.tip-source {
+		display: block;
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 10.5px;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: rgba(42, 21, 3, 0.5);
+		margin-top: 4px;
+	}
+	.tip-count {
+		display: block;
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 11px;
+		color: rgba(42, 21, 3, 0.55);
+		margin-top: 2px;
 	}
 	.tip-head {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -923,6 +972,9 @@
 	/* the search box, as on the ternary's explore step */
 	.controls.find {
 		gap: 8px;
+	}
+	.picker.ngram {
+		margin-right: 10px;
 	}
 	.search-box {
 		position: relative;

@@ -444,5 +444,13 @@
 		"bio": "Kimberly Duane Mulkey is an American college basketball coach and former player. Since 2021, she has been the head coach for Louisiana State University's LSU women's basketball team. A Pan-American gold medalist in 1983 and Olympic gold med",
 		"slug": "kim-mulkey",
 		"network": false
+	},
+	"Olivia Miles": {
+		"group": "players",
+		"rx": "olivia miles",
+		"face": null,
+		"bio": "Olivia Miles is an American professional basketball player, drafted by the Chicago Sky in 2026 after college at Notre Dame and TCU.",
+		"slug": "olivia-miles",
+		"network": false
 	}
 }

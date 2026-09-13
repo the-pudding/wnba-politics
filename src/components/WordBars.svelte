@@ -10,6 +10,20 @@
 		highlight = null,
 		top = 12,
 		example = null,
+		// labels: "on" (the word on its bar), "beside" (a column of words down
+		// the middle, the bars growing outward from it), "outside" (the bars
+		// grow from the middle, the words in a column past their ends) or
+		// "tip" (each word hugging the end of its bar, scores in the tooltip)
+		labels = "on",
+		// scale: "linear" (bar length is the score), "sqrt" (square-root, so a
+		// runaway word does not squash the rest) or "cap" (the longest bar is
+		// cut with a break mark at 1.2× the next longest)
+		scale = "linear",
+		// caps: true — words in capitals; "title" — first letter capitalised
+		caps = false,
+		// scores: true — the score printed past each bar (it is always in the
+		// tooltip)
+		scores = false,
 		onhover = null
 	} = $props();
 
@@ -45,14 +59,44 @@
 	const TOP = 34;
 	const BOTTOM = 10;
 	let height = $derived(TOP + rows * ROW + BOTTOM);
-	let GAP = $derived(narrow ? 6 : 10); // either side of the middle
+	let GAP = $derived(narrow ? 4 : 10); // either side of the middle
+	let beside = $derived(String(labels).trim().toLowerCase() === "beside");
+	let outside = $derived(String(labels).trim().toLowerCase() === "outside");
+	let tip_ = $derived(String(labels).trim().toLowerCase() === "tip");
 	let mid = $derived(WIDTH / 2);
-	let maxZ = $derived(
-		Math.max(1, ...[...fox, ...others].map((p) => Math.abs(p.z)))
-	);
+	// a phone gets the square-root scale unless the Doc asked for another, so
+	// the bars spread across the little width they have
+	const scaleMode = $derived.by(() => {
+		const m = String(scale).trim().toLowerCase();
+		return narrow && (!m || m === "linear") ? "sqrt" : m;
+	});
+	let showScores = $derived(scores === true || String(scores) === "true");
+	let zs = $derived([...fox, ...others].map((p) => Math.abs(p.z)).sort((a, b) => b - a));
+	let capZ = $derived(scaleMode === "cap" && zs.length > 1 ? zs[1] * 1.2 : Infinity);
+	let maxZ = $derived(Math.max(1, Math.min(zs[0] ?? 1, capZ)));
+	const shape = (z) => (scaleMode === "sqrt" ? Math.sqrt(z) : z);
+	const wordCase = (w) =>
+		caps === true || String(caps) === "true"
+			? w.toUpperCase()
+			: String(caps).toLowerCase() === "title"
+				? w.replace(/(^|[\s-])([a-z])/g, (m, a, b) => a + b.toUpperCase())
+				: w;
 	// bar length: leaves room past the end for a word that does not fit inside
-	let span = $derived(mid - GAP - (narrow ? 60 : 110));
-	let len = $derived((z) => (Math.abs(z) / maxZ) * span);
+	// outside: the bars keep the middle, the words take the outer column, with
+	// room for the score between them
+	// the room kept past the longest bar: for a score, a word beyond a short
+	// bar, or just a margin
+	let span = $derived(
+		mid - GAP - LABEL -
+			(showScores
+				? narrow ? 60 : beside || outside ? 44 : 110
+				: beside || outside || tip_
+					? narrow ? 6 : 30
+					: narrow ? 8 : 80)
+	);
+	// with the words at the bar tips, no score is drawn on the chart
+	let len = $derived((z) => (shape(Math.min(Math.abs(z), capZ)) / shape(maxZ)) * span);
+	const capped = (z) => Math.abs(z) > capZ;
 	const yOf = (i) => TOP + i * ROW + ROW / 2;
 
 	$effect(() => {
@@ -74,6 +118,14 @@
 		measureCtx.font = `700 ${WORD_PX}px "Helvetica Neue", Helvetica, Arial, sans-serif`;
 		return measureCtx.measureText(word).width;
 	}
+	// the word column, when the words sit beside the bars: as wide as the
+	// longest word shown, within reason
+	let LABEL = $derived(
+		beside || outside
+			? Math.min(narrow ? 110 : 180, Math.max(narrow ? 70 : 100,
+					...[...fox, ...others].map((p) => textWidth(p.word) + 14)))
+			: 0
+	);
 	const fmt = (z) => Math.abs(z).toFixed(1);
 
 	// the example on hover, as on the scatter: the word's sentence with the
@@ -132,7 +184,11 @@
 			// pointing down at it; below the bar only when the screen has no
 			// room above, and slid sideways to stay inside the frame
 			const x = sign > 0 ? mid + GAP + w / 2 : mid - GAP - w / 2;
-			const eg = p.eg ? { s: p.eg, w: p.egw } : (example?.(p.word) ?? null);
+			// the example, with the outlet it came from (a player chart's
+			// stored example says so itself; otherwise the side is enough)
+			const eg = p.eg
+				? { s: p.eg, w: p.egw, o: p.ego ?? (sign > 0 ? "Fox News" : "the other outlets") }
+				: (example?.(p.word) ?? null);
 			return { p, sign, y: yOf(i), x, eg };
 		}
 		return null;
@@ -185,14 +241,16 @@
 					{@const on = !anyLit || lit.has(p.word.toLowerCase())}
 					{@const weak = Math.abs(p.z) < WEAK_Z}
 					{@const color = sign > 0 ? FOX : OTHERS}
-					{@const tw = textWidth(p.word)}
-					{@const inside = on && !weak && w >= tw + 16}
-					{@const foot = sign > 0 ? mid + GAP : mid - GAP}
-					{@const end = sign > 0 ? mid + GAP + w : mid - GAP - w}
+					{@const tw = textWidth(wordCase(p.word))}
+					{@const inside = !beside && !outside && !tip_ && on && !weak && w >= tw + 16}
+					{@const foot = sign > 0 ? mid + GAP + (outside ? 0 : LABEL) : mid - GAP - (outside ? 0 : LABEL)}
+					{@const end = sign > 0 ? foot + w : foot - w}
 					{@const reach =
-						sign > 0
-							? Math.max(end, foot + tw + 14)
-							: Math.min(end, foot - tw - 14)}
+						beside || outside
+							? end
+							: sign > 0
+								? Math.max(end, foot + tw + 14)
+								: Math.min(end, foot - tw - 14)}
 					<g
 						class="bar"
 						class:dim={!on}
@@ -217,20 +275,31 @@
 						     halo so it reads across the bar's edge -->
 						<text
 							class="word"
-							class:halo={!inside}
-							x={foot + sign * 7}
+							class:halo={!inside && !beside && !outside && !tip_}
+							x={outside ? mid + sign * (GAP + span + 40) : beside ? mid + sign * GAP : tip_ ? end + sign * 7 : foot + sign * 7}
 							y={y + 4.5}
 							text-anchor={sign > 0 ? "start" : "end"}
-							fill={inside ? "#fff" : INK}
-							font-size={WORD_PX}>{p.word}</text
+							fill={inside || (!beside && !outside && !tip_) ? "#fff" : INK}
+							style:--halo={color}
+							font-size={WORD_PX}>{wordCase(p.word)}</text
 						>
-						<!-- its score, past the bar or the word, whichever is longer -->
+						{#if capped(p.z)}
+							<!-- a break mark: the bar runs past the frame's scale -->
+							<path
+								class="break"
+								d="M{end - sign * 9},{y - ROW * 0.36 - 2} l{sign * 4},{ROW * 0.36} l{-sign * 4},{ROW * 0.36 + 2}"
+							/>
+						{/if}
+						<!-- its score, past the bar or the word, whichever is longer
+						     (with words at the tips the score stays in the tooltip) -->
+						{#if showScores && !tip_}
 						<text
 							class="score"
 							x={reach + sign * 6}
 							y={y + 4}
 							text-anchor={sign > 0 ? "start" : "end"}>{fmt(p.z)}</text
 						>
+						{/if}
 					</g>
 				{/each}
 			{/each}
@@ -251,6 +320,7 @@
 				>
 				{#if tip.eg}
 					<p>{@html markWord(tip.eg.s, tip.p.word, tip.eg.w, color)}</p>
+					{#if tip.eg.o}<span class="tip-source">{tip.eg.o}</span>{/if}
 				{/if}
 			</div>
 		{/if}
@@ -288,6 +358,11 @@
 		stroke: rgba(42, 21, 3, 0.45);
 		stroke-width: 1.5;
 	}
+	.break {
+		fill: none;
+		stroke: var(--color-paper, #fffdf8);
+		stroke-width: 3;
+	}
 	.bar .fill {
 		opacity: 0.88;
 		transition: opacity 250ms ease;
@@ -311,10 +386,12 @@
 		font-weight: 700;
 		pointer-events: none;
 	}
+	/* past its bar's end a word keeps its white, on a halo in the bar's
+	   colour, so it reads as the bar carrying on */
 	.word.halo {
 		paint-order: stroke;
-		stroke: rgba(255, 255, 255, 0.85);
-		stroke-width: 3px;
+		stroke: var(--halo, rgba(255, 255, 255, 0.85));
+		stroke-width: 3.5px;
 		stroke-linejoin: round;
 	}
 	.score {
@@ -343,6 +420,15 @@
 		font-weight: 700;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
+	}
+	.tip-source {
+		display: block;
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 10.5px;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: rgba(42, 21, 3, 0.5);
+		margin-top: 4px;
 	}
 	.tip-count {
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;

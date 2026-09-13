@@ -6,7 +6,7 @@
 	import { stageSteps } from "$utils/gapSteps.js";
 	import { faces, clipPops } from "$utils/clips.js";
 
-	let { steps = null } = $props();
+	let { steps = null, speed = 1000 } = $props();
 
 	const STEPS = $derived(stageSteps(steps));
 
@@ -29,6 +29,7 @@
 			bare={!current.explore}
 			placed={current.placed}
 			centered={current.center}
+			{speed}
 			centerLine
 			wide
 		/>
