@@ -41,8 +41,15 @@
   --color-ink: #2a1503;
   --color-paper: #fffdf8;
   --color-page-orange: #f9a660;
-  --color-cnn: #5b4b9c;
-  --color-msnbc: #1d4f9c;
+  /* Fox as a data series — the bars, dots and ternaries — is this navy
+     everywhere; --color-fox (red) stays the brand accent in controls and
+     clippings. Change it here and every chart follows. */
+  --color-fox-navy: #003366;
+  /* the other networks in the piece's "everyone else" purple; MSNBC a
+     lighter shade for the charts that draw the two side by side */
+  --color-outlets: #6b4bb0;
+  --color-cnn: #6b4bb0;
+  --color-msnbc: #a08ad6;
   --12px: 0.75rem;
   --14px: 0.875rem;
   --16px: 1rem;

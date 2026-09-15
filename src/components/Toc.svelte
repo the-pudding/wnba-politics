@@ -20,8 +20,17 @@
 		<ol>
 			{#each entries as entry, i}
 				<li>
-					<a href="#{entry.id}"
-						><span class="n">{i + 1}</span>{@html entry.label}</a
+					<a
+						href="#{entry.id}"
+						onclick={(e) => {
+							// jump, don't glide: the sections are far apart and every
+							// scrolly in between would play on the way down
+							const target = document.getElementById(entry.id);
+							if (!target) return;
+							e.preventDefault();
+							target.scrollIntoView({ behavior: "instant", block: "start" });
+							history.replaceState(null, "", `#${entry.id}`);
+						}}><span class="n">{i + 1}</span>{@html entry.label}</a
 					>
 				</li>
 			{/each}

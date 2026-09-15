@@ -20,7 +20,7 @@
 		font-weight: 800;
 		letter-spacing: 0.09em;
 		color: #fff;
-		background: #003366;
+		background: var(--color-fox-navy);
 		padding: calc(3px * var(--scale)) calc(7px * var(--scale));
 		border-radius: 2px;
 		line-height: 1.15;

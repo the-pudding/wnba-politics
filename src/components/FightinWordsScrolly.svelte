@@ -43,6 +43,7 @@
 			{caps}
 			{scores}
 			ngrams={current.ngrams ?? ngrams}
+			fill={chart === "bars"}
 		/>
 	</div>
 
@@ -84,8 +85,9 @@
 	.sticky :global(.fightin-words) {
 		width: min(1000px, 94vw);
 	}
-	/* leaves room for the controls the explore beat brings back */
-	.sticky :global(svg) {
+	/* leaves room for the controls the explore beat brings back; the bars
+	   size their own rows to the viewport instead */
+	.fw-scrolly:not(.bars) .sticky :global(svg) {
 		max-height: 74vh;
 	}
 

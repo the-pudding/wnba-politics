@@ -6,14 +6,14 @@ polrace,body,Fox News,2022,282,27
 polrace,body,Fox News,2023,153,23
 polrace,body,Fox News,2024,651,99
 polrace,body,Fox News,2025,450,84
-polrace,body,Fox News,2026,571,194
+polrace,body,Fox News,2026,650,219
 polrace,body,Just Women's Sports,2020,62,15
-polrace,body,Just Women's Sports,2021,366,31
-polrace,body,Just Women's Sports,2022,779,38
-polrace,body,Just Women's Sports,2023,708,22
-polrace,body,Just Women's Sports,2024,279,7
-polrace,body,Just Women's Sports,2025,458,9
-polrace,body,Just Women's Sports,2026,539,16
+polrace,body,Just Women's Sports,2021,357,29
+polrace,body,Just Women's Sports,2022,768,37
+polrace,body,Just Women's Sports,2023,698,22
+polrace,body,Just Women's Sports,2024,275,7
+polrace,body,Just Women's Sports,2025,454,9
+polrace,body,Just Women's Sports,2026,589,17
 polrace,body,Yahoo Sports (syndicated pool),2019,67,4
 polrace,body,Yahoo Sports (syndicated pool),2020,235,101
 polrace,body,Yahoo Sports (syndicated pool),2021,391,46
@@ -28,24 +28,24 @@ polrace,body,ESPN,2021,391,52
 polrace,body,ESPN,2022,519,41
 polrace,body,ESPN,2023,484,28
 polrace,body,ESPN,2024,774,61
-polrace,body,ESPN,2025,1049,33
-polrace,body,ESPN,2026,978,52
+polrace,body,ESPN,2025,1047,33
+polrace,body,ESPN,2026,844,47
 polrace,body,The Athletic,2019,130,12
 polrace,body,The Athletic,2020,141,30
 polrace,body,The Athletic,2021,200,23
 polrace,body,The Athletic,2022,241,15
 polrace,body,The Athletic,2023,325,22
 polrace,body,The Athletic,2024,508,26
-polrace,body,The Athletic,2025,583,16
-polrace,body,The Athletic,2026,377,49
+polrace,body,The Athletic,2025,582,16
+polrace,body,The Athletic,2026,369,49
 polrace,body,Fox News (NBA),2019,763,111
 polrace,body,Fox News (NBA),2020,1422,333
-polrace,body,Fox News (NBA),2021,2306,222
+polrace,body,Fox News (NBA),2021,2307,222
 polrace,body,Fox News (NBA),2022,1407,102
 polrace,body,Fox News (NBA),2023,1359,89
 polrace,body,Fox News (NBA),2024,1037,59
 polrace,body,Fox News (NBA),2025,1159,92
-polrace,body,Fox News (NBA),2026,883,109
+polrace,body,Fox News (NBA),2026,919,117
 polrace,body,CBS Sports,2019,142,1
 polrace,body,CBS Sports,2020,153,38
 polrace,body,CBS Sports,2021,187,15
@@ -53,7 +53,7 @@ polrace,body,CBS Sports,2022,372,6
 polrace,body,CBS Sports,2023,326,9
 polrace,body,CBS Sports,2024,691,27
 polrace,body,CBS Sports,2025,897,8
-polrace,body,CBS Sports,2026,302,21
+polrace,body,CBS Sports,2026,325,22
 polrace,body,USA Today,2019,365,7
 polrace,body,USA Today,2020,177,48
 polrace,body,USA Today,2021,196,14
@@ -61,7 +61,7 @@ polrace,body,USA Today,2022,274,16
 polrace,body,USA Today,2023,143,10
 polrace,body,USA Today,2024,295,15
 polrace,body,USA Today,2025,402,19
-polrace,body,USA Today,2026,774,34
+polrace,body,USA Today,2026,794,35
 polrace,headline,Fox News,2019,43,1
 polrace,headline,Fox News,2020,94,9
 polrace,headline,Fox News,2021,131,3
@@ -69,14 +69,14 @@ polrace,headline,Fox News,2022,282,3
 polrace,headline,Fox News,2023,153,4
 polrace,headline,Fox News,2024,651,22
 polrace,headline,Fox News,2025,450,12
-polrace,headline,Fox News,2026,571,32
+polrace,headline,Fox News,2026,650,32
 polrace,headline,Just Women's Sports,2020,62,1
-polrace,headline,Just Women's Sports,2021,371,1
-polrace,headline,Just Women's Sports,2022,779,2
-polrace,headline,Just Women's Sports,2023,708,2
-polrace,headline,Just Women's Sports,2024,279,0
-polrace,headline,Just Women's Sports,2025,458,1
-polrace,headline,Just Women's Sports,2026,539,4
+polrace,headline,Just Women's Sports,2021,362,1
+polrace,headline,Just Women's Sports,2022,768,2
+polrace,headline,Just Women's Sports,2023,698,2
+polrace,headline,Just Women's Sports,2024,275,0
+polrace,headline,Just Women's Sports,2025,454,1
+polrace,headline,Just Women's Sports,2026,589,4
 polrace,headline,Yahoo Sports (syndicated pool),2019,69,1
 polrace,headline,Yahoo Sports (syndicated pool),2020,250,21
 polrace,headline,Yahoo Sports (syndicated pool),2021,475,6
@@ -91,24 +91,24 @@ polrace,headline,ESPN,2021,391,5
 polrace,headline,ESPN,2022,519,5
 polrace,headline,ESPN,2023,485,2
 polrace,headline,ESPN,2024,774,2
-polrace,headline,ESPN,2025,1051,4
-polrace,headline,ESPN,2026,979,7
+polrace,headline,ESPN,2025,1048,4
+polrace,headline,ESPN,2026,844,6
 polrace,headline,The Athletic,2019,137,0
 polrace,headline,The Athletic,2020,149,2
 polrace,headline,The Athletic,2021,202,0
 polrace,headline,The Athletic,2022,246,0
 polrace,headline,The Athletic,2023,328,2
 polrace,headline,The Athletic,2024,512,3
-polrace,headline,The Athletic,2025,590,1
-polrace,headline,The Athletic,2026,378,2
+polrace,headline,The Athletic,2025,589,1
+polrace,headline,The Athletic,2026,419,3
 polrace,headline,Fox News (NBA),2019,770,14
 polrace,headline,Fox News (NBA),2020,1424,85
-polrace,headline,Fox News (NBA),2021,2307,65
+polrace,headline,Fox News (NBA),2021,2308,65
 polrace,headline,Fox News (NBA),2022,1407,19
 polrace,headline,Fox News (NBA),2023,1360,29
 polrace,headline,Fox News (NBA),2024,1038,14
 polrace,headline,Fox News (NBA),2025,1164,16
-polrace,headline,Fox News (NBA),2026,887,22
+polrace,headline,Fox News (NBA),2026,923,22
 polrace,headline,CBS Sports,2019,142,0
 polrace,headline,CBS Sports,2020,154,5
 polrace,headline,CBS Sports,2021,190,1
@@ -116,7 +116,7 @@ polrace,headline,CBS Sports,2022,377,1
 polrace,headline,CBS Sports,2023,339,3
 polrace,headline,CBS Sports,2024,709,5
 polrace,headline,CBS Sports,2025,946,2
-polrace,headline,CBS Sports,2026,315,5
+polrace,headline,CBS Sports,2026,358,5
 polrace,headline,USA Today,2019,384,1
 polrace,headline,USA Today,2020,183,12
 polrace,headline,USA Today,2021,213,3
@@ -124,7 +124,7 @@ polrace,headline,USA Today,2022,308,1
 polrace,headline,USA Today,2023,187,1
 polrace,headline,USA Today,2024,307,3
 polrace,headline,USA Today,2025,409,2
-polrace,headline,USA Today,2026,785,5
+polrace,headline,USA Today,2026,863,7
 lgbtq,body,Fox News,2019,43,1
 lgbtq,body,Fox News,2020,94,8
 lgbtq,body,Fox News,2021,131,4
@@ -132,14 +132,14 @@ lgbtq,body,Fox News,2022,282,16
 lgbtq,body,Fox News,2023,153,26
 lgbtq,body,Fox News,2024,651,21
 lgbtq,body,Fox News,2025,450,17
-lgbtq,body,Fox News,2026,571,196
+lgbtq,body,Fox News,2026,650,238
 lgbtq,body,Just Women's Sports,2020,62,4
-lgbtq,body,Just Women's Sports,2021,366,11
-lgbtq,body,Just Women's Sports,2022,779,30
-lgbtq,body,Just Women's Sports,2023,708,10
-lgbtq,body,Just Women's Sports,2024,279,1
-lgbtq,body,Just Women's Sports,2025,458,6
-lgbtq,body,Just Women's Sports,2026,539,16
+lgbtq,body,Just Women's Sports,2021,357,11
+lgbtq,body,Just Women's Sports,2022,768,29
+lgbtq,body,Just Women's Sports,2023,698,10
+lgbtq,body,Just Women's Sports,2024,275,1
+lgbtq,body,Just Women's Sports,2025,454,6
+lgbtq,body,Just Women's Sports,2026,589,23
 lgbtq,body,Yahoo Sports (syndicated pool),2019,67,2
 lgbtq,body,Yahoo Sports (syndicated pool),2020,235,23
 lgbtq,body,Yahoo Sports (syndicated pool),2021,391,26
@@ -154,24 +154,24 @@ lgbtq,body,ESPN,2021,391,20
 lgbtq,body,ESPN,2022,519,32
 lgbtq,body,ESPN,2023,484,9
 lgbtq,body,ESPN,2024,774,17
-lgbtq,body,ESPN,2025,1049,13
-lgbtq,body,ESPN,2026,978,29
+lgbtq,body,ESPN,2025,1047,13
+lgbtq,body,ESPN,2026,844,38
 lgbtq,body,The Athletic,2019,130,12
 lgbtq,body,The Athletic,2020,141,11
 lgbtq,body,The Athletic,2021,200,7
 lgbtq,body,The Athletic,2022,241,8
 lgbtq,body,The Athletic,2023,325,10
 lgbtq,body,The Athletic,2024,508,18
-lgbtq,body,The Athletic,2025,583,15
-lgbtq,body,The Athletic,2026,377,33
+lgbtq,body,The Athletic,2025,582,15
+lgbtq,body,The Athletic,2026,369,32
 lgbtq,body,Fox News (NBA),2019,763,14
 lgbtq,body,Fox News (NBA),2020,1422,14
-lgbtq,body,Fox News (NBA),2021,2306,57
+lgbtq,body,Fox News (NBA),2021,2307,57
 lgbtq,body,Fox News (NBA),2022,1407,33
 lgbtq,body,Fox News (NBA),2023,1359,38
 lgbtq,body,Fox News (NBA),2024,1037,11
 lgbtq,body,Fox News (NBA),2025,1159,13
-lgbtq,body,Fox News (NBA),2026,883,42
+lgbtq,body,Fox News (NBA),2026,919,54
 lgbtq,body,CBS Sports,2019,142,1
 lgbtq,body,CBS Sports,2020,153,3
 lgbtq,body,CBS Sports,2021,187,1
@@ -179,7 +179,7 @@ lgbtq,body,CBS Sports,2022,372,8
 lgbtq,body,CBS Sports,2023,326,1
 lgbtq,body,CBS Sports,2024,691,6
 lgbtq,body,CBS Sports,2025,897,2
-lgbtq,body,CBS Sports,2026,302,16
+lgbtq,body,CBS Sports,2026,325,19
 lgbtq,body,USA Today,2019,365,8
 lgbtq,body,USA Today,2020,177,11
 lgbtq,body,USA Today,2021,196,9
@@ -187,7 +187,7 @@ lgbtq,body,USA Today,2022,274,12
 lgbtq,body,USA Today,2023,143,5
 lgbtq,body,USA Today,2024,295,6
 lgbtq,body,USA Today,2025,402,1
-lgbtq,body,USA Today,2026,774,17
+lgbtq,body,USA Today,2026,794,21
 lgbtq,headline,Fox News,2019,43,0
 lgbtq,headline,Fox News,2020,94,0
 lgbtq,headline,Fox News,2021,131,0
@@ -195,14 +195,14 @@ lgbtq,headline,Fox News,2022,282,1
 lgbtq,headline,Fox News,2023,153,6
 lgbtq,headline,Fox News,2024,651,6
 lgbtq,headline,Fox News,2025,450,3
-lgbtq,headline,Fox News,2026,571,34
+lgbtq,headline,Fox News,2026,650,41
 lgbtq,headline,Just Women's Sports,2020,62,0
-lgbtq,headline,Just Women's Sports,2021,371,1
-lgbtq,headline,Just Women's Sports,2022,779,1
-lgbtq,headline,Just Women's Sports,2023,708,2
-lgbtq,headline,Just Women's Sports,2024,279,0
-lgbtq,headline,Just Women's Sports,2025,458,1
-lgbtq,headline,Just Women's Sports,2026,539,2
+lgbtq,headline,Just Women's Sports,2021,362,1
+lgbtq,headline,Just Women's Sports,2022,768,1
+lgbtq,headline,Just Women's Sports,2023,698,2
+lgbtq,headline,Just Women's Sports,2024,275,0
+lgbtq,headline,Just Women's Sports,2025,454,1
+lgbtq,headline,Just Women's Sports,2026,589,3
 lgbtq,headline,Yahoo Sports (syndicated pool),2019,69,0
 lgbtq,headline,Yahoo Sports (syndicated pool),2020,250,1
 lgbtq,headline,Yahoo Sports (syndicated pool),2021,475,2
@@ -217,24 +217,24 @@ lgbtq,headline,ESPN,2021,391,2
 lgbtq,headline,ESPN,2022,519,3
 lgbtq,headline,ESPN,2023,485,0
 lgbtq,headline,ESPN,2024,774,4
-lgbtq,headline,ESPN,2025,1051,0
-lgbtq,headline,ESPN,2026,979,6
+lgbtq,headline,ESPN,2025,1048,0
+lgbtq,headline,ESPN,2026,844,6
 lgbtq,headline,The Athletic,2019,137,1
 lgbtq,headline,The Athletic,2020,149,0
 lgbtq,headline,The Athletic,2021,202,0
 lgbtq,headline,The Athletic,2022,246,1
 lgbtq,headline,The Athletic,2023,328,1
 lgbtq,headline,The Athletic,2024,512,0
-lgbtq,headline,The Athletic,2025,590,0
-lgbtq,headline,The Athletic,2026,378,5
+lgbtq,headline,The Athletic,2025,589,0
+lgbtq,headline,The Athletic,2026,419,5
 lgbtq,headline,Fox News (NBA),2019,770,2
 lgbtq,headline,Fox News (NBA),2020,1424,0
-lgbtq,headline,Fox News (NBA),2021,2307,3
+lgbtq,headline,Fox News (NBA),2021,2308,3
 lgbtq,headline,Fox News (NBA),2022,1407,8
 lgbtq,headline,Fox News (NBA),2023,1360,9
 lgbtq,headline,Fox News (NBA),2024,1038,5
 lgbtq,headline,Fox News (NBA),2025,1164,4
-lgbtq,headline,Fox News (NBA),2026,887,10
+lgbtq,headline,Fox News (NBA),2026,923,12
 lgbtq,headline,CBS Sports,2019,142,0
 lgbtq,headline,CBS Sports,2020,154,0
 lgbtq,headline,CBS Sports,2021,190,0
@@ -242,7 +242,7 @@ lgbtq,headline,CBS Sports,2022,377,0
 lgbtq,headline,CBS Sports,2023,339,0
 lgbtq,headline,CBS Sports,2024,709,0
 lgbtq,headline,CBS Sports,2025,946,0
-lgbtq,headline,CBS Sports,2026,315,2
+lgbtq,headline,CBS Sports,2026,358,2
 lgbtq,headline,USA Today,2019,384,0
 lgbtq,headline,USA Today,2020,183,0
 lgbtq,headline,USA Today,2021,213,0
@@ -250,7 +250,7 @@ lgbtq,headline,USA Today,2022,308,1
 lgbtq,headline,USA Today,2023,187,0
 lgbtq,headline,USA Today,2024,307,1
 lgbtq,headline,USA Today,2025,409,0
-lgbtq,headline,USA Today,2026,785,3
+lgbtq,headline,USA Today,2026,863,6
 fouls,body,Fox News,2019,43,5
 fouls,body,Fox News,2020,94,9
 fouls,body,Fox News,2021,131,17
@@ -258,14 +258,14 @@ fouls,body,Fox News,2022,282,7
 fouls,body,Fox News,2023,153,11
 fouls,body,Fox News,2024,651,178
 fouls,body,Fox News,2025,450,124
-fouls,body,Fox News,2026,571,216
+fouls,body,Fox News,2026,650,233
 fouls,body,Just Women's Sports,2020,62,13
-fouls,body,Just Women's Sports,2021,366,29
-fouls,body,Just Women's Sports,2022,779,82
-fouls,body,Just Women's Sports,2023,708,77
-fouls,body,Just Women's Sports,2024,279,20
-fouls,body,Just Women's Sports,2025,458,56
-fouls,body,Just Women's Sports,2026,539,85
+fouls,body,Just Women's Sports,2021,357,29
+fouls,body,Just Women's Sports,2022,768,82
+fouls,body,Just Women's Sports,2023,698,77
+fouls,body,Just Women's Sports,2024,275,20
+fouls,body,Just Women's Sports,2025,454,55
+fouls,body,Just Women's Sports,2026,589,87
 fouls,body,Yahoo Sports (syndicated pool),2019,67,17
 fouls,body,Yahoo Sports (syndicated pool),2020,235,28
 fouls,body,Yahoo Sports (syndicated pool),2021,391,64
@@ -280,24 +280,24 @@ fouls,body,ESPN,2021,391,60
 fouls,body,ESPN,2022,519,73
 fouls,body,ESPN,2023,484,52
 fouls,body,ESPN,2024,774,121
-fouls,body,ESPN,2025,1049,193
-fouls,body,ESPN,2026,978,216
+fouls,body,ESPN,2025,1047,193
+fouls,body,ESPN,2026,844,189
 fouls,body,The Athletic,2019,130,36
 fouls,body,The Athletic,2020,141,35
 fouls,body,The Athletic,2021,200,47
 fouls,body,The Athletic,2022,241,39
 fouls,body,The Athletic,2023,325,72
 fouls,body,The Athletic,2024,508,137
-fouls,body,The Athletic,2025,583,157
-fouls,body,The Athletic,2026,377,106
+fouls,body,The Athletic,2025,582,157
+fouls,body,The Athletic,2026,369,104
 fouls,body,Fox News (NBA),2019,763,108
 fouls,body,Fox News (NBA),2020,1422,157
-fouls,body,Fox News (NBA),2021,2306,490
+fouls,body,Fox News (NBA),2021,2307,490
 fouls,body,Fox News (NBA),2022,1407,273
 fouls,body,Fox News (NBA),2023,1359,290
 fouls,body,Fox News (NBA),2024,1037,165
 fouls,body,Fox News (NBA),2025,1159,165
-fouls,body,Fox News (NBA),2026,883,163
+fouls,body,Fox News (NBA),2026,919,164
 fouls,body,CBS Sports,2019,142,15
 fouls,body,CBS Sports,2020,153,11
 fouls,body,CBS Sports,2021,187,26
@@ -305,7 +305,7 @@ fouls,body,CBS Sports,2022,372,37
 fouls,body,CBS Sports,2023,326,30
 fouls,body,CBS Sports,2024,691,120
 fouls,body,CBS Sports,2025,897,168
-fouls,body,CBS Sports,2026,302,78
+fouls,body,CBS Sports,2026,325,84
 fouls,body,USA Today,2019,365,49
 fouls,body,USA Today,2020,177,23
 fouls,body,USA Today,2021,196,19
@@ -313,7 +313,7 @@ fouls,body,USA Today,2022,274,24
 fouls,body,USA Today,2023,143,10
 fouls,body,USA Today,2024,295,62
 fouls,body,USA Today,2025,402,69
-fouls,body,USA Today,2026,774,128
+fouls,body,USA Today,2026,794,131
 fouls,headline,Fox News,2019,43,0
 fouls,headline,Fox News,2020,94,0
 fouls,headline,Fox News,2021,131,0
@@ -321,14 +321,14 @@ fouls,headline,Fox News,2022,282,0
 fouls,headline,Fox News,2023,153,2
 fouls,headline,Fox News,2024,651,47
 fouls,headline,Fox News,2025,450,18
-fouls,headline,Fox News,2026,571,29
+fouls,headline,Fox News,2026,650,29
 fouls,headline,Just Women's Sports,2020,62,1
-fouls,headline,Just Women's Sports,2021,371,1
-fouls,headline,Just Women's Sports,2022,779,1
-fouls,headline,Just Women's Sports,2023,708,7
-fouls,headline,Just Women's Sports,2024,279,2
-fouls,headline,Just Women's Sports,2025,458,9
-fouls,headline,Just Women's Sports,2026,539,13
+fouls,headline,Just Women's Sports,2021,362,1
+fouls,headline,Just Women's Sports,2022,768,1
+fouls,headline,Just Women's Sports,2023,698,7
+fouls,headline,Just Women's Sports,2024,275,2
+fouls,headline,Just Women's Sports,2025,454,9
+fouls,headline,Just Women's Sports,2026,589,13
 fouls,headline,Yahoo Sports (syndicated pool),2019,69,1
 fouls,headline,Yahoo Sports (syndicated pool),2020,250,2
 fouls,headline,Yahoo Sports (syndicated pool),2021,475,1
@@ -343,24 +343,24 @@ fouls,headline,ESPN,2021,391,2
 fouls,headline,ESPN,2022,519,3
 fouls,headline,ESPN,2023,485,1
 fouls,headline,ESPN,2024,774,8
-fouls,headline,ESPN,2025,1051,5
-fouls,headline,ESPN,2026,979,16
+fouls,headline,ESPN,2025,1048,4
+fouls,headline,ESPN,2026,844,12
 fouls,headline,The Athletic,2019,137,0
 fouls,headline,The Athletic,2020,149,1
 fouls,headline,The Athletic,2021,202,0
 fouls,headline,The Athletic,2022,246,0
 fouls,headline,The Athletic,2023,328,0
 fouls,headline,The Athletic,2024,512,7
-fouls,headline,The Athletic,2025,590,4
-fouls,headline,The Athletic,2026,378,9
+fouls,headline,The Athletic,2025,589,4
+fouls,headline,The Athletic,2026,419,10
 fouls,headline,Fox News (NBA),2019,770,7
 fouls,headline,Fox News (NBA),2020,1424,14
-fouls,headline,Fox News (NBA),2021,2307,6
+fouls,headline,Fox News (NBA),2021,2308,6
 fouls,headline,Fox News (NBA),2022,1407,25
 fouls,headline,Fox News (NBA),2023,1360,40
 fouls,headline,Fox News (NBA),2024,1038,28
 fouls,headline,Fox News (NBA),2025,1164,15
-fouls,headline,Fox News (NBA),2026,887,18
+fouls,headline,Fox News (NBA),2026,923,18
 fouls,headline,CBS Sports,2019,142,0
 fouls,headline,CBS Sports,2020,154,0
 fouls,headline,CBS Sports,2021,190,1
@@ -368,7 +368,7 @@ fouls,headline,CBS Sports,2022,377,0
 fouls,headline,CBS Sports,2023,339,1
 fouls,headline,CBS Sports,2024,709,12
 fouls,headline,CBS Sports,2025,946,14
-fouls,headline,CBS Sports,2026,315,9
+fouls,headline,CBS Sports,2026,358,10
 fouls,headline,USA Today,2019,384,0
 fouls,headline,USA Today,2020,183,0
 fouls,headline,USA Today,2021,213,0
@@ -376,4 +376,4 @@ fouls,headline,USA Today,2022,308,1
 fouls,headline,USA Today,2023,187,0
 fouls,headline,USA Today,2024,307,6
 fouls,headline,USA Today,2025,409,5
-fouls,headline,USA Today,2026,785,15
+fouls,headline,USA Today,2026,863,15

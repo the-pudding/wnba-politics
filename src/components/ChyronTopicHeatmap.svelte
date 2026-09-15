@@ -14,7 +14,7 @@
 	const MIN_N = 20; // fewer banners than this in a year: too few to call
 	// the networks in the ternary's colours
 	const NETWORK_COLORS = {
-		"Fox News": "var(--color-fox)",
+		"Fox News": "var(--color-fox-navy)",
 		CNN: "var(--color-cnn)",
 		MSNBC: "var(--color-msnbc)"
 	};

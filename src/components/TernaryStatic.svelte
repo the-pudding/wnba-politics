@@ -130,13 +130,16 @@
 			: null
 	);
 
-	// the three networks' colours, shared across the site (properties/color.json)
+	// the three networks' colours: Fox in the navy the fightin' words charts
+	// use for it, so Fox reads the same across the piece; CNN red, MSNBC green
+	// Fox against everyone else, as on the bar charts: the two other corners
+	// share the outlets' purple (their labels tell them apart)
 	const CHANNEL_COLORS = {
-		"Fox News": "var(--color-fox)",
-		CNN: "var(--color-cnn)",
-		MSNBC: "var(--color-msnbc)"
+		"Fox News": "var(--color-fox-navy)",
+		CNN: "var(--color-outlets)",
+		MSNBC: "var(--color-outlets)"
 	};
-	const GROUP_COLORS = ["#9061c2", "var(--color-fox)", "#1f7a5a", "#1d4f9c"];
+	const GROUP_COLORS = ["#9061c2", "var(--color-fox-navy)", "#1f7a5a", "#1d4f9c"];
 	const DOT = "#b3a58a";
 	const MIN_TOTAL = 1;
 
@@ -446,21 +449,21 @@
 		<text
 			class="corner"
 			x={corners.A[0]}
-			y={corners.A[1] - (big ? 30 : 18)}
+			y={corners.A[1] - (big ? 30 : 22)}
 			text-anchor="middle"
 			fill={CHANNEL_COLORS[channels[0]]}>{channels[0]}</text
 		>
 		<text
 			class="corner"
-			x={corners.B[0] - (big ? 14 : 8)}
-			y={corners.B[1] + (big ? 40 : 24)}
+			x={corners.B[0] - (big ? 14 : 16)}
+			y={corners.B[1] + (big ? 40 : 40)}
 			text-anchor="start"
 			fill={CHANNEL_COLORS[channels[1]]}>{channels[1]}</text
 		>
 		<text
 			class="corner"
-			x={corners.C[0] + (big ? 14 : 8)}
-			y={corners.C[1] + (big ? 40 : 24)}
+			x={corners.C[0] + (big ? 14 : 16)}
+			y={corners.C[1] + (big ? 40 : 40)}
 			text-anchor="end"
 			fill={CHANNEL_COLORS[channels[2]]}>{channels[2]}</text
 		>
@@ -610,7 +613,7 @@
 		stroke-width: 1;
 	}
 	.corner {
-		font-size: 15px;
+		font-size: 20px;
 		font-weight: 800;
 	}
 	.big .corner {

@@ -8,6 +8,8 @@
 	import TernaryStatic from "$components/TernaryStatic.svelte";
 	import chy from "$data/chyrons.json";
 	import { faces, clipPops } from "$utils/clips.js";
+	import { fade, fly } from "svelte/transition";
+	import { cubicOut } from "svelte/easing";
 
 	// note: the line under the triangle (see TernaryStatic); {period} is filled in
 	let { steps = null, note = null } = $props();
@@ -160,7 +162,7 @@
 			{note}
 			bare
 			big
-			highlightColor="var(--color-fox)"
+			highlightColor="var(--color-fox-navy)"
 			enclose={!current.search}
 			focus={pinned}
 			minTotal={current.search ? minTotal : 0}
@@ -170,6 +172,12 @@
 			<!-- the explore step's controls stay put: beside the triangle on wide
 			     screens, under it on phones, so they never sit over the points -->
 			<aside class="panel">
+				<!-- the panel eases in like a card arriving, rather than popping -->
+				<div
+					class="panel-inner"
+					in:fly|global={{ y: 16, duration: 480, easing: cubicOut }}
+					out:fade|global={{ duration: 180 }}
+				>
 				{#if current.title}<h4 class="card-title">{current.title}</h4>{/if}
 				{#if current.html}<p class="card-text">
 						{@html clipPops(faces(current.html, base), base)}
@@ -251,6 +259,7 @@
 						{/each}
 					</div>
 				{/if}
+			</div>
 			</aside>
 		{/if}
 	</div>

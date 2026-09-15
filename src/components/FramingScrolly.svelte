@@ -117,7 +117,7 @@
 	const FRAME_OF = new Map(
 		labelRows.map((r) => [
 			r.headline,
-			["political", "appearance", "celebrity", "victim", "performance"].filter((f) => r[f])
+			["political", "appearance", "celebrity", "performance"].filter((f) => r[f])
 		])
 	);
 	const SCORE = new Map(sentimentRows.map((r) => [r.headline, +r.score]));

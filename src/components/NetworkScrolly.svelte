@@ -38,7 +38,11 @@
 		// size: "count" (area by the last year's headlines) or "equal"
 		size = "count"
 	} = $props();
+	// size: "count" (area by headlines in the last twelve months shown, so
+	// each era has its own big names), "total" (by every headline to date) or
+	// "equal" (all the same)
 	const EQUAL_SIZE = String(size).trim().toLowerCase() === "equal";
+	const TOTAL_SIZE = String(size).trim().toLowerCase() === "total";
 
 	const net = source === "article" ? articleNet : headlineNet;
 	const LINK_WORD = source === "article" ? "article" : "headline";
@@ -425,13 +429,21 @@
 	const DRAWER_CAP = 200;
 
 	// longest names first so "Caitlin Clark" wins over "Clark"
+	// a surname that is also an ordinary word ("White privilege", "the
+	// Storm", "Freedom") only counts as the person in the full name
+	const COMMON_SURNAMES = new Set([
+		"white", "cloud", "freedom", "bird", "young", "plum", "gray", "hill", "swift",
+		"silver", "brink", "hull", "bout", "rice", "miles", "boston", "sky", "sun", "storm"
+	]);
 	const NAME_PATTERNS = net.nodes
 		.flatMap((node) => {
 			const surname = node.name.split(" ").slice(-1)[0];
-			return [
-				{ text: node.name, node },
-				{ text: surname, node }
-			];
+			return COMMON_SURNAMES.has(surname.toLowerCase())
+				? [{ text: node.name, node }]
+				: [
+						{ text: node.name, node },
+						{ text: surname, node }
+					];
 		})
 		.filter((p) => p.text.length > 3)
 		.sort((a, b) => b.text.length - a.text.length);
@@ -542,16 +554,18 @@
 	const SMALLEST_R = MOBILE_NET ? 26 : 20,
 		BIGGEST_R = MOBILE_NET ? 100 : 82;
 	let recentMax = $derived(Math.max(1, ...Object.values(recentCounts)));
+	let sizeBasis = $derived(TOTAL_SIZE ? counts : recentCounts);
+	let sizeMax = $derived(Math.max(1, ...Object.values(sizeBasis)));
 	let nodeRadius = $derived(
 		scaleSqrt()
-			.domain([0, recentMax])
+			.domain([0, sizeMax])
 			.range([0, BIGGEST_R - SMALLEST_R])
 	);
 	const EQUAL_R = MOBILE_NET ? 44 : 36;
 	const radius = (node) => {
 		if (!(counts[node.name] ?? 0)) return 0;
 		if (EQUAL_SIZE) return EQUAL_R;
-		return SMALLEST_R + nodeRadius(recentCounts[node.name] ?? 0);
+		return SMALLEST_R + nodeRadius(sizeBasis[node.name] ?? 0);
 	};
 
 	let nodes = $state(

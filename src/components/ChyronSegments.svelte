@@ -6,7 +6,7 @@
 
 	// the three networks' colours, shared across the site (properties/color.json)
 	const COLORS = {
-		"Fox News": "var(--color-fox)",
+		"Fox News": "var(--color-fox-navy)",
 		CNN: "var(--color-cnn)",
 		MSNBC: "var(--color-msnbc)"
 	};

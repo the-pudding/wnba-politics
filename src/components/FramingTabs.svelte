@@ -108,7 +108,7 @@
 		bind:basis
 		bind:layout
 		bind:sizing
-		showBasis={false}
+		showBasis={true}
 		showLayout={false}
 		showSizing={false}
 		showPlayer={false}

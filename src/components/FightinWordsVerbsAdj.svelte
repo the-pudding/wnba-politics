@@ -7,8 +7,7 @@
 	import FacePicker from "$components/helpers/FacePicker.svelte";
 	import {
 		playerWordsSource,
-		playerWordsPeople,
-		playerPhrasesPeople
+		playerWordsPeople
 	} from "../utils/playerWords.js";
 	import { base } from "$app/paths";
 	import roster from "$data/people.json";
@@ -61,10 +60,8 @@
 		["play", "how she plays"],
 		["subject", "what she does"],
 		["object", "what's done to her"],
-		["all", "every word"],
-		["phrases", "phrases"]
+		["all", "every word"]
 	];
-	const PHRASES = new Set(playerPhrasesPeople());
 	// players with a Fox-versus-the-other-outlets comparison stored, listed
 	// by surname in the picker
 	const PEOPLE = playerWordsPeople();
@@ -90,10 +87,7 @@
 	// a smaller cast member has too few attachments for some relations; those
 	// buttons grey out, and the choice falls back to every word
 	let available = $derived(
-		new Set([
-			...Object.keys(data.players?.[pickedWho]?.vsOutlets ?? {}),
-			...(PHRASES.has(pickedWho) ? ["phrases"] : [])
-		])
+		new Set(Object.keys(data.players?.[pickedWho]?.vsOutlets ?? {}))
 	);
 	$effect(() => {
 		if (available.size && !available.has(pickedRel)) pickedRel = "all";
@@ -162,7 +156,7 @@
 				</div>
 			</div>
 			{#if chart === "bars"}
-				<WordBars {source} {labels} {scale} {caps} {scores} highlight={shown.words} top={12} />
+				<WordBars {source} {labels} {scale} {caps} {scores} highlight={shown.words} top={12} fill />
 			{:else}
 				<FightinWords {source} highlight={shown.words} bare controls={false} />
 			{/if}
@@ -289,7 +283,8 @@
 		color: rgba(42, 21, 3, 0.35);
 		cursor: not-allowed;
 	}
-	.sticky :global(svg) {
+	/* the bars size their own rows to the viewport; the scatter is capped */
+	.words-scrolly:not(.bars) .sticky :global(svg) {
 		max-height: 74vh;
 	}
 

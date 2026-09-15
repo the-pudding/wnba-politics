@@ -9,7 +9,19 @@
 	//   {}
 	// The data (notebooks/word_neighbors.py) is fetched on first use.
 	import { base } from "$app/paths";
-	let { word = "foul" } = $props();
+	// note: your own line under the chart, in place of the stock one; it may
+	// use {word}, {fox} and {others} for the word and its two counts.
+	// example: false — no example sentence under the note
+	// top: how many words each column shows (default 16)
+	// note: left out — the stock line; written — your own; present but blank — none
+	let { word = "foul", note = undefined, example = true, top = 16 } = $props();
+	const noteMode = $derived(note === undefined || note === null ? "stock" : String(note).trim() ? "custom" : "none");
+	const showExample = $derived(!(example === false || String(example).trim().toLowerCase() === "false"));
+	const noteFor = (w, fox, others) =>
+		String(note)
+			.replace(/\{word\}/g, w)
+			.replace(/\{fox\}/g, fox.toLocaleString())
+			.replace(/\{others\}/g, others.toLocaleString());
 
 	let data = $state(null);
 	let loading = false;
@@ -57,7 +69,7 @@
 		} else if (e.key === "Escape") { query = ""; cursor = -1; }
 	}
 
-	const TOP = 16;
+	let TOP = $derived(Math.max(1, parseInt(String(top), 10) || 16));
 	let entry = $derived(data?.words?.[picked] ?? null);
 	// each column's list, ranked by the chosen measure
 	const ranked = (side) =>
@@ -67,8 +79,9 @@
 			.sort((a, b) => b.v - a.v)
 			.slice(0, TOP);
 	let columns = $derived([
-		{ key: "fox", label: "Fox News", color: "#003366", rows: ranked(entry?.fox), n: entry?.fox?.n ?? 0 },
-		{ key: "others", label: "the sports outlets", color: "#6b4bb0", rows: ranked(entry?.others), n: entry?.others?.n ?? 0 }
+		// the other outlets on the left, Fox on the right, as on the bar charts
+		{ key: "others", label: "other outlets", color: "var(--color-outlets)", rows: ranked(entry?.others), n: entry?.others?.n ?? 0 },
+		{ key: "fox", label: "Fox News", color: "var(--color-fox-navy)", rows: ranked(entry?.fox), n: entry?.fox?.n ?? 0 }
 	]);
 	// each column on its own scale: the lists are rankings within a corpus,
 	// and the lift's absolute size depends on how big the corpus is
@@ -123,7 +136,9 @@
 							<div class="row" class:dim={hovered && hovered !== d.w} onmouseenter={() => (hovered = d.w)} onmouseleave={() => (hovered = null)} role="presentation">
 								<span class="label">{show(d.w)}</span>
 								<span class="track"><span class="bar" style="width:{(100 * d.v) / peakOf(col)}%; background:{col.color}; opacity:{0.55 + 0.45 * (1 - i / TOP)}"></span></span>
-								<span class="value">{fmt(d)}</span>
+								<!-- the lift multiplier is not a number a reader can use; the bar
+								     carries the ranking, and raw mode still prints its counts -->
+								{#if measure === "raw"}<span class="value">{fmt(d)}</span>{/if}
 							</div>
 						{:else}
 							<p class="note">Too rare here.</p>
@@ -133,13 +148,17 @@
 			{/each}
 		</div>
 		<p class="note">
-			{#if measure === "weighted"}
-				Weighted: how many times more often a word sits right before or after “{show(picked)}” than its overall frequency would predict, among pairs seen at least four times.
-			{:else}
-				Raw: how many times a word sits right before or after “{show(picked)}”.
+			{#if noteMode === "custom"}
+				{@html noteFor(show(picked), entry.fox.n, entry.others.n)}
+			{:else if noteMode === "stock"}
+				{#if measure === "weighted"}
+					Weighted: how many times more often a word sits right before or after “{show(picked)}” than its overall frequency would predict, among pairs seen at least four times.
+				{:else}
+					Raw: how many times a word sits right before or after “{show(picked)}”.
+				{/if}
+				“{show(picked)}” appears {entry.fox.n.toLocaleString()} times in Fox's WNBA articles and {entry.others.n.toLocaleString()} in the five sports outlets', April 2023 on.
 			{/if}
-			“{show(picked)}” appears {entry.fox.n.toLocaleString()} times in Fox's WNBA articles and {entry.others.n.toLocaleString()} in the five sports outlets', April 2023 on.
-			{#if entry.fox.eg}<span class="eg">{entry.fox.eg}</span>{/if}
+			{#if showExample && entry.fox.eg}<span class="eg">{entry.fox.eg}</span>{/if}
 		</p>
 	{/if}
 </div>

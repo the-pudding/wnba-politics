@@ -24,10 +24,13 @@
 		// scores: true — the score printed past each bar (it is always in the
 		// tooltip)
 		scores = false,
-		onhover = null
+		onhover = null,
+		fill = false,
+		// the name of the bottom side in the tooltip's counts ("others", "ESPN")
+		otherName = "others"
 	} = $props();
 
-	const FOX = "#003366";
+	const FOX = "var(--color-fox-navy)";
 	const OTHERS = "#6b4bb0";
 	const INK = "#2a1503";
 	const WEAK_Z = 1.96; // below this a word's lean is within noise
@@ -35,6 +38,49 @@
 	let lit = $derived(new Set((highlight ?? []).map((w) => w.toLowerCase())));
 	let anyLit = $derived(lit.size > 0);
 
+	// pixel-true: the frame is measured, the drawing fills it
+	let el = $state(null);
+	let frame = $state({ w: 0 });
+	let narrow = $derived(frame.w > 0 && frame.w < 640);
+	let WIDTH = $derived(frame.w || 900);
+	// fill: the scrolly asks the rows to stretch down the viewport, so a
+	// chart with fifteen bars uses the screen instead of a strip of it
+	let avail = $state(0);
+	$effect(() => {
+		if (!fill || !el) return;
+		rows;
+		// measured against the sticky frame, not the viewport, so it holds
+		// whether or not the chart is pinned on screen right now
+		const measure = () => {
+			const sticky = el.closest(".sticky");
+			const er = el.getBoundingClientRect();
+			if (sticky) {
+				const sr = sticky.getBoundingClientRect();
+				avail = sr.height - (er.top - sr.top) - 64;
+			} else {
+				avail = window.innerHeight - er.top - 64;
+			}
+		};
+		measure();
+		window.addEventListener("resize", measure);
+		// the controls above the chart come and go with the step
+		const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+		ro?.observe(el.parentElement ?? el);
+		return () => {
+			window.removeEventListener("resize", measure);
+			ro?.disconnect();
+		};
+	});
+	const TOP = 34;
+	const BOTTOM = 10;
+	const ROW_MIN = 26,
+		ROW_MAX = 44;
+	let ROW = $derived(
+		fill && avail > 0
+			? Math.max(ROW_MIN, Math.min(ROW_MAX, (avail - TOP - BOTTOM) / rows))
+			: ROW_MIN
+	);
+	let height = $derived(TOP + rows * ROW + BOTTOM);
 	// each side's strongest words, highlighted ones kept even when they rank lower
 	const side = (sign) =>
 		(source?.points ?? [])
@@ -42,23 +88,23 @@
 			.sort((a, b) => Math.abs(b.z) - Math.abs(a.z));
 	let fox = $derived(pick(side(1)));
 	let others = $derived(pick(side(-1)));
+	// with room to spare the chart shows more words rather than taller bars:
+	// as many rows as fit at a comfortable height, up to a ceiling
+	const ROW_COMFY = 32,
+		TOP_MAX = 28;
+	let topN = $derived(
+		fill && avail > 0
+			? Math.max(top, Math.min(TOP_MAX, Math.floor((avail - TOP - BOTTOM) / ROW_COMFY)))
+			: top
+	);
 	function pick(list) {
-		const kept = list.slice(0, top);
-		for (const p of list.slice(top))
+		const kept = list.slice(0, topN);
+		for (const p of list.slice(topN))
 			if (lit.has(p.word.toLowerCase())) kept.push(p);
 		return kept;
 	}
 	let rows = $derived(Math.max(fox.length, others.length, 1));
 
-	// pixel-true: the frame is measured, the drawing fills it
-	let el = $state(null);
-	let frame = $state({ w: 0 });
-	let narrow = $derived(frame.w > 0 && frame.w < 640);
-	let WIDTH = $derived(frame.w || 900);
-	const ROW = 26;
-	const TOP = 34;
-	const BOTTOM = 10;
-	let height = $derived(TOP + rows * ROW + BOTTOM);
 	let GAP = $derived(narrow ? 4 : 10); // either side of the middle
 	let beside = $derived(String(labels).trim().toLowerCase() === "beside");
 	let outside = $derived(String(labels).trim().toLowerCase() === "outside");
@@ -188,7 +234,7 @@
 			// stored example says so itself; otherwise the side is enough)
 			const eg = p.eg
 				? { s: p.eg, w: p.egw, o: p.ego ?? (sign > 0 ? "Fox News" : "the other outlets") }
-				: (example?.(p.word) ?? null);
+				: (example?.(p.word, p.z) ?? null);
 			return { p, sign, y: yOf(i), x, eg };
 		}
 		return null;
@@ -316,7 +362,7 @@
 			>
 				<span class="tip-head" style="color:{color}">{tip.p.word}</span>
 				<span class="tip-count"
-					>Fox {tip.p.nf} · others {tip.p.no} · score {fmt(tip.p.z)}</span
+					>Fox {tip.p.nf} · {otherName} {tip.p.no} · score {fmt(tip.p.z)}</span
 				>
 				{#if tip.eg}
 					<p>{@html markWord(tip.eg.s, tip.p.word, tip.eg.w, color)}</p>
@@ -349,7 +395,7 @@
 		text-transform: uppercase;
 	}
 	.head.fox {
-		fill: #003366;
+		fill: var(--color-fox-navy);
 	}
 	.head.others {
 		fill: #6b4bb0;
@@ -367,12 +413,16 @@
 		opacity: 0.88;
 		transition: opacity 250ms ease;
 	}
+	/* within noise: a lighter tint of the same colour, not a greyed-out one
+	   (transparency over the orange page turns navy to mud) */
 	.bar.weak .fill {
-		opacity: 0.3;
+		opacity: 0.8;
+		filter: brightness(1.45) saturate(0.85);
 	}
 	/* a bar outside the step's words fades, but its label stays legible */
 	.bar.dim .fill {
 		opacity: 0.22;
+		filter: none;
 	}
 	.bar.dim .word,
 	.bar.dim .score {

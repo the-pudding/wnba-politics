@@ -8,7 +8,7 @@
 	// story-word examples ship inline; the full 17k-word set loads on first hover
 	const litExamples = fw.lit;
 
-	const FOX = "#003366"; // navy, as on the bar charts
+	const FOX = "var(--color-fox-navy)"; // Fox's chart colour, set once in variables.css
 	const OTHER = "#6b4bb0"; // the other outlets' purple
 	const SIGNIFICANT = 1.96;
 	const SANS = '"Helvetica Neue", Helvetica, Arial, sans-serif';
@@ -85,7 +85,9 @@
 		caps = false,
 		scores = false,
 		// ngrams: 2 — two-word phrases instead of words (whole articles only)
-		ngrams = 1
+		ngrams = 1,
+		// fill: stretch the bar rows down the viewport (the scrolly sets it)
+		fill = false
 	} = $props();
 	// the explore step can flip this with the words/phrases pills
 	let bigrams = $state(false);
@@ -419,6 +421,33 @@
 			fullExamples = {};
 		}
 	}
+	// against one outlet, that outlet's side quotes that outlet
+	// (notebooks/06 → static/data/fw_examples_by_outlet.json), fetched once
+	let outletExamples = $state(null);
+	let outletExamplesLoading = false;
+	async function ensureOutletExamples() {
+		if (outletExamples || outletExamplesLoading) return;
+		outletExamplesLoading = true;
+		try {
+			outletExamples = await (await fetch(`${base}/data/fw_examples_by_outlet.json`)).json();
+		} catch {
+			outletExamples = {};
+		} finally {
+			outletExamplesLoading = false;
+		}
+	}
+	$effect(() => {
+		if (against !== ALL_OUTLETS) ensureOutletExamples();
+	});
+	// the example for a word: the chosen outlet's own sentence when the word
+	// sits on that outlet's side, else the shared one
+	function exampleFor(mode, word, z) {
+		if (against !== ALL_OUTLETS && z < 0) {
+			const own = outletExamples?.[against]?.[mode]?.[word];
+			if (own) return own;
+		}
+		return litExamples[mode]?.[word] ?? fullExamples?.[mode]?.[word];
+	}
 
 	// the bars take the same points, with short side names for their heads
 	let barSource = $derived(
@@ -430,9 +459,9 @@
 		}
 	);
 	// a bar's example on hover, from the same stores as the scatter's card
-	function barExample(word) {
+	function barExample(word, z = 0) {
 		const mode = bodyMode ? (bigrams ? "bigrams" : "articles") : "headlines";
-		const hit = litExamples[mode]?.[word] ?? fullExamples?.[mode]?.[word];
+		const hit = exampleFor(mode, word, z);
 		return hit?.[0] ? { s: hit[0], w: hit[1], o: hit[2] ?? null } : null;
 	}
 
@@ -440,8 +469,7 @@
 		if (!tip) return null;
 		if (source) return tip.eg ? { s: tip.eg, w: tip.egw, o: tip.ego ?? null } : null;
 		const mode = bodyMode ? (bigrams ? "bigrams" : "articles") : "headlines";
-		const hit =
-			litExamples[mode]?.[tip.word] ?? fullExamples?.[mode]?.[tip.word];
+		const hit = exampleFor(mode, tip.word, tip.z ?? 0);
 		return { s: hit?.[0] ?? null, w: hit?.[1] ?? null, o: hit?.[2] ?? null };
 	});
 
@@ -615,6 +643,8 @@
 			{caps}
 			{scores}
 			source={barSource}
+			{fill}
+			otherName={against === ALL_OUTLETS ? "others" : against}
 			highlight={[...HIGHLIGHT]}
 			top={mobile ? 10 : 14}
 			example={barExample}

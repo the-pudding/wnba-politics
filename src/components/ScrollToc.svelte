@@ -43,7 +43,7 @@
 	});
 	const go = (id) => (event) => {
 		event.preventDefault();
-		document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+		document.getElementById(id)?.scrollIntoView({ behavior: "instant", block: "start" });
 		history.replaceState(null, "", `#${id}`);
 	};
 </script>

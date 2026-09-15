@@ -129,7 +129,7 @@
 	.row.head { height: 22px; margin-bottom: 4px; }
 	.row.dim { opacity: 0.35; }
 	.col { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
-	.col.fox { color: #003366; }
+	.col.fox { color: var(--color-fox-navy); }
 	.col.others { color: #6b4bb0; }
 	.who { display: flex; align-items: center; gap: 8px; min-width: 0; }
 	.who img, .who .blank { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: #d8cdb6; flex: 0 0 auto; border: 1.5px solid rgba(255, 253, 248, 0.9); }
@@ -137,7 +137,7 @@
 	.cell { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
 	.track { display: block; height: 14px; }
 	.bar { display: block; height: 100%; border-radius: 2px; min-width: 2px; }
-	.bar.fox { background: #003366; }
+	.bar.fox { background: var(--color-fox-navy); }
 	.bar.others { background: #6b4bb0; }
 	.value { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11.5px; font-weight: 700; color: var(--color-ink); white-space: nowrap; min-width: 88px; }
 	.value small { font-weight: 400; color: rgba(42, 21, 3, 0.55); }

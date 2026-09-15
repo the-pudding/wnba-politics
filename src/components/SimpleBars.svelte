@@ -19,7 +19,7 @@
 	const SHARE = String(mode).trim().toLowerCase() === "share";
 
 	const COLOR = {
-		"Fox News": "var(--color-fox)",
+		"Fox News": "var(--color-fox-navy)",
 		CNN: "var(--color-cnn)",
 		MSNBC: "var(--color-msnbc)"
 	};
@@ -50,7 +50,7 @@
 				name,
 				value: v.trans?.[y] ?? 0,
 				of: v.articles?.[y] ?? 0,
-				color: name === "Fox News" ? "var(--color-fox)" : "var(--color-lgbtq)"
+				color: name === "Fox News" ? "var(--color-fox-navy)" : "var(--color-lgbtq)"
 			}))
 			.sort((a, b) =>
 				SHARE ? b.value / (b.of || 1) - a.value / (a.of || 1) : b.value - a.value

@@ -13,18 +13,17 @@
 		}))
 	};
 	// which measures each headline triggered (from the player-framing notebook)
+	// (victim framing is scored in the data but not offered as a tag)
 	const FRAMES = [
 		"political",
 		"appearance",
 		"celebrity",
-		"victim",
 		"performance"
 	];
 	const FRAME_COLORS = {
 		political: "var(--color-politics)",
 		appearance: "var(--color-race)",
 		celebrity: "var(--color-lgbtq)",
-		victim: "var(--color-fox)",
 		performance: "#1f9d6e"
 	};
 	const frames = Object.fromEntries(
@@ -210,7 +209,7 @@
 		if (mood !== "all") bits.push(`scored ${mood}`);
 		if (frame !== "all")
 			bits.push(
-				`about ${frame === "victim" ? "victim framing" : frame === "political" ? "politics" : frame === "performance" ? "her play" : frame}`
+				`about ${frame === "political" ? "politics" : frame === "performance" ? "her play" : frame}`
 			);
 		return `${rows.length.toLocaleString()} of ${total} headlines ${bits.join(", ")}.`;
 	});

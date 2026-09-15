@@ -99,7 +99,7 @@ def words_under(tokens):
     return {clean(sub.text) for t in tokens for sub in t.subtree}
 
 
-def attribute(nlp, headlines, groups, register):
+def attribute(nlp, headlines, groups, register, name_rx=None):
     """{player: [headline rows]} each qualifying headline is grammatically about.
 
     Every word row in framing_terms.csv is a trigger, whatever its kind
@@ -117,10 +117,12 @@ def attribute(nlp, headlines, groups, register):
     text_for = (lambda r: scrub.sub(" ", r["t"])) if scrub else (lambda r: r["t"])
     attributed = defaultdict(list)
     for row, doc in zip(headlines, nlp.pipe([text_for(r) for r in headlines], batch_size=64)):
-        # only people whose surname appears capitalized count as present —
-        # "Brink" the player, never "the brink of suspension"
+        # who is in the headline: each person's own pattern from people.json
+        # when given (so "West Wilson" is not A'ja), else the surname,
+        # capitalized — "Brink" the player, never "the brink of suspension"
         present = [name for name in groups
-                   if re.search(r"\b" + re.escape(name.split()[-1]) + r"\b", row["t"])]
+                   if (name_rx[name].search(row["t"]) if name_rx and name in name_rx
+                       else re.search(r"\b" + re.escape(name.split()[-1]) + r"\b", row["t"]))]
         owners_found, pronoun_at = set(), None
         for i, token in enumerate(doc):
             word = clean(token.text)

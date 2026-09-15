@@ -27,6 +27,7 @@
 	import WordCompare from "$components/WordCompare.svelte";
 	import WordNeighbors from "$components/WordNeighbors.svelte";
 	import WordPlayers from "$components/WordPlayers.svelte";
+	import FoulReel from "$components/FoulReel.svelte";
 	import HeadlineTable from "$components/HeadlineTable.svelte";
 	import ChyronSegments from "$components/ChyronSegments.svelte";
 	import BoxScore from "$components/BoxScore.svelte";
@@ -64,6 +65,7 @@
 		WordCompare,
 		WordNeighbors,
 		WordPlayers,
+		FoulReel,
 		HeadlineTable,
 		ChyronSegments,
 		BoxScore,

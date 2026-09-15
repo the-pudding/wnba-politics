@@ -76,9 +76,38 @@ def clean(text):
     return re.sub(r"\s+", " ", t).strip()
 
 
-def players_in(sentence):
+# a surname shared with someone else in the corpus: when the look-alike is
+# named anywhere in the article and the player's own first name is not, a
+# bare surname in that article is not her ("Taurasi re-signs in Phoenix
+# while Clark heads to Washington" is Alysha Clark)
+LOOKALIKES = {
+    "Caitlin Clark": (re.compile(r"alysha\W{0,3}clark", re.I), re.compile(r"caitlin", re.I)),
+    "Brittney Griner": (re.compile(r"cherelle\W{0,3}griner", re.I), re.compile(r"brittney", re.I)),
+    "Napheesa Collier": (re.compile(r"charli\W{0,3}collier", re.I), re.compile(r"napheesa", re.I)),
+}
+
+
+def ambiguous_in(article_text):
+    return {name for name, (lookalike, required) in LOOKALIKES.items()
+            if lookalike.search(article_text) and not required.search(article_text)}
+
+
+def players_in(sentence, ambiguous=frozenset()):
     text = sentence.replace("’", "'")
-    return sorted({LOOKUP[m.group(1).lower()] for m in NAME_RE.finditer(text)})
+    found = set()
+    for m in NAME_RE.finditer(text):
+        alias = m.group(1).lower()
+        name = LOOKUP[alias]
+        # in an ambiguous article only the full name counts; and a sentence
+        # that names the look-alike herself is hers even in a clear article
+        if " " not in alias:
+            if name in ambiguous:
+                continue
+            rule = LOOKALIKES.get(name)
+            if rule and rule[0].search(text) and not rule[1].search(text):
+                continue
+        found.add(name)
+    return sorted(found)
 
 
 def main():
@@ -107,17 +136,18 @@ def main():
                 heads.append(clean(r.get("headline")))
                 bodies.append(clean(r.get("body")))
                 meta.append((r.get("date", ""), r.get("url", "")))
+            amb = [ambiguous_in(h + " " + b) for h, b in zip(heads, bodies)]
             # headlines are one sentence each
-            for (date, url), head in zip(meta, heads):
-                for player in players_in(head):
+            for (date, url), head, a in zip(meta, heads, amb):
+                for player in players_in(head, a):
                     writer.writerow([outlet, date, url, player, 1, head])
                     rows_out += 1
-            for (date, url), doc in zip(meta, nlp.pipe(bodies, batch_size=64)):
+            for (date, url), doc, a in zip(meta, nlp.pipe(bodies, batch_size=64), amb):
                 for sent in doc.sents:
                     text = sent.text.strip()
                     if len(text) < 15:
                         continue
-                    for player in players_in(text):
+                    for player in players_in(text, a):
                         writer.writerow([outlet, date, url, player, 0, text])
                         rows_out += 1
     print(f"wrote {OUT.relative_to(ROOT)} ({rows_out:,} rows)", file=sys.stderr)
