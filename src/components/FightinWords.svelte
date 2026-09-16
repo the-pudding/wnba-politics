@@ -578,11 +578,11 @@
 					>
 				</div>
 			{/if}
-			<span class="label">Find a word</span>
 			<div class="search-box">
 				<input
 					type="search"
 					placeholder="Search for a word…"
+					aria-label="Find a word"
 					bind:value={query}
 					autocomplete="off"
 					spellcheck="false"
