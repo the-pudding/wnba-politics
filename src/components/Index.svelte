@@ -30,7 +30,6 @@
 
 	// Doc `chart:` names -> components
 	const components = {
-		// Doc block names = component names (same pattern as kids-book-animals)
 		Toc,
 		SimpleBars,
 		OutletTopicCompare,
@@ -67,9 +66,7 @@
 	};
 </script>
 
-<!-- a chart that throws must not take the text with it. A hydration failure
-     is not an Error but Svelte's sentinel: rethrow it, so the runtime discards
-     the server markup and renders on the client instead of showing nothing -->
+
 <svelte:boundary
 	onerror={(e) => {
 		if (!(e instanceof Error)) throw e;

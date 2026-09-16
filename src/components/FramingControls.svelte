@@ -1,7 +1,5 @@
 <script>
-	// The picker over the framing charts: who, which measure, counted over
-	// what, arranged how, sized how. Styled as the fightin' words controls.
-	// Every choice is bindable, so the tabs and the scrolly share one bar.
+	// The picker over the framing charts
 	let {
 		players = [],
 		picked = $bindable(null),

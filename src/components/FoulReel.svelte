@@ -1,47 +1,15 @@
 <script>
-	// Every sentence that describes a foul, one player at a time, as a reel
-	// the reader scrolls through: the line in the middle opens out into the
-	// whole sentence with its source; the rest are short cuts around the
-	// foul word. In the Doc:
-	//   {.FoulReel}
-	//   player: Caitlin Clark
-	//   outlet: fox            (fox | outlets | all)
-	//   word: dirty            (optional: only sentences with this word; player "all" allowed)
-	//   picks: snippet | snippet   (optional: a hand-picked list, in this order)
-	//   layout: pairs          (optional: Fox on the left, the sports outlets on the
-	//                           right, sentences about the same incident side by side)
-	//   layout: gallery        (optional: one incident per slide, swipeable; the
-	//                           outlets' clipping on the left, Fox's on the right)
-	//   {}
-	// Or write the slides yourself, verbatim, with your own links:
-	//   {.FoulReel}
-	//   layout: gallery
-	//   [.slides]
-	//   outlet: The Athletic
-	//   outletText: Caitlin Clark downplayed being poked in the eye…
-	//   outletLink: https://…
-	//   outletDate: Sep 24, 2024
-	//   foxText: Carrington's eye poking was the latest…
-	//   foxLink: https://…
-	//   foxDate: Sep 24, 2024
-	//
-	//   outlet: CBS Sports
-	//   …
-	//   []
-	//   {}
-	// Data: notebooks/foul_feed.py → static/data/foul_feed.json
+	// Foul or passage reel/gallery
 	import { base } from "$app/paths";
 	import roster from "$data/people.json";
 	import { faces } from "$utils/clips.js";
 	import { tick } from "svelte";
 
-	// mark: "bold" (default), "underline" or "highlight" (a yellow marker behind
-	// the words) — how the foul word, the name and your own <b> are marked
+	// mark: "bold" (default), "underline" or "highlight" 
 	let { player = "Caitlin Clark", outlet = "fox", word = "", picks = "", layout = "", slides = [], mark = "bold", height = 560 } = $props();
 	let underline = $derived(String(mark).trim().toLowerCase() === "underline");
 	let highlight = $derived(String(mark).trim().toLowerCase() === "highlight");
-	// the foul words, for marking a hand-written slide the way the data's
-	// rows are marked; and the roster, for the player's name
+
 	const TERM = /hip[- ]?check(?:ed|s|ing)?|\bpunch(?:ed|es|ing)?\b|\bthroat\b|\bpoke[ds]?\b|\bpoking\b|\bflagrant(?:ly)?\b|\bfoul(?:s|ed|ing)?\b|\bshove[sd]?\b|\bshoving\b|\belbow(?:s|ed|ing)?\b|\bclothesline[sd]?\b|\bcheap shot\b|\bhard hit\b|\btackle[sd]?\b|\bslap(?:ped|s)?\b|\bbloodied\b|\bblack eye\b|\bejected\b|\bejection\b|\btechnical\b|\bhit\b/i;
 	const NAMES = Object.entries(roster)
 		.filter(([, p]) => p.group === "players" && p.rx)
@@ -70,9 +38,7 @@
 		return null;
 	}
 	function rowFromText(text, o, link, dateText) {
-		// ==like this== is a yellow marker and ((Name)) an inline face, both
-		// converted before the foul word and the name are found, so a
-		// highlight can run across them and nest with <b>
+
 		const s = faces(String(text ?? "").trim().replace(/==([^=]+)==/g, "<mark>$1</mark>"), base);
 		if (!s) return null;
 		const m = findOutsideTags(TERM, s);
@@ -125,8 +91,7 @@
 		CNN: "cnn.svg",
 		MSNBC: "ms-now.svg"
 	};
-	// a hand-written slide may carry its own <b>, <i> or <a>: rendered as
-	// markup, with the foul word and name marked the same way as the data's
+	// a hand-written slide may carry its own <b>, <i> or <a>
 	const esc = (t) => t;
 	function markup(r, color) {
 		const hl = (t) => t;
@@ -141,8 +106,7 @@
 			.join("");
 	}
 	// word: a filter on the sentences ("dirty"), matched as a whole word with
-	// its inflections; picks: hand-chosen sentences by a snippet each, shown
-	// in the Doc's order, whoever they are about
+	// its inflections
 	let wordRx = $derived(
 		String(word).trim() ? new RegExp("\\b" + String(word).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\w*", "i") : null
 	);
@@ -170,7 +134,7 @@
 	});
 
 	const FOX = "var(--color-fox-navy)";
-	const OTHER = "#6a4fb5";
+	const OTHER = "var(--color-outlets)";
 	const OUTLETS = [
 		["fox", "Fox News"],
 		["outlets", "the sports outlets"],

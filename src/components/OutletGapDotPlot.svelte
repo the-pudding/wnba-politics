@@ -192,10 +192,7 @@
 	});
 
 	// one size for every face; the row spacing follows it
-	// Sized like the kids-book dot plot: in pixels. The frame is measured
-	// (see measure()), the axis takes its full width, the rows share its
-	// height, and faces and type are fixed pixel sizes rather than scaling
-	// with the drawing.
+	// Sized in pixels. 
 	const FACE_R = { phone: 30, desktop: 40 }; // the most a face may be
 	const FACE_OF_ROW = 0.62; // else its radius as a share of the row height
 	let frame = $state({ w: 0, h: 0 });
@@ -791,7 +788,7 @@
 		text-align: left;
 	}
 	.tip .count {
-		color: #b9b6ac;
+		color: var(--color-tip-none);
 		font-size: 11px;
 	}
 	.tip .swatch {
@@ -814,8 +811,7 @@
 	.head {
 		/* position: relative; */
 	}
-	/* the title, subtitle and pills centred on the whole frame, as on the
-	   kids-book chart, rather than over the equal line */
+	/* the title, subtitle and pills centered on the whole frame
 	/* desktop: the title, subtitle and pills centred over the equal line;
 	   a phone centres them on the frame instead (see the media query) */
 	.head > * {

@@ -43,8 +43,8 @@
   --color-page-orange: #f9a660;
   --color-cnn: #6b4bb0;
   --color-msnbc: #a08ad6; /** a lighter shade where the two cable networks sit side by side */
-  --color-fox-navy: #003366; /** Fox as a data series: bars, dots, ternaries. --color-fox (red) is the brand accent. */
-  --color-outlets: #6b4bb0; /** the other outlets, and CNN/MSNBC, in one purple */
+  --color-fox-navy: #003366; /** Fox as a data series --color-fox (red) is the brand accent. */
+  --color-outlets: #6b4bb0; /** the other outlets, and CNN/MSNBC */
   --color-ink-dark: #1a1a1a; /** near-black text and fills on the cream cards */
   --color-rule: #e6dcc3; /** hairline borders on cards and tables */
   --color-card: #f7f2e6; /** the cream of clipping cards and unlit nodes */
@@ -53,6 +53,19 @@
   --color-orange-deep: #c2410c; /** links and underlines in the burnt orange */
   --color-chip: #7a6bcc; /** the default player chip; Griner's colour */
   --color-wnba-orange: #f26f21; /** the league's own orange */
+  --color-gold: #eda100; /** the Doc's ==orange== highlight */
+  --color-reese: #eb6834; /** Angel Reese's chip in the headline table */
+  --color-tan: #8a6d3b; /** other players' chips in the headline table */
+  --color-stone: #8d8578; /** the league office and coaches in the network */
+  --color-lean-left: #2a6fd6; /** the network's left-leaning figures */
+  --color-grape: #9061c2; /** ternary word groups: the first */
+  --color-pine: #1f7a5a; /** ternary word groups: the third */
+  --color-dot: #b3a58a; /** an unlit dot on the ternary */
+  --color-tip-muted: #d8d6cc; /** secondary text in a dark tooltip */
+  --color-tip-quote: #e8e6dc; /** the quoted example in a dark tooltip */
+  --color-tip-harsh: #f0917f; /** a harsh score in a dark tooltip */
+  --color-tip-warm: #8fd6b4; /** a warm score in a dark tooltip */
+  --color-tip-none: #bdbdb5; /** an unscored line in a dark tooltip */
   --12px: 0.75rem;
   --14px: 0.875rem;
   --16px: 1rem;

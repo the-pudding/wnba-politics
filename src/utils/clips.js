@@ -3,15 +3,15 @@
 // ==word== inside the title is a tinted highlight.
 
 export const PALETTE = {
-	green: "#1f9d6e",
-	pink: "#d55181",
-	purple: "#b04ac2",
-	teal: "#17a2b8",
-	violet: "#7a6bcc",
-	blue: "#2a78d6",
-	orange: "#eda100"
+	green: "var(--color-politics)",
+	pink: "var(--color-race)",
+	purple: "var(--color-lgbtq)",
+	teal: "var(--color-trans)",
+	violet: "var(--color-chip)",
+	blue: "var(--color-clark)",
+	orange: "var(--color-gold)"
 };
-export const CLIP_BLUE = "#003366";
+export const CLIP_BLUE = "var(--color-fox-navy)";
 
 // ((Caitlin Clark)) in Doc text -> her portrait (the same face the charts use)
 // followed by her name; ((Caitlin Clark|face)) -> the portrait alone. A name
@@ -85,7 +85,7 @@ export const faces = (html, base = "") =>
 		}
 	);
 
-export const hl = (html, color = "#d55181") =>
+export const hl = (html, color = "var(--color-race)") =>
 	tidy(html).replace(
 		/==(.+?)==/g,
 		(_, w) =>

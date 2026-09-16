@@ -54,9 +54,7 @@
 	});
 	let current = $derived(STEPS[last] ?? STEPS[0]);
 
-	// --- the picker: any featured player, any relation, at any step ----------
-	// The Doc's steps set it as the reader scrolls; the reader can change it at
-	// any time, and the next step sets it again.
+	
 	const RELATIONS = [
 		["describe", "how she's described"],
 		["play", "how she plays"],

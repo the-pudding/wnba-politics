@@ -139,8 +139,8 @@
 		CNN: "var(--color-outlets)",
 		MSNBC: "var(--color-outlets)"
 	};
-	const GROUP_COLORS = ["#9061c2", "var(--color-fox-navy)", "#1f7a5a", "#1d4f9c"];
-	const DOT = "#b3a58a";
+	const GROUP_COLORS = ["var(--color-grape)", "var(--color-fox-navy)", "var(--color-pine)", "var(--color-msnbc)"];
+	const DOT = "var(--color-dot)";
 	const MIN_TOTAL = 1;
 
 	let channels = $derived(chy.channels ?? []);

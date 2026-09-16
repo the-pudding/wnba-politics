@@ -1,10 +1,5 @@
 <script>
-	// One Fox headline clipping — the same card the Doc's `clip:` lines make
-	// in the running text, for use in the outlet-gap charts and scrollies.
-	//
-	// `blurred`: the text is shown out of focus (a placeholder headline while
-	// no step has chosen one). When a new headline arrives in focus, its
-	// letters scramble into place over half a second.
+	// One Fox headline clipping 
 	import FoxBadge from "$components/FoxBadge.svelte";
 	import { base } from "$app/paths";
 	import { hl, faces, CLIP_BLUE } from "$utils/clips.js";

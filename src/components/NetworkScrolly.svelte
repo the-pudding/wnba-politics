@@ -81,9 +81,9 @@
 	const WNBA_ORANGE = "var(--color-wnba-orange)";
 	const LEAN_COLORS = {
 		player: WNBA_ORANGE,
-		league: "#8d8578",
+		league: "var(--color-stone)",
 		right: "var(--color-fox)",
-		left: "#2a6fd6",
+		left: "var(--color-lean-left)",
 		unaligned: "var(--color-ink-dark)"
 	};
 	const LEAN_LABELS = {
@@ -957,7 +957,7 @@
 							cx={node.x}
 							cy={node.y}
 							r={size}
-							fill={leanOf(node) === "player" ? "#ffffff" : "var(--color-card)"}
+							fill={leanOf(node) === "player" ? "var(--color-white)" : "var(--color-card)"}
 							class="portrait"
 							class:faded={dim}
 						/>

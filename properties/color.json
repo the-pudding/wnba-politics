@@ -139,6 +139,58 @@
 		"wnba-orange": {
 			"value": "#f26f21",
 			"comment": "the league's own orange"
+		},
+		"gold": {
+			"value": "#eda100",
+			"comment": "the Doc's ==orange== highlight"
+		},
+		"reese": {
+			"value": "#eb6834",
+			"comment": "chip in the headline table"
+		},
+		"tan": {
+			"value": "#8a6d3b",
+			"comment": "other players' chips in the headline table"
+		},
+		"stone": {
+			"value": "#8d8578",
+			"comment": "the league office and coaches in the network"
+		},
+		"lean-left": {
+			"value": "#2a6fd6",
+			"comment": "the network's left-leaning figures"
+		},
+		"grape": {
+			"value": "#9061c2",
+			"comment": "ternary word groups: the first"
+		},
+		"pine": {
+			"value": "#1f7a5a",
+			"comment": "ternary word groups: the third"
+		},
+		"dot": {
+			"value": "#b3a58a",
+			"comment": "an unlit dot on the ternary"
+		},
+		"tip-muted": {
+			"value": "#d8d6cc",
+			"comment": "secondary text in a dark tooltip"
+		},
+		"tip-quote": {
+			"value": "#e8e6dc",
+			"comment": "the quoted example in a dark tooltip"
+		},
+		"tip-harsh": {
+			"value": "#f0917f",
+			"comment": "a harsh score in a dark tooltip"
+		},
+		"tip-warm": {
+			"value": "#8fd6b4",
+			"comment": "a warm score in a dark tooltip"
+		},
+		"tip-none": {
+			"value": "#bdbdb5",
+			"comment": "an unscored line in a dark tooltip"
 		}
 	}
 }

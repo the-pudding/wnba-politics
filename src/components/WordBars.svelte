@@ -36,7 +36,7 @@
 
 	const FOX = "var(--color-fox-navy)";
 	const OTHERS = "var(--color-outlets)";
-	const INK = "#2a1503";
+	const INK = "var(--color-ink)";
 	const WEAK_Z = 1.96; // below this a word's lean is within noise
 
 	let lit = $derived(new Set((highlight ?? []).map((w) => w.toLowerCase())));

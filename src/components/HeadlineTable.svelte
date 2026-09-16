@@ -54,14 +54,14 @@
 	} = $props();
 
 	const PLAYER_COLORS = {
-		"Caitlin Clark": "#2a78d6",
-		"Angel Reese": "#eb6834",
+		"Caitlin Clark": "var(--color-clark)",
+		"Angel Reese": "var(--color-reese)",
 		"Brittney Griner": "var(--color-chip)",
 		"Sophie Cunningham": "var(--color-lgbtq)",
-		"DiJonai Carrington": "#d55181",
+		"DiJonai Carrington": "var(--color-race)",
 		"Natasha Cloud": "var(--color-politics)"
 	};
-	const OTHER_COLOR = "#8a6d3b";
+	const OTHER_COLOR = "var(--color-tan)";
 	const MAX_TAGS = 3;
 
 	const players = words.length ? words : Object.keys(PLAYER_COLORS);
@@ -401,7 +401,7 @@
 
 <style>
 	.headline-browser {
-		--ink: #1c1917;
+		--ink: var(--color-ink-dark);
 		--muted: rgba(28, 25, 23, 0.55);
 		--rule: rgba(28, 25, 23, 0.14);
 		--accent: var(--color-fox);

@@ -1,16 +1,5 @@
 <script>
-	// A swipeable gallery of Fox headline clippings, after the kids-book
-	// project's Swiper: coverflow, one clipping centred, its neighbours
-	// peeking in from either side, arrows or a swipe to move.
-	//
-	// In the Doc:
-	//   {.Gallery}
-	//   caption: optional line under the gallery
-	//   [.clips]
-	//   * the protests | July 2020 | green | WNBA players ==walk off court== ...
-	//   * ...
-	//   []
-	//   {}
+	// A swipeable gallery of Fox headline clippings
 	import { onMount } from "svelte";
 	import HeadlineClip from "$components/HeadlineClip.svelte";
 	import { parseClip } from "$utils/clips.js";

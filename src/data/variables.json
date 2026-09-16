@@ -51,7 +51,20 @@
     "brown": "#7a4a00",
     "orange-deep": "#c2410c",
     "chip": "#7a6bcc",
-    "wnba-orange": "#f26f21"
+    "wnba-orange": "#f26f21",
+    "gold": "#eda100",
+    "reese": "#eb6834",
+    "tan": "#8a6d3b",
+    "stone": "#8d8578",
+    "lean-left": "#2a6fd6",
+    "grape": "#9061c2",
+    "pine": "#1f7a5a",
+    "dot": "#b3a58a",
+    "tip-muted": "#d8d6cc",
+    "tip-quote": "#e8e6dc",
+    "tip-harsh": "#f0917f",
+    "tip-warm": "#8fd6b4",
+    "tip-none": "#bdbdb5"
   },
   "": {
     "12px": "0.75rem",

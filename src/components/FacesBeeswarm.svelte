@@ -778,7 +778,7 @@
 		z-index: 6;
 	}
 	.tip .stat {
-		color: #d8d6cc;
+		color: var(--color-tip-muted);
 		margin-top: 2px;
 	}
 	.tip .example {
@@ -786,16 +786,16 @@
 		padding-left: 8px;
 		font-style: italic;
 		border-left: 2px solid currentColor;
-		color: #e8e6dc;
+		color: var(--color-tip-quote);
 	}
 	.tip .harsh {
-		color: #f0917f;
+		color: var(--color-tip-harsh);
 	}
 	.tip .warm {
-		color: #8fd6b4;
+		color: var(--color-tip-warm);
 	}
 	.tip .none {
-		color: #bdbdb5;
+		color: var(--color-tip-none);
 		border-left-color: rgba(255, 255, 255, 0.3);
 	}
 	/* a face that can be clicked, and the one that has been */
