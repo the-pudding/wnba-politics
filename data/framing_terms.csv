@@ -222,6 +222,3 @@ performance,word,(?:double|triple)-digit
 performance,word,\d+(?:\.\d+)? ?(?:percent|%) (?:from|shooting|on)
 performance,word,\d+ (?:straight|consecutive)
 performance,word,\d+-game
-performance,word,performances?
-appearance,scrub,\bfits? (?:with|in|into|for|the)\b
-appearance,scrub,\b(?:perfect|good|great|bad|right|natural|team|roster|overall) fit\b

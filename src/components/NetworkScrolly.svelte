@@ -280,11 +280,15 @@
 		}
 		return c;
 	})();
-	const SCRUB_W = 600, SCRUB_H = 84, SCRUB_TOP = 20, SCRUB_BOTTOM = 14;
+	const SCRUB_W = 600, SCRUB_H = 84;
+	// on a phone the strip's type is set larger (see the styles), so the bands
+	// above and below the bars grow to hold it
+	let SCRUB_TOP = $derived(narrow ? 28 : 20);
+	let SCRUB_BOTTOM = $derived(narrow ? 24 : 14);
 	const scrubPeak = Math.max(1, ...ALL_MONTHS.map((m) => MONTH_COUNT[m] ?? 0));
 	const scrubStep = SCRUB_W / ALL_MONTHS.length;
 	const scrubX = (i) => i * scrubStep;
-	const scrubY = (n) => SCRUB_TOP + (SCRUB_H - SCRUB_TOP - SCRUB_BOTTOM) * (1 - n / scrubPeak);
+	let scrubY = $derived((n) => SCRUB_TOP + (SCRUB_H - SCRUB_TOP - SCRUB_BOTTOM) * (1 - n / scrubPeak));
 	const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 	const monthLabel = (m) => `${MONTH_NAMES[+m.slice(5, 7) - 1]} ${m.slice(0, 4)}`;
 	let scrubEl = $state(null);
@@ -1288,10 +1292,41 @@
 			overflow: auto;
 		}
 		/* no year animation or people pickers on phones: the faces need the room */
-		/* !important: their later display:flex rules would win otherwise */
-		.compare-bar,
-		.explore-bar {
+		/* !important: its later display:flex rule would win otherwise */
+		.compare-bar {
 			display: none !important;
+		}
+		/* the scrubber stays, as a strip under the faces: the network gives up
+		   its height (a drag on the bar scrubs; the page scrolls elsewhere) */
+		.explore-bar {
+			display: flex !important;
+			width: 100%;
+			margin: 0;
+			padding: 0 8px;
+			box-sizing: border-box;
+			opacity: 1;
+		}
+		.explore-bar .play {
+			display: none;
+		}
+		.sticky > svg,
+		.network-scrolly.exploring .sticky > svg {
+			max-height: calc(88vh - 74px);
+		}
+		.scrubber {
+			height: 58px;
+			touch-action: none;
+		}
+		/* the strip is drawn 600 units wide and scaled to the phone (about 0.6):
+		   the type is set large enough to land at a readable size */
+		.scrubber {
+			overflow: visible;
+		}
+		.explore-bar .scrub-year {
+			font-size: 18px;
+		}
+		.explore-bar .scrub-month {
+			font-size: 21px;
 		}
 	}
 	@media (max-width: 640px) {

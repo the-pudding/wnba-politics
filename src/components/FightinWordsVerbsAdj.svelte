@@ -122,7 +122,7 @@
 	);
 </script>
 
-<section class="words-scrolly" class:bars={chart === "bars"}>
+<section class="words-scrolly" class:bars={chart === "bars"} class:open={index >= STEPS.length}>
 	<div class="sticky">
 		{#if source}
 			<div class="who">
@@ -180,6 +180,9 @@
 					<p class="card">{@html step.html}</p>
 				</div>
 			{/each}
+			<!-- cardless final beat: the chart stays put for another screen and a
+			     half with every card gone, so the reader can pick and hover -->
+			<div class="step step-open" aria-hidden="true"></div>
 		</Scrolly>
 	</div>
 </section>
@@ -318,6 +321,13 @@
 	}
 	.step.active .card {
 		opacity: 1;
+	}
+	.step-open {
+		height: 150vh;
+	}
+	/* on the open beat the cards leave the chart alone */
+	.words-scrolly.open .card {
+		opacity: 0;
 	}
 	/* the explore card keeps out of the chart's way */
 	.step.explore {

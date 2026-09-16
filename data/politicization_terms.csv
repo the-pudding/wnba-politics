@@ -29,17 +29,20 @@ womens_sports,fairness in
 womens_sports,save women
 womens_sports,protect(?:ing)? (?:girls|women)
 womens_sports,title ix
-womens_sports,trans\b
+womens_sports,trans
 womens_sports,transgender
 womens_sports,gender
 activism,activis
 activism,protest
 activism,counterprotest
-activism,rall(?:y|ies) (?:for|against|outside|at the|in support)
+activism,rally
+activism,rallies
 activism,boycott
 activism,movement
 activism,anthem
 activism,kneel
+activism,speak out
+activism,speaks out
 activism,takes a stand
 activism,puts? career on line
 activism,petition
@@ -57,7 +60,7 @@ activism,(?:minneapolis|kenosha|border patrol|ice) shooting
 activism,shot (?:and killed|dead)
 activism,gun (?:control|laws|violence)
 race,\bracis
-race,(?<!year )(?<!mvp )(?<!playoff )(?<!title )(?<!award )(?<!scoring )(?<!rookie )\brace\b
+race,\brace\b
 race,white privilege
 race,black lives
 race,\bblm\b
@@ -67,7 +70,7 @@ lgbtq,lgbtq
 lgbtq,\bgay\b
 lgbtq,lesbian
 lgbtq,queer
-lgbtq,pride (?:night|month|game|flag|parade|weekend)
+lgbtq,pride
 lgbtq,same-sex
 patriotism,patriot
 patriotism,american flag

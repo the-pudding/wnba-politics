@@ -161,11 +161,18 @@
 	// the word goes inside its bar when it fits, else just past the bar's end
 	let WORD_PX = $derived(narrow ? 12 : 13.5);
 	let measureCtx = null;
+	let chartFont = null;
 	function textWidth(word) {
 		if (typeof document === "undefined") return word.length * WORD_PX * 0.6;
 		if (!measureCtx)
 			measureCtx = document.createElement("canvas").getContext("2d");
-		measureCtx.font = `700 ${WORD_PX}px var(--font-chart)`;
+		// a canvas cannot read a CSS variable: resolve the chart face once
+		// (an unreadable font string would silently fall back to 10px sans)
+		if (!chartFont)
+			chartFont =
+				getComputedStyle(document.documentElement).getPropertyValue("--font-chart").trim() ||
+				'"Helvetica Neue", Helvetica, Arial, sans-serif';
+		measureCtx.font = `700 ${WORD_PX}px ${chartFont}`;
 		return measureCtx.measureText(word).width;
 	}
 	// the word column, when the words sit beside the bars: as wide as the
@@ -292,7 +299,10 @@
 					{@const weak = Math.abs(p.z) < WEAK_Z}
 					{@const color = sign > 0 ? FOX : OTHERS}
 					{@const tw = textWidth(wordCase(p.word))}
-					{@const inside = !beside && !outside && !tip_ && on && !weak && w >= tw + 16}
+					{@const over = tw + 14 - w}
+					<!-- a word that overhangs its bar by a hair slides in by that much -->
+					{@const nudge = !beside && !outside && !tip_ && over > 0 && over <= 7 ? over : 0}
+					{@const inside = !beside && !outside && !tip_ && over <= 7}
 					{@const foot = sign > 0 ? mid + GAP + (outside ? 0 : LABEL) : mid - GAP - (outside ? 0 : LABEL)}
 					{@const end = sign > 0 ? foot + w : foot - w}
 					{@const reach =
@@ -321,15 +331,15 @@
 							rx="3"
 							fill={color}
 						/>
-						<!-- the word, on its bar: white inside a long one, else ink with a
-						     halo so it reads across the bar's edge -->
+						<!-- the word, white; past its bar's end it gets an outline in the
+						     bar's colour so it still reads as the bar's label -->
 						<text
 							class="word"
 							class:halo={!inside && !beside && !outside && !tip_}
-							x={outside ? mid + sign * (GAP + span + 40) : beside ? mid + sign * GAP : tip_ ? end + sign * 7 : foot + sign * 7}
+							x={outside ? mid + sign * (GAP + span + 40) : beside ? mid + sign * GAP : tip_ ? end + sign * 7 : foot + sign * (7 - nudge)}
 							y={y + 4.5}
 							text-anchor={sign > 0 ? "start" : "end"}
-							fill={inside || (!beside && !outside && !tip_) ? "#fff" : INK}
+							fill="#fff"
 							style:--halo={color}
 							font-size={WORD_PX}>{wordCase(p.word)}</text
 						>
@@ -444,11 +454,11 @@
 		font-weight: 700;
 		pointer-events: none;
 	}
-	/* past its bar's end a word keeps its white, on a halo in the bar's
-	   colour, so it reads as the bar carrying on */
+	/* a word that runs past its bar keeps its white, with an outline in the
+	   bar's own colour around the letters */
 	.word.halo {
 		paint-order: stroke;
-		stroke: var(--halo, rgba(255, 255, 255, 0.85));
+		stroke: var(--halo);
 		stroke-width: 3.5px;
 		stroke-linejoin: round;
 	}

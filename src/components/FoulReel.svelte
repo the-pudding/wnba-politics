@@ -840,16 +840,38 @@
 		background: var(--color-ink);
 	}
 	@media (max-width: 640px) {
+		/* stacked on a phone: the two clippings close together, the type a
+		   touch smaller, so a pair fits one screen */
 		.slide {
 			grid-template-columns: 1fr;
-			gap: 30px;
+			gap: 10px;
+			padding: 10px 10px 14px;
+			/* rows hug their clippings instead of stretching to share the height */
+			align-content: center;
 		}
-		/* stacked, the badge sits between the two rows */
+		/* stacked, the badge takes its own row between the two clippings (it is
+		   first in the markup; order puts it in the middle) */
 		.slide .vs {
-			transform: translate(-50%, -50%);
+			position: static;
+			transform: none;
+			order: 1;
+			justify-self: center;
+			margin: -4px 0;
+			font-size: 16px;
+			padding: 1px 6px;
+		}
+		.slide .clip:first-of-type {
+			order: 0;
+		}
+		.slide .clip:last-of-type {
+			order: 2;
+		}
+		.clip {
+			padding: 9px 12px 9px;
 		}
 		.clip p {
-			font-size: 15px;
+			font-size: 14px;
+			line-height: 1.38;
 		}
 	}
 

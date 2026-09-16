@@ -14,15 +14,14 @@
 		MSNBC: "var(--color-msnbc)"
 	};
 	const LOGOS = {
-		"Fox News": { file: "fox-news.svg", h: 18 },
+		"Fox News": { file: "fox-news.svg", h: 22 },
 		ESPN: { file: "espn.svg", h: 14 },
 		"CBS Sports": { file: "cbs-sports.svg", h: 14 },
 		"USA Today": { file: "usa-today.svg", h: 14 },
-		"The Athletic": { file: "the-athletic.png", h: 20 },
-		"Just Women's Sports": { file: "jws.png", h: 20 }
+		"The Athletic": { file: "the-athletic.png", h: 22 },
+		"Just Women's Sports": { file: "jws.png", h: 22 }
 	};
 	// the outlets with a bare icon get their name beside it
-	const NAMED = new Set(["Fox News", "The Athletic", "Just Women's Sports"]);
 	const SHORT = { "Just Women's Sports": "JWS" };
 
 	let rows = $derived.by(() => {
@@ -85,11 +84,11 @@
 					{#if LOGOS[row.name]}
 						<img
 							src="{base}/logos/{LOGOS[row.name].file}"
-							alt={NAMED.has(row.name) ? "" : row.name}
+							alt={row.name}
 							style:height="{LOGOS[row.name].h}px"
 						/>
 					{/if}
-					{#if !LOGOS[row.name] || NAMED.has(row.name)}<span>{SHORT[row.name] ?? row.name}</span>{/if}
+					{#if !LOGOS[row.name]}<span>{SHORT[row.name] ?? row.name}</span>{/if}
 				</div>
 			</div>
 		{/each}
@@ -203,13 +202,25 @@
 		.of {
 			display: none;
 		}
+		/* six columns share a phone's width: the logo above its name, the name
+		   free to wrap, nothing spilling into the next column */
 		.who {
-			font-size: 11.5px;
+			flex-direction: column;
+			gap: 3px;
+			min-height: 44px;
+			padding: 6px 2px 2px;
+			font-size: 10.5px;
+			line-height: 1.15;
+			overflow: hidden;
+		}
+		.who span {
+			max-width: 100%;
+			overflow-wrap: anywhere;
 		}
 		.who img {
 			max-width: 100%;
 			height: auto !important;
-			max-height: 16px;
+			max-height: 15px;
 		}
 	}
 </style>

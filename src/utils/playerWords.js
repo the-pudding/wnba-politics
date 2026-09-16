@@ -98,7 +98,10 @@ export function playerWordsSource({ who, rel, vs, pair }) {
 					nf,
 					no,
 					eg: own?.eg ?? entry.eg,
-					egw: own?.egw ?? entry.egw
+					egw: own?.egw ?? entry.egw,
+					// the outlet the example is from ("ESPN", "The Athletic"); a
+					// hand-picked override names its own, else it is Fox's
+					ego: own?.ego ?? (own?.eg ? "Fox News" : entry.ego)
 				});
 		}
 	}

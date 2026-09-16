@@ -279,23 +279,48 @@
 			.filter((c) => c.o > 0.03);
 	});
 
+	// on a phone the labels are drawn almost twice as large (see the media
+	// query below), so they need more room apart and must not run off the edges
+	let narrow = $state(false);
+	$effect(() => {
+		const mq = window.matchMedia("(max-width: 640px)");
+		const set = () => (narrow = mq.matches);
+		set();
+		mq.addEventListener("change", set);
+		return () => mq.removeEventListener("change", set);
+	});
 	// nudge lit labels apart; anything above the apex hits the network's corner label
 	const CEILING = corners.A[1] - 2;
 	let labelled = $derived.by(() => {
 		const placed = [];
 		if (!labels) return placed;
-		const rowH = big ? 18 : 14;
-		const colW = big ? 130 : 95;
+		// a row is the type size plus its halo, with a little air
+		const rowH = narrow ? 33 : big ? 21 : 18;
+		const perChar = narrow ? 13 : big ? 8.5 : 7.5;
+		// the bottom corners carry the channel names: keep clear of them
+		const FLOOR = corners.B[1] - (narrow ? 30 : 16);
 		for (const term of terms.filter((t) => t.lit).sort((a, b) => a.py - b.py)) {
-			const x = term.px + radius(term.total) + (big ? 7 : 5);
-			let y = term.py + (big ? 5 : 4);
+			const gap = narrow ? 9 : big ? 7 : 5;
+			const width = term.term.length * perChar;
+			// past the right edge the label sits on the dot's other side
+			const flip = term.px + radius(term.total) + gap + width > SIDE - 4;
+			const x = flip ? term.px - radius(term.total) - gap : term.px + radius(term.total) + gap;
+			// the span the text covers, by its anchor: two labels clash when their
+			// spans overlap and their baselines sit closer than a row
+			const x0 = flip ? x - width : x, x1 = flip ? x : x + width;
+			let y = term.py + (narrow ? 8 : big ? 5 : 4);
 			const clashes = (candidate) =>
 				placed.some(
-					(o) => Math.abs(o.y - candidate) < rowH && Math.abs(o.x - x) < colW
+					(o) => Math.abs(o.y - candidate) < rowH && o.x0 < x1 + 10 && o.x1 > x0 - 10
 				);
-			// stack downward when a neighbour's label is in the way
+			// stack downward when a neighbour's label is in the way, upward when
+			// that would land on a corner name
 			while (clashes(y)) y += rowH;
-			placed.push({ ...term, x, y });
+			if (y > FLOOR) {
+				y = term.py - (narrow ? 12 : 6);
+				while (clashes(y)) y -= rowH;
+			}
+			placed.push({ ...term, x, y, x0, x1, anchor: flip ? "end" : "start" });
 		}
 		return placed;
 	});
@@ -531,7 +556,7 @@
 				class="word"
 				x={term.x}
 				y={term.y}
-				text-anchor="start"
+				text-anchor={term.anchor ?? "start"}
 				fill={term.lit}
 			>
 				{term.term}
@@ -783,5 +808,21 @@
 	.example .who {
 		font-weight: 800;
 		margin-right: 4px;
+	}
+	/* the triangle is drawn 700 units wide and scaled to the screen: on a
+	   phone that halves every label, so they are set larger there */
+	@media (max-width: 640px) {
+		.corner,
+		.big .corner {
+			font-size: 34px;
+		}
+		.word,
+		.big .word {
+			font-size: 24px;
+			stroke-width: 6px;
+		}
+		.year-stamp {
+			font-size: 22px;
+		}
 	}
 </style>

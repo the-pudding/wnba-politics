@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from "svelte";
 	// The outlet gap as a dot plot: one row per player
 	import { base } from "$app/paths";
 	import { scaleLinear } from "d3-scale";
@@ -99,106 +100,10 @@
 	// bright there, to make the point that equal coverage would put her at 1×
 	let centeredSet = $derived(new Set((centered ?? []).map(key)));
 
-	// A face that gets placed hops out from the equal line
-	const PLACE_MOTION = "slide";
 	// how long a placement slide takes (also the CSS transition); the Doc can
 	// set it with `speed:` in milliseconds on the scrolly block
 	let SLIDE_MS = $derived(Math.max(100, +speed || 3500));
-	const HOP_MS = 580;
-	const HOP_HEIGHT = 46;
-	// a face landing beyond this ratio gets one more, smaller bounce in place
-	const SETTLE_OVER = 5; // 5× and up
-	const SETTLE_HEIGHT = 0.45; // of a hop
-	let counting = $state({});
-	function hop(node, params) {
-		let prev = params;
-		let anim = null;
-		let timers = [];
-		const clearTimers = () => {
-			for (const t of timers) clearTimeout(t);
-			timers = [];
-		};
-		const still =
-			typeof window !== "undefined" &&
-			window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-		const run = () => {
-			// pos(k): where k units of ratio sit (signed); past the axis the
-			// hops shorten, like a ball running out of bounce
-			const { pos, units, y, unit } = prev;
-			const to = pos(units);
-			const n = Math.max(1, Math.ceil(Math.abs(units) - 1e-6));
-			const dir = Math.sign(units) || 1;
-			const frames = [];
-			for (let i = 0; i < n; i++) {
-				const a = pos(dir * Math.min(Math.abs(units), i));
-				const b = pos(dir * Math.min(Math.abs(units), i + 1));
-				// a shorter hop is a smaller bounce
-				const h = HOP_HEIGHT * Math.sqrt(Math.min(1, Math.abs(b - a) / unit));
-				frames.push({
-					offset: i / n,
-					transform: `translate(${a}px, ${y}px)`,
-					easing: "ease-out"
-				});
-				frames.push({
-					offset: (i + 0.5) / n,
-					transform: `translate(${(a + b) / 2}px, ${y - h}px)`,
-					easing: "ease-in"
-				});
-			}
-			const settle = Math.abs(units) + 1 >= SETTLE_OVER;
-			const total = n + (settle ? 1 : 0);
-			// the frames so far were laid out over n hops; re-space them over the
-			// total, then add the settle bounce on the landing spot
-			for (const f of frames) f.offset = (f.offset * n) / total;
-			if (settle) {
-				frames.push({
-					offset: n / total,
-					transform: `translate(${to}px, ${y}px)`,
-					easing: "ease-out"
-				});
-				frames.push({
-					offset: (n + 0.5) / total,
-					transform: `translate(${to}px, ${y - HOP_HEIGHT * SETTLE_HEIGHT}px)`,
-					easing: "ease-in"
-				});
-			}
-			frames.push({ offset: 1, transform: `translate(${to}px, ${y}px)` });
-			anim?.cancel();
-			clearTimers();
-			node.classList.add("hopping");
-			anim = node.animate(frames, { duration: total * HOP_MS, fill: "none" });
-			// each landing but the last ticks the tag up by one; the true value
-			// shows on the real landing, before any settle bounce
-			for (let i = 1; i < n; i++)
-				timers.push(setTimeout(() => prev.count(i + 1), i * HOP_MS));
-			if (settle) timers.push(setTimeout(() => prev.count(null), n * HOP_MS));
-			anim.onfinish = anim.oncancel = () => {
-				node.classList.remove("hopping");
-				clearTimers();
-				prev.count(null);
-				anim = null;
-			};
-		};
-		return {
-			update(next) {
-				const placedNow = next.on && !prev.on;
-				prev = next;
-				if (!next.on && anim) anim.cancel();
-				if (placedNow && !still && PLACE_MOTION === "hop") {
-					next.count(1);
-					// straight away, in the same frame as the placement: waiting even
-					// two frames let the slide transition start first, which on a
-					// phone showed as a stutter before the first bounce
-					node.classList.add("hopping");
-					run();
-				}
-			},
-			destroy() {
-				clearTimers();
-				anim?.cancel();
-			}
-		};
-	}
+
 	let against = $state(start);
 	$effect(() => {
 		against = start;
@@ -207,7 +112,23 @@
 	// the Doc types A’ja with a curly apostrophe, the data with a straight one
 	const key = (name) => name.toLowerCase().replace(/[’‘]/g, "'");
 	let placedSet = $derived(placed === null ? null : new Set(placed.map(key)));
-	const isPlaced = (name) => placedSet === null || placedSet.has(key(name));
+	// the placement the faces are drawn at lags the step by a frame or two:
+	// the stacking order below is settled first, so a face never moves in
+	// the DOM in the same frame its slide starts (that would cut the
+	// transition and snap it into place)
+	let placedShown = $state(placed === null ? null : new Set(placed.map(key)));
+	$effect(() => {
+		const target = placedSet;
+		let inner;
+		const outer = requestAnimationFrame(() => {
+			inner = requestAnimationFrame(() => (placedShown = target));
+		});
+		return () => {
+			cancelAnimationFrame(outer);
+			if (inner) cancelAnimationFrame(inner);
+		};
+	});
+	const isPlaced = (name) => placedShown === null || placedShown.has(key(name));
 
 	// both numbers are already cut to the shared window
 	function pressShare(person) {
@@ -458,7 +379,11 @@
 		return () => ro.disconnect();
 	});
 
-	// drawing order: plain faces first
+	// drawing order: plain faces first, the named ones on top. A face goes up
+	// the stack the moment a step names it — before it swells, and before its
+	// slide starts (the placement above waits a frame for this) — and comes
+	// back down only once the step's slides have settled, so a face sliding
+	// home is never moved in the DOM mid-transition
 	let SETTLE_MS = $derived(SLIDE_MS + 300);
 	let litSettled = $state(new Set());
 	$effect(() => {
@@ -469,11 +394,29 @@
 				)
 				.map((p) => p.name)
 		);
-		const timer = setTimeout(() => (litSettled = next), SETTLE_MS);
+		const current = untrack(() => litSettled);
+		// a face the step drops comes down at once, unless its placement is
+		// changing too — then it stays up until its slide has settled
+		const shown = untrack(() => placedShown);
+		const sliding = (n) => {
+			const k = key(n);
+			const to = placedSet === null || placedSet.has(k);
+			const from = shown === null || shown.has(k);
+			return to !== from;
+		};
+		// the named faces go to the top now; the ones the step drops come down,
+		// except those sliding home, which hold a middle tier (their relative
+		// order unchanged, so nothing moves in the DOM mid-slide) until the
+		// slide has settled
+		const held = untrack(() => heldUp);
+		heldUp = new Set([...current, ...held].filter((n) => !next.has(n) && sliding(n)));
+		if (next.size !== current.size || [...next].some((n) => !current.has(n))) litSettled = next;
+		const timer = setTimeout(() => (heldUp = new Set()), SETTLE_MS);
 		return () => clearTimeout(timer);
 	});
+	let heldUp = $state(new Set());
 	const stackOrder = (person) =>
-		hovered === person.name ? 2 : litSettled.has(person.name) ? 1 : 0;
+		hovered === person.name ? 3 : litSettled.has(person.name) ? 2 : heldUp.has(person.name) ? 1 : 0;
 	let hovered = $state(null);
 	let tooltip = $state(null);
 	function showFace(event, person) {
@@ -671,17 +614,6 @@
 					<g
 						class="face-mark"
 						style:transform="translate({on ? xOf(person.times) : x(0)}px, {y}px)"
-						use:hop={{
-							on,
-							pos: xOf,
-							units: person.times,
-							y,
-							unit,
-							count: (k) => {
-								if (k) counting[person.name] = k;
-								else delete counting[person.name];
-							}
-						}}
 						onpointerenter={(e) => on && showFace(e, person)}
 						onpointermove={(e) => on && showFace(e, person)}
 						onpointerleave={hideFace}
@@ -755,9 +687,7 @@
 							     everyone and needs none). It sits right of the face — on the
 							     "others" side that keeps it clear of her name — unless she is off
 							     the Fox end of the axis or it would run past the frame -->
-							{@const label = counting[person.name]
-								? `${counting[person.name].toFixed(1)}× ${person.times > 0 ? "Fox" : themShort}`
-								: ratioTag(person)}
+							{@const label = ratioTag(person)}
 							{@const fits =
 								xOf(person.times) + r * grow + 9 + label.length * 7.5 <= WIDTH}
 							{@const rightOf =
@@ -1136,10 +1066,6 @@
 	.face-mark {
 		cursor: default;
 		transition: transform var(--slide, 1500ms) cubic-bezier(0.22, 0.8, 0.3, 1);
-	}
-	/* mid-hop the animation owns the transform; no slide on top of it */
-	.face-mark.hopping {
-		transition: none;
 	}
 	/* the named faces swell and settle back as steps change */
 	.face-scale {

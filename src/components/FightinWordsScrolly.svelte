@@ -29,7 +29,7 @@
 	);
 </script>
 
-<section class="fw-scrolly" class:bars={chart === "bars"}>
+<section class="fw-scrolly" class:bars={chart === "bars"} class:open={index >= STEPS.length}>
 	<div class="sticky">
 		<!-- articles, not headlines: headline counts are too sparse for these words -->
 		<FightinWords
@@ -55,7 +55,8 @@
 					<p class="card">{@html step.html}</p>
 				</div>
 			{/each}
-			<!-- cardless final beat: one more screen with nothing covering the controls -->
+			<!-- cardless final beat: the chart stays put for another screen and a
+			     half with every card gone, so the reader can search and click -->
 			<div class="step step-open" aria-hidden="true"></div>
 		</Scrolly>
 	</div>
@@ -121,6 +122,13 @@
 	}
 	.step.active .card {
 		opacity: 1;
+	}
+	.step-open {
+		height: 150vh;
+	}
+	/* on the open beat the cards leave the chart alone */
+	.fw-scrolly.open .card {
+		opacity: 0;
 	}
 
 	@media (max-width: 860px) {

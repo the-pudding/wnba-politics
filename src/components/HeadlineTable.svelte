@@ -20,6 +20,9 @@
 		"celebrity",
 		"performance"
 	];
+	// how each measure reads on a chip and in the filter
+	const FRAME_LABEL = { political: "politics", performance: "play" };
+	const frameLabel = (f) => FRAME_LABEL[f] ?? f;
 	const FRAME_COLORS = {
 		political: "var(--color-politics)",
 		appearance: "var(--color-race)",
@@ -66,7 +69,8 @@
 	// on a phone the embedded table hides behind a bar: a tall scroll region
 	// in the middle of the page catches the finger and stops the page scrolling
 	let narrow = $state(false);
-	let open = $state(false);
+	// open from the start, on phones too; the bar under the count folds it away
+	let open = $state(true);
 	$effect(() => {
 		const query = window.matchMedia("(max-width: 640px)");
 		const sync = () => (narrow = query.matches);
@@ -74,7 +78,8 @@
 		query.addEventListener("change", sync);
 		return () => query.removeEventListener("change", sync);
 	});
-	// on a phone the table always starts collapsed, embedded or not
+	// on a phone the bar can fold the table away (a tall scroll region catches
+	// the finger); it starts open
 	let collapsed = $derived(narrow && !open);
 
 	let search = $state("");
@@ -255,7 +260,7 @@
 		>
 			{#each ["all", ...FRAMES] as option}
 				<button class:active={frame === option} onclick={() => (frame = option)}
-					>{option}</button
+					>{frameLabel(option)}</button
 				>
 			{/each}
 		</div>
@@ -316,7 +321,13 @@
 				{#each rows as row (row.d + row.t)}
 					{@const score = scoreOf(row.t)}
 					<tr>
-						<td class="col-date">{prettyDate(row.d)}</td>
+						<td class="col-date">
+							{#if narrow}
+								<!-- two short lines on a phone: the day, then the year -->
+								<span class="day">{MONTHS[+row.d.slice(5, 7) - 1]} {+row.d.slice(8, 10)}</span>
+								<span class="yr">{row.d.slice(0, 4)}</span>
+							{:else}{prettyDate(row.d)}{/if}
+						</td>
 						<td class="col-head">
 							{#if row.u}
 								<a href={row.u} target="_blank" rel="noreferrer"
@@ -342,7 +353,7 @@
 									class="frame-tag"
 									style="color:{FRAME_COLORS[f]}; border-color:{FRAME_COLORS[
 										f
-									]}">{f}</span
+									]}">{frameLabel(f)}</span
 								>
 							{/each}
 						</td>
@@ -802,6 +813,50 @@
 		.col-who {
 			display: none;
 		}
+		/* the headline gets the width: a two-line date, stacked framing chips,
+		   a slim sentiment meter — and words never split */
+		.col-date {
+			width: 54px;
+			line-height: 1.25;
+		}
+		thead th {
+			letter-spacing: 0.06em;
+			padding-right: 8px;
+		}
+		tbody .col-date {
+			font-size: 10.5px;
+		}
+		.col-date .day,
+		.col-date .yr {
+			display: block;
+			white-space: nowrap;
+		}
+		/* no sentiment column on a phone: the headline needs the width; the
+		   framing column keeps its chips but loses its title */
+		.col-mood {
+			display: none;
+		}
+		thead .col-frame {
+			color: transparent;
+		}
+		tbody .col-head {
+			font-size: 14px;
+			overflow-wrap: normal;
+			word-break: normal;
+			padding-right: 8px;
+		}
+		.col-frame {
+			width: 70px;
+		}
+		.frame-tag {
+			display: block;
+			width: max-content;
+			max-width: 100%;
+			margin: 1px 0 2px;
+			font-size: 9px;
+			padding: 0 4px;
+		}
+
 		.lede h3 {
 			font-size: 25px;
 		}

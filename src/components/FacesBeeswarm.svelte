@@ -408,6 +408,14 @@
 	});
 
 	let ticks = $derived(xScale.ticks(rowsMode && narrow ? 5 : 7));
+	// a tick label keeps as many decimals as the tick step needs: half-percent
+	// steps read 0.5%, 1%, 1.5% — never 1%, 1%, 2%, 2%
+	let tickLabel = $derived.by(() => {
+		if (axis.centred) return axis.format;
+		const step = ticks.length > 1 ? Math.abs(ticks[1] - ticks[0]) * 100 : 1;
+		const decimals = step >= 1 ? 0 : step >= 0.1 ? 1 : 2;
+		return (v) => `${(v * 100).toFixed(decimals).replace(/\.0+$/, "")}%`;
+	});
 	// the axis sits under the swarm, and over the tall rows (where the bottom
 	// is a long way down)
 	let baselineY = $derived(rowsTall ? AXIS_TOP : HEIGHT - PAD.bottom + 6);
@@ -495,7 +503,7 @@
 				class="axis"
 				x={xScale(tick)}
 				y={baselineY + (rowsTall ? -8 : 17)}
-				text-anchor="middle">{axis.format(tick)}</text
+				text-anchor="middle">{tickLabel(tick)}</text
 			>
 		{/each}
 		{#if axis.centred}

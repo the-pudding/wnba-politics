@@ -216,7 +216,17 @@
 		})
 	);
 
-	const WIDTH = $derived(+width || 900);
+	// on a phone the drawing is scaled to the screen: drawn narrower there, so
+	// the type comes out legible and the ticks thin to one a year
+	let narrow = $state(false);
+	$effect(() => {
+		const mq = window.matchMedia("(max-width: 640px)");
+		const set = () => (narrow = mq.matches);
+		set();
+		mq.addEventListener("change", set);
+		return () => mq.removeEventListener("change", set);
+	});
+	const WIDTH = $derived(narrow ? Math.min(+width || 900, 460) : +width || 900);
 	const HEIGHT = $derived(+height || 300);
 	// a small panel: a tick a year, and no date label on the mark
 	let small = $derived(WIDTH < 600);
@@ -536,8 +546,15 @@
 		pointer-events: none;
 	}
 	.small .axis,
-	.small .line-label {
-		font-size: 11px;
+	.small .line-label,
+	.small .axis-title,
+	.small .mark-label,
+	.small .total,
+	.small .legend {
+		font-size: 17px;
+	}
+	.small .legend-n {
+		font-size: 14px;
 	}
 	.note-tick {
 		stroke-width: 1;

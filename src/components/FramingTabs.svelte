@@ -53,7 +53,7 @@
 		},
 		{
 			key: "political",
-			label: "Politicized",
+			label: "Politics",
 			blurb:
 				"Share of Fox headlines carrying political or culture-war language."
 		},
@@ -70,7 +70,7 @@
 		},
 		{
 			key: "performance",
-			label: "Performance",
+			label: "Play",
 			blurb:
 				"Share of her Fox headlines about her actual play: points, rebounds, assists, records."
 		}
