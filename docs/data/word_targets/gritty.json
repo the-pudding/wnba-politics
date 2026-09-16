@@ -1,0 +1,47 @@
+{
+ "Alyssa Thomas": {
+  "Fox News": {
+   "accused": 1
+  },
+  "others": {
+   "victim": 1,
+   "accused": 1
+  }
+ },
+ "Becky Hammon": {
+  "Fox News": {},
+  "others": {
+   "accused": 1
+  }
+ },
+ "Napheesa Collier": {
+  "Fox News": {},
+  "others": {
+   "accused": 1
+  }
+ },
+ "Sabrina Ionescu": {
+  "Fox News": {},
+  "others": {
+   "accused": 1
+  }
+ },
+ "Chennedy Carter": {
+  "Fox News": {},
+  "others": {
+   "accused": 1
+  }
+ },
+ "Natasha Cloud": {
+  "Fox News": {},
+  "others": {
+   "accused": 1
+  }
+ },
+ "Caitlin Clark": {
+  "Fox News": {},
+  "others": {
+   "accused": 1
+  }
+ }
+}

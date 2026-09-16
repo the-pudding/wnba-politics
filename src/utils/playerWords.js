@@ -8,6 +8,8 @@
 // back on and the two lists are merged.
 import data from "$data/player_words.json";
 import phrases from "$data/player_phrases.json";
+// hand-picked tooltip examples, keyed "player | relation | word"
+import overrides from "$data/example_overrides.json";
 
 const RELATION = {
 	subject: "what she does",
@@ -87,6 +89,7 @@ export function playerWordsSource({ who, rel, vs, pair }) {
 			const nf = entry.clark ?? 0;
 			const no = entry.others ?? 0;
 			const n = nf + no;
+			const own = overrides[`${who} | ${rel} | ${entry.word}`];
 			if (n > 0)
 				points.push({
 					word: entry.word,
@@ -94,8 +97,8 @@ export function playerWordsSource({ who, rel, vs, pair }) {
 					n,
 					nf,
 					no,
-					eg: entry.eg,
-					egw: entry.egw
+					eg: own?.eg ?? entry.eg,
+					egw: own?.egw ?? entry.egw
 				});
 		}
 	}

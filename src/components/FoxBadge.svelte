@@ -15,7 +15,7 @@
 		margin-right: 8px;
 	}
 	.mark {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: calc(10.5px * var(--scale));
 		font-weight: 800;
 		letter-spacing: 0.09em;

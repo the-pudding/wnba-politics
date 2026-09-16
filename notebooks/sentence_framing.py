@@ -78,6 +78,19 @@ def political_for(text, person):
 def hit(rx, key, text):
     return bool(rx.search(text)) and not (scrub[key] and scrub[key].search(text))
 
+# whose looks, whose private life, whose stat line: the register word has to
+# belong to the player grammatically, as in 01 (framing.attribute) — a
+# sentence that names two players and mentions one's outfit is about her only
+nlp_dep = spacy.load("en_core_web_sm", disable=["ner", "lemmatizer"])
+def attributed(register, rx, key):
+    rows = [{"t": t} for t in sorted({t for _, _, t, _, _ in sentences if hit(rx, key, t)})]
+    got = framing.attribute(nlp_dep, rows, list(people), register, name_rx)
+    return {(name, r["t"]) for name, rs in got.items() for r in rs}
+looks_of = attributed("appearance", appearance_rx, "appearance")
+celeb_of = attributed("celebrity", celebrity_rx, "celebrity") | looks_of
+play_of = attributed("performance", performance_rx, "performance")
+print(f"attributed by grammar: {len(looks_of):,} appearance · {len(celeb_of):,} celebrity · {len(play_of):,} performance", file=sys.stderr, flush=True)
+
 # --- tone, from the cache or the model ------------------------------------------------
 scores = {}
 if CACHE.exists():
@@ -114,9 +127,9 @@ for name in people:
     if len(mine) < MIN_SENTENCES: continue
     n = len(mine)
     pol = [t for _, _, t, _ in mine if political_for(t, name)]
-    looks = [t for _, _, t, _ in mine if hit(appearance_rx, "appearance", t)]
-    celeb = [t for _, _, t, _ in mine if hit(celebrity_rx, "celebrity", t) or hit(appearance_rx, "appearance", t)]
-    play = [t for _, _, t, _ in mine if hit(performance_rx, "performance", t)]
+    looks = [t for _, _, t, _ in mine if (name, t) in looks_of]
+    celeb = [t for _, _, t, _ in mine if (name, t) in celeb_of]
+    play = [t for _, _, t, _ in mine if (name, t) in play_of]
     tones = [scores[t] for _, _, t, _ in mine if t in scores]
     ranked = sorted(((scores[t], t) for _, _, t, _ in mine if t in scores))
     per[name] = {

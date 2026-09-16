@@ -105,7 +105,7 @@
 		gap: 6px;
 	}
 	.pick-label {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		font-weight: 800;
 		letter-spacing: 0.06em;
@@ -119,7 +119,7 @@
 		padding: 3px 8px 3px 4px;
 		border: 1px solid rgba(42, 21, 3, 0.3);
 		border-radius: 4px;
-		background: var(--color-paper, #fffdf8);
+		background: var(--color-paper, var(--color-paper));
 		color: var(--color-ink);
 		font-size: 13.5px;
 		line-height: normal;
@@ -143,13 +143,13 @@
 		border-radius: 50%;
 		object-fit: cover;
 		flex: 0 0 auto;
-		background: #f7f2e6;
+		background: var(--color-card);
 		border: 1.5px solid rgba(255, 253, 248, 0.9);
 		box-shadow: 0 1px 4px rgba(42, 21, 3, 0.18);
 	}
 	.blank {
 		display: inline-block;
-		background: #d8cdb6;
+		background: var(--color-sand);
 	}
 	.menu {
 		position: absolute;
@@ -161,7 +161,7 @@
 		min-width: 100%;
 		max-height: 320px;
 		overflow-y: auto;
-		background: #fffdf8;
+		background: var(--color-paper);
 		border: 1px solid rgba(42, 21, 3, 0.2);
 		border-radius: 4px;
 		box-shadow: 0 8px 22px rgba(42, 21, 3, 0.2);

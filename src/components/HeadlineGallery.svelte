@@ -196,7 +196,7 @@
 		background: rgba(42, 21, 3, 0.25);
 	}
 	.dot.on {
-		background: var(--color-fox);
+		background: var(--color-ink);
 	}
 	figcaption {
 		font-size: 12.5px;

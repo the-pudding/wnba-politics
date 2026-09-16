@@ -5,31 +5,21 @@
 	import Toc from "$components/Toc.svelte";
 	import SimpleBars from "$components/SimpleBars.svelte";
 	import ScrollToc from "$components/ScrollToc.svelte";
-	import TimelineBars from "$components/TimelineBars.svelte";
-	import TimelineDotsScrolly from "$components/TimelineDotsScrolly.svelte";
 	import OutletTopicCompare from "$components/OutletTopicCompare.svelte";
-	import ChyronTopicHeatmap from "$components/ChyronTopicHeatmap.svelte";
-	import NgramChart from "$components/NgramChart.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
-	import TernaryPair from "$components/TernaryPair.svelte";
 	import TernaryScrolly from "$components/TernaryScrolly.svelte";
 	import FightinWordsScrolly from "$components/FightinWordsScrolly.svelte";
 	import FightinWordsBarsScrolly from "$components/FightinWordsBarsScrolly.svelte";
 	import OutletGapScrolly from "$components/OutletGapScrolly.svelte";
-	import OutletGapBeeswarm from "$components/OutletGapBeeswarm.svelte";
-	import OutletGapBeeswarmScrolly from "$components/OutletGapBeeswarmScrolly.svelte";
 	import FightinWordsVerbsAdj from "$components/FightinWordsVerbsAdj.svelte";
 	import FightinWordsBars from "$components/FightinWordsBars.svelte";
 	import NetworkScrolly from "$components/NetworkScrolly.svelte";
 	import FramingTabs from "$components/FramingTabs.svelte";
-	import FramingScrolly from "$components/FramingScrolly.svelte";
 	import WordTimeline from "$components/WordTimeline.svelte";
 	import WordCompare from "$components/WordCompare.svelte";
 	import WordNeighbors from "$components/WordNeighbors.svelte";
-	import WordPlayers from "$components/WordPlayers.svelte";
 	import FoulReel from "$components/FoulReel.svelte";
 	import HeadlineTable from "$components/HeadlineTable.svelte";
-	import ChyronSegments from "$components/ChyronSegments.svelte";
 	import BoxScore from "$components/BoxScore.svelte";
 	import HeadlineGallery from "$components/HeadlineGallery.svelte";
 	import TvSet from "$components/TvSet.svelte";
@@ -43,42 +33,28 @@
 		// Doc block names = component names (same pattern as kids-book-animals)
 		Toc,
 		SimpleBars,
-		TimelineBars,
-		TimelineDotsScrolly,
 		OutletTopicCompare,
-		ChyronTopicHeatmap,
-		NgramChart,
 		TernaryStatic,
-		TernaryPair,
 		TernaryScrolly,
 		FightinWordsScrolly,
 		FightinWordsBarsScrolly,
 		OutletGapScrolly,
-		OutletGapBeeswarm,
-		OutletGapBeeswarmScrolly,
 		FightinWordsVerbsAdj,
 		FightinWordsBars,
 		NetworkScrolly,
 		FramingTabs,
-		FramingScrolly,
 		WordTimeline,
 		WordCompare,
 		WordNeighbors,
-		WordPlayers,
 		FoulReel,
 		HeadlineTable,
-		ChyronSegments,
 		BoxScore,
 		HeadlineGallery,
 		Gallery: HeadlineGallery,
 		TvSet,
 		// legacy Doc ids — delete once the Doc carries component names
 		toc: Toc,
-		"timeline-clark": TimelineBars,
-		"timeline-griner": TimelineBars,
-		"timeline-scrolly": TimelineDotsScrolly,
 		"outlet-topics": OutletTopicCompare,
-		ngram: NgramChart,
 		"ternary-static": TernaryStatic,
 		"ternary-scrolly": TernaryScrolly,
 		"fightin-words-scrolly": FightinWordsScrolly,

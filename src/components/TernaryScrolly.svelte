@@ -1,8 +1,5 @@
 <script>
-	// Chyron ternary walked through. Each card carries a heading, the text and
-	// the step's words as chips; the words are lit on the triangle, and
-	// hovering a chip pins its tooltip. The `search: true` step becomes an
-	// explore panel: a slider on how common a word is, and a search box.
+	// Chyron ternary walked through
 	import { base } from "$app/paths";
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
@@ -417,7 +414,7 @@
 		margin-top: 10px;
 	}
 	.chip {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11.5px;
 		font-weight: 800;
 		letter-spacing: 0.04em;
@@ -462,7 +459,7 @@
 	}
 	.control-label {
 		display: block;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		font-weight: 800;
 		letter-spacing: 0.06em;
@@ -489,7 +486,7 @@
 	.ends {
 		display: flex;
 		justify-content: space-between;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		color: rgba(42, 21, 3, 0.55);
 		margin-top: 2px;
@@ -546,7 +543,7 @@
 		font-weight: 700;
 	}
 	.suggest .uses {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		color: rgba(42, 21, 3, 0.55);
 	}

@@ -1,16 +1,7 @@
 <script>
-	// An box score for the corpus or other tables. From the Doc:
-	//
-
-	//
-	// The first row's keys (after `outlet`) become the columns, in that order;
-	// underscores become spaces. A row whose outlet is "Total" is set in bold.
+	// An box score 
 	import { base } from "$app/paths";
 
-	// `names: true` prints every outlet's name next to its logo; by default only
-	// outlets whose logo is a bare icon (Fox, The Athletic, JWS) get the name,
-	// since the wordmarks already say who they are
-	// `abbrev: true` shows counts in thousands (2,498 → 2.5k, 48,917 → 48.9k)
 	let { caption = "", rows = [], names = false, abbrev = false } = $props();
 	const short = (v) => {
 		const raw = String(v ?? "").trim();
@@ -105,7 +96,7 @@
 	.box-score {
 		margin: 22px auto 28px;
 		max-width: 340px;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 	}
 	.scroll {
 		overflow-x: auto;

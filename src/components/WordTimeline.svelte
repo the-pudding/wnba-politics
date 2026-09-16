@@ -1,36 +1,19 @@
 <script>
 	// How often a word turns up in Fox's WNBA articles, week by week (or day
-	// by day), with a date marked. In the Doc:
-	//   {.WordTimeline}
-	//   word: hip-check        (a word from notebooks/word_timeline.py)
-	//   words: hip-check, poke, punch, throat   (several, as lines on one plot)
-	//   outlet: Fox News       (or ESPN, CBS Sports, USA Today, The Athletic,
-	//                           Just Women's Sports)
-	//   scope: any | headline | mentions  (articles with the word anywhere, in the
-	//                           headline, or every occurrence of the word)
-	//   scaleTo: Fox News      (keep the y-axis at that outlet's peak, so outlets compare)
-	//   chart: lines | stacked | area  (several words as lines or stacked bars;
-	//                           one word as bars, or as a line with its area shaded)
-	//   combine: true          (several words summed into one series)
-	//   color: #7a4a00         (the single series' colour)
-	//   label: all four words  (the combined series' name)
-	//   scaleWords: a, b, c    (y-axis at the peak of these words, so rows compare)
-	//   xaxis: false           (no date labels: a row above another that has them)
-	//   quiet: true            (no axis title, total or date label: a small row)
-	//   annotate: true         (with combine: each word named on the total line
-	//                           at the week it peaks)
-	//   by: week | day
-	//   from: 2024-01-01
-	//   to: 2026-08-31         (optional; the data's end by default)
-	//   mark: 2026-07-07       (a highlighted date; optional)
-	//   markLabel: GOP letter  (optional)
-	//   title: ...
-	//   {}
+	// by day), with a date marked.
 	import data from "$data/word_timeline.json";
 
 	let {
 		word = "hip-check",
 		words = "",
+		// overlay: a second word (or group, added up) drawn as its own area on
+		// top of the main series, in overlayColor, sharing the scale
+		overlay = "",
+		overlayLabel = "",
+		overlayColor = "var(--color-fox-navy)",
+		// overlayStack: the overlay sits on top of the main series, stacked,
+		// rather than drawn over it
+		overlayStack = false,
 		outlet = "Fox News",
 		scope = "any",
 		scaleTo = "",
@@ -60,7 +43,7 @@
 	const iso = (d) => d.toISOString().slice(0, 10);
 	const weekly = $derived(String(by).trim().toLowerCase() !== "day");
 	// several words: lines on one plot, in a fixed colour order
-	const PALETTE = ["#003366", "#6b4bb0", "var(--color-fox)", "#1f9d6e", "#7a4a00", "#b04ac2"];
+	const PALETTE = ["var(--color-fox-navy)", "var(--color-outlets)", "var(--color-fox)", "var(--color-politics)", "var(--color-brown)", "var(--color-lgbtq)"];
 	let source = $derived(data.outlets[String(outlet).trim()] ?? data.outlets["Fox News"]);
 	let field = $derived(
 		["headline", "mentions"].includes(String(scope).trim().toLowerCase())
@@ -107,6 +90,35 @@
 		});
 	};
 	let entries = $derived(entriesFor(source));
+	let overlayList = $derived(
+		String(overlay)
+			.split(",")
+			.map((w) => w.trim())
+			.filter((w) => w && source.words[w])
+	);
+	// the overlay as one combined series (articles counted once), like `combine`
+	const overlayFor = (src) => {
+		if (!overlayList.length) return [];
+		const counts = {}, examples = {};
+		const order = src.order ?? [];
+		const bits = overlayList.reduce((m, w) => (order.includes(w) ? m | (1 << order.indexOf(w)) : m), 0);
+		if (field === "mentions" || !bits) {
+			for (const w of overlayList) {
+				const e = src.words[w] ?? { any: {}, headline: {}, examples: {} };
+				for (const [day, n] of Object.entries(e[field] ?? {})) counts[day] = (counts[day] ?? 0) + n;
+			}
+		} else {
+			const sets = field === "headline" ? (src.headMasks ?? {}) : (src.masks ?? {});
+			for (const [day, arr] of Object.entries(sets)) {
+				const n = arr.filter((m) => m & bits).length;
+				if (n) counts[day] = n;
+			}
+		}
+		for (const w of overlayList)
+			for (const [day, h] of Object.entries(src.words[w]?.examples ?? {})) examples[day] ??= h;
+		return [{ word: String(overlayLabel).trim() || overlayList.join(", "), color: overlayColor, counts, examples }];
+	};
+	let overlayEntries = $derived(overlayFor(source));
 	const entry = $derived(entries[0]);
 	let end = $derived(
 		String(to).trim() || Object.keys(source.articles).sort().at(-1) || "2026-08-31"
@@ -166,14 +178,20 @@
 			);
 		return scaleSource ? binsFor(scaleSource, entriesFor(scaleSource)) : null;
 	});
-	let peak = $derived(
-		Math.max(
-			1,
-			...(scaleBins ?? bins).flatMap((b) =>
-				stacked ? [b.each.reduce((a, v) => a + v, 0)] : multi ? b.each : [b.hits]
-			)
-		)
+	let overlayBins = $derived(overlayEntries.length ? binsFor(source, overlayEntries) : null);
+	let overlayScaleBins = $derived(
+		overlayEntries.length && scaleSource ? binsFor(scaleSource, overlayFor(scaleSource)) : null
 	);
+	const stackOn = $derived(overlayStack === true || String(overlayStack).trim().toLowerCase() === "true");
+	let peak = $derived.by(() => {
+		const main = scaleBins ?? bins;
+		const over = overlayScaleBins ?? overlayBins;
+		const values = main.flatMap((b, i) =>
+			stacked ? [b.each.reduce((a, v) => a + v, 0)] : multi ? b.each : [b.hits + (stackOn && over?.[i] ? over[i].hits : 0)]
+		);
+		return Math.max(1, ...values, ...(stackOn ? [] : (over ?? []).map((b) => b.hits)));
+	});
+	let overlayTotal = $derived((overlayBins ?? []).reduce((s, b) => s + b.hits, 0));
 	let total = $derived(bins.reduce((s, b) => s + b.hits, 0));
 	let totals = $derived(entries.map((_, j) => bins.reduce((s, b) => s + b.each[j], 0)));
 	// each line's path, and where to put its label (its peak)
@@ -257,7 +275,9 @@
 				if (b.hits > rows[top].hits) top = i;
 			});
 			if (!rows[top]?.hits) continue;
-			out.push({ word: w, i: top, x: xOf(top) + stepX / 2, y: yOf(bins[top].hits), peak: rows[top].hits });
+			// stacked under an overlay, the word's label clears the band on top of it
+			const lift = stackOn && overlayBins?.[top] ? overlayBins[top].hits : 0;
+			out.push({ word: w, i: top, x: xOf(top) + stepX / 2, y: yOf(bins[top].hits + lift), peak: rows[top].hits });
 		}
 		// a label sits above its peak; one that would run off the top, or sit
 		// on the marked date, goes beside the spike instead, and labels that
@@ -290,6 +310,34 @@
 		return { line, fill: `${line} L${pts.at(-1)[0].toFixed(1)},${base} L${pts[0][0].toFixed(1)},${base} Z` };
 	});
 
+	// the overlay's area and line, and its label at its peak
+	let overlayPath = $derived.by(() => {
+		if (!overlayBins || !overlayBins.length) return null;
+		// stacked: the band sits on the main series; otherwise it rises from the axis
+		const under = (i) => (stackOn ? bins[i]?.hits ?? 0 : 0);
+		const pts = overlayBins.map((b, i) => [xOf(i) + stepX / 2, yOf(under(i) + b.hits)]);
+		const line = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+		const base = PAD.top + plotH;
+		const floor = stackOn
+			? overlayBins.map((_, i) => [xOf(i) + stepX / 2, yOf(under(i))]).reverse()
+					.map(([x, y]) => `L${x.toFixed(1)},${y.toFixed(1)}`).join(" ")
+			: `L${pts.at(-1)[0].toFixed(1)},${base} L${pts[0][0].toFixed(1)},${base}`;
+		let top = 0;
+		overlayBins.forEach((b, i) => {
+			if (b.hits > overlayBins[top].hits) top = i;
+		});
+		// the label sits at the right edge, level with the band's top there
+		const lastX = pts.at(-1)[0];
+		const nearEnd = overlayBins.slice(-6);
+		const endTop = Math.max(...nearEnd.map((b, k) => under(overlayBins.length - nearEnd.length + k) + b.hits));
+		return {
+			line,
+			fill: `${line} ${floor} Z`,
+			topOf: (i) => under(i) + (overlayBins[i]?.hits ?? 0),
+			label: { x: lastX + 4, y: Math.max(PAD.top + 12, yOf(endTop) - 6), anchor: "end" }
+		};
+	});
+
 	let tip = $state(null);
 	let el = $state(null);
 	function show(event, bin, i) {
@@ -297,7 +345,7 @@
 		const scale = box.width / WIDTH;
 		const cx = xOf(i) + stepX / 2;
 		if (!multi) {
-			tip = { bin, cx, x: cx * scale, y: yOf(bin.hits) * scale, j: 0 };
+			tip = { bin, cx, i, x: cx * scale, y: yOf(bin.hits) * scale, j: 0 };
 			return;
 		}
 		// the line nearest the pointer, up or down: the card points at that
@@ -392,6 +440,16 @@
 				<circle class="point" cx={tip.cx} cy={yOf(tip.bin.hits)} r="4" style="fill:{color}" />
 			{/if}
 		{/if}
+		{#if overlayPath}
+			<path class="area overlay" class:stacked={stackOn} d={overlayPath.fill} style="fill:{overlayColor}" />
+			<path class="line" d={overlayPath.line} style="stroke:{overlayColor}" />
+			<text class="line-label" x={overlayPath.label.x} y={overlayPath.label.y} text-anchor={overlayPath.label.anchor} style="fill:{overlayColor}"
+				>{overlayEntries[0].word}</text
+			>
+			{#if tip && overlayBins[tip.i] !== undefined}
+				<circle class="point" cx={tip.cx} cy={yOf(overlayPath.topOf(tip.i))} r="4" style="fill:{overlayColor}" />
+			{/if}
+		{/if}
 		{#each bins as bin, i (bin.start)}
 			{#if !multi && !area}
 				<rect
@@ -429,6 +487,9 @@
 	{#if tip}
 		<div class="tip" style="left:{tip.x}px; top:{tip.y}px; border-left-color:{multi ? entries[tip.j].color : 'var(--color-fox)'}">
 			<strong>{weekly ? weekLabel(tip.bin) : fmt(tip.bin.start)}</strong>
+			{#if overlayBins && overlayBins[tip.i]}
+				<span class="stat" style="color:{overlayColor}">{overlayEntries[0].word}: {overlayBins[tip.i].hits} {unit}</span>
+			{/if}
 			{#if multi}
 				<span class="stat lead" style="color:{entries[tip.j].color}"
 					><span class="dot" style="background:{entries[tip.j].color}"></span>{entries[tip.j].word}: {tip.bin.each[tip.j]}
@@ -489,11 +550,11 @@
 	}
 	.line-label,
 	.legend {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 14px;
 		font-weight: 700;
 		paint-order: stroke;
-		stroke: var(--color-bg, #f3b56b);
+		stroke: var(--color-bg, var(--color-page-orange));
 		stroke-width: 3px;
 	}
 	.legend-n {
@@ -501,7 +562,7 @@
 		fill: rgba(42, 21, 3, 0.6);
 	}
 	.point {
-		stroke: #fffdf8;
+		stroke: var(--color-paper);
 		stroke-width: 2;
 		pointer-events: none;
 	}
@@ -527,7 +588,7 @@
 		stroke-width: 1;
 	}
 	.axis {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 13px;
 		fill: rgba(42, 21, 3, 0.65);
 	}
@@ -537,13 +598,13 @@
 		stroke-dasharray: 4 3;
 	}
 	.axis-title {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 12.5px;
 		fill: rgba(42, 21, 3, 0.65);
 	}
 	.mark-label,
 	.total {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 13px;
 		font-weight: 700;
 		fill: var(--color-ink);
@@ -570,7 +631,7 @@
 		z-index: 6;
 	}
 	.tip strong {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11.5px;
 		font-weight: 700;
 		letter-spacing: 0.04em;
@@ -590,5 +651,11 @@
 		margin-top: 5px;
 		font-style: italic;
 		color: var(--color-ink);
+	}
+	.area.overlay {
+		opacity: 0.38;
+	}
+	.area.overlay.stacked {
+		opacity: 0.8;
 	}
 </style>

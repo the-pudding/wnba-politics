@@ -57,8 +57,7 @@
 		"Enes Kanter Freedom",
 		"Clay Travis",
 		"Charlie Kirk",
-		"J.K. Rowling",
-		"Stephen A. Smith"
+		"J.K. Rowling"
 	]);
 	const LEFT_LEANING = new Set([
 		"Joe Biden",
@@ -79,13 +78,13 @@
 		"Becky Hammon"
 	]);
 	// the league's own orange for its players; coaches and the front office in grey
-	const WNBA_ORANGE = "#f26f21";
+	const WNBA_ORANGE = "var(--color-wnba-orange)";
 	const LEAN_COLORS = {
 		player: WNBA_ORANGE,
 		league: "#8d8578",
 		right: "var(--color-fox)",
 		left: "#2a6fd6",
-		unaligned: "#1a1a1a"
+		unaligned: "var(--color-ink-dark)"
 	};
 	const LEAN_LABELS = {
 		player: "WNBA players, past & present",
@@ -954,7 +953,7 @@
 							cx={node.x}
 							cy={node.y}
 							r={size}
-							fill={leanOf(node) === "player" ? "#ffffff" : "#f7f2e6"}
+							fill={leanOf(node) === "player" ? "#ffffff" : "var(--color-card)"}
 							class="portrait"
 							class:faded={dim}
 						/>
@@ -1248,7 +1247,7 @@
 			height: 88vh;
 			padding-left: 0;
 			transition: none;
-			background: var(--color-page-orange, #f9a660);
+			background: var(--color-page-orange, var(--color-page-orange));
 			z-index: 0;
 		}
 		.steps {
@@ -1322,7 +1321,7 @@
 		display: flex;
 		flex-direction: column;
 		background: var(--color-paper);
-		border: 1px solid #e6dcc3;
+		border: 1px solid var(--color-rule);
 		border-radius: 6px;
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.12);
 		overflow: hidden;
@@ -1379,7 +1378,7 @@
 		z-index: 1;
 		background: #fff;
 		text-align: left;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 10px;
 		text-transform: uppercase;
 		letter-spacing: 0.12em;
@@ -1410,14 +1409,14 @@
 		white-space: nowrap;
 	}
 	.hl tbody .col-year {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		font-variant-numeric: tabular-nums;
 		letter-spacing: 0.03em;
 		color: rgba(42, 21, 3, 0.6);
 	}
 	.hl tbody .col-head {
-		font-family: Georgia, "Times New Roman", serif;
+		font-family: var(--font-serif);
 		font-size: 14px;
 		line-height: 1.35;
 		color: var(--color-ink);
@@ -1472,7 +1471,7 @@
 		font-weight: 700;
 		fill: var(--color-ink);
 		paint-order: stroke;
-		stroke: var(--color-page-orange, #f9a660);
+		stroke: var(--color-page-orange, var(--color-page-orange));
 		stroke-width: 3px;
 		stroke-linejoin: round;
 		pointer-events: none;
@@ -1502,7 +1501,7 @@
 	}
 	.card {
 		background: var(--color-paper);
-		border: 1px solid #e6dcc3;
+		border: 1px solid var(--color-rule);
 		border-radius: 6px;
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 		padding: 16px 18px;
@@ -1547,18 +1546,18 @@
 		width: 100%;
 		box-sizing: border-box;
 		background: var(--color-paper);
-		border: 1px solid #e6dcc3;
+		border: 1px solid var(--color-rule);
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
 		padding: 8px 11px;
-		font-family: Georgia, serif;
+		font-family: var(--font-serif);
 		font-size: 13px;
 		font-weight: 700;
 		line-height: 1.35;
-		color: #1a1a1a;
+		color: var(--color-ink-dark);
 	}
 	.line-tip-box .when {
 		display: block;
-		font-family: var(--sans);
+		font-family: var(--font-sans);
 		font-size: 10px;
 		font-weight: 700;
 		letter-spacing: 0.04em;
@@ -1570,7 +1569,7 @@
 	.headline-clip {
 		margin: 12px -4px 0;
 		background: var(--color-paper);
-		border: 1px solid #e6dcc3;
+		border: 1px solid var(--color-rule);
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 		padding: 10px 15px;
 		transform: rotate(-1deg);
@@ -1583,12 +1582,12 @@
 		margin-top: 14px;
 	}
 	.headline-clip p {
-		font-family: Georgia, serif;
+		font-family: var(--font-serif);
 		font-size: 15.5px;
 		font-weight: 700;
 		line-height: 1.4;
 		margin: 5px 0 0;
-		color: #1a1a1a;
+		color: var(--color-ink-dark);
 	}
 	.headline-clip :global(mark) {
 		background: transparent;
@@ -1698,12 +1697,12 @@
 		stroke-width: 2;
 	}
 	.scrub-year {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 9px;
 		fill: rgba(42, 21, 3, 0.6);
 	}
 	.scrub-month {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 10px;
 		font-weight: 700;
 		fill: var(--color-ink);

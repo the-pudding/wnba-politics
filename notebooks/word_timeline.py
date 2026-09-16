@@ -39,6 +39,7 @@ WORDS = {
     "target": r"\btarget(?:ed|ing|s)?\b",
     "bully": r"\bbull(?:y|ies|ied|ying)\b",
     "violent": r"\bviolen(?:t|ce)\b",
+    "protect": r"\bprotect(?:s|ed|ing|ion|ive)?\b",
 }
 rx = {w: re.compile(p, re.I) for w, p in WORDS.items()}
 out = {"outlets": {}}

@@ -32,6 +32,7 @@
 	// Data: notebooks/foul_feed.py → static/data/foul_feed.json
 	import { base } from "$app/paths";
 	import roster from "$data/people.json";
+	import { faces } from "$utils/clips.js";
 	import { tick } from "svelte";
 
 	// mark: "bold" (default), "underline" or "highlight" (a yellow marker behind
@@ -45,19 +46,45 @@
 	const NAMES = Object.entries(roster)
 		.filter(([, p]) => p.group === "players" && p.rx)
 		.map(([name, p]) => [name, new RegExp(p.rx, "i")]);
+	// a link only counts when it is one: a placeholder like "https://…"
+	// left in the Doc would otherwise break the site build's link crawl
+	const realUrl = (link) => {
+		const u = String(link ?? "").trim();
+		try {
+			const parsed = new URL(u);
+			return /^https?:$/.test(parsed.protocol) && /^[\w.-]+\.[a-z]{2,}$/i.test(parsed.hostname) ? u : "";
+		} catch {
+			return "";
+		}
+	};
+	// the first match of a pattern that sits in the text, not inside a tag
+	// (an inline face carries the name in its alt attribute)
+	function findOutsideTags(rx, s) {
+		const g = new RegExp(rx.source, rx.flags.includes("g") ? rx.flags : rx.flags + "g");
+		let m;
+		while ((m = g.exec(s))) {
+			const before = s.slice(0, m.index);
+			const open = before.lastIndexOf("<"), close = before.lastIndexOf(">");
+			if (open <= close) return m;
+		}
+		return null;
+	}
 	function rowFromText(text, o, link, dateText) {
-		const s = String(text ?? "").trim();
+		// ==like this== is a yellow marker and ((Name)) an inline face, both
+		// converted before the foul word and the name are found, so a
+		// highlight can run across them and nest with <b>
+		const s = faces(String(text ?? "").trim().replace(/==([^=]+)==/g, "<mark>$1</mark>"), base);
 		if (!s) return null;
-		const m = TERM.exec(s);
+		const m = findOutsideTags(TERM, s);
 		let n = null;
 		for (const [, rx] of NAMES) {
-			const h = rx.exec(s);
+			const h = findOutsideTags(rx, s);
 			if (h && (!m || h.index + h[0].length <= m.index || h.index >= m.index + m[0].length)) {
 				n = [h.index, h.index + h[0].length];
 				break;
 			}
 		}
-		return { o, d: "", dateText: String(dateText ?? "").trim(), u: String(link ?? "").trim(), s, t: m ? [m.index, m.index + m[0].length] : [0, 0], n, h: false, p: "", html: true };
+		return { o, d: "", dateText: String(dateText ?? "").trim(), u: realUrl(link), s, t: m ? [m.index, m.index + m[0].length] : [0, 0], n, h: false, p: "", html: true };
 	}
 	let ownSlides = $derived(
 		(Array.isArray(slides) ? slides : [])
@@ -87,17 +114,29 @@
 		slide = to;
 	}
 	const mast = (o) => (o === "Fox News" ? "Fox News" : o);
+	// the outlet's logo for the clipping's masthead, when the site has one
+	const LOGOS = {
+		"Fox News": "fox-news.svg",
+		ESPN: "espn.svg",
+		"CBS Sports": "cbs-sports.svg",
+		"USA Today": "usa-today.svg",
+		"The Athletic": "the-athletic.png",
+		"Just Women's Sports": "jws.png",
+		CNN: "cnn.svg",
+		MSNBC: "ms-now.svg"
+	};
 	// a hand-written slide may carry its own <b>, <i> or <a>: rendered as
 	// markup, with the foul word and name marked the same way as the data's
 	const esc = (t) => t;
 	function markup(r, color) {
+		const hl = (t) => t;
 		return pieces(r)
 			.map((piece) =>
 				piece.kind === "term"
 					? `<b class="term" style="color:${color}">${piece.text}</b>`
 					: piece.kind === "name"
 						? `<b class="name">${piece.text}</b>`
-						: esc(piece.text)
+						: hl(esc(piece.text))
 			)
 			.join("");
 	}
@@ -286,8 +325,12 @@
 			after: gapAfter + after + (post.length > AFTER ? "…" : "")
 		};
 	}
-	// the whole sentence, with the foul word and the player's name marked
+	// the whole sentence as written: nothing is marked automatically any more
+	// — only your own <b> and ==…== in a hand-written slide
 	function pieces(r) {
+		return [{ text: r.s }];
+	}
+	function piecesMarked(r) {
 		const marks = r.t[1] > r.t[0] ? [{ at: r.t, kind: "term" }] : [];
 		if (r.n && (r.n[1] <= r.t[0] || r.n[0] >= r.t[1])) marks.push({ at: r.n, kind: "name" });
 		if (wordRx) {
@@ -381,9 +424,9 @@
 				{/each}
 			</div>
 		</div>
-		<p class="count">
+		<p class="count" hidden={gallery}>
 			{#if gallery}
-				<b>{pairs.length}</b> incidents, the sports outlets on the left and Fox News on the right. Swipe or use the arrows.
+				{""}
 			{:else if paired && pickList.length}
 				<b>{pairs.length}</b> hand-picked incidents. Fox News on the left, the sports outlets on the right.
 			{:else if paired}
@@ -400,7 +443,7 @@
 
 		{#if gallery}
 			<div class="gallery-wrap">
-				<button class="arrow prev" aria-label="Previous" disabled={slide === 0} onclick={() => goSlide(slide - 1)}>‹</button>
+				<button class="arrow prev" aria-label="Previous" disabled={slide === 0} onclick={() => goSlide(slide - 1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
 				<div class="gallery" bind:this={galleryEl} onscroll={onGalleryScroll} tabindex="0" role="list" aria-label="Incidents"
 					onkeydown={(e) => {
 						if (e.key === "ArrowRight") (e.preventDefault(), goSlide(slide + 1));
@@ -414,7 +457,10 @@
 								{@const fox = sideKey === "fox"}
 								{#if r}
 									<figure class="clip" class:fox class:alt={!fox}>
-										<figcaption class="mast" style:color={fox ? FOX : OTHER}>{mast(r.o)}</figcaption>
+										<figcaption class="mast" style:color={fox ? FOX : OTHER}>
+											{#if LOGOS[r.o]}<img class="logo" src="{base}/logos/{LOGOS[r.o]}" alt="" />{/if}
+											<span>{mast(r.o)}</span>
+										</figcaption>
 										{#if r.html}
 											<p>{@html markup(r, fox ? FOX : OTHER)}</p>
 										{:else}
@@ -437,7 +483,7 @@
 						</div>
 					{/each}
 				</div>
-				<button class="arrow next" aria-label="Next" disabled={slide >= pairs.length - 1} onclick={() => goSlide(slide + 1)}>›</button>
+				<button class="arrow next" aria-label="Next" disabled={slide >= pairs.length - 1} onclick={() => goSlide(slide + 1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
 			</div>
 			<div class="dots" role="tablist">
 				{#each pairs as _, i (i)}
@@ -538,7 +584,7 @@
 		margin: 0;
 		max-width: 760px;
 		margin-inline: auto;
-		font-family: var(--font-sans);
+		font-family: var(--font-chart);
 	}
 	.note,
 	.count {
@@ -651,7 +697,7 @@
 		gap: 44px;
 		padding: 18px 14px 22px;
 		box-sizing: border-box;
-		align-items: start;
+		align-items: center;
 	}
 	/* the "vs." sits in the gap between the two clippings */
 	.slide .vs {
@@ -671,8 +717,8 @@
 	}
 	.clip {
 		margin: 0;
-		background: var(--color-paper, #fffdf8);
-		border: 1px solid #e6dcc3;
+		background: var(--color-paper, var(--color-paper));
+		border: 1px solid var(--color-rule);
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
 		padding: 12px 16px 12px;
 		transform: rotate(-0.8deg);
@@ -681,8 +727,18 @@
 	.clip.alt {
 		transform: rotate(0.7deg);
 	}
+	.clip .mast .logo {
+		height: 18px;
+		width: auto;
+		max-width: 90px;
+		object-fit: contain;
+		vertical-align: middle;
+		margin-right: 7px;
+	}
 	.clip .mast {
-		font-family: var(--font-sans);
+		display: flex;
+		align-items: center;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		font-weight: 800;
 		letter-spacing: 0.08em;
@@ -697,17 +753,17 @@
 		font-size: 17px;
 		font-weight: 400;
 		line-height: 1.42;
-		color: #1a1a1a;
+		color: var(--color-ink-dark);
 	}
 	.clip .name,
 	.clip :global(.name) {
-		color: #c2410c;
-		font-family: var(--font-sans);
+		color: var(--color-orange-deep);
+		font-family: var(--font-chart);
 		font-weight: 800;
 	}
 	.clip :global(.term) {
 		font-weight: 800;
-		font-family: var(--font-sans);
+		font-family: var(--font-chart);
 	}
 	.clip p :global(b),
 	.clip p :global(strong) {
@@ -716,9 +772,19 @@
 	.clip p :global(a) {
 		color: inherit;
 	}
+	/* <mark> or ==text==: the yellow marker pen, in every mark: mode */
+	.clip p :global(mark) {
+		background: linear-gradient(to top, rgba(255, 230, 0, 0.55) 0 78%, transparent 78%);
+		box-decoration-break: clone;
+		-webkit-box-decoration-break: clone;
+		padding: 0 2px;
+		margin: 0 -2px;
+		border-radius: 2px;
+		color: inherit;
+	}
 	.clip .dateline {
 		margin-top: 8px;
-		font-family: var(--font-sans);
+		font-family: var(--font-chart);
 		font-size: 12px;
 		font-weight: 400;
 		color: rgba(42, 21, 3, 0.65);
@@ -731,18 +797,25 @@
 		font-style: italic;
 		color: rgba(42, 21, 3, 0.55);
 	}
+	/* the arrows and dots match the headline gallery's */
 	.arrow {
 		flex: 0 0 auto;
-		width: 34px;
-		height: 34px;
+		width: 38px;
+		height: 38px;
 		border-radius: 50%;
 		border: 1px solid rgba(42, 21, 3, 0.3);
-		background: rgba(255, 253, 248, 0.8);
-		font: inherit;
-		font-size: 22px;
-		line-height: 1;
+		background: var(--color-paper);
 		color: var(--color-ink);
 		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 1px 4px rgba(42, 21, 3, 0.15);
+		padding: 0;
+	}
+	.arrow :global(svg) {
+		width: 20px;
+		height: 20px;
 	}
 	.arrow:disabled {
 		opacity: 0.3;
@@ -752,14 +825,14 @@
 		display: flex;
 		justify-content: center;
 		gap: 6px;
-		margin-top: 4px;
+		margin-top: 2px;
 	}
 	.dot-btn {
-		width: 8px;
-		height: 8px;
+		width: 7px;
+		height: 7px;
 		border-radius: 50%;
-		border: 1px solid rgba(42, 21, 3, 0.45);
-		background: transparent;
+		border: 0;
+		background: rgba(42, 21, 3, 0.25);
 		padding: 0;
 		cursor: pointer;
 	}
@@ -856,12 +929,12 @@
 		color: var(--color-ink);
 	}
 	.full .term {
-		font-family: var(--font-sans);
+		font-family: var(--font-chart);
 		font-size: 1.05em;
 	}
 	.full .name {
-		color: #c2410c;
-		font-family: var(--font-sans);
+		color: var(--color-orange-deep);
+		font-family: var(--font-chart);
 	}
 	.source {
 		margin: 6px 0 0;
@@ -907,13 +980,11 @@
 		text-underline-offset: 3px;
 	}
 	.foul-reel.underline :global(.name) {
-		text-decoration-color: #c2410c;
+		text-decoration-color: var(--color-orange-deep);
 	}
 	/* mark: highlight — a yellow marker pen behind the words instead */
 	.foul-reel.highlight :global(.term),
-	.foul-reel.highlight :global(.name),
-	.foul-reel.highlight .clip p :global(b),
-	.foul-reel.highlight .clip p :global(strong) {
+	.foul-reel.highlight :global(.name) {
 		font-weight: inherit;
 		font-family: inherit;
 		font-size: inherit;
@@ -925,12 +996,12 @@
 		margin: 0 -2px;
 		border-radius: 2px;
 	}
-	/* and the author's own <b> in a slide becomes an underline too */
-	.foul-reel.underline .clip p :global(b:not(.term):not(.name)),
-	.foul-reel.underline .clip p :global(strong) {
-		font-weight: inherit;
-		text-decoration: underline;
-		text-decoration-thickness: 2px;
-		text-underline-offset: 3px;
+	/* your own <b> is always bold and ==…== always yellow, whatever mark:
+	   says; mark: only governs the automatic word and name */
+	.clip p :global(b:not(.term):not(.name)),
+	.clip p :global(strong) {
+		font-weight: 700 !important;
+		text-decoration: none;
+		background: none;
 	}
 </style>

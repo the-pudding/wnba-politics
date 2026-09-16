@@ -108,7 +108,7 @@
 	const TOPIC_COLOR = {
 		polrace: "var(--color-politics)",
 		lgbtq: "var(--color-lgbtq)",
-		fouls: "#7a4a00"
+		fouls: "var(--color-brown)"
 	};
 	const TOPIC_PHRASE = {
 		polrace: "race, politics and protest",
@@ -172,6 +172,16 @@
 	]);
 	const bandFor = (term) =>
 		bands.find((band) => band.words.has(term))?.color ?? null;
+	// a lit word takes the side it sits on: Fox's navy when Fox says it most,
+	// the other networks' purple when CNN or MSNBC does (topic bands keep
+	// their own colour)
+	const litFor = (term, shares) => {
+		const band = bands.find((b) => b.words.has(term));
+		if (!band) return null;
+		if (band.topic || !highlightColor) return band.color;
+		const foxShare = shares?.[channels.indexOf("Fox News")] ?? 0;
+		return foxShare >= Math.max(...shares) ? band.color : "var(--color-outlets)";
+	};
 	// the colour a hovered point takes: its band's, else the chart's highlight
 	let hoverColor = $derived(highlightColor ?? GROUP_COLORS[0]);
 
@@ -213,7 +223,7 @@
 				const shares = rates.map((r) => r / ssum);
 				const [px, py] = bary(shares);
 				const m = meta.get(term) ?? {};
-				out.push({ term, total, counts, shares, ex: m.ex, ex_ch: m.ex_ch, px, py, lit: bandFor(term) });
+				out.push({ term, total, counts, shares, ex: m.ex, ex_ch: m.ex_ch, px, py, lit: litFor(term, shares) });
 			}
 			return out;
 		}
@@ -221,7 +231,7 @@
 			.filter((t) => t.total >= floor)
 			.map((t) => {
 				const [px, py] = bary(t.shares);
-				return { ...t, px, py, lit: bandFor(t.term) };
+				return { ...t, px, py, lit: litFor(t.term, t.shares) };
 			});
 	});
 	let biggest = $derived(Math.max(1, ...terms.map((t) => t.total)));
@@ -634,7 +644,7 @@
 		transition: opacity 900ms ease;
 	}
 	.year-stamp {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 13px;
 		font-weight: 800;
 		letter-spacing: 0.06em;
@@ -733,7 +743,7 @@
 		transform: translate(-50%, -100%);
 	}
 	.tooltip strong {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		font-weight: 700;
 		letter-spacing: 0.06em;
@@ -747,7 +757,7 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 12.5px;
 		line-height: 1.7;
 	}
@@ -763,7 +773,7 @@
 		margin: 7px 0 0;
 		padding-top: 6px;
 		border-top: 1px solid rgba(42, 21, 3, 0.12);
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11.5px;
 		line-height: 1.45;
 		color: rgba(42, 21, 3, 0.75);

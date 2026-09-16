@@ -4,7 +4,7 @@
 	import FightinWords from "$components/FightinWords.svelte";
 
 	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
-	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false, ngrams = 1 } = $props();
+	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false, ngrams = 1, note = undefined } = $props();
 
 	const STEPS = $derived(
 		(steps ?? [])
@@ -44,6 +44,7 @@
 			{scores}
 			ngrams={current.ngrams ?? ngrams}
 			fill={chart === "bars"}
+			{note}
 		/>
 	</div>
 

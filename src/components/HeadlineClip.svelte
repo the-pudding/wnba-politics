@@ -89,7 +89,7 @@
 <style>
 	.clip {
 		background: var(--color-paper);
-		border: 1px solid #e6dcc3;
+		border: 1px solid var(--color-rule);
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 		padding: 10px 15px;
 		transform: rotate(var(--rot, 0deg));
@@ -99,8 +99,8 @@
 		font-weight: 700;
 		line-height: 1.4;
 		margin: 5px 0 0;
-		font-family: Georgia, serif;
-		color: #1a1a1a;
+		font-family: var(--font-serif);
+		color: var(--color-ink-dark);
 	}
 	.clip-title :global(mark) {
 		color: inherit;

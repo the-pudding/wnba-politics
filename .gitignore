@@ -7,3 +7,5 @@ notebooks/.cache/
 notebooks/__pycache__/
 media/
 data/fox_wnba.unfiltered.csv
+data/*.unfiltered.csv
+archive/

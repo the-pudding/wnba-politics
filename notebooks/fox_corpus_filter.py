@@ -39,12 +39,41 @@ MENTION = re.compile(
     rf"\bWNBA\b|women'?s (?:national )?basketball|\bUnrivaled\b|\b(?:{TEAMS})\b|{ROSTER}", re.I)
 
 
-def mentions(text):
-    return len(MENTION.findall(text or ""))
+# a roster surname that someone else in the news shares: when the article
+# names the look-alike and never the player's first name, the bare surname
+# is not her ("Cade Cunningham" in an NBA all-star piece is not Sophie)
+LOOKALIKES = [
+    (re.compile(r"cade\W{0,3}cunningham", re.I), re.compile(r"sophie", re.I), re.compile(r"\bcunningham\b", re.I)),
+    (re.compile(r"alysha\W{0,3}clark", re.I), re.compile(r"caitlin", re.I), re.compile(r"\bclark\b", re.I)),
+    (re.compile(r"cherelle\W{0,3}griner", re.I), re.compile(r"brittney", re.I), re.compile(r"\bgriner\b", re.I)),
+    (re.compile(r"charli\W{0,3}collier", re.I), re.compile(r"napheesa", re.I), re.compile(r"\bcollier\b", re.I)),
+    (re.compile(r"isaiah\W{0,3}stewart", re.I), re.compile(r"breanna", re.I), re.compile(r"\bstewart\b", re.I)),
+    (re.compile(r"arvell\W{0,3}reese", re.I), re.compile(r"angel", re.I), re.compile(r"\breese\b", re.I)),
+]
+
+# other sports' stories the rule keeps on a passing roster mention, found by
+# reading: an NBA column with one Clark sentence, a 2020 NBA H-O-R-S-E report
+DROP_HEADLINES = {
+    "Embrace of Wemby as face of the NBA proves resistance toward Jokic was always racial | Bobby Burack",
+    "NBA, ESPN finishing up plan to televise H-O-R-S-E competition: report",
+    "Knicks star Jalen Brunson's sister dunks on critics as New York wins NBA championship",
+}
+
+
+def mentions(text, blank=()):
+    text = text or ""
+    for surname in blank:
+        text = surname.sub("", text)
+    return len(MENTION.findall(text))
 
 
 def reason(row):
-    head, body = mentions(row.get("headline")), mentions(row.get("body"))
+    if (row.get("headline") or "").strip() in DROP_HEADLINES:
+        return "about another sport, with a passing WNBA mention"
+    whole = (row.get("headline") or "") + " " + (row.get("body") or "")
+    blank = [surname for lookalike, first, surname in LOOKALIKES
+             if lookalike.search(whole) and not first.search(whole)]
+    head, body = mentions(row.get("headline"), blank), mentions(row.get("body"), blank)
     if head + body == 0:
         return "no WNBA, team or roster mention anywhere"
     if head == 0 and body <= 1:

@@ -21,11 +21,8 @@
 		"NetworkScrolly",
 		"FightinWordsScrolly",
 		"FightinWordsBarsScrolly",
-		"FramingScrolly",
 		"TernaryScrolly",
 		"OutletGapScrolly",
-		"OutletGapBeeswarmScrolly",
-		"TimelineDotsScrolly",
 		"FightinWordsVerbsAdj",
 		"FightinWordsBars",
 		// legacy Doc ids
@@ -41,7 +38,6 @@
 	const SELF_CAPTIONED = new Set([
 		"BoxScore",
 		"SimpleBars",
-		"TimelineDotsScrolly",
 		"HeadlineTable",
 		"timeline-scrolly",
 		"headline-table",
@@ -50,7 +46,6 @@
 		"TvSet",
 		"WordCompare",
 		"WordNeighbors",
-		"WordPlayers"
 	]);
 
 	// one-liner: `chart: name | key: value | …`
@@ -109,11 +104,20 @@
 	function blocks(content) {
 		const out = [];
 		for (const it of content ?? []) {
-			if (!it?.value) continue;
+			const isList = /^(ul|ol)$/i.test(it?.type ?? "");
+			if (!it?.value && !isList) continue;
 			if (it.type === "clip") {
 				const last = out[out.length - 1];
 				if (last?.clips) last.clips.push(parseClip(it.value));
 				else out.push({ type: "clips", clips: [parseClip(it.value)] });
+			} else if (isList) {
+				// "ul:" in the Doc opens a list; the <li> lines that follow are
+				// its items (the parser hands each line over as its own text)
+				out.push({ type: it.type.toLowerCase(), value: String(it.value ?? "").trim() });
+			} else if (it.type === "text" && /^\s*<li[\s>]/i.test(it.value)) {
+				const last = out[out.length - 1];
+				if (last && /^(ul|ol)$/.test(last.type)) last.value += it.value.trim();
+				else out.push({ type: "ul", value: it.value.trim() });
 			} else out.push(it);
 		}
 		return out;
@@ -170,10 +174,22 @@
 				{@const [src, alt = "", caption = ""] = b.value
 					.split("|")
 					.map((s) => s.trim())}
-				<figure class="photo">
-					<img src="{base}/images/{src}" {alt} loading="lazy" />
-					{#if caption}<figcaption>{@html caption}</figcaption>{/if}
-				</figure>
+				{#if /\.pdf$/i.test(src)}
+					<!-- a PDF in the same block: letter.pdf | title | caption -->
+					<figure class="photo pdf">
+						<div class="page">
+							<object data="{base}/images/{src}" type="application/pdf" title={alt || src}>
+								<p class="fallback"><a href="{base}/images/{src}" target="_blank" rel="noopener">Open {alt || src}</a></p>
+							</object>
+						</div>
+						{#if caption}<figcaption>{@html caption}</figcaption>{/if}
+					</figure>
+				{:else}
+					<figure class="photo">
+						<img src="{base}/images/{src}" {alt} loading="lazy" />
+						{#if caption}<figcaption>{@html caption}</figcaption>{/if}
+					</figure>
+				{/if}
 			{:else if /^(quote|blockquote|pullquote)$/i.test(b.type)}
 				<!-- quote: the words | who said it, where -->
 				{@const [words, who = ""] = String(b.value)
@@ -225,6 +241,19 @@
 		padding: 0 3px;
 		border-radius: 2px;
 	}
+	/* a Doc list ("ul:" then <li> lines) reads like the paragraphs */
+	ul,
+	ol {
+		font-size: 17px;
+		line-height: 1.65;
+		margin: 0 0 1em;
+		padding-left: 1.3em;
+		color: var(--color-ink);
+	}
+	ul :global(li),
+	ol :global(li) {
+		margin-bottom: 0.55em;
+	}
 
 	.chart {
 		margin: 12px 0 22px;
@@ -270,7 +299,7 @@
 	}
 	.clip {
 		background: var(--color-paper);
-		border: 1px solid #e6dcc3;
+		border: 1px solid var(--color-rule);
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 		padding: 10px 15px;
 		transform: rotate(var(--rot, 0deg));
@@ -280,8 +309,8 @@
 		font-weight: 700;
 		line-height: 1.4;
 		margin: 5px 0 0;
-		font-family: Georgia, serif;
-		color: #1a1a1a;
+		font-family: var(--font-serif);
+		color: var(--color-ink-dark);
 	}
 	.clip-date {
 		font-size: 12px;
@@ -305,7 +334,7 @@
 	.quote cite {
 		display: block;
 		margin-top: 10px;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-style: normal;
 		font-size: 12.5px;
 		letter-spacing: 0.02em;
@@ -325,6 +354,27 @@
 		border-radius: 8px;
 		box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
 		border: 1px solid rgba(42, 21, 3, 0.15);
+	}
+	/* a PDF: a letter-shaped frame the document scrolls inside */
+	.photo.pdf .page {
+		position: relative;
+		width: 100%;
+		padding-top: 129%;
+		border-radius: 8px;
+		overflow: hidden;
+		box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+		border: 1px solid rgba(42, 21, 3, 0.15);
+		background: #fff;
+	}
+	.photo.pdf object {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+	.photo.pdf .fallback {
+		padding: 24px;
+		text-align: center;
 	}
 	.photo figcaption {
 		font-size: 12.5px;

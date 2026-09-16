@@ -40,8 +40,18 @@
     "ink": "#2a1503",
     "paper": "#fffdf8",
     "page-orange": "#f9a660",
-    "cnn": "#5b4b9c",
-    "msnbc": "#1d4f9c"
+    "cnn": "#6b4bb0",
+    "msnbc": "#a08ad6",
+    "fox-navy": "#003366",
+    "outlets": "#6b4bb0",
+    "ink-dark": "#1a1a1a",
+    "rule": "#e6dcc3",
+    "card": "#f7f2e6",
+    "sand": "#d8cdb6",
+    "brown": "#7a4a00",
+    "orange-deep": "#c2410c",
+    "chip": "#7a6bcc",
+    "wnba-orange": "#f26f21"
   },
   "": {
     "12px": "0.75rem",
@@ -63,5 +73,8 @@
     "96px": "6rem",
     "112px": "7rem",
     "128px": "8rem"
+  },
+  "font": {
+    "chart": "\"Atlas Grotesk\", \"Helvetica Neue\", Helvetica, Arial, sans-serif"
   }
 }

@@ -80,7 +80,7 @@
 		color: var(--color-ink);
 	}
 	.pick-label {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		font-weight: 800;
 		letter-spacing: 0.06em;

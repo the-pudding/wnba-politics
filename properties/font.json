@@ -1,0 +1,8 @@
+{
+	"font": {
+		"chart": {
+			"value": "\"Atlas Grotesk\", \"Helvetica Neue\", Helvetica, Arial, sans-serif",
+			"comment": "chart labels, in The Pudding's Atlas Grotesk (loaded in font.css)"
+		}
+	}
+}

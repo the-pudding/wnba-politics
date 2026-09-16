@@ -54,12 +54,17 @@ ALIASES = {
     "Kelsey Plum": ["kelsey plum", "plum"],
     "Candace Parker": ["candace parker"],
     "Kelsey Mitchell": ["kelsey mitchell"],
-    "NaLyssa Smith": ["nalyssa smith", "nalyssa"],
     "Jonquel Jones": ["jonquel jones", "jonquel"],
-    "Cameron Brink": ["cameron brink"],
-    "Sheryl Swoopes": ["sheryl swoopes", "swoopes"],
     "DeWanna Bonner": ["dewanna bonner", "dewanna", "bonner"],
-    "JuJu Watkins": ["juju watkins", "juju"],
+    "Chelsea Gray": ["chelsea gray"],
+    "Arike Ogunbowale": ["arike ogunbowale", "ogunbowale", "arike"],
+    "Cameron Brink": ["cameron brink"],
+    "Nneka Ogwumike": ["nneka ogwumike", "nneka"],
+    "Marina Mabrey": ["marina mabrey", "mabrey"],
+    "Jewell Loyd": ["jewell loyd", "loyd"],
+    "Lexie Hull": ["lexie hull"],
+    "Courtney Vandersloot": ["courtney vandersloot", "vandersloot"],
+    "Kahleah Copper": ["kahleah copper", "kahleah"],
 }
 LOOKUP = {alias: name for name, aliases in ALIASES.items() for alias in aliases}
 NAME_RE = re.compile(
@@ -84,6 +89,9 @@ LOOKALIKES = {
     "Caitlin Clark": (re.compile(r"alysha\W{0,3}clark", re.I), re.compile(r"caitlin", re.I)),
     "Brittney Griner": (re.compile(r"cherelle\W{0,3}griner", re.I), re.compile(r"brittney", re.I)),
     "Napheesa Collier": (re.compile(r"charli\W{0,3}collier", re.I), re.compile(r"napheesa", re.I)),
+    "Sophie Cunningham": (re.compile(r"cade\W{0,3}cunningham", re.I), re.compile(r"sophie", re.I)),
+    "Breanna Stewart": (re.compile(r"isaiah\W{0,3}stewart", re.I), re.compile(r"breanna", re.I)),
+    "Angel Reese": (re.compile(r"arvell\W{0,3}reese", re.I), re.compile(r"angel", re.I)),
 }
 
 

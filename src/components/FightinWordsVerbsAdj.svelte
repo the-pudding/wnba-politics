@@ -19,7 +19,9 @@
 	);
 
 	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
-	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false } = $props();
+	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false,
+		note = undefined
+	} = $props();
 
 	const list = (value) =>
 		(value ?? "")
@@ -156,7 +158,7 @@
 				</div>
 			</div>
 			{#if chart === "bars"}
-				<WordBars {source} {labels} {scale} {caps} {scores} highlight={shown.words} top={12} fill />
+				<WordBars {source} {labels} {scale} {caps} {scores} highlight={shown.words} top={12} fill {note} />
 			{:else}
 				<FightinWords {source} highlight={shown.words} bare controls={false} />
 			{/if}
@@ -253,7 +255,7 @@
 		color: var(--color-ink);
 	}
 	.pick-label {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		font-weight: 800;
 		letter-spacing: 0.06em;

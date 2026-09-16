@@ -49,7 +49,7 @@
 			key: "tone",
 			label: "Tone",
 			blurb:
-				"Average sentiment of every Fox headline naming her, from −1 to +1."
+				"Average sentiment of every Fox headline naming player, from −1 to +1."
 		},
 		{
 			key: "political",
@@ -156,7 +156,7 @@
 		margin: 0 0 14px;
 	}
 	.pick-note {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 12.5px;
 		color: rgba(42, 21, 3, 0.65);
 		text-align: center;

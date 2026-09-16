@@ -11,15 +11,13 @@
 	const STEPS = $derived(stageSteps(steps));
 
 	let index = $state(0);
-	// once no card is in view (scrolled past the end, or back above the start)
-	// the chart keeps its last state instead of snapping back to step one
+
 	let last = $state(0);
 	$effect(() => {
 		if (index !== undefined && index !== null) last = index;
 	});
 	let current = $derived(STEPS[last] ?? STEPS[0]);
 
-	// the Doc may still carry `clip:` fields; the dot plot shows none of them
 </script>
 
 <section class="gap-scrolly">
@@ -70,8 +68,7 @@
 	/* the frame is a column: title, pills and clipping on top, and the drawing
 	   takes exactly the height that is left, so nothing is ever cut off */
 	.sticky :global(.outlet-gap) {
-		/* the kids-book chart's column is about 32em (its widest 48em); this is that
-		   width class, with the faces and rows in fixed pixels inside it */
+
 		width: min(1040px, 97vw);
 		height: 96vh;
 		display: flex;

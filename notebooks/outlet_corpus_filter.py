@@ -30,7 +30,22 @@ csv.field_size_limit(10 ** 9)
 OUTLETS = ["espn", "cbs_sports", "usa_today", "the_athletic", "just_womens_sports"]
 
 
+# articles the rule keeps but a reading rejects: other sports' stories that
+# mention the WNBA in passing (found by their sport vocabulary)
+DROP_URLS = set()   # by URL, when a headline is not unique enough
+DROP_HEADLINES = {
+    "Josh Lowe to Angels, Lux to Rays, Burke to Reds in 3-team trade",
+    "Big stories of the NFL 2026 offseason, from Garrett to Kelce",
+    "What have 2026 NFL rookies spent their first paychecks on?",
+    "MLB Power Rankings Week 20: Brewers pass Dodgers for No. 1",
+    "Updated 2026 MLB top 100 prospect rankings: Made, Arias, more",
+    "Arena for 76ers, Flyers to open in 2030, marks 'new era'",
+}
+
+
 def why_drop(row):
+    if (row.get("url") or "").strip() in DROP_URLS or (row.get("headline") or "").strip() in DROP_HEADLINES:
+        return "about another sport, with a passing WNBA mention"
     if "wnba" in (row.get("url") or "").lower():
         return None
     if not (row.get("body") or "").strip():

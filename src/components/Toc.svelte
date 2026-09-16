@@ -46,7 +46,7 @@
 		padding: 10px 0 12px;
 	}
 	.toc-label {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 10.5px;
 		font-weight: 700;
 		letter-spacing: 0.14em;
@@ -75,7 +75,7 @@
 		color: var(--color-fox);
 	}
 	.n {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		font-weight: 700;
 		color: rgba(42, 21, 3, 0.45);

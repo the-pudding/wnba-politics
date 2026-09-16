@@ -1,8 +1,5 @@
 <script>
-	// The outlet gap as a dot plot: one row per player, her face on a uniform
-	// ratio axis (how many times more of Fox's WNBA headlines she is than of
-	// the other outlets'). Staged for the scrolly like the beeswarm: faces
-	// start on the equal line and glide out as the Doc places them.
+	// The outlet gap as a dot plot: one row per player
 	import { base } from "$app/paths";
 	import { scaleLinear } from "d3-scale";
 	import gapData from "$data/outlet_gap.json";
@@ -16,7 +13,6 @@
 			.map((p) => [p.slug, p.face.slice(p.slug.length)])
 	);
 
-	// the same five as the beeswarm; Yahoo (mostly syndicated wire copy) is out
 	const OUTLETS = [
 		"ESPN",
 		"CBS Sports",
@@ -38,8 +34,8 @@
 			month: "short",
 			year: "numeric"
 		});
-	const FOX = "#003366"; // Fox's own navy, as on the headline clippings
-	const THEM = "#6b4bb0";
+	const FOX = "var(--color-fox-navy)"; // Fox's own navy, as on the headline clippings
+	const THEM = "var(--color-outlets)";
 	// left out of the dot plot for now, to keep the rows to the players the
 	// piece discusses; delete names here to bring them back
 	const HIDDEN = new Set([
@@ -54,12 +50,8 @@
 	]);
 
 	let {
-		// source: "players" (outlet_gap.json), "pairs" (pair_gap.json: two
-		// players named in the same headline, drawn as a pair of faces) or
-		// "cast" (cast_gap.json: the non-players around the league)
+		// source: "players" (outlet_gap.json)
 		source = "players",
-		// reach: how far the axis runs either way, in k× − 1 (7.4 → 8×); the
-		// cast page runs to 20×
 		reach = 7.4,
 		// minFox: leave out rows with fewer Fox headlines than this (the pairs page)
 		minFox = 0,
@@ -107,12 +99,7 @@
 	// bright there, to make the point that equal coverage would put her at 1×
 	let centeredSet = $derived(new Set((centered ?? []).map(key)));
 
-	// A face that gets placed hops out from the equal line, one bounce per 1×
-	// of ratio, like a dribbled ball, and lands on its value. The axis
-	// stretching under a face that is already placed still slides it (the
-	// CSS transition); only the placement itself bounces.
-	// how a face gets to its value when placed: "hop" (one bounce per 1×) or
-	// "slide" (the CSS transition, slowed). The hop code stays either way.
+	// A face that gets placed hops out from the equal line
 	const PLACE_MOTION = "slide";
 	// how long a placement slide takes (also the CSS transition); the Doc can
 	// set it with `speed:` in milliseconds on the scrolly block
@@ -122,7 +109,6 @@
 	// a face landing beyond this ratio gets one more, smaller bounce in place
 	const SETTLE_OVER = 5; // 5× and up
 	const SETTLE_HEIGHT = 0.45; // of a hop
-	// while a face hops, its tag counts the bounces: 1×, 2×, 3× … then the value
 	let counting = $state({});
 	function hop(node, params) {
 		let prev = params;
@@ -319,9 +305,7 @@
 	let MAX_R = $derived(R);
 	let height = $derived(TOP + people.length * ROW + BOTTOM);
 
-	// symmetric about equal and fixed at 5× either way. Anyone beyond that
-	// (Cunningham at 7.5×) lands past the edge line, outside the plot, on a
-	// gentler scale so she stays on screen — the tag carries the real number
+	// symmetric about equal and fixed at 5× either way
 	let x = $derived(
 		scaleLinear()
 			.domain([-reach, reach])
@@ -427,9 +411,7 @@
 	// arrives, then keeps the last one (blurred) between steps
 	let shownClip = $derived(clip ?? lastClip);
 
-	// Where the equal line really is on screen. In the scrolly the drawing is
-	// height-bound and scaled down inside a wider box, so a viewBox percentage
-	// would miss; measure the rendered SVG instead.
+	// Where the equal line really is on screen
 	let svgEl = $state(null);
 	let equalLeft = $state(null);
 	let shift = $state(0);
@@ -476,11 +458,7 @@
 		return () => ro.disconnect();
 	});
 
-	// drawing order: plain faces first, the step's highlighted ones and the
-	// hovered one last, so they sit in front. The highlight part waits until
-	// the faces have finished moving: reordering means re-inserting the
-	// element, which would cut its slide short (a hover never coincides with
-	// a move, so that part is immediate)
+	// drawing order: plain faces first
 	let SETTLE_MS = $derived(SLIDE_MS + 300);
 	let litSettled = $state(new Set());
 	$effect(() => {
@@ -679,6 +657,8 @@
 				{@const named =
 					(lit.size > 0 ? isLit(person.name) : on) ||
 					centeredSet.has(key(person.name))}
+				<!-- a face the step names grows a third larger than the rest -->
+				{@const grow = on && named && lit.size > 0 && !litAll ? 1.35 : 1}
 				<g
 					class="row"
 					class:lit={hovered === person.name}
@@ -707,6 +687,7 @@
 						onpointerleave={hideFace}
 						role="presentation"
 					>
+						<g class="face-scale" style:transform="scale({grow})">
 						{#if person.names}
 							<!-- a pair: two smaller faces, side by side and overlapping -->
 							{#each person.names as who, k (who)}
@@ -717,7 +698,7 @@
 									<circle cx={dx} cy="0" r={Math.max(0, rr - 1)} />
 								</clipPath>
 								{#if faceFiles[ws]}
-									<circle cx={dx} cy="0" r={rr} fill="#f7f2e6" />
+									<circle cx={dx} cy="0" r={rr} fill="var(--color-card)" />
 									<image
 										href="{base}/net/{ws}{faceFiles[ws]}"
 										x={dx - rr * 1.2}
@@ -728,7 +709,7 @@
 										preserveAspectRatio="xMidYMid slice"
 									/>
 								{:else}
-									<circle cx={dx} cy="0" r={rr} fill="#d8cdb6" />
+									<circle cx={dx} cy="0" r={rr} fill="var(--color-sand)" />
 								{/if}
 								<circle
 									cx={dx}
@@ -743,7 +724,7 @@
 								<circle cx="0" cy="0" r={Math.max(0, r - 1)} />
 							</clipPath>
 							{#if faceFiles[slug]}
-								<circle cx="0" cy="0" {r} fill="#f7f2e6" />
+								<circle cx="0" cy="0" {r} fill="var(--color-card)" />
 								<image
 									href="{base}/net/{slug}{faceFiles[slug]}"
 									x={-r * 1.2}
@@ -754,7 +735,7 @@
 									preserveAspectRatio="xMidYMid slice"
 								/>
 							{:else}
-								<circle cx="0" cy="0" {r} fill="#d8cdb6" />
+								<circle cx="0" cy="0" {r} fill="var(--color-sand)" />
 							{/if}
 							<circle
 								cx="0"
@@ -768,6 +749,7 @@
 							<!-- waiting on the equal line: veiled, unless this step names her -->
 							<circle cx="0" cy="0" r={r + 1.5} class="veil" />
 						{/if}
+						</g>
 						{#if on && ((named && lit.size > 0 && !litAll) || hovered === person.name)}
 							<!-- the tag, for the players a step names (the closing step lights
 							     everyone and needs none). It sits right of the face — on the
@@ -777,12 +759,12 @@
 								? `${counting[person.name].toFixed(1)}× ${person.times > 0 ? "Fox" : themShort}`
 								: ratioTag(person)}
 							{@const fits =
-								xOf(person.times) + r + 9 + label.length * 7.5 <= WIDTH}
+								xOf(person.times) + r * grow + 9 + label.length * 7.5 <= WIDTH}
 							{@const rightOf =
 								fits && !(person.times >= 0 && beyondAxis(person))}
 							<text
 								class="ratio"
-								x={rightOf ? r + 9 : -r - 9}
+								x={rightOf ? r * grow + 9 : -r * grow - 9}
 								y="4.5"
 								text-anchor={rightOf ? "start" : "end"}
 								fill={ringColor(person)}>{label}</text
@@ -867,7 +849,7 @@
 	.tip {
 		position: absolute;
 		transform: translate(-50%, -100%);
-		background: #1a1a1a;
+		background: var(--color-ink-dark);
 		color: #fff;
 		font-size: 12.5px;
 		line-height: 1.5;
@@ -1108,7 +1090,7 @@
 		font-size: 13px;
 		font-weight: 800;
 		paint-order: stroke;
-		stroke: var(--color-page-orange, #f9a660);
+		stroke: var(--color-page-orange, var(--color-page-orange));
 		stroke-width: 4px;
 		stroke-linejoin: round;
 	}
@@ -1147,7 +1129,7 @@
 		opacity: 0.45;
 	}
 	.veil {
-		fill: var(--color-page-orange, #f9a660);
+		fill: var(--color-page-orange, var(--color-page-orange));
 		opacity: 0.72;
 	}
 
@@ -1158,6 +1140,11 @@
 	/* mid-hop the animation owns the transform; no slide on top of it */
 	.face-mark.hopping {
 		transition: none;
+	}
+	/* the named faces swell and settle back as steps change */
+	.face-scale {
+		transition: transform 500ms cubic-bezier(0.22, 0.8, 0.3, 1);
+		transform-origin: 0 0;
 	}
 	/* the ticks slide with the axis as it stretches; new ones fade in */
 	.tick-g {

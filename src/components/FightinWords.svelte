@@ -5,13 +5,13 @@
 	import { base } from "$app/paths";
 	import fw from "$data/fighting_words.json";
 	const data = fw.grid;
-	// story-word examples ship inline; the full 17k-word set loads on first hover
+	// story-word examples ship inline
 	const litExamples = fw.lit;
 
 	const FOX = "var(--color-fox-navy)"; // Fox's chart colour, set once in variables.css
-	const OTHER = "#6b4bb0"; // the other outlets' purple
+	const OTHER = "var(--color-outlets)"; // the other outlets' purple
 	const SIGNIFICANT = 1.96;
-	const SANS = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+	const SANS = "var(--font-chart)";
 
 	// crude greedy wrap: SVG text has no box to flow inside
 	function wrap(sentence, perLine = 48, lines = 3) {
@@ -87,7 +87,9 @@
 		// ngrams: 2 — two-word phrases instead of words (whole articles only)
 		ngrams = 1,
 		// fill: stretch the bar rows down the viewport (the scrolly sets it)
-		fill = false
+		fill = false,
+		// note: the line under the bars (see WordBars)
+		note = undefined
 	} = $props();
 	// the explore step can flip this with the words/phrases pills
 	let bigrams = $state(false);
@@ -644,6 +646,7 @@
 			{scores}
 			source={barSource}
 			{fill}
+			{note}
 			otherName={against === ALL_OUTLETS ? "others" : against}
 			highlight={[...HIGHLIGHT]}
 			top={mobile ? 10 : 14}
@@ -871,7 +874,7 @@
 	}
 	.tip-source {
 		display: block;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 10.5px;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
@@ -880,27 +883,27 @@
 	}
 	.tip-count {
 		display: block;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		color: rgba(42, 21, 3, 0.55);
 		margin-top: 2px;
 	}
 	.tip-head {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 12px;
 		font-weight: 700;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
 	}
 	.tip-count {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 10.5px;
 		color: rgba(42, 21, 3, 0.45);
 		margin-left: 6px;
 	}
 	.tip-weak {
 		display: block;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 10.5px;
 		color: rgba(42, 21, 3, 0.5);
 		margin-top: 2px;
@@ -1060,7 +1063,7 @@
 		font-weight: 700;
 	}
 	.suggest .uses {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 	}
 	/* a kept word */
@@ -1068,7 +1071,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 12px;
 		font-weight: 700;
 		color: var(--color-ink);
@@ -1197,7 +1200,7 @@
 		font-weight: 800;
 	}
 	.tip.carded .tip-word {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 12px;
 		font-weight: 700;
 		fill: #fff;

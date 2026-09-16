@@ -1,8 +1,5 @@
 <script>
-	// A quiet rail down the right of wide screens while the reader scrolls:
-	// one dot and a short label per section, the current one lit, from the top
-	// of the story on. It stays out of the way of the text column; nothing on
-	// phones.
+	// Rail down the right of wide screens
 	import copy from "$data/copy.json";
 
 	// a section without a heading (the opening) is named after its id
@@ -106,7 +103,7 @@
 			transform 250ms ease;
 	}
 	.label {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 10.5px;
 		font-weight: 700;
 		letter-spacing: 0.1em;

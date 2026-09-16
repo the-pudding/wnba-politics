@@ -62,13 +62,6 @@
 		"bio": "Paige Madison Bueckers is an American professional basketball player for the Dallas Wings of the Women's National Basketball Association (WNBA) and for Breeze of Unrivaled. She played college basketball for the UConn Huskies.",
 		"slug": "paige-bueckers"
 	},
-	"Layshia Clarendon": {
-		"group": "players",
-		"rx": "layshia|clarendon",
-		"face": "layshia-clarendon.png",
-		"bio": "Layshia Renee Clarendon is an American former professional basketball player. They played eleven seasons in the Women's National Basketball Association (WNBA).",
-		"slug": "layshia-clarendon"
-	},
 	"Alyssa Thomas": {
 		"group": "players",
 		"rx": "alyssa thomas",
@@ -88,7 +81,142 @@
 		"rx": "\\bnneka\\b",
 		"face": "nneka-ogwumike.png",
 		"bio": "Nnemkadi Chinwe Victoria \"Nneka\" Ogwumike is an American professional basketball player for the Los Angeles Sparks of the Women's National Basketball Association (WNBA).",
-		"slug": "nneka-ogwumike"
+		"slug": "nneka-ogwumike",
+		"network": false
+	},
+	"Kelsey Mitchell": {
+		"group": "players",
+		"rx": "kelsey mitchell",
+		"face": "kelsey-mitchell.png",
+		"bio": null,
+		"slug": "kelsey-mitchell",
+		"network": false
+	},
+	"Sabrina Ionescu": {
+		"group": "players",
+		"rx": "ionescu",
+		"face": "sabrina-ionescu.png",
+		"bio": "Sabrina Elaine Ionescu is an American professional basketball player for the New York Liberty of the Women's National Basketball Association (WNBA).",
+		"slug": "sabrina-ionescu"
+	},
+	"Aliyah Boston": {
+		"group": "players",
+		"rx": "aliyah boston",
+		"face": "aliyah-boston.png",
+		"bio": "Aliyah Boston is an American professional basketball power forward and center for the Indiana Fever of the Women's National Basketball Association (WNBA) and for the Phantom of Unrivaled.",
+		"slug": "aliyah-boston"
+	},
+	"Diana Taurasi": {
+		"group": "players",
+		"rx": "taurasi",
+		"face": "diana-taurasi.png",
+		"bio": "Diana Lorena Taurasi is an Argentine and American former professional basketball player.",
+		"slug": "diana-taurasi"
+	},
+	"Kelsey Plum": {
+		"group": "players",
+		"rx": "kelsey plum",
+		"face": "kelsey-plum.png",
+		"bio": "Kelsey Christine Plum is an American professional basketball player for the Phoenix Mercury of the Women's National Basketball Association (WNBA) and for the Phantom of Unrivaled.",
+		"slug": "kelsey-plum"
+	},
+	"Cameron Brink": {
+		"group": "players",
+		"rx": "cameron brink|(?<!the )\\bbrink\\b(?! of\\b)",
+		"face": "cameron-brink.png",
+		"bio": null,
+		"slug": "cameron-brink"
+	},
+	"Napheesa Collier": {
+		"group": "players",
+		"rx": "napheesa|collier",
+		"face": "napheesa-collier.png",
+		"bio": "Napheesa Collier, nicknamed \"Phee\", is an American professional basketball player for the Minnesota Lynx of the Women's National Basketball Association (WNBA) and for the Lunar Owls of Unrivaled.",
+		"slug": "napheesa-collier"
+	},
+	"Chennedy Carter": {
+		"group": "players",
+		"rx": "chennedy",
+		"face": "chennedy-carter.png",
+		"bio": "Chennedy Carter is an American professional basketball player who most recently played for the Las Vegas Aces of the Women's National Basketball Association (WNBA).",
+		"slug": "chennedy-carter"
+	},
+	"Candace Parker": {
+		"group": "players",
+		"rx": "candace parker",
+		"face": "candace-parker.png",
+		"bio": "Candace Nicole Parker, nicknamed \"Ace\", is an American former professional basketball player.",
+		"slug": "candace-parker"
+	},
+	"Lexie Hull": {
+		"group": "players",
+		"rx": "lexie hull",
+		"face": "lexie-hull.png",
+		"bio": "Lexie Lauren Hull is an American model and professional basketball player for the Indiana Fever of the Women's National Basketball Association (WNBA) and Rose of Unrivaled. She played college basketball for the Stanford Cardinal, with whom ",
+		"slug": "lexie-hull"
+	},
+	"DeWanna Bonner": {
+		"group": "players",
+		"rx": "dewanna|\\bbonner\\b",
+		"face": "dewanna-bonner.png",
+		"bio": "DeWanna Bonner is an American professional basketball player for the Atlanta Dream of the Women's National Basketball Association (WNBA). Bonner played college basketball for Auburn University. After a successful college career at Auburn, s",
+		"slug": "dewanna-bonner"
+	},
+	"Jonquel Jones": {
+		"group": "players",
+		"rx": "jonquel",
+		"face": "jonquel-jones.png",
+		"bio": "Jonquel Orthea Jones is a Bahamian-Bosnian professional basketball player for the New York Liberty of the Women's National Basketball Association (WNBA). She was drafted with the sixth overall pick in the 2016 WNBA draft.",
+		"slug": "jonquel-jones",
+		"network": false
+	},
+	"Chelsea Gray": {
+		"group": "players",
+		"rx": "chelsea gray",
+		"face": "chelsea-gray.png",
+		"bio": "Chelsea Nicelle Gray is an American professional basketball player for the Las Vegas Aces of the Women's National Basketball Association (WNBA) and for Rose of Unrivaled. Nicknamed \"Point Gawd\", she was the eleventh pick in the 2014 WNBA draft by the Connecticut Sun.",
+		"slug": "chelsea-gray",
+		"network": false
+	},
+	"Arike Ogunbowale": {
+		"group": "players",
+		"rx": "arike|ogunbowale",
+		"face": "arike-ogunbowale.png",
+		"bio": "Arike Faulina “Goomba” Ogunbowale is a Nigerian-American professional basketball player for the Dallas Wings of the Women's National Basketball Association (WNBA) and for the Mist of Unrivaled. She played college basketball for the Notre Dame Fighting Irish, before being drafted by the Wings with the fifth overall pick of the 2019 WNBA draft.",
+		"slug": "arike-ogunbowale",
+		"network": false
+	},
+	"Marina Mabrey": {
+		"group": "players",
+		"rx": "marina mabrey|mabrey",
+		"face": "marina-mabrey.png",
+		"bio": "Marina Alise Mabrey, nicknamed \"Money Mabrey\", is an American professional basketball player for the Toronto Tempo of the Women's National Basketball Association (WNBA) and for Lunar Owls of Unrivaled.",
+		"slug": "marina-mabrey",
+		"network": false
+	},
+	"Jewell Loyd": {
+		"group": "players",
+		"rx": "jewell loyd|\\bloyd\\b",
+		"face": "jewell-loyd.png",
+		"bio": "Jewell Loyd is an American professional basketball player for the Las Vegas Aces of the Women's National Basketball Association (WNBA). Nicknamed the \"Gold Mamba\", she played college basketball at Notre Dame and was selected first overall by the Seattle Storm in the 2015 WNBA draft.",
+		"slug": "jewell-loyd",
+		"network": false
+	},
+	"Courtney Vandersloot": {
+		"group": "players",
+		"rx": "vandersloot",
+		"face": "courtney-vandersloot.png",
+		"bio": "Courtney Vandersloot is an American professional basketball player for the Chicago Sky of the Women's National Basketball Association (WNBA). She is a five-time WNBA All-Star and two-time WNBA champion.",
+		"slug": "courtney-vandersloot",
+		"network": false
+	},
+	"Kahleah Copper": {
+		"group": "players",
+		"rx": "kahleah",
+		"face": "kahleah-copper.png",
+		"bio": "Kahleah Copper is an American professional basketball player for the Phoenix Mercury of the Women's National Basketball Association (WNBA) and for Rose of Unrivaled. She was drafted with the seventh overall pick by the Washington Mystics in 2016, and was traded to the Chicago Sky the next year.",
+		"slug": "kahleah-copper",
+		"network": false
 	},
 	"Chiney Ogwumike": {
 		"group": "media",
@@ -96,13 +224,6 @@
 		"face": "chiney-ogwumike.jpg",
 		"bio": "Chinenye Joy \"Chiney\" Ogwumike is an American professional basketball player who last played for the Los Angeles Sparks of the Women's National Basketball Association (WNBA).",
 		"slug": "chiney-ogwumike"
-	},
-	"Kelsey Mitchell": {
-		"group": "players",
-		"rx": "kelsey mitchell",
-		"face": "kelsey-mitchell.png",
-		"bio": null,
-		"slug": "kelsey-mitchell"
 	},
 	"Megan Rapinoe": {
 		"group": "media",
@@ -172,7 +293,8 @@
 		"rx": "adam silver",
 		"face": "adam-silver.jpg",
 		"bio": "Adam Silver is an American lawyer and sports executive who is serving as the fifth and current commissioner of the National Basketball Association (NBA).",
-		"slug": "adam-silver"
+		"slug": "adam-silver",
+		"network": false
 	},
 	"Morgan Wallen": {
 		"group": "media",
@@ -187,55 +309,6 @@
 		"face": "sheryl-swoopes.jpg",
 		"bio": "Sheryl Denise Swoopes is an American former professional basketball player.",
 		"slug": "sheryl-swoopes"
-	},
-	"Sabrina Ionescu": {
-		"group": "players",
-		"rx": "ionescu",
-		"face": "sabrina-ionescu.png",
-		"bio": "Sabrina Elaine Ionescu is an American professional basketball player for the New York Liberty of the Women's National Basketball Association (WNBA).",
-		"slug": "sabrina-ionescu"
-	},
-	"Aliyah Boston": {
-		"group": "players",
-		"rx": "aliyah boston",
-		"face": "aliyah-boston.png",
-		"bio": "Aliyah Boston is an American professional basketball power forward and center for the Indiana Fever of the Women's National Basketball Association (WNBA) and for the Phantom of Unrivaled.",
-		"slug": "aliyah-boston"
-	},
-	"Diana Taurasi": {
-		"group": "players",
-		"rx": "taurasi",
-		"face": "diana-taurasi.png",
-		"bio": "Diana Lorena Taurasi is an Argentine and American former professional basketball player.",
-		"slug": "diana-taurasi"
-	},
-	"Kelsey Plum": {
-		"group": "players",
-		"rx": "kelsey plum",
-		"face": "kelsey-plum.png",
-		"bio": "Kelsey Christine Plum is an American professional basketball player for the Phoenix Mercury of the Women's National Basketball Association (WNBA) and for the Phantom of Unrivaled.",
-		"slug": "kelsey-plum"
-	},
-	"Cameron Brink": {
-		"group": "players",
-		"rx": "cameron brink|(?<!the )\\bbrink\\b(?! of\\b)",
-		"face": "cameron-brink.png",
-		"bio": null,
-		"slug": "cameron-brink"
-	},
-	"Napheesa Collier": {
-		"group": "players",
-		"rx": "napheesa|collier",
-		"face": "napheesa-collier.png",
-		"bio": "Napheesa Collier, nicknamed \"Phee\", is an American professional basketball player for the Minnesota Lynx of the Women's National Basketball Association (WNBA) and for the Lunar Owls of Unrivaled.",
-		"slug": "napheesa-collier"
-	},
-	"Chennedy Carter": {
-		"group": "players",
-		"rx": "chennedy",
-		"face": "chennedy-carter.png",
-		"bio": "Chennedy Carter is an American professional basketball player who most recently played for the Las Vegas Aces of the Women's National Basketball Association (WNBA).",
-		"slug": "chennedy-carter"
 	},
 	"Paul Whelan": {
 		"group": "politics",
@@ -342,100 +415,33 @@
 		"bio": "Taylor Alison Swift is an American singer-songwriter.",
 		"slug": "taylor-swift"
 	},
-	"Candace Parker": {
-		"group": "players",
-		"rx": "candace parker",
-		"face": "candace-parker.png",
-		"bio": "Candace Nicole Parker, nicknamed \"Ace\", is an American former professional basketball player.",
-		"slug": "candace-parker"
-	},
-	"JuJu Watkins": {
-		"group": "players",
-		"rx": "juju watkins|\\bjuju\\b",
-		"face": "juju-watkins.png",
-		"bio": "Judea Skies \"JuJu\" Watkins is an American college basketball player for the USC Trojans of the Big Ten Conference.",
-		"slug": "juju-watkins",
-		"network": false
-	},
-	"Lexie Hull": {
-		"group": "players",
-		"rx": "lexie hull",
-		"face": "lexie-hull.png",
-		"bio": "Lexie Lauren Hull is an American model and professional basketball player for the Indiana Fever of the Women's National Basketball Association (WNBA) and Rose of Unrivaled. She played college basketball for the Stanford Cardinal, with whom ",
-		"slug": "lexie-hull",
-		"network": false
-	},
-	"Elena Delle Donne": {
-		"group": "players",
-		"rx": "delle donne",
-		"face": "elena-delle-donne.png",
-		"bio": "Elena Delle Donne is an American former professional basketball player. Delle Donne played college basketball for the Delaware Blue Hens from 2009 to 2013. She was drafted by the Chicago Sky with the second overall pick of the 2013 WNBA dra",
-		"slug": "elena-delle-donne",
-		"network": false
-	},
-	"Kamilla Cardoso": {
-		"group": "players",
-		"rx": "cardoso",
-		"face": "kamilla-cardoso.png",
-		"bio": "Kamilla Soares Cardoso is a Brazilian professional basketball player for the Chicago Sky of the Women's National Basketball Association (WNBA) and the Guangdong Vermilion Birds of the Women's Chinese Basketball Association (WCBA). She playe",
-		"slug": "kamilla-cardoso",
-		"network": false
-	},
-	"Liz Cambage": {
-		"group": "players",
-		"rx": "cambage",
-		"face": "liz-cambage.jpg",
-		"bio": "Elizabeth Folake Cambage is an Australian professional basketball player for the Sichuan Yuanda of the Women's Chinese Basketball Association. She won the Women's National Basketball League in 2011 and 2014 and the Women's Chinese Basketbal",
-		"slug": "liz-cambage",
-		"network": false
-	},
-	"Azzi Fudd": {
-		"group": "players",
-		"rx": "\\bfudd\\b",
-		"face": "azzi-fudd.jpg",
-		"bio": "Azzi Jazlyn Fudd is an American professional basketball player for the Dallas Wings of the Women's National Basketball Association (WNBA). She played college basketball for the UConn Huskies.",
-		"slug": "azzi-fudd",
-		"network": false
-	},
-	"DeWanna Bonner": {
-		"group": "players",
-		"rx": "dewanna|\\bbonner\\b",
-		"face": "dewanna-bonner.png",
-		"bio": "DeWanna Bonner is an American professional basketball player for the Atlanta Dream of the Women's National Basketball Association (WNBA). Bonner played college basketball for Auburn University. After a successful college career at Auburn, s",
-		"slug": "dewanna-bonner",
-		"network": false
-	},
 	"Dawn Staley": {
 		"group": "league",
 		"rx": "\\bstaley\\b",
 		"face": "dawn-staley.jpg",
 		"bio": "Dawn Michelle Staley is an American basketball coach and former player who is the head coach for the South Carolina Gamecocks women's basketball team. A point guard, she played college basketball for the Virginia Cavaliers and spent eight s",
-		"slug": "dawn-staley",
-		"network": false
+		"slug": "dawn-staley"
 	},
 	"Becky Hammon": {
 		"group": "league",
 		"rx": "\\bhammon\\b",
 		"face": "becky-hammon.jpg",
 		"bio": "Rebecca Lynn Hammon is an American-Russian professional basketball coach and former player who is the head coach of the Las Vegas Aces of the Women's National Basketball Association (WNBA). She is considered one of the greatest players and ",
-		"slug": "becky-hammon",
-		"network": false
+		"slug": "becky-hammon"
 	},
 	"Cheryl Reeve": {
 		"group": "league",
 		"rx": "\\breeve\\b",
 		"face": "cheryl-reeve.jpg",
 		"bio": "Cheryl Ann Reeve is an American basketball head coach and President of Basketball Operations for the Minnesota Lynx of the WNBA. Reeve has coached the Lynx to four league championships. In WNBA history, she is first in career wins including",
-		"slug": "cheryl-reeve",
-		"network": false
+		"slug": "cheryl-reeve"
 	},
 	"Geno Auriemma": {
 		"group": "league",
 		"rx": "auriemma",
 		"face": "geno-auriemma.jpg",
 		"bio": "Luigi \"Geno\" Auriemma is an Italian-born American basketball coach who is the head coach of the UConn Huskies women's basketball team. He holds the NCAA basketball records for wins and winning percentage with a minimum of 10 seasons. Auriem",
-		"slug": "geno-auriemma",
-		"network": false
+		"slug": "geno-auriemma"
 	},
 	"Kim Mulkey": {
 		"group": "league",
@@ -443,14 +449,6 @@
 		"face": "kim-mulkey.jpg",
 		"bio": "Kimberly Duane Mulkey is an American college basketball coach and former player. Since 2021, she has been the head coach for Louisiana State University's LSU women's basketball team. A Pan-American gold medalist in 1983 and Olympic gold med",
 		"slug": "kim-mulkey",
-		"network": false
-	},
-	"Olivia Miles": {
-		"group": "players",
-		"rx": "olivia miles",
-		"face": null,
-		"bio": "Olivia Miles is an American professional basketball player, drafted by the Chicago Sky in 2026 after college at Notre Dame and TCU.",
-		"slug": "olivia-miles",
 		"network": false
 	}
 }

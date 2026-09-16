@@ -121,7 +121,7 @@ svg {
 	object-position: 50% 20%;
 	vertical-align: -0.4em;
 	margin: 0 0.25em 0 0.05em;
-	background: #f7f2e6;
+	background: var(--color-card);
 	border: 2px solid var(--color-fox);
 	box-shadow: 0 0 0 1.5px var(--color-paper);
 }
@@ -141,10 +141,10 @@ svg {
 	padding: 0 0.22em;
 	margin: 0 0.1em;
 	--tag-bg: var(--color-paper);
-	border: 1.5px solid #003366;
+	border: 1.5px solid var(--color-fox-navy);
 	border-radius: 3px;
 	background: var(--tag-bg);
-	color: #003366;
+	color: var(--color-fox-navy);
 	cursor: pointer;
 	box-shadow: 0 1px 2px rgba(42, 21, 3, 0.15);
 	transition:
@@ -159,7 +159,7 @@ svg {
 }
 .clip-tag:not(.static):hover,
 .clip-tag:not(.static):focus-visible {
-	--tag-bg: #003366;
+	--tag-bg: var(--color-fox-navy);
 	color: #fff;
 	outline: none;
 }
@@ -177,16 +177,16 @@ svg {
 	width: 300px;
 	max-width: 86vw;
 	background: var(--color-paper);
-	border: 1px solid #e6dcc3;
+	border: 1px solid var(--color-rule);
 	box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
 	padding: 9px 13px 11px;
 	z-index: 20;
 	text-align: left;
-	font-family: Georgia, serif;
+	font-family: var(--font-serif);
 	font-size: 14.5px;
 	font-weight: 700;
 	line-height: 1.4;
-	color: #1a1a1a;
+	color: var(--color-ink-dark);
 	white-space: normal;
 }
 .clip-pop:hover .pop-card,
@@ -195,19 +195,19 @@ svg {
 }
 .pop-source {
 	display: inline-block;
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: var(--font-sans);
 	font-size: 9.5px;
 	font-weight: 800;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: #fff;
-	background: #003366;
+	background: var(--color-fox-navy);
 	border-radius: 2px;
 	padding: 3px 6px 2px;
 	margin-right: 8px;
 }
 .pop-date {
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: var(--font-sans);
 	font-size: 12px;
 	font-weight: 400;
 	color: rgba(42, 21, 3, 0.55);
@@ -232,7 +232,7 @@ svg {
 }
 .pop-caption {
 	display: block;
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: var(--font-sans);
 	font-size: 12px;
 	font-weight: 400;
 	line-height: 1.4;
@@ -244,7 +244,7 @@ svg {
    <span class="fox">4.5x more</span> in the dot plot's Fox navy,
    <span class="others">1.3x less</span> in its other-outlets purple */
 span.fox {
-	color: #003366;
+	color: var(--color-fox-navy);
 	font-weight: 700;
 }
 span.others,

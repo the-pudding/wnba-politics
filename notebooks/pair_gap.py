@@ -18,18 +18,25 @@ ROOT = Path(__file__).resolve().parents[1]
 csv.field_size_limit(10 ** 9)
 MIN_FOX_HEADLINES = 3          # a player needs this many Fox headlines to be in the pool
 MIN_PAIR = 3                   # a pair needs this many headlines somewhere to be shown
-GAP_FILES = {"Yahoo Sports": "yahoo_sports.csv", "ESPN": "espn.csv", "CBS Sports": "cbs_sports.csv",
+GAP_FILES = {"ESPN": "espn.csv", "CBS Sports": "cbs_sports.csv",
              "USA Today": "usa_today.csv", "The Athletic": "the_athletic.csv",
              "Just Women's Sports": "just_womens_sports.csv"}
-GROUPS = {"Yahoo + ESPN": ["Yahoo Sports", "ESPN"], "CBS + USA Today": ["CBS Sports", "USA Today"]}
+GROUPS = {"CBS + USA Today": ["CBS Sports", "USA Today"]}
 NOT_HER = {"Sue Bird": r"larry bird|bird-magic|bird and magic",
            "A'ja Wilson": r"russell wilson|signs with wilson|wilson (?:basketball|ball|brand)",
            "Alyssa Thomas": r"lia thomas|isiah thomas", "Caitlin Clark": r"alysha clark"}
 NOT_HER_RX = {n: re.compile(rx, re.I) for n, rx in NOT_HER.items()}
 
-nodes = json.load(open(ROOT / "src/data/headline_network.json"))["nodes"]
-players = [n["name"] for n in nodes if n["group"] == "players" and n["total"] >= MIN_FOX_HEADLINES]
-name_rx = {n: re.compile(r"\b" + re.escape(n.split()[-1]) + r"\b", re.I) for n in players}
+DOT_PLOT_PLAYERS = [   # hand-picked: the chart's cast, in this order
+    "Caitlin Clark", "Angel Reese", "Brittney Griner", "Sophie Cunningham", "Paige Bueckers",
+    "Sue Bird", "DiJonai Carrington", "A'ja Wilson", "Sabrina Ionescu", "Aliyah Boston",
+    "Breanna Stewart", "Alyssa Thomas", "Diana Taurasi", "Kelsey Plum", "Cameron Brink",
+    "Candace Parker", "Natasha Cloud", "Napheesa Collier", "Chennedy Carter",
+    "Nneka Ogwumike", "Kelsey Mitchell",
+]
+roster = json.load(open(ROOT / "src/data/people.json"))
+players = list(DOT_PLOT_PLAYERS)
+name_rx = {n: re.compile(r"\b(?:" + roster[n]["rx"] + r")\b", re.I) for n in players}
 
 def names_in(text):
     found = []

@@ -22,6 +22,8 @@
 			.filter((p) => p.face)
 			.map((p) => [p.slug, p.face.slice(p.slug.length)])
 	);
+	// the five sports outlets Fox is set against, pooled for the tone comparison
+	const OUTLETS = ["ESPN", "CBS Sports", "USA Today", "The Athletic", "Just Women's Sports"];
 
 	const headlines = {
 		rows: headlineRows.map((r) => ({
@@ -152,8 +154,8 @@
 			victimN: 0,
 			victimExample: "",
 			foxTone: null,
-			yahooTone: null,
-			yahooN: 0,
+			outletsTone: null,
+			outletsN: 0,
 			differential: 0
 		}));
 
@@ -177,7 +179,7 @@
 		);
 		const framing = Object.fromEntries(agency.people.map((p) => [p.name, p]));
 		const play = Object.fromEntries(performance.people.map((p) => [p.name, p]));
-		// Yahoo is the comparison: the biggest pool of real headlines
+		// the five sports outlets, pooled, are the comparison
 		const versus = outletSentiment.byPlayer ?? {};
 
 		return [...byName]
@@ -206,13 +208,19 @@
 					victimN: framing[name]?.victim ?? 0,
 					victimExample: framing[name]?.examples?.[0] ?? "",
 					foxTone: versus[name]?.["Fox News"]?.mean ?? null,
-					yahooTone: versus[name]?.["Yahoo Sports"]?.mean ?? null,
-					yahooN: versus[name]?.["Yahoo Sports"]?.n ?? 0,
-					differential:
-						versus[name]?.["Fox News"] && versus[name]?.["Yahoo Sports"]
-							? versus[name]["Fox News"].mean -
-								versus[name]["Yahoo Sports"].mean
-							: 0
+					// the comparison is the five sports outlets pooled, each
+					// headline weighing the same (Yahoo is out of the piece)
+					...(() => {
+						const pool = OUTLETS.map((o) => versus[name]?.[o]).filter(Boolean);
+						const n = pool.reduce((a, s) => a + s.n, 0);
+						const mean = n ? pool.reduce((a, s) => a + s.mean * s.n, 0) / n : null;
+						const fox = versus[name]?.["Fox News"]?.mean;
+						return {
+							outletsTone: mean,
+							outletsN: n,
+							differential: fox != null && mean != null ? fox - mean : 0
+						};
+					})()
 				};
 			});
 	})();
@@ -260,8 +268,8 @@
 			centred: false
 		},
 		differential: {
-			left: "← Fox is harsher than Yahoo",
-			right: "Fox is warmer than Yahoo →",
+			left: "← Fox is harsher than the other outlets",
+			right: "Fox is warmer than the other outlets →",
 			format: (v) => `${v > 0 ? "+" : ""}${v.toFixed(2)}`,
 			centred: true
 		}
@@ -439,21 +447,21 @@
 			return person.tone < -0.02
 				? "var(--color-fox)"
 				: person.tone > 0.02
-					? "#1f9d6e"
+					? "var(--color-politics)"
 					: "rgba(42,21,3,0.45)";
 		}
 		if (metric === "victim")
 			return valueOf(person) > 0 ? "var(--color-fox)" : "rgba(42,21,3,0.3)";
 		if (metric === "performance")
-			return valueOf(person) > 0 ? "#1f9d6e" : "rgba(42,21,3,0.3)";
+			return valueOf(person) > 0 ? "var(--color-politics)" : "rgba(42,21,3,0.3)";
 		if (metric === "differential") {
 			return person.differential < -0.02
 				? "var(--color-fox)"
 				: person.differential > 0.02
-					? "#1f9d6e"
+					? "var(--color-politics)"
 					: "rgba(42,21,3,0.45)";
 		}
-		return valueOf(person) > 0 ? "#b04ac2" : "rgba(42,21,3,0.3)";
+		return valueOf(person) > 0 ? "var(--color-lgbtq)" : "rgba(42,21,3,0.3)";
 	};
 </script>
 
@@ -566,7 +574,7 @@
 						<circle cx="0" cy="0" r={Math.max(0, size - 1)} />
 					</clipPath>
 					{#if faceFiles[slug]}
-						<circle cx="0" cy="0" r={size} fill="#f7f2e6" />
+						<circle cx="0" cy="0" r={size} fill="var(--color-card)" />
 						<image
 							href="{base}/net/{slug}{faceFiles[slug]}"
 							x={-size * 1.2}
@@ -577,7 +585,7 @@
 							clip-path="url(#swarm-{metric}-{slug})"
 						/>
 					{:else}
-						<circle cx="0" cy="0" r={size} fill="#d8cdb6" />
+						<circle cx="0" cy="0" r={size} fill="var(--color-sand)" />
 					{/if}
 					<circle cx="0" cy="0" r={size} class="ring" style="stroke:{ringColor(person)}" />
 				</g>
@@ -637,15 +645,15 @@
 			{:else if metric === "differential"}
 				<div class="stat">
 					Fox {person.foxTone > 0 ? "+" : ""}{person.foxTone?.toFixed(2)} ({person.count})
-					· Yahoo {person.yahooTone > 0 ? "+" : ""}{person.yahooTone?.toFixed(
+					· other outlets {person.outletsTone > 0 ? "+" : ""}{person.outletsTone?.toFixed(
 						2
-					)} ({person.yahooN.toLocaleString()})
+					)} ({person.outletsN.toLocaleString()})
 				</div>
 				<div class="example {person.differential < 0 ? 'harsh' : 'warm'}">
 					Fox writes about her {person.differential < 0
 						? "more harshly"
 						: "more warmly"}
-					than Yahoo does, covering the same seasons.
+					than the five sports outlets do, covering the same seasons.
 				</div>
 			{:else}
 				<div class="stat">
@@ -721,10 +729,10 @@
 		opacity: 0.3;
 	}
 	.row .label {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 12px;
 		paint-order: stroke;
-		stroke: var(--color-bg, #f3b56b);
+		stroke: var(--color-bg, var(--color-page-orange));
 		stroke-width: 3px;
 		stroke-linejoin: round;
 	}
@@ -751,7 +759,7 @@
 	.tip {
 		position: absolute;
 		transform: translate(-50%, -100%);
-		background: #1a1a1a;
+		background: var(--color-ink-dark);
 		color: #fff;
 		font-size: 12.5px;
 		line-height: 1.45;

@@ -1,7 +1,5 @@
 <script>
-	// A row of player portraits on their own line — the same faces as the
-	// charts — for the Doc: `faces: Caitlin Clark, Angel Reese` (names under
-	// each) or `faces: Caitlin Clark, Angel Reese | plain` (faces only).
+	// A row of player portraits on their own line
 	import { base } from "$app/paths";
 	import roster from "$data/people.json";
 
@@ -54,13 +52,13 @@
 		border-radius: 50%;
 		object-fit: cover;
 		object-position: 50% 20%;
-		background: #f7f2e6;
+		background: var(--color-card);
 		border: 3px solid var(--color-fox);
 		box-shadow: 0 0 0 2px var(--color-paper);
 	}
 	.blank {
 		display: block;
-		background: #d8cdb6;
+		background: var(--color-sand);
 	}
 	figcaption {
 		font-size: 12.5px;

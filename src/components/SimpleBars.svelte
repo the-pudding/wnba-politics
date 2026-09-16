@@ -1,16 +1,6 @@
 <script>
 	// A plain horizontal bar chart, one bar per outlet or network, for a
-	// single year. In the Doc:
-	//   {.SimpleBars}
-	//   source: cable     (WNBA segments on Fox News, CNN and MSNBC, from the chyrons)
-	//           trans     (articles about trans athletes, Fox and the five sports outlets)
-	//   year: 2026
-	//   mode: count      (bars by count) or share (every outlet a full bar, the
-	//                    part about trans athletes filled in)
-	//   title: ...
-	//   note: ...        the line under the chart (replaces the built-in one;
-	//                    `note: none` drops it)
-	//   {}
+	// single year
 	import { base } from "$app/paths";
 	import segments from "$data/chyron_segments.json";
 	import trans from "$data/trans_by_outlet.json";
@@ -168,7 +158,7 @@
 		position: absolute;
 		left: 50%;
 		transform: translateX(-50%);
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 13px;
 		font-weight: 700;
 		color: var(--color-ink);

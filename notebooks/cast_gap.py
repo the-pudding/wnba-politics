@@ -16,10 +16,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 csv.field_size_limit(10 ** 9)
 MIN_HEADLINES = 1
-GAP_FILES = {"Yahoo Sports": "yahoo_sports.csv", "ESPN": "espn.csv", "CBS Sports": "cbs_sports.csv",
+GAP_FILES = {"ESPN": "espn.csv", "CBS Sports": "cbs_sports.csv",
              "USA Today": "usa_today.csv", "The Athletic": "the_athletic.csv",
              "Just Women's Sports": "just_womens_sports.csv"}
-GROUPS = {"Yahoo + ESPN": ["Yahoo Sports", "ESPN"], "CBS + USA Today": ["CBS Sports", "USA Today"]}
+GROUPS = {"CBS + USA Today": ["CBS Sports", "USA Today"]}
 # Obama is Barack unless Michelle is named; Biden is Joe unless Jill is
 NOT_THEM = {"Barack Obama": r"michelle obama", "Joe Biden": r"jill biden"}
 

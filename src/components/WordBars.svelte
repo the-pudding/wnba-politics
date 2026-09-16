@@ -27,11 +27,15 @@
 		onhover = null,
 		fill = false,
 		// the name of the bottom side in the tooltip's counts ("others", "ESPN")
-		otherName = "others"
+		otherName = "others",
+		// note: the line under the chart — left out for the stock one, written
+		// for your own (HTML allowed), present but blank for none
+		note = undefined
 	} = $props();
+	const noteMode = $derived(note === undefined || note === null ? "stock" : String(note).trim() ? "custom" : "none");
 
 	const FOX = "var(--color-fox-navy)";
-	const OTHERS = "#6b4bb0";
+	const OTHERS = "var(--color-outlets)";
 	const INK = "#2a1503";
 	const WEAK_Z = 1.96; // below this a word's lean is within noise
 
@@ -161,7 +165,7 @@
 		if (typeof document === "undefined") return word.length * WORD_PX * 0.6;
 		if (!measureCtx)
 			measureCtx = document.createElement("canvas").getContext("2d");
-		measureCtx.font = `700 ${WORD_PX}px "Helvetica Neue", Helvetica, Arial, sans-serif`;
+		measureCtx.font = `700 ${WORD_PX}px var(--font-chart)`;
 		return measureCtx.measureText(word).width;
 	}
 	// the word column, when the words sit beside the bars: as wide as the
@@ -371,10 +375,14 @@
 			</div>
 		{/if}
 
-		<p class="note">
-			Bars are each word's fightin'-words score. Faded bars score under {WEAK_Z},
-			within noise. Hover a bar for an example.
-		</p>
+		{#if noteMode === "custom"}
+			<p class="note">{@html note}</p>
+		{:else if noteMode === "stock"}
+			<p class="note">
+				Bars are each word's fightin'-words score. Faded bars score under {WEAK_Z},
+				within noise. Hover a bar for an example.
+			</p>
+		{/if}
 	{/if}
 </div>
 
@@ -388,7 +396,7 @@
 		overflow: visible;
 	}
 	.head {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11.5px;
 		font-weight: 800;
 		letter-spacing: 0.06em;
@@ -398,7 +406,7 @@
 		fill: var(--color-fox-navy);
 	}
 	.head.others {
-		fill: #6b4bb0;
+		fill: var(--color-outlets);
 	}
 	.axis {
 		stroke: rgba(42, 21, 3, 0.45);
@@ -406,7 +414,7 @@
 	}
 	.break {
 		fill: none;
-		stroke: var(--color-paper, #fffdf8);
+		stroke: var(--color-paper, var(--color-paper));
 		stroke-width: 3;
 	}
 	.bar .fill {
@@ -432,7 +440,7 @@
 		opacity: 1;
 	}
 	.word {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-weight: 700;
 		pointer-events: none;
 	}
@@ -445,7 +453,7 @@
 		stroke-linejoin: round;
 	}
 	.score {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		font-weight: 600;
 		fill: rgba(42, 21, 3, 0.6);
@@ -465,7 +473,7 @@
 		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
 	}
 	.tip-head {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 12px;
 		font-weight: 700;
 		letter-spacing: 0.04em;
@@ -473,7 +481,7 @@
 	}
 	.tip-source {
 		display: block;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 10.5px;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
@@ -481,7 +489,7 @@
 		margin-top: 4px;
 	}
 	.tip-count {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 10.5px;
 		color: rgba(42, 21, 3, 0.5);
 		margin-left: 6px;

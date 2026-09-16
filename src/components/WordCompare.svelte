@@ -1,19 +1,6 @@
 <script>
 	// A small figure: a few words, week by week, for one outlet at a time —
-	// Fox News by default, the five sports outlets a click away, every one on
-	// Fox's scale so they compare. In the Doc:
-	//   {.WordCompare}
-	//   words: hip-check, poke, punch, throat
-	//   from: 2024-01-01
-	//   mark: 2026-07-07        (optional)
-	//   layout: pills | multiples | breakdown | total
-	//       total: the words added up as one shaded line, each word named on
-	//       the line at the week it peaks
-	//       pills: one chart with outlet pills; multiples: every outlet at once,
-	//       Fox on top, the five in rows beneath; breakdown: the words added up
-	//       on top, then one shaded row per word, in the ternary's brown
-	//   title: How {outlet} describes the contact   ({outlet} follows the pills)
-	//   {}
+	// 
 	import { base } from "$app/paths";
 	import WordTimeline from "$components/WordTimeline.svelte";
 
@@ -24,14 +11,22 @@
 		mark = "",
 		chart = "lines",
 		layout = "pills",
-		title = ""
+		title = "",
+		also = "",
+		alsoLabel = "",
+		alsoPlace = "below"
 	} = $props();
+	let alsoList = $derived(String(also).split(",").map((w) => w.trim()).filter(Boolean));
+	let beside = $derived(String(alsoPlace).trim().toLowerCase().startsWith("beside"));
+	let placeKey = $derived(String(alsoPlace).trim().toLowerCase());
+	let stackedOn = $derived(placeKey.startsWith("stack") && alsoList.length > 0);
+	let overlaid = $derived((placeKey.startsWith("over") || stackedOn) && alsoList.length > 0);
 	// the title is drawn here, not by the CMS, so it can name the outlet picked
 	let heading = $derived(String(title).replaceAll("{outlet}", outlet));
 	const multiples = String(layout).trim().toLowerCase().startsWith("multi");
 	const breakdown = String(layout).trim().toLowerCase().startsWith("break");
 	const totalOnly = String(layout).trim().toLowerCase() === "total";
-	const BROWN = "#7a4a00";
+	const BROWN = "var(--color-brown)";
 	let wordList = $derived(String(words).split(",").map((w) => w.trim()).filter(Boolean));
 	// the panes, on the outlet-topic panels' 30-column grid: Fox alone on top
 	// (a third wide, centred), then rows of three
@@ -90,8 +85,10 @@
 		</div>
 	</div>
 	{#key outlet}
+		<div class="pair" class:beside={beside && alsoList.length}>
+		<div class="main">
 		{#if totalOnly}
-			<WordTimeline {outlet} {words} combine annotate label="all {wordList.length} words" {from} {to} {mark} by="week" scope="any" scaleTo="Fox News" chart="area" color={BROWN} width={700} height={300} />
+			<WordTimeline {outlet} {words} combine annotate label="all {wordList.length} words" {from} {to} {mark} by="week" scope="any" scaleTo="Fox News" chart="area" color={BROWN} width={beside && alsoList.length ? 340 : 700} height={beside && alsoList.length ? 240 : 300} overlay={overlaid ? also : ""} overlayLabel={alsoLabel} overlayStack={stackedOn} />
 		{:else if breakdown}
 			<!-- the words added up, then each on its own row, all in one colour -->
 			<div class="rows">
@@ -107,8 +104,21 @@
 			</div>
 		{:else}
 			<!-- drawn at the text column's width, so the type stays true size -->
-			<WordTimeline {outlet} {words} {from} {to} {mark} by="week" scope="any" scaleTo="Fox News" width={700} height={280} {chart} />
+			<WordTimeline {outlet} {words} {from} {to} {mark} by="week" scope="any" scaleTo="Fox News" width={beside && alsoList.length ? 340 : 700} height={beside && alsoList.length ? 240 : 280} {chart} />
 		{/if}
+		</div>
+		{#if alsoList.length && !overlaid}
+			<!-- the second group as a small multiple: same outlet, dates and mark -->
+			<div class="also">
+				<span class="also-word">{alsoLabel || alsoList.join(", ")}</span>
+				{#if alsoList.length > 1}
+					<WordTimeline {outlet} words={also} combine annotate label={alsoLabel || alsoList.join(", ")} {from} {to} {mark} by="week" scope="any" scaleTo="Fox News" chart="area" color={BROWN} width={beside ? 340 : 700} height={beside ? 240 : 190} />
+				{:else}
+					<WordTimeline {outlet} word={alsoList[0]} {from} {to} {mark} by="week" scope="any" scaleTo="Fox News" chart="area" color={BROWN} width={beside ? 340 : 700} height={beside ? 240 : 190} />
+				{/if}
+			</div>
+		{/if}
+		</div>
 	{/key}
 	<p class="note">
 		{outlet}: articles per week that use each word anywhere in the text.
@@ -211,10 +221,10 @@
 		position: absolute;
 		left: 42px;
 		top: 4px;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 12px;
 		font-weight: 700;
-		color: #7a4a00;
+		color: var(--color-brown);
 		z-index: 1;
 	}
 	.note {
@@ -222,5 +232,30 @@
 		color: rgba(42, 21, 3, 0.6);
 		margin: 6px 0 0;
 		text-align: center;
+	}
+	/* a second word group beside or under the chart */
+	.pair.beside {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 16px;
+		align-items: end;
+	}
+	.also {
+		margin-top: 6px;
+	}
+	.also-word {
+		display: block;
+		font-family: var(--font-chart);
+		font-size: 12px;
+		font-weight: 800;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-brown);
+		margin: 6px 0 2px;
+	}
+	@media (max-width: 640px) {
+		.pair.beside {
+			grid-template-columns: 1fr;
+		}
 	}
 </style>

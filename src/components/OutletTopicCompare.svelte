@@ -1,6 +1,5 @@
 <script>
-	// Small multiples: one yearly line per outlet, with the outlet's own
-	// all-years average ruled across the panel and quoted beside its logo
+	// Small multiples
 	import { base } from "$app/paths";
 	import rows from "$data/outlet_topics.csv";
 	import { flip } from "svelte/animate";
@@ -8,30 +7,15 @@
 	// the vocabulary behind each topic, straight from the notebooks' term list
 	import termRows from "../../data/topic_terms.csv";
 
-	// `dots` is a leftover Doc prop from the logo dot plot this replaced
-	// full text only; `method: headline` from the Doc would switch the source
-	// second: another topic drawn on the same panels (e.g. lgbtq beside polrace)
-	// wordsLabel / wordsNote: the "see the words" toggle and the line under the
-	// list, editable from the Doc
+
 	let {
 		topic = "polrace",
 		method = "body",
 		dots = null,
 		second = null,
-		// reveal: "pair" — open with Fox beside ESPN alone and, once the chart
-		// has been on screen a moment, let ESPN glide down into the grid as the
-		// other outlets fade in. Anything else: every panel from the start.
-		reveal = "",
-		// top: "espn" — Fox and ESPN share a large top row, the rest sit below;
-		// otherwise Fox sits alone on top
-		top = "",
-		// below: with top: espn, how the rest sit — "3-2" (three, then two
-		// centred) or "row" (all five small on one line)
-		below = "3-2",
-		// layout: "rows" (every outlet the same size, Fox first, rows of
-		// three, a short last row centred) or "solo" (Fox alone on top, a
-		// third wide)
-		layout = "rows",
+		// every outlet the same size, Fox first, in rows of three (two on phones),
+		// a short last row centred. Other arrangements tried along the way are in
+		// archive/components/OutletTopicCompare.full.svelte.
 		// from: the first year shown (e.g. 2024), when a topic only matters lately
 		from = "",
 		wordsLabel = "See the words included",
@@ -56,7 +40,7 @@
 	const COLOR_OF = {
 		lgbtq: "var(--color-lgbtq)",
 		polrace: "var(--color-politics)",
-		fouls: "#7a4a00"
+		fouls: "var(--color-brown)"
 	};
 	const PHRASE_OF = {
 		lgbtq: "LGBTQ+ topics",
@@ -66,7 +50,7 @@
 	const MAIN = COLOR_OF[topic] ?? "var(--color-politics)";
 	const SECOND = second ? COLOR_OF[second] : null;
 	const MIN_N = 10;
-	const AVG = "#1a1a1a"; // the average rule, apart from either topic colour
+	const AVG = "var(--color-ink-dark)"; // the average rule, apart from either topic colour
 
 	// --- the words counted, for the "see words included" drop-down ------------
 	// the same unions as notebooks/topics.py
@@ -189,34 +173,8 @@
 		)
 	);
 
-	// the pair stage shows Fox and ESPN only; the reveal opens on it and
-	// expands once the block has been in view for a beat
-	let stage = $state(reveal === "pair" ? "pair" : "all");
 	let root = $state(null);
-	$effect(() => {
-		if (!root || stage !== "pair") return;
-		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-			stage = "all";
-			return;
-		}
-		let timer;
-		const io = new IntersectionObserver(
-			(entries) => {
-				if (!entries.some((e) => e.isIntersecting)) return;
-				io.disconnect();
-				timer = setTimeout(() => (stage = "all"), 1400);
-			},
-			{ threshold: 0.5 }
-		);
-		io.observe(root);
-		return () => {
-			io.disconnect();
-			clearTimeout(timer);
-		};
-	});
-	let shown = $derived(
-		stage === "pair" ? outlets.filter((o) => o === FOX || o === "ESPN") : outlets
-	);
+	let shown = $derived(outlets);
 
 	let years = $derived(
 		[
@@ -260,63 +218,26 @@
 	// the comparison panes in grid order, and the grid's column count
 	let others = $derived(outlets.filter((o) => o !== FOX));
 	let cols = $derived(mobile ? 2 : 3);
-	let topPair = $derived(
-		["espn", "pair"].includes(String(top).toLowerCase()) || stage === "pair"
-	);
 
-	// Where every pane sits: a six-column grid on desktop (two columns on
-	// phones). Fox alone on top spans the row and is drawn a third wide; with
-	// top: espn, Fox and ESPN each take half the top row; the rest run in
-	// rows of three (two on phones). From these, which panes carry axis labels.
+	// Where every pane sits: rows of three on desktop, the last row centred
+	// when it is short; two columns on phones. Every pane carries both axes'
+	// labels.
 	let cells = $derived.by(() => {
-		const units = mobile ? 2 : 30;
 		const out = [];
-		let row = 0, col = 0;
-		const place = (outlet, span, solo = false) => {
-			if (col + span > units) {
-				row += 1;
-				col = 0;
-			}
-			out.push({ outlet, row, start: col, span, solo });
-			col += span;
-		};
 		const list = [...shown];
-		if (topPair) {
-			for (const o of [FOX, "ESPN"]) {
-				const i = list.indexOf(o);
-				if (i >= 0) {
-					list.splice(i, 1);
-					place(o, mobile ? 1 : 15);
-				}
-			}
-		} else if (list.includes(FOX) && String(layout) !== "rows") {
-			list.splice(list.indexOf(FOX), 1);
-			place(FOX, units, true);
-		}
-		row += col ? 1 : 0;
-		col = 0;
-		if (topPair && !mobile && String(below) === "row") {
-			// all of the rest small, on one line
-			const span = Math.floor(units / Math.max(1, list.length));
-			const start0 = Math.floor((units - span * list.length) / 2);
-			list.forEach((o, k) =>
-				out.push({ outlet: o, row, start: start0 + span * k, span, solo: false })
-			);
-		} else if ((topPair || String(layout) === "rows") && !mobile) {
-			// rows of three, the last row centred when it is short
-			let i = 0;
+		if (mobile) {
+			list.forEach((o, k) => out.push({ outlet: o, row: Math.floor(k / 2), start: k % 2, span: 1 }));
+		} else {
+			let i = 0, row = 0;
 			while (i < list.length) {
 				const take = Math.min(3, list.length - i);
-				const start = (3 - take) * 5; // a short row is centred
+				const start = (3 - take) * 5;
 				for (let k = 0; k < take; k++)
-					out.push({ outlet: list[i + k], row, start: start + 10 * k, span: 10, solo: false });
+					out.push({ outlet: list[i + k], row, start: start + 10 * k, span: 10 });
 				i += take;
 				row += 1;
 			}
-		} else {
-			for (const o of list) place(o, mobile ? 1 : 10);
 		}
-		// every pane carries both axes' labels
 		return out.map((c) => ({ ...c, showY: true, showX: true }));
 	});
 
@@ -365,7 +286,7 @@
 <svelte:window bind:innerWidth={viewportWidth} />
 
 <div class="otc" class:mobile bind:this={root}>
-	<div class="grid" class:pair={stage === "pair"}>
+	<div class="grid">
 		{#each cells as cell, index (cell.outlet)}
 			{@const outlet = cell.outlet}
 			{@const pts = lineFor(outlet)}
@@ -379,7 +300,6 @@
 			<div
 				class="pane"
 				class:fox={outlet === FOX}
-				class:solo={cell.solo}
 				style:grid-column="{cell.start + 1} / span {cell.span}"
 				animate:flip={{ duration: 800 }}
 				in:fade={{ duration: 500 }}
@@ -621,22 +541,6 @@
 	.pane {
 		min-width: 0;
 	}
-	/* Fox on its own row at the top, centred, the size of one column; the
-	   six comparison outlets in two rows of three beneath */
-	/* Fox alone on top: the row is its own, and it is drawn a third wide, centred */
-	.pane.solo {
-		width: calc((100% - 44px) / 3);
-		margin: 0 auto 6px;
-	}
-	/* the pair stage of the reveal: just Fox and ESPN, side by side, larger */
-	.grid.pair {
-		max-width: 760px;
-		margin: 0 auto;
-	}
-	.mobile .pane.solo {
-		width: calc((100% - 10px) / 2);
-		margin-bottom: 2px;
-	}
 	svg {
 		width: 100%;
 		height: auto;
@@ -653,7 +557,7 @@
 		margin-bottom: 2px;
 	}
 	.league-tag {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 10.5px;
 		font-weight: 800;
 		color: var(--color-ink);
@@ -698,7 +602,7 @@
 		stroke-dasharray: 1 5;
 	}
 	.avg-chip {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		font-weight: 800;
 		letter-spacing: 0.02em;
@@ -723,7 +627,7 @@
 		transform: translate(calc(-100% - 14px), -50%);
 	}
 	.tooltip strong {
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 11px;
 		font-weight: 700;
 		letter-spacing: 0.06em;
@@ -735,6 +639,6 @@
 		font-size: 13px;
 		line-height: 1.5;
 		color: var(--color-ink);
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 	}
 </style>

@@ -24,7 +24,7 @@
 		political: "var(--color-politics)",
 		appearance: "var(--color-race)",
 		celebrity: "var(--color-lgbtq)",
-		performance: "#1f9d6e"
+		performance: "var(--color-politics)"
 	};
 	const frames = Object.fromEntries(
 		labelRows.map((r) => [r.headline, FRAMES.filter((f) => r[f])])
@@ -53,10 +53,10 @@
 	const PLAYER_COLORS = {
 		"Caitlin Clark": "#2a78d6",
 		"Angel Reese": "#eb6834",
-		"Brittney Griner": "#7a6bcc",
-		"Sophie Cunningham": "#b04ac2",
+		"Brittney Griner": "var(--color-chip)",
+		"Sophie Cunningham": "var(--color-lgbtq)",
 		"DiJonai Carrington": "#d55181",
-		"Natasha Cloud": "#1f9d6e"
+		"Natasha Cloud": "var(--color-politics)"
 	};
 	const OTHER_COLOR = "#8a6d3b";
 	const MAX_TAGS = 3;
@@ -80,7 +80,7 @@
 	let search = $state("");
 	let activePlayers = $state([]);
 	let sortBy = $state("date");
-	let ascending = $state(true);
+	let ascending = $state(false);   // newest first by default
 	let mood = $state("all");
 	let frame = $state("all");
 	$effect(() => {
@@ -103,7 +103,7 @@
 		if (sortBy === column) ascending = !ascending;
 		else {
 			sortBy = column;
-			ascending = true;
+			ascending = column !== "date";   // dates open newest first
 		}
 	}
 
@@ -195,7 +195,7 @@
 		score < -0.05
 			? "var(--color-fox)"
 			: score > 0.05
-				? "#1f9d6e"
+				? "var(--color-politics)"
 				: "rgba(42,21,3,0.3)";
 
 	let summary = $derived.by(() => {
@@ -396,13 +396,13 @@
 		--accent: var(--color-fox);
 		--field-edge: rgba(28, 25, 23, 0.22);
 		--field-shadow: 0 1px 0 rgba(28, 25, 23, 0.05);
-		--sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		--sans: var(--font-chart);
 
 		width: min(1000px, 94vw);
 		margin: 46px auto 0;
 		margin-left: 50%;
 		transform: translateX(-50%);
-		font-family: var(--sans);
+		font-family: var(--font-sans);
 		color: var(--ink);
 	}
 	/* under the framing beeswarm: its width, no title */
@@ -451,7 +451,7 @@
 		margin: 0 0 10px;
 	}
 	.lede h3 {
-		font-family: Georgia, "Times New Roman", serif;
+		font-family: var(--font-serif);
 		font-size: 34px;
 		font-weight: 400;
 		line-height: 1.1;
@@ -482,7 +482,7 @@
 		min-width: 240px;
 		padding: 0 14px;
 		height: 40px;
-		font-family: var(--sans);
+		font-family: var(--font-sans);
 		font-size: 14.5px;
 		border: 1px solid var(--field-edge);
 		border-radius: 3px;
@@ -515,7 +515,7 @@
 		background: transparent;
 		color: var(--muted);
 		padding: 0 14px;
-		font-family: var(--sans);
+		font-family: var(--font-sans);
 		font-size: 11px;
 		font-weight: 700;
 		letter-spacing: 0.09em;
@@ -549,7 +549,7 @@
 		border: 1px solid var(--field-edge);
 		background: #fff;
 		color: var(--ink);
-		font-family: var(--sans);
+		font-family: var(--font-sans);
 		font-size: 12px;
 		font-weight: 600;
 		padding: 6px 13px;
@@ -561,8 +561,8 @@
 		border-color: var(--chip, var(--ink));
 	}
 	.chip.on {
-		background: var(--chip, #7a6bcc);
-		border-color: var(--chip, #7a6bcc);
+		background: var(--chip, var(--color-chip));
+		border-color: var(--chip, var(--color-chip));
 		color: #fff;
 	}
 	.chip.clear {
@@ -659,7 +659,7 @@
 		color: var(--muted);
 	}
 	tbody .col-head {
-		font-family: Georgia, "Times New Roman", serif;
+		font-family: var(--font-serif);
 		font-size: 15px;
 		line-height: 1.35;
 		color: var(--ink);
@@ -686,7 +686,7 @@
 
 	.frame-tag {
 		display: inline-block;
-		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: var(--font-chart);
 		font-size: 10px;
 		font-weight: 700;
 		letter-spacing: 0.04em;
@@ -765,7 +765,7 @@
 		border-bottom: 1px solid var(--rule);
 		background: transparent;
 		color: var(--ink);
-		font-family: var(--sans);
+		font-family: var(--font-sans);
 		font-size: 11px;
 		font-weight: 700;
 		letter-spacing: 0.12em;

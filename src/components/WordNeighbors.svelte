@@ -1,19 +1,8 @@
 <script>
-	// Words most associated with a word: the words that sit right before or
-	// after it, in Fox's articles and in the five sports outlets', as two
-	// columns of bars (as the Pudding's chyron chart did). Weighted: how much
-	// more often the word sits there than its overall frequency would give;
-	// raw: plain counts. Search any word. In the Doc:
-	//   {.WordNeighbors}
-	//   word: foul            (the word shown first)
-	//   {}
-	// The data (notebooks/word_neighbors.py) is fetched on first use.
+	// Words most associated with a word
+
 	import { base } from "$app/paths";
-	// note: your own line under the chart, in place of the stock one; it may
-	// use {word}, {fox} and {others} for the word and its two counts.
-	// example: false — no example sentence under the note
-	// top: how many words each column shows (default 16)
-	// note: left out — the stock line; written — your own; present but blank — none
+	
 	let { word = "foul", note = undefined, example = true, top = 16 } = $props();
 	const noteMode = $derived(note === undefined || note === null ? "stock" : String(note).trim() ? "custom" : "none");
 	const showExample = $derived(!(example === false || String(example).trim().toLowerCase() === "false"));
@@ -179,16 +168,16 @@
 	.suggest li + li { border-top: 1px solid rgba(42, 21, 3, 0.08); }
 	.suggest li:hover, .suggest li.on { background: rgba(42, 21, 3, 0.07); }
 	.suggest .term { font-weight: 700; }
-	.suggest .uses { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11px; color: rgba(42, 21, 3, 0.55); white-space: nowrap; }
+	.suggest .uses { font-family: var(--font-chart); font-size: 11px; color: rgba(42, 21, 3, 0.55); white-space: nowrap; }
 	/* the two columns, as on the chyron chart: word, bar, value */
 	.columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 36px; }
-	.column h5 { margin: 0 0 8px; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-align: center; }
+	.column h5 { margin: 0 0 8px; font-family: var(--font-chart); font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-align: center; }
 	.row { display: grid; grid-template-columns: minmax(80px, 42%) 1fr auto; align-items: center; gap: 8px; height: 24px; transition: opacity 120ms ease; }
 	.row.dim { opacity: 0.35; }
-	.label { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; color: var(--color-ink); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	.label { font-family: var(--font-chart); font-size: 13px; font-weight: 600; color: var(--color-ink); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 	.track { display: block; height: 14px; }
 	.bar { display: block; height: 100%; border-radius: 2px; min-width: 2px; }
-	.value { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11px; color: rgba(42, 21, 3, 0.6); min-width: 34px; }
+	.value { font-family: var(--font-chart); font-size: 11px; color: rgba(42, 21, 3, 0.6); min-width: 34px; }
 	.note { font-size: 12.5px; color: rgba(42, 21, 3, 0.65); text-align: center; margin: 10px 0 0; }
 	.note .eg { display: block; font-style: italic; color: var(--color-ink); margin-top: 4px; }
 	@media (max-width: 640px) {

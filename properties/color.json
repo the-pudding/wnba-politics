@@ -94,10 +94,51 @@
 			"value": "#f9a660"
 		},
 		"cnn": {
-			"value": "#5b4b9c"
+			"value": "#6b4bb0"
 		},
 		"msnbc": {
-			"value": "#1d4f9c"
+			"value": "#a08ad6",
+			"comment": "a lighter shade where the two cable networks sit side by side"
+		},
+		"fox-navy": {
+			"value": "#003366",
+			"comment": "Fox as a data series --color-fox (red) is the brand accent."
+		},
+		"outlets": {
+			"value": "#6b4bb0",
+			"comment": "the other outlets, and CNN/MSNBC"
+		},
+		"ink-dark": {
+			"value": "#1a1a1a",
+			"comment": "near-black text and fills on the cream cards"
+		},
+		"rule": {
+			"value": "#e6dcc3",
+			"comment": "hairline borders on cards and tables"
+		},
+		"card": {
+			"value": "#f7f2e6",
+			"comment": "the cream of clipping cards and unlit nodes"
+		},
+		"sand": {
+			"value": "#d8cdb6",
+			"comment": "muted fills: dim nodes, empty bars"
+		},
+		"brown": {
+			"value": "#7a4a00",
+			"comment": "the fouls topic"
+		},
+		"orange-deep": {
+			"value": "#c2410c",
+			"comment": "links and underlines in the burnt orange"
+		},
+		"chip": {
+			"value": "#7a6bcc",
+			"comment": "the default player chip; Griner's colour"
+		},
+		"wnba-orange": {
+			"value": "#f26f21",
+			"comment": "the league's own orange"
 		}
 	}
 }
