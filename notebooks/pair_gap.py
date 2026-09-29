@@ -18,10 +18,10 @@ ROOT = Path(__file__).resolve().parents[1]
 csv.field_size_limit(10 ** 9)
 MIN_FOX_HEADLINES = 3          # a player needs this many Fox headlines to be in the pool
 MIN_PAIR = 3                   # a pair needs this many headlines somewhere to be shown
-GAP_FILES = {"ESPN": "espn.csv", "CBS Sports": "cbs_sports.csv",
-             "USA Today": "usa_today.csv", "The Athletic": "the_athletic.csv",
-             "Just Women's Sports": "just_womens_sports.csv"}
-GROUPS = {"CBS + USA Today": ["CBS Sports", "USA Today"]}
+import sys as _sys; _sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))
+from outlets import FILES as OUTLET_FILES, SPORTS, NEWS, COMPARISON, GROUPS as OUTLET_GROUPS, OUTLETS as OUTLET_TABLE
+GAP_FILES = {label: OUTLET_FILES[label] for label in COMPARISON}
+GROUPS = dict(OUTLET_GROUPS)                     # every pool with members (the registry decides)
 NOT_HER = {"Sue Bird": r"larry bird|bird-magic|bird and magic",
            "A'ja Wilson": r"russell wilson|signs with wilson|wilson (?:basketball|ball|brand)",
            "Alyssa Thomas": r"lia thomas|isiah thomas", "Caitlin Clark": r"alysha clark"}
@@ -60,7 +60,9 @@ for outlet, f in GAP_FILES.items():
         h, d = (row["headline"] or "").strip(), (row["date"] or "")[:10]
         if h and d:
             rows_by_outlet[outlet].append((d, h))
-compared = ["Fox News"] + sorted(GAP_FILES)
+# the shared window is anchored on the original five sports outlets; the news
+# arms run shorter and would clip it for everyone
+compared = ["Fox News"] + list(COMPARISON)   # the registry's comparison outlets
 window = (max(min(d for d, _ in rows_by_outlet[o]) for o in compared),
           min(max(d for d, _ in rows_by_outlet[o]) for o in compared))
 
@@ -76,7 +78,7 @@ for outlet, entries in rows_by_outlet.items():
             if outlet == "Fox News":
                 example.setdefault(pair, {"date": d, "headline": h})
 
-baseline = sorted(GAP_FILES)
+baseline = list(SPORTS) or list(COMPARISON)   # "the sports press" when there is one, else everyone pooled
 baseline_total = sum(totals[o] for o in baseline)
 pairs = set()
 for outlet in hits:

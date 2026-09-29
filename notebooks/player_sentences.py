@@ -25,14 +25,9 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 OUT = DATA / "player_sentences.csv"
 
-SOURCES = {
-    "Fox News": "fox_wnba.csv",
-    "ESPN": "espn.csv",
-    "CBS Sports": "cbs_sports.csv",
-    "USA Today": "usa_today.csv",
-    "Just Women's Sports": "just_womens_sports.csv",
-    "The Athletic": "the_athletic.csv",
-}
+import sys as _sys; _sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))
+from outlets import FILES as OUTLET_FILES, SPORTS, NEWS, COMPARISON, GROUPS as OUTLET_GROUPS, OUTLETS as OUTLET_TABLE
+SOURCES = dict(OUTLET_FILES)
 
 ALIASES = {
     "Caitlin Clark": ["caitlin clark", "clark"],

@@ -222,3 +222,18 @@ performance,word,(?:double|triple)-digit
 performance,word,\d+(?:\.\d+)? ?(?:percent|%) (?:from|shooting|on)
 performance,word,\d+ (?:straight|consecutive)
 performance,word,\d+-game
+performance,word,sharpshoot(?:er|ers|ing)
+performance,word,lockdown defender
+performance,word,defenders?
+performance,word,shot[- ]?makers?
+performance,word,scorers?
+performance,word,playmakers?
+performance,word,playmaking
+performance,word,rebounders?
+performance,word,two-way players?
+performance,word,floor general
+performance,word,sixth (?:woman|man)
+performance,word,clutch
+performance,word,hot hand
+performance,word,on fire from
+performance,word,lights[- ]out

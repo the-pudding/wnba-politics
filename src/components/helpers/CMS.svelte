@@ -34,8 +34,11 @@
 		"player-words-scrolly",
 		"TvSet"
 	]);
+	// these render Doc copy of their own and need the component map for it
+	const NESTING = new Set(["Subsections"]);
 	// these draw their own title and caption
 	const SELF_CAPTIONED = new Set([
+		"Subsections",
 		"BoxScore",
 		"SimpleBars",
 		"HeadlineTable",
@@ -148,7 +151,7 @@
 					{#if props.subtitle && !SELF_CAPTIONED.has(name)}
 						<p class="chart-subtitle">{@html props.subtitle}</p>
 					{/if}
-					{#if C}<C {name} {...props} />{:else}<p class="missing">
+					{#if C}<C {name} {...props} {...(NESTING.has(name) ? { components } : {})} />{:else}<p class="missing">
 							Unknown chart: “{name}”
 						</p>{/if}
 					{#if props.caption && !SELF_CAPTIONED.has(name)}

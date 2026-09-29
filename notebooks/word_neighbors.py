@@ -68,7 +68,9 @@ def neighbours(docs):
     return total, near, eg, sum(total.values())
 
 fox = neighbours(load(["fox_wnba.csv"]))
-oth = neighbours(load(["espn.csv", "cbs_sports.csv", "usa_today.csv", "the_athletic.csv", "just_womens_sports.csv"]))
+import sys as _sys; _sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))
+from outlets import FILES as OUTLET_FILES, SPORTS, NEWS, COMPARISON, GROUPS as OUTLET_GROUPS, OUTLETS as OUTLET_TABLE
+oth = neighbours(load([OUTLET_FILES[label] for label in COMPARISON]))
 out = {"words": {}, "show": {}}
 for w in set(fox[0]) | set(oth[0]):
     if w in STOP or len(w) < 3: continue

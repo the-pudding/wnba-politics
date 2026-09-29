@@ -5,7 +5,9 @@
 	import labelRows from "$data/labeled_headlines.csv";
 
 	const data = {
-		rows: headlineRows.map((r) => ({
+		// the same story can come in twice (Fox's own page and its OutKick copy,
+		// identical once OutKick's "| OutKick" tagline is stripped): one row each
+		rows: headlineRows.filter((r, i, all) => all.findIndex((q) => q.date === r.date && q.title === r.title) === i).map((r) => ({
 			d: r.date,
 			t: r.title,
 			u: r.url,

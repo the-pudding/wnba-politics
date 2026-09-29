@@ -4,8 +4,8 @@
   "scripts": {
     "gdoc": "node tasks/fetch-google.js && python3 tasks/review_sheet.py pull",
     "style": "node tasks/style-dictionary.js",
-    "dev": "vite dev",
-    "build": "vite build",
+    "dev": "NODE_OPTIONS=--max-old-space-size=8192 vite dev",
+    "build": "NODE_OPTIONS=--max-old-space-size=8192 vite build",
     "preview": "vite preview",
     "lint": "prettier --check --plugin-search-dir=. .",
     "format": "prettier --write --plugin-search-dir=. .",

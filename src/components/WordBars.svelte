@@ -1,10 +1,5 @@
 <script>
-	// Mirrored horizontal bars for a fightin'-words contrast: the words that
-	// lean most towards Fox on the right, towards everyone else on the left,
-	// each side ranked top-down. Takes the same `source` as the scatter
-	// (points of {word, z, n, nf, no, eg, egw}) and the same `highlight` list.
-	// example: optional (word) => {s, w} lookup for points without their own
-	// `eg`; onhover: called as a bar is entered (to load examples lazily)
+	// Mirrored horizontal bars for a fightin'-words contrast
 	let {
 		source = null,
 		highlight = null,
@@ -28,6 +23,8 @@
 		fill = false,
 		// the name of the bottom side in the tooltip's counts ("others", "ESPN")
 		otherName = "others",
+		// the top side's short name ("Fox", or "conservative media" for the pair)
+		topName = "Fox",
 		// note: the line under the chart — left out for the stock one, written
 		// for your own (HTML allowed), present but blank for none
 		note = undefined
@@ -244,7 +241,7 @@
 			// the example, with the outlet it came from (a player chart's
 			// stored example says so itself; otherwise the side is enough)
 			const eg = p.eg
-				? { s: p.eg, w: p.egw, o: p.ego ?? (sign > 0 ? "Fox News" : "the other outlets") }
+				? { s: p.eg, w: p.egw, o: p.ego ?? (sign > 0 ? (topName === "Fox" ? "Fox News" : topName) : "the other outlets") }
 				: (example?.(p.word, p.z) ?? null);
 			return { p, sign, y: yOf(i), x, eg };
 		}
@@ -376,7 +373,7 @@
 			>
 				<span class="tip-head" style="color:{color}">{tip.p.word}</span>
 				<span class="tip-count"
-					>Fox {tip.p.nf} · {otherName} {tip.p.no} · score {fmt(tip.p.z)}</span
+					>{topName} {tip.p.nf} · {otherName} {tip.p.no} · score {fmt(tip.p.z)}</span
 				>
 				{#if tip.eg}
 					<p>{@html markWord(tip.eg.s, tip.p.word, tip.eg.w, color)}</p>

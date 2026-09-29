@@ -4,23 +4,31 @@ import docs from "../google.config.js";
 
 const CWD = process.cwd();
 
-const fetchGoogle = async ({ id, gid, sheet }) => {
-	console.log(`fetching...${id}`);
+// `tab`: a Doc with several tabs exports only its first one unless the tab's
+// id (the "tab=t.…" part of the Doc's URL when that tab is open) is given
+const fetchGoogle = async ({ id, gid, sheet, tab }) => {
+	console.log(`fetching...${id}${tab ? ` (tab ${tab})` : ""}`);
 
 	const base = "https://docs.google.com";
 	const post = sheet
 		? `spreadsheets/d/${id}/export?format=csv${gid ? `&gid=${gid}` : ""}`
 		: gid
 			? `spreadsheets/u/1/d/${id}/export?format=csv&id=${id}&gid=${gid}`
-			: `document/d/${id}/export?format=txt`;
+			: `document/d/${id}/export?format=txt${tab ? `&tab=${tab}` : ""}`;
 	const url = `${base}/${post}`;
 
 	try {
 		const response = await fetch(url);
-		const text = await response.text();
+		let text = await response.text();
 
 		if (gid || sheet) return text;
 
+		// a mistyped link in the Doc ("<href =”url” target=_blank>") opens an
+		// unknown element the browser parses differently from the server, and
+		// hydration fails: repair the common form and say so
+		const repaired = text.replace(/<href\s*=\s*[”"“]([^”"“]+)[”"“]\s*target=_blank>/g, '<a href="$1" target="_blank" rel="noopener">');
+		if (repaired !== text) console.warn("⚠️  repaired a mistyped <href> link in the Doc; fix it there too");
+		text = repaired;
 		const parsed = archieml.load(text);
 		warnUnbalancedTags(text);
 		const str = JSON.stringify(parsed);

@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from topics import patterns
 
 ROOT = Path(__file__).resolve().parents[1]
-CHANNEL = {"FOXNEWSW": "Fox News", "CNNW": "CNN", "MSNBCW": "MSNBC"}
+CHANNEL = {"FOXNEWSW": "Fox News", "CNNW": "CNN", "MSNBCW": "MSNBC", "MSNOW": "MSNBC"}   # MS NOW = MSNBC renamed, Nov 2025
 # a banner counts as WNBA when it names the league or one of its people
 # (the same terms as notebooks/08-chyrons.ipynb)
 WNBA = re.compile("|".join([r"\bwnba\b", "caitlin clark", "angel reese", "brittney griner",

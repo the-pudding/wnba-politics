@@ -59,7 +59,7 @@ print(f"{len(sentences):,} Fox sentences name someone", file=sys.stderr, flush=T
 groups = defaultdict(list)
 for r in csv.DictReader((DATA / "politicization_terms.csv").open()):
     groups[r["group"]].append(r["term"])
-group_rx = {g: re.compile("|".join(rf"\b(?:{t})" for t in ts), re.I) for g, ts in groups.items()}
+group_rx = {g: re.compile("|".join(rf"\b(?:{framing.guard_term(t)})" for t in ts), re.I) for g, ts in groups.items()}
 culture_rx = [re.compile(t, re.I) for t in groups.get("culture_war", [])]
 # each register's words pooled across its kinds (nouns, verbs, adjectives)
 def register_rx(register):

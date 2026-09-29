@@ -30,13 +30,48 @@ BACKUP = HERE / "data" / "fox_wnba.unfiltered.csv"
 DROPPED = HERE / "data" / "fox_wnba_dropped.csv"
 csv.field_size_limit(10 ** 9)
 
-TEAMS = (r"Fever|Aces|Liberty|Lynx|Mercury|Sparks|Mystics|Valkyries|Tempo|"
-         r"Chicago Sky|Connecticut Sun|Atlanta Dream|Dallas Wings|Seattle Storm|Toronto Tempo")
+# A franchise counts when it is city-qualified. A bare nickname ("Sparks",
+# "Liberty", "Mercury", "Fever") is an ordinary English word far more often
+# than a team, so it counts only capitalised and only once the article has an
+# unambiguous mention somewhere (WNBA, women's basketball, a city-qualified
+# team, a roster name). Found 2026-09-22 when a sitemap harvest brought in
+# "Statue of Liberty" and "sparks outrage" stories that passed the old rule.
+CITY_TEAMS = (r"Indiana Fever|Las Vegas Aces|New York Liberty|Minnesota Lynx|Phoenix Mercury|"
+              r"Los Angeles Sparks|L\.?A\.? Sparks|Washington Mystics|Golden State Valkyries|"
+              r"Toronto Tempo|Chicago Sky|Connecticut Sun|Atlanta Dream|Dallas Wings|"
+              r"Seattle Storm|Portland Fire")
+NICKNAMES = r"Fever|Aces|Liberty|Lynx|Mercury|Sparks|Mystics|Valkyries|Tempo|Wings|Storm"
 people = json.loads((HERE / "src" / "data" / "people.json").read_text())
-ROSTER = "|".join(p["rx"] for p in people.values()
-                  if p.get("group") in ("players", "league") and p.get("rx"))
-MENTION = re.compile(
-    rf"\bWNBA\b|women'?s (?:national )?basketball|\bUnrivaled\b|\b(?:{TEAMS})\b|{ROSTER}", re.I)
+# a person counts by full name only. The per-person patterns in people.json
+# fall through to a bare surname for 26 of the 38, which is right for counting
+# mentions inside an article already about the league and wrong as a test of
+# relevance: it admitted Martha Stewart and Senate candidate Cal Cunningham
+# (2026-09-25). Apostrophes and curly quotes are interchangeable.
+def _full_name(name):
+    return r"\s+".join(re.escape(part).replace("'", "['\u2019]") for part in name.split())
+# people in the roster who are not WNBA figures do not make an article about
+# the WNBA: the NBA commissioner's China week and his TV deals are not league
+# coverage (2026-09-25)
+NOT_WNBA = {"Adam Silver"}
+ROSTER = "|".join(rf"\b{_full_name(name)}\b" for name, p in people.items()
+                  if p.get("group") in ("players", "league") and name not in NOT_WNBA)
+ANCHOR = re.compile(
+    rf"\bWNBA\b|\bW\.N\.B\.A\.|women'?s (?:national )?basketball|\b(?:{CITY_TEAMS})\b|{ROSTER}", re.I)
+# the league, not the adjective: capitalised only, so "an unrivaled record" is not a mention
+UNRIVALED = re.compile(r"\bUnrivaled\b")
+NICK = re.compile(rf"\b(?:{NICKNAMES})\b")   # case-sensitive on purpose
+# a nickname that is plainly not the team: the Post's Knicks-parade history
+# reached the corpus on "Statue of Liberty" plus "the WNBA's New York Liberty"
+# counted three times over (2026-09-27)
+NOT_NICK = re.compile(r"Statue of Liberty|Liberty (?:Bell|Island|University|Mutual|Media|Ballers)|"
+                      r"Fever (?:pitch|dream)|Sparks (?:fly|flew|flying)|Storm (?:surge|warning|clouds?|system|damage)|"
+                      r"Mercury (?:Prize|rising|poisoning)|Sun Belt|Sky Sports|Sky News")
+MENTION = ANCHOR   # kept for callers that import it
+# an article whose headline shows nothing needs the body to say it three times,
+# or twice with the first mention inside the opening EARLY words: the genuine
+# cases (a feature on the Storm's coach, a print sports brief) name the league
+# up top; an inflation column that reaches Griner at word 4,280 does not
+EARLY = 100
 
 
 # a roster surname that someone else in the news shares: when the article
@@ -60,11 +95,33 @@ DROP_HEADLINES = {
 }
 
 
-def mentions(text, blank=()):
-    text = text or ""
+def _blank(text, blank):
     for surname in blank:
         text = surname.sub("", text)
-    return len(MENTION.findall(text))
+    return text
+
+
+def _nick_text(text):
+    # a nickname counts only where it is not already inside a full team name
+    # or league mention ("the WNBA's New York Liberty" is one mention, not
+    # three) and not part of an unrelated phrase ("Statue of Liberty")
+    return NICK.sub(lambda m: m.group(0), NOT_NICK.sub(" ", ANCHOR.sub(" ", text)))
+
+def mentions(text, blank=(), anchored=True):
+    text = _blank(text or "", blank)
+    n = len(ANCHOR.findall(text)) + len(UNRIVALED.findall(text))
+    if anchored:
+        n += len(NICK.findall(_nick_text(text)))
+    return n
+
+
+def first_mention_word(text, blank=(), anchored=True):
+    """How many words in the first qualifying mention sits; None if none."""
+    text = _blank(text or "", blank)
+    hits = [m.start() for m in ANCHOR.finditer(text)] + [m.start() for m in UNRIVALED.finditer(text)]
+    if anchored:
+        hits += [m.start() for m in NICK.finditer(text)]
+    return len(text[:min(hits)].split()) if hits else None
 
 
 def reason(row):
@@ -73,11 +130,15 @@ def reason(row):
     whole = (row.get("headline") or "") + " " + (row.get("body") or "")
     blank = [surname for lookalike, first, surname in LOOKALIKES
              if lookalike.search(whole) and not first.search(whole)]
-    head, body = mentions(row.get("headline"), blank), mentions(row.get("body"), blank)
+    cleaned = _blank(whole, blank)
+    anchored = bool(ANCHOR.search(cleaned) or UNRIVALED.search(cleaned))
+    head, body = mentions(row.get("headline"), blank, anchored), mentions(row.get("body"), blank, anchored)
     if head + body == 0:
         return "no WNBA, team or roster mention anywhere"
     if head == 0 and body <= 1:
         return "headline about something else, one passing mention in the body"
+    if head == 0 and body == 2 and (first_mention_word(row.get("body"), blank, anchored) or 0) > EARLY:
+        return "headline about something else, two passing mentions deep in the body"
     return None
 
 

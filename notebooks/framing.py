@@ -105,14 +105,17 @@ def attribute(nlp, headlines, groups, register, name_rx=None):
     Every word row in framing_terms.csv is a trigger, whatever its kind
     (noun, verb, adjective...) — multi-word phrases like "tiktok followers"
     work too, judged by their last word. One row per term is all it takes."""
+    # every term is a pattern (framing_terms.csv holds regexes such as
+    # "scor(?:es|ed|ing)" and "\\d+ points" beside plain words): a match in the
+    # sentence text is pinned to the token holding its last character, and
+    # ownership is judged from that token (2026-09-28: the literal word test
+    # this replaced never fired for the performance register's patterns)
     trigger_terms = set().union(*[terms for (reg, kind), terms in load_terms().items()
                                   if reg == register and kind not in ("prefilter", "scrub")])
-    single = {t for t in trigger_terms if " " not in t}
-    phrases = {}
-    for t in trigger_terms:
-        parts = t.lower().split()
-        if len(parts) > 1:
-            phrases.setdefault(parts[0], []).append(parts)
+    # whole words only: without the boundaries "dress" matched inside "address"
+    # and "hair" inside "chair" (fixed 2026-09-29; the bug came in with the
+    # pattern-matching rewrite of 2026-09-28)
+    trigger_rx = re.compile(r"\b(?:" + "|".join(rf"(?:{t})" for t in sorted(trigger_terms, key=len, reverse=True)) + r")\b", re.I) if trigger_terms else None
     scrub = scrub_rx(register)
     text_for = (lambda r: scrub.sub(" ", r["t"])) if scrub else (lambda r: r["t"])
     attributed = defaultdict(list)
@@ -124,19 +127,14 @@ def attribute(nlp, headlines, groups, register, name_rx=None):
                    if (name_rx[name].search(row["t"]) if name_rx and name in name_rx
                        else re.search(r"\b" + re.escape(name.split()[-1]) + r"\b", row["t"]))]
         owners_found, pronoun_at = set(), None
-        for i, token in enumerate(doc):
-            word = clean(token.text)
-            hit = token if word in single else None
-            if hit is None:
-                # a phrase matches when the following tokens spell out the rest;
-                # ownership is judged from its last word ("followers", not "tiktok")
-                for parts in phrases.get(word, []):
-                    rest = [clean(doc[i + j].text) for j in range(1, len(parts)) if i + j < len(doc)]
-                    if rest == parts[1:]:
-                        hit = doc[i + len(parts) - 1]
-                        break
-            if hit is None:
-                continue
+        hits = []
+        if trigger_rx is not None:
+            for m in trigger_rx.finditer(doc.text):
+                last = m.end() - 1
+                tok = next((t for t in doc if t.idx <= last < t.idx + len(t.text)), None)
+                if tok is not None and (not hits or hits[-1].i != tok.i):
+                    hits.append(tok)
+        for hit in hits:
             owned = words_under(owner_tokens(hit, doc))
             direct = False
             for name in present:
@@ -159,3 +157,14 @@ def attribute(nlp, headlines, groups, register, name_rx=None):
         for name in owners_found:
             attributed[name].append(row)
     return attributed
+
+
+# Politicization terms match as prefixes ("racis" catches racism and racist),
+# so a short term can swallow unrelated words: "trans" matched "transition",
+# "transfer", "transaction". Each guarded term gets the endings it must not have.
+PREFIX_GUARDS = {
+    "trans": r"trans(?!ition|fer|act|cript|lat|port|parent|form|mit|it\b|itio|ist|pire|cend|plant|atlantic|continental|lucent|vers|gress|mission|pos|ferr)",
+}
+def guard_term(term):
+    """The regex for one politicization term, with its false-prefix guard."""
+    return PREFIX_GUARDS.get(term.strip().lower(), term)

@@ -1,0 +1,81 @@
+{
+ "outlets": [
+  {
+   "key": "fox_wnba",
+   "label": "Fox News",
+   "group": "fox",
+   "logo": "fox-news.svg",
+   "short": "Fox"
+  },
+  {
+   "key": "espn_bundle",
+   "label": "ESPN",
+   "group": "outlet",
+   "logo": "espn.svg",
+   "short": "ESPN"
+  },
+  {
+   "key": "cbs_bundle",
+   "label": "CBS",
+   "group": "outlet",
+   "logo": "cbs.svg",
+   "short": "CBS"
+  },
+  {
+   "key": "usa_today",
+   "label": "USA Today",
+   "group": "outlet",
+   "logo": "usa-today.svg",
+   "short": "USA Today"
+  },
+  {
+   "key": "nyt_bundle",
+   "label": "New York Times",
+   "group": "outlet",
+   "logo": "nyt.svg",
+   "short": "NYT"
+  },
+  {
+   "key": "ap",
+   "label": "AP",
+   "group": "outlet",
+   "logo": "ap.svg",
+   "short": "AP"
+  },
+  {
+   "key": "washington_post",
+   "label": "Washington Post",
+   "group": "outlet",
+   "logo": "washington-post.svg",
+   "short": "Post"
+  }
+ ],
+ "groups": {
+  "all outlets": [
+   "ESPN",
+   "CBS",
+   "USA Today",
+   "New York Times",
+   "AP",
+   "Washington Post"
+  ]
+ },
+ "members": {
+  "Fox News": [
+   "Fox News",
+   "OutKick"
+  ],
+  "ESPN": [
+   "ESPN",
+   "Andscape"
+  ],
+  "New York Times": [
+   "New York Times",
+   "The Athletic"
+  ],
+  "CBS": [
+   "CBS Sports",
+   "CBS News"
+  ]
+ }
+}

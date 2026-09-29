@@ -2,6 +2,8 @@
 	// Small multiples
 	import { base } from "$app/paths";
 	import rows from "$data/outlet_topics.csv";
+	// the same counts by month (notebooks/outlet_topics_monthly.py), for a zoomed span
+	import monthRows from "$data/outlet_topics_monthly.csv";
 	import { flip } from "svelte/animate";
 	import { fade } from "svelte/transition";
 	// the vocabulary behind each topic, straight from the notebooks' term list
@@ -16,18 +18,42 @@
 		// every outlet the same size, Fox first, in rows of three (two on phones),
 		// a short last row centred. Other arrangements tried along the way are in
 		// archive/components/OutletTopicCompare.full.svelte.
-		// from: the first year shown (e.g. 2024), when a topic only matters lately
+		// from / to: the first and last period shown (a year, or YYYY-MM by month)
 		from = "",
+		to = "",
+		// by: "year" (the default) or "month" — months for a short span such as
+		// the foul words of 2024-2026
+		by = "year",
+		// average: draw each outlet's pooled-share rule; area: fill under the line
+		average = true,
+		area = true,
+		// stack: draw the second topic on top of the first (as the word chart
+		// stacks "protect" on the foul words); mark: a dated dashed rule, e.g. 2026-07-07
+		stack = false,
+		mark = "",
+		// markLabel: what the dashed rule is, shown on hover ("Republicans' letter to the WNBA")
+		markLabel = "",
+		// measure: what the panes open on, "share" or "count"
+		measure: startMeasure = "share",
+		// chips: the per-pane numbers beside the wordmark (false hides them)
+		chips = true,
 		wordsLabel = "See the words included",
 		wordsNote = "An article counts when its headline or text contains any of these words or phrases."
 	} = $props();
 
+	const monthly = String(by).trim().toLowerCase() === "month";
 	const data = { topics: {} };
-	for (const r of rows) {
+	for (const r of monthly ? monthRows : rows) {
 		const byMethod = (data.topics[r.topic] ??= {});
 		const byOutlet = (byMethod[r.method] ??= {});
-		(byOutlet[r.outlet] ??= {})[r.year] = { n: +r.articles, hit: +r.hits };
+		(byOutlet[r.outlet] ??= {})[monthly ? r.period : r.year] = { n: +r.articles, hit: +r.hits };
 	}
+	// the span: a year ("2024") or a month ("2024-05"); the CMS turns a bare
+	// year into "2024-01", so a yearly chart keeps just the year
+	const spanKey = (v) => (!v ? "" : monthly ? String(v).trim().slice(0, 7) : String(v).trim().slice(0, 4));
+	const FROM = spanKey(from), TO = spanKey(to);
+	const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+	const periodLabel = (p) => (monthly ? `${MONTHS[+p.slice(5, 7) - 1]} ${p.slice(0, 4)}` : p);
 
 	const FOX = "Fox News";
 	const NBA = "Fox News (NBA)";
@@ -35,21 +61,57 @@
 		topic === "lgbtq"
 			? "mention LGBTQ topics"
 			: topic === "fouls"
-				? "describe fouls and physical contact"
+				? "use the letter's foul words"
 				: "mention race or protest politics";
 	const COLOR_OF = {
 		lgbtq: "var(--color-lgbtq)",
 		polrace: "var(--color-politics)",
-		fouls: "var(--color-brown)"
+		fouls: "var(--color-brown)",        // as on the word chart: the foul words in brown,
+		protect: "color-mix(in srgb, var(--color-fox-navy) 72%, white)"    // "protect" in a lighter navy
 	};
 	const PHRASE_OF = {
 		lgbtq: "LGBTQ+ topics",
 		polrace: "race or protest politics",
-		fouls: "fouls and physical contact"
+		fouls: "the letter's foul words",
+		protect: "“protect”"
 	};
+	const showAvg = average !== false && String(average).toLowerCase() !== "false";
+
+	// stack: true — the second topic on top of the first (articles with both are
+	// counted twice); "parts" — three bands, first only / both / second only, so
+	// the top edge is exactly the articles with either; false — overlapping areas
+	const STACK = String(stack).trim().toLowerCase();
+	const parts = STACK === "parts" || STACK === "split";
+	const stacked = stack === true || STACK === "true" || parts;
+	const showChips = chips !== false && String(chips).toLowerCase() !== "false";
+	const MARK = spanKey(mark);
+	const markDate = (() => {
+		const m = String(mark).trim().match(/^(\d{4})-(\d{2})(?:-(\d{2}))?/);
+		if (!m) return String(mark).trim();
+		const d = new Date(+m[1], +m[2] - 1, +(m[3] ?? 1));
+		return d.toLocaleDateString("en-US", m[3] ? { month: "long", day: "numeric", year: "numeric" } : { month: "long", year: "numeric" });
+	})();
+	// the piece's one dated rule is the Republicans' letter; a Doc can say otherwise with markLabel
+	const MARK_TEXT = String(markLabel).trim() || (String(mark).trim() === "2026-07-07" ? "Republican lawmakers' letter to the WNBA" : "");
+	function showMarkTip(event, outlet) {
+		const box = event.currentTarget.closest(".otc").getBoundingClientRect();
+		tip = { outlet, mark: true, x: event.clientX - box.left,
+			y: Math.min(Math.max(60, event.clientY - box.top), box.height - 60), flip: event.clientX - box.left > box.width - 250 };
+	}
+	const showArea = area !== false && String(area).toLowerCase() !== "false";
 	const MAIN = COLOR_OF[topic] ?? "var(--color-politics)";
 	const SECOND = second ? COLOR_OF[second] : null;
-	const MIN_N = 10;
+	const BOTH = second ? `color-mix(in srgb, ${MAIN} 50%, ${SECOND})` : null;
+	// the chips' shorthand for each topic, and the legend's words
+	const SHORTHAND = { polrace: "race", lgbtq: "LGBTQ+", fouls: "foul words", protect: "protect" };
+	// the legend names the pinned topics' words outright
+	const LEGEND_OF = { fouls: "hip-check, poke, punch, throat", protect: "protect" };
+	const legend = [[topic, MAIN], ...(second ? [[second, SECOND]] : [])].map(([t, color]) => ({
+		label: LEGEND_OF[t] ?? PHRASE_OF[t] ?? t, color
+	}));
+	if (second && ["parts", "split"].includes(String(stack).trim().toLowerCase()))
+		legend.splice(1, 0, { label: "both", color: `color-mix(in srgb, ${MAIN} 50%, ${SECOND})` });
+	const MIN_N = monthly ? 8 : 20;   // a period with fewer articles than this is not drawn: a share of 6 articles is noise
 	const AVG = "var(--color-ink-dark)"; // the average rule, apart from either topic colour
 
 	// --- the words counted, for the "see words included" drop-down ------------
@@ -61,8 +123,12 @@
 			["Politics and protest", ["politics / protest"]]
 		],
 		lgbtq: [["LGBTQ+", ["LGBTQ / sexuality", "transgender / trans"]]],
-		fouls: [["Fouls and contact", ["fouls"]]]
+		fouls: [["The letter's foul words", ["fouls"]]],
+		protect: [["“Protect”", ["protect"]]]
 	};
+	// the fouls topic is pinned in notebooks/topics.py (the sheet's rows are
+	// not used), so its drop-down lists those words directly
+	const PINNED_WORDS = { fouls: ["hip-check", "poke / poked", "punch / punched", "throat"], protect: ["protect / protects"] };
 	// a few terms are regular expressions; these read better spelled out
 	const PRETTY = {
 		racis: "racism / racist",
@@ -96,53 +162,77 @@
 	].map(([label, groups]) => ({
 		label,
 		// a term listed in more than one of the pooled groups shows once
-		words: [
-			...new Set(
-				termRows.filter((r) => groups.includes(r.topic)).map((r) => readable(r.term))
-			)
-		]
+		words: groups.length === 1 && PINNED_WORDS[groups[0]]
+			? PINNED_WORDS[groups[0]]
+			: [...new Set(termRows.filter((r) => groups.includes(r.topic)).map((r) => readable(r.term)))]
 	}));
 	let wordsOpen = $state(false);
 
 	// the outlets with panels (shown most-to-least by their all-years average)
 	// (Fox's NBA coverage is in the data but not in the panels)
-	const ORDER = [
-		FOX,
-		"ESPN",
-		// Yahoo's pool is ~96% syndicated wire copy; left out of the panels
-		"Just Women's Sports",
-		"The Athletic",
-		"CBS Sports",
-		"USA Today"
-	];
+	import { COMPARISON, LOGO, SHORT } from "$utils/outlets.js";
+	// Fox first, then the sports outlets, then the news arms (Yahoo's pool,
+	// ~96% syndicated wire copy, and Fox's NBA coverage stay out of the panels)
+	const ORDER = [FOX, ...COMPARISON];
 	const LOGOS = {
-		"Fox News": { file: "fox-news.svg", h: 20 },
 		"Fox News (NBA)": { file: "fox-news.svg", h: 20 },
 		"Yahoo Sports (syndicated pool)": { file: "yahoo.svg", h: 16 },
-		ESPN: { file: "espn.svg", h: 15 },
-		"Just Women's Sports": { file: "jws.png", h: 22 },
-		"The Athletic": { file: "the-athletic.png", h: 22 },
-		"CBS Sports": { file: "cbs-sports.svg", h: 15 },
-		"USA Today": { file: "usa-today.svg", h: 15 }
+		...Object.fromEntries(Object.entries(LOGO).map(([o, f]) => [o, { file: f, h: f.endsWith(".png") ? 22 : o === FOX ? 20 : 15 }]))
 	};
 	const SHORT_NAME = {
+		...SHORT,
 		"Yahoo Sports (syndicated pool)": "Yahoo (pool)",
-		"Just Women's Sports": "JWS",
 		"Fox News (NBA)": "Fox (NBA)"
 	};
-	const LEAGUE_TAG = { "Fox News": "WNBA", "Fox News (NBA)": "NBA" };
+	// the NBA pane is gone, so Fox's pane no longer needs a "WNBA" tag to tell them apart
+	const LEAGUE_TAG = { "Fox News (NBA)": "NBA" };
 
+	// measure: "share" (the topic's share of the outlet's WNBA articles) or
+	// "count" (how many articles); a toggle above the panes
+	let measure = $state(String(startMeasure).trim().toLowerCase() === "count" ? "count" : "share");
+	const yOf = (v) => (measure === "share" ? v.hit / v.n : v.hit);
 	let byOutlet = $derived(data.topics[topic][method]);
 	let byOutlet2 = $derived(second ? data.topics[second]?.[method] : null);
+	// the overlap, when the data carries it ("fouls&protect")
+	let byBoth = $derived(second ? data.topics[`${topic}&${second}`]?.[method] : null);
 	// the second topic's line and average, from the same years
 	function lineFor2(outlet) {
 		if (!byOutlet2) return [];
 		const pts = years
 			.map((year, index) => ({ year, index, v: byOutlet2[outlet]?.[year] }))
 			.filter(({ v }) => v && v.n >= MIN_N)
-			.map((p) => ({ ...p, share: p.v.hit / p.v.n }));
-		return pts;
+			.map((p) => ({ ...p, share: p.v.hit / p.v.n, y: yOf(p.v) }));
+		if (!stacked) return pts;
+		// stacked: the second topic sits on the first, so its y is the sum; in
+		// parts mode the overlap is taken out of the second band, so the top
+		// edge is the union
+		const base = Object.fromEntries(lineFor(outlet).map((p) => [p.year, p.y]));
+		return pts.map((p) => {
+			const both = parts ? bothY(outlet, p.year) : 0;
+			return { ...p, y0: base[p.year] ?? 0, y: (base[p.year] ?? 0) + p.y - both };
+		});
 	}
+	// articles with both topics, as a y value in the current measure
+	function bothY(outlet, year) {
+		const v = byBoth?.[outlet]?.[year];
+		return v ? yOf(v) : 0;
+	}
+	// parts mode: the band of articles with both, sitting on the first topic's
+	// "only" part (first-only = first − both)
+	function bothBand(outlet) {
+		if (!parts || !byBoth) return [];
+		return lineFor(outlet).map((p) => {
+			const both = bothY(outlet, p.year);
+			return { ...p, y0: p.y - both, y: p.y };
+		});
+	}
+	// the stacked band between the first series and the top of the second
+	const bandFor = (pts) => {
+		if (!pts.length) return "";
+		const top = pathFor(pts);
+		const bottom = [...pts].reverse().map((p) => `L${xMid(p.index).toFixed(1)},${pctY(p.y0 ?? 0).toFixed(1)}`).join("");
+		return top + bottom + "Z";
+	};
 	function overall2(outlet) {
 		if (!byOutlet2) return null;
 		let n = 0,
@@ -167,9 +257,13 @@
 	}
 	// The Athletic is headline-only, so it has no full-text panel; the rest are
 	// ordered most-to-least by their average
+	// ordered most-to-least by average share, or by the number of articles
+	// when the toggle shows counts
 	let outlets = $derived(
-		ORDER.filter((o) => overall(o)).toSorted(
-			(a, b) => overall(b).share - overall(a).share
+		ORDER.filter((o) => overall(o)).toSorted((a, b) =>
+			measure === "share"
+				? overall(b).share - overall(a).share
+				: overall(b).hit - overall(a).hit
 		)
 	);
 
@@ -186,7 +280,7 @@
 				)
 			)
 		]
-			.filter((y) => !String(from).trim() || y >= String(from).trim())
+			.filter((y) => (!FROM || y >= FROM) && (!TO || y <= TO))
 			.sort()
 	);
 
@@ -194,8 +288,10 @@
 		return years
 			.map((year, index) => ({ year, index, v: byOutlet[outlet]?.[year] }))
 			.filter(({ v }) => v && v.n >= MIN_N)
-			.map((p) => ({ ...p, share: p.v.hit / p.v.n }));
+			.map((p) => ({ ...p, share: p.v.hit / p.v.n, y: yOf(p.v) }));
 	}
+	// in count mode the chip carries the outlet's total over the drawn years
+	const totalHits = (pts) => pts.reduce((sum, p) => sum + p.v.hit, 0);
 
 	const pct = (share) => `${(share * 100).toFixed(share < 0.02 ? 1 : 0)}%`;
 
@@ -204,11 +300,14 @@
 		let peak = 0;
 		for (const outlet of outlets)
 			for (const p of [...lineFor(outlet), ...lineFor2(outlet)])
-				peak = Math.max(peak, p.share);
+				peak = Math.max(peak, p.y);
 		// tops whose halves are round numbers, since the ticks sit at ½ and 1
-		for (const nice of [0.02, 0.04, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1])
+		const nices = measure === "share"
+			? [0.02, 0.04, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1]
+			: [10, 20, 40, 60, 80, 100, 120, 150, 200, 300, 400, 600, 800, 1000, 1500, 2000, 3000];
+		for (const nice of nices)
 			if (nice >= peak * 1.05) return nice;
-		return 1;
+		return nices[nices.length - 1];
 	});
 
 	let viewportWidth = $state(
@@ -243,7 +342,18 @@
 
 	const W = 220,
 		H = 150;
-	const M = { left: 34, right: 8, top: 10, bottom: 22 };
+	const M = { left: 34, right: 8, top: 10, bottom: monthly ? 32 : 22 };
+	// month mode: "Jan" / "Jul" on one row, the year on a row beneath at each
+	// January (and under the first column when the span starts mid-year)
+	const monthLabel = (period, index) => (period.endsWith("-01") ? "Jan" : period.endsWith("-07") ? "Jul" : "");
+	const yearLabel = (period, index, all) => {
+		if (period.endsWith("-01")) return period.slice(0, 4);
+		if (index === 0) {
+			const nextJan = all.findIndex((p) => p.endsWith("-01"));
+			return nextJan < 0 || nextJan >= 4 ? period.slice(0, 4) : "";
+		}
+		return "";
+	};
 	const plotW = W - M.left - M.right;
 	const plotH = H - M.top - M.bottom;
 	let colW = $derived(plotW / Math.max(1, years.length));
@@ -257,7 +367,7 @@
 		pts
 			.map(
 				(p, i) =>
-					`${i ? "L" : "M"}${xMid(p.index).toFixed(1)},${pctY(p.share).toFixed(1)}`
+					`${i ? "L" : "M"}${xMid(p.index).toFixed(1)},${pctY(p.y).toFixed(1)}`
 			)
 			.join("");
 	// the same line closed down to the baseline, for the fill beneath it
@@ -270,12 +380,13 @@
 	});
 
 	let tip = $state(null);
-	function showTip(event, outlet, year, v) {
+	function showTip(event, outlet, year, v, v2 = null) {
 		const box = event.currentTarget.closest(".otc").getBoundingClientRect();
 		tip = {
 			outlet,
 			year,
 			...v,
+			second: v2,
 			x: event.clientX - box.left,
 			y: Math.min(Math.max(60, event.clientY - box.top), box.height - 60),
 			flip: event.clientX - box.left > box.width - 250
@@ -286,6 +397,18 @@
 <svelte:window bind:innerWidth={viewportWidth} />
 
 <div class="otc" class:mobile bind:this={root}>
+	<div class="top">
+		<div class="measure-toggle" role="group" aria-label="What the panes show">
+			<button class:active={measure === "share"} onclick={() => (measure = "share")} title="Share of articles" aria-label="Share of articles">%</button>
+			<button class:active={measure === "count"} onclick={() => (measure = "count")} title="Number of articles" aria-label="Number of articles">#</button>
+		</div>
+		<!-- the colours, once, top right -->
+		<div class="legend" aria-label="Topics">
+			{#each legend as item (item.label)}
+				<span class="key"><i style="background:{item.color}"></i>{item.label}</span>
+			{/each}
+		</div>
+	</div>
 	<div class="grid">
 		{#each cells as cell, index (cell.outlet)}
 			{@const outlet = cell.outlet}
@@ -314,21 +437,24 @@
 					{#if LEAGUE_TAG[outlet]}
 						<span class="league-tag">{LEAGUE_TAG[outlet]}</span>
 					{/if}
-					{#if avg}
-						<span class="avg-chip" style="color:{second ? MAIN : AVG}"
-							>avg {pct(avg.share)}</span
-						>
+					<!-- the pane's numbers in plain ink, each under its topic's shorthand -->
+					{#if showChips && avg}
+						<span class="avg-chip">
+							<small>{second ? SHORTHAND[topic] ?? topic : "avg"}</small>
+							{measure === "share" ? pct(avg.share) : totalHits(pts).toLocaleString()}
+						</span>
 					{/if}
-					{#if second && avg2}
-						<span class="avg-chip" style="color:{SECOND}"
-							>avg {pct(avg2.share)}</span
-						>
+					{#if showChips && second && avg2}
+						<span class="avg-chip">
+							<small>{SHORTHAND[second] ?? second}</small>
+							{measure === "share" ? pct(avg2.share) : totalHits(pts2).toLocaleString()}
+						</span>
 					{/if}
 				</div>
 				<svg
 					viewBox="0 0 {W} {H}"
 					role="img"
-					aria-label="Share of {outlet} WNBA articles that {TOPIC_PHRASE}, by year"
+					aria-label="{measure === 'share' ? 'Share' : 'Number'} of {outlet} WNBA articles that {TOPIC_PHRASE}, by {monthly ? 'month' : 'year'}"
 				>
 					{#each yTicks as pct}
 						<line
@@ -343,7 +469,7 @@
 								class="tick"
 								x={M.left - 5}
 								y={pctY(pct) + 4}
-								text-anchor="end">{Math.round(pct * 100)}%</text
+								text-anchor="end">{measure === "share" ? Math.round(pct * 100) + "%" : pct.toLocaleString()}</text
 							>
 						{/if}
 					{/each}
@@ -370,21 +496,23 @@
 							x1={xMid(index)}
 							x2={xMid(index)}
 							y1={M.top + plotH}
-							y2={M.top + plotH + (+year % 2 === 0 ? 4 : 2.5)}
+							y2={M.top + plotH + ((monthly ? year.endsWith("-01") : +year % 2 === 0) ? 4 : 2.5)}
 						/>
 					{/each}
 					{#each years as year, index}
-						{#if showX && +year % 2 === 0}
-							<text
-								class="tick year"
-								x={xMid(index)}
-								y={H - 6}
-								text-anchor="middle">{year}</text
-							>
+						{#if showX && !monthly && +year % 2 === 0}
+							<text class="tick year" x={xMid(index)} y={H - 6} text-anchor="middle">{year}</text>
+						{:else if showX && monthly}
+							{#if monthLabel(year, index)}
+								<text class="tick month" x={xMid(index)} y={H - 17} text-anchor="middle">{monthLabel(year, index)}</text>
+							{/if}
+							{#if yearLabel(year, index, years)}
+								<text class="tick year" x={xMid(index)} y={H - 5} text-anchor="middle">{yearLabel(year, index, years)}</text>
+							{/if}
 						{/if}
 					{/each}
 
-					{#if avg}
+					{#if showAvg && avg && measure === "share"}
 						<line
 							class="avg-line"
 							x1={M.left}
@@ -394,7 +522,7 @@
 							stroke={second ? MAIN : AVG}
 						/>
 					{/if}
-					{#if second && avg2}
+					{#if showAvg && second && avg2 && measure === "share"}
 						<line
 							class="avg-line"
 							x1={M.left}
@@ -405,24 +533,41 @@
 						/>
 					{/if}
 					<g>
-						{#if second && pts2.length}
-							<path class="topic-area" d={areaFor(pts2)} fill={SECOND} />
+						{#if second && pts2.length && !stacked}
+							{#if showArea}<path class="topic-area" d={areaFor(pts2)} fill={SECOND} />{/if}
 							<path class="topic-line" d={pathFor(pts2)} stroke={SECOND} />
 							{#each pts2 as p (p.year)}
 								<circle
 									cx={xMid(p.index)}
-									cy={pctY(p.share)}
-									r="3"
+									cy={pctY(p.y)}
+									r={monthly ? 2 : 3}
 									fill={SECOND}
 								/>
 							{/each}
 						{/if}
-						<path class="topic-area" d={areaFor(pts)} fill={MAIN} />
+						{#if showArea}<path class="topic-area" class:solid={stacked} d={areaFor(pts)} fill={MAIN} />{/if}
 						<path class="topic-line" d={pathFor(pts)} stroke={MAIN} />
-						{#each pts as p (p.year)}
-							<circle cx={xMid(p.index)} cy={pctY(p.share)} r="3" fill={MAIN} />
-						{/each}
+						{#if second && pts2.length && stacked}
+							<!-- the second topic stacked on the first, a solid band like the word chart -->
+							<path class="topic-area solid" d={bandFor(pts2)} fill={SECOND} />
+							<path class="topic-line" d={pathFor(pts2)} stroke={SECOND} />
+							{#if parts}
+								<!-- the articles with both, a blended band between the two -->
+								<path class="topic-area solid" d={bandFor(bothBand(outlet))} fill={BOTH} />
+							{/if}
+						{/if}
+						{#if !stacked}
+							{#each pts as p (p.year)}
+								<circle cx={xMid(p.index)} cy={pctY(p.y)} r={monthly ? 2 : 3} fill={MAIN} />
+							{/each}
+						{/if}
 					</g>
+					{#if MARK && years.includes(MARK)}
+						<line class="mark" x1={xMid(years.indexOf(MARK))} x2={xMid(years.indexOf(MARK))} y1={M.top} y2={M.top + plotH} />
+						<!-- a wider invisible line so the rule is easy to hover -->
+						<line class="mark-hit" x1={xMid(years.indexOf(MARK))} x2={xMid(years.indexOf(MARK))} y1={M.top} y2={M.top + plotH}
+							onpointermove={(e) => showMarkTip(e, outlet)} onpointerleave={() => (tip = null)} />
+					{/if}
 					{#each pts as p (p.year)}
 						<rect
 							x={M.left + p.index * colW}
@@ -430,7 +575,7 @@
 							y={M.top}
 							height={plotH}
 							fill="transparent"
-							onpointermove={(e) => showTip(e, outlet, p.year, p.v)}
+							onpointermove={(e) => showTip(e, outlet, p.year, p.v, byOutlet2?.[outlet]?.[p.year] ?? null)}
 							onpointerleave={() => (tip = null)}
 						/>
 					{/each}
@@ -468,16 +613,33 @@
 			class:flip={tip.flip}
 			style="left:{tip.x}px; top:{tip.y}px"
 		>
-			<strong>{SHORT_NAME[tip.outlet] ?? tip.outlet} · {tip.year}</strong>
-			<p class="line">
-				{tip.hit} of {tip.n.toLocaleString()}
-				{method === "headline" ? "headlines" : "articles"} —
-				{((tip.hit / tip.n) * 100).toFixed(tip.hit / tip.n < 0.02 ? 1 : 0)}% —
-				{TOPIC_PHRASE}.
-				{#if avg}
-					Its average over all years: {pct(avg.share)}.
+			{#if tip.mark}
+				<strong>{markDate}</strong>
+				<p class="line">{MARK_TEXT || "The date marked on every pane."}</p>
+			{:else}
+			<strong>{SHORT_NAME[tip.outlet] ?? tip.outlet} · {periodLabel(tip.year)}</strong>
+			{#if second}
+				<!-- two topics: a line for each, in its colour, out of the same articles -->
+				<p class="line"><i class="swatch" style="background:{MAIN}"></i><b>{PHRASE_OF[topic] ?? topic}</b>: {tip.hit} of {tip.n.toLocaleString()} {method === "headline" ? "headlines" : "articles"} ({pct(tip.hit / tip.n)})</p>
+				{#if tip.second}
+					<p class="line"><i class="swatch" style="background:{SECOND}"></i><b>{PHRASE_OF[second] ?? second}</b>: {tip.second.hit} of {tip.second.n.toLocaleString()} ({pct(tip.second.hit / tip.second.n)})</p>
 				{/if}
-			</p>
+				{#if parts && byBoth?.[tip.outlet]?.[tip.year]}
+					{@const b = byBoth[tip.outlet][tip.year]}
+					<p class="line"><i class="swatch" style="background:{BOTH}"></i><b>both</b>: {b.hit} ({pct(b.hit / b.n)}); either: {tip.hit + tip.second.hit - b.hit} ({pct((tip.hit + tip.second.hit - b.hit) / tip.n)})</p>
+				{/if}
+			{:else}
+				<p class="line">
+					{tip.hit} of {tip.n.toLocaleString()}
+					{method === "headline" ? "headlines" : "articles"} —
+					{((tip.hit / tip.n) * 100).toFixed(tip.hit / tip.n < 0.02 ? 1 : 0)}% —
+					{TOPIC_PHRASE}.
+					{#if avg}
+						Its average over all years: {pct(avg.share)}.
+					{/if}
+				</p>
+			{/if}
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -601,13 +763,92 @@
 		stroke-linecap: round;
 		stroke-dasharray: 1 5;
 	}
+	.measure-toggle {
+		display: flex;
+		justify-content: center;
+		gap: 0;
+		margin: 0 0 10px;
+	}
+	.measure-toggle button {
+		border: 1px solid rgba(42, 21, 3, 0.3);
+		background: transparent;
+		color: var(--color-ink);
+		font-family: var(--font-chart);
+		font-size: 12px;
+		font-weight: 700;
+		padding: 5px 12px;
+		cursor: pointer;
+			min-width: 34px;
+		font-variant-numeric: tabular-nums;
+}
+	.measure-toggle button:first-child {
+		border-radius: 4px 0 0 4px;
+	}
+	.measure-toggle button:last-child {
+		border-radius: 0 4px 4px 0;
+		border-left: 0;
+	}
+	.measure-toggle button.active {
+		background: var(--color-ink);
+		color: #fff;
+	}
 	.avg-chip {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		line-height: 1.05;
 		font-family: var(--font-chart);
 		font-size: 11px;
 		font-weight: 800;
 		letter-spacing: 0.02em;
-		margin-left: 4px;
+		margin-left: 6px;
+		color: var(--color-ink);
 		font-variant-numeric: tabular-nums;
+	}
+	.avg-chip small {
+		font-size: 8.5px;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		opacity: 0.65;
+	}
+	.top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+		margin: 0 0 10px;
+	}
+	.top .measure-toggle {
+		margin: 0;
+	}
+	.legend {
+		display: flex;
+		gap: 12px;
+		font-family: var(--font-chart);
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--color-ink);
+	}
+	.legend .key {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+	}
+	.legend i {
+		display: inline-block;
+		width: 12px;
+		height: 12px;
+		border-radius: 3px;
+	}
+	@media (max-width: 640px) {
+		.top {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.legend {
+			justify-content: flex-end;
+		}
 	}
 
 	.tooltip {
@@ -640,5 +881,30 @@
 		line-height: 1.5;
 		color: var(--color-ink);
 		font-family: var(--font-chart);
+	}
+	.topic-area.solid {
+		opacity: 0.85;
+	}
+	.mark {
+		stroke: var(--color-ink);
+		stroke-width: 1;
+		stroke-dasharray: 3 3;
+	}
+	.tick.month {
+		font-size: 9px;
+		opacity: 0.8;
+	}
+	.tooltip .swatch {
+		display: inline-block;
+		width: 10px;
+		height: 10px;
+		border-radius: 2px;
+		margin-right: 5px;
+		vertical-align: -1px;
+	}
+	.mark-hit {
+		stroke: transparent;
+		stroke-width: 9;
+		cursor: help;
 	}
 </style>

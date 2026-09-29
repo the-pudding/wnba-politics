@@ -1,7 +1,11 @@
 export default [
 	{
 		id: "19tHhCoKdouiIrlk_KsiCwPAji-_7JSPr2c89iFt8cOQ",
-		filepath: "src/data/copy.json"
+		filepath: "src/data/copy.json",
+		// the Doc has tabs now (Tab 1 is the story, "JD" a collaborator's copy);
+		// the export concatenates them unless one is named. t.0 is the first
+		// tab; another tab's id is the "tab=t.…" part of the URL when it is open
+		tab: "t.0"
 	},
 	{
 		id: "1Vl-tlngO8M6TKCd1aLWgG6FxGg5UIeIIEm_mAnfgeVY",

@@ -14,22 +14,18 @@
 			.map((p) => [p.slug, p.face.slice(p.slug.length)])
 	);
 
-	const OUTLETS = [
-		"ESPN",
-		"CBS Sports",
-		"USA Today",
-		"The Athletic",
-		"Just Women's Sports"
-	];
-	const ALL = "the sports press";
-	const LOGOS = {
-		"Yahoo Sports": "yahoo.svg",
-		ESPN: "espn.svg",
-		"CBS Sports": "cbs-sports.svg",
-		"USA Today": "usa-today.svg",
-		"The Athletic": "the-athletic.png",
-		"Just Women's Sports": "jws.png"
-	};
+	import { COMPARISON, GROUPS, AGGREGATES, SHORT as SHORT_NAMES } from "$utils/outlets.js";
+	// every outlet the picker offers on its own
+	const OUTLETS = [...COMPARISON];
+	// the pooled baselines the picker offers before the outlets themselves
+	// the default baseline: the sports press when the registry has one, else everyone pooled
+	const ALL = GROUPS["sports outlets"]?.length ? "sports outlets" : "all outlets";
+	// the pools the registry has members for
+	const POOLED = [...AGGREGATES];
+	const POOL_LABEL = { "sports outlets": "the sports press", "all outlets": "the other outlets", "news outlets": "the news outlets" };
+	const POOL_SHORT = { "sports outlets": "sports", "all outlets": "all", "news outlets": "news" };
+	const POOL_TITLE = { "sports outlets": "Sports Outlets", "all outlets": "Other Outlets", "news outlets": "News Outlets" };
+	const MEMBERS = (group) => GROUPS[group];
 	const monthYear = (iso) =>
 		new Date(iso + "T12:00:00").toLocaleDateString("en-US", {
 			month: "short",
@@ -108,7 +104,9 @@
 	$effect(() => {
 		against = start;
 	});
-	let them = $derived(against === ALL ? "everybody else" : against);
+	let them = $derived(against === ALL ? "everybody else" : (POOL_LABEL[against] ?? against));
+	const topName = "Fox News";
+	const topShort = "Fox";
 	// the Doc types A’ja with a curly apostrophe, the data with a straight one
 	const key = (name) => name.toLowerCase().replace(/[’‘]/g, "'");
 	let placedSet = $derived(placed === null ? null : new Set(placed.map(key)));
@@ -132,10 +130,11 @@
 
 	// both numbers are already cut to the shared window
 	function pressShare(person) {
-		if (against !== ALL) return person.byOutlet?.[against];
+		if (!POOLED.includes(against)) return person.byOutlet?.[against];
+		if (person.byOutlet?.[against]) return person.byOutlet[against];
 		let hits = 0,
 			total = 0;
-		for (const outlet of OUTLETS) {
+		for (const outlet of MEMBERS(against) ?? OUTLETS) {
 			const stat = person.byOutlet?.[outlet];
 			if (!stat || !data.totals?.[outlet]) continue;
 			hits += stat.n;
@@ -143,23 +142,25 @@
 		}
 		return total ? { share: hits / total, n: hits } : null;
 	}
+	// the top side's share: Fox's own
+	const topShare = (person) => ({ share: person.fox, n: person.foxN ?? 0 });
 
 	// k× Fox -> k − 1, k× theirs -> −(k − 1): uniform either way
 	let people = $derived(
 		data.people
 			.filter((person) => source !== "players" || !HIDDEN.has(person.name))
 			.filter((person) => (person.foxN ?? 0) >= minFox)
-			.map((person) => ({ ...person, them: pressShare(person) }))
-			.filter((person) => person.them && person.fox + person.them.share > 0)
+			.map((person) => ({ ...person, them: pressShare(person), top: topShare(person) }))
+			.filter((person) => person.them && person.top.share + person.them.share > 0)
 			.map((person) => ({
 				...person,
 				times: Math.max(
 					-RATIO_CAP,
 					Math.min(
 						RATIO_CAP,
-						person.fox >= person.them.share
-							? person.fox / Math.max(person.them.share, 1e-9) - 1
-							: -(person.them.share / Math.max(person.fox, 1e-9) - 1)
+						person.top.share >= person.them.share
+							? person.top.share / Math.max(person.them.share, 1e-9) - 1
+							: -(person.them.share / Math.max(person.top.share, 1e-9) - 1)
 					)
 				)
 			}))
@@ -258,13 +259,7 @@
 		share >= 0.1
 			? `${(share * 100).toFixed(0)}%`
 			: `${(share * 100).toFixed(1)}%`;
-	const SHORT = {
-		ESPN: "ESPN",
-		"CBS Sports": "CBS",
-		"USA Today": "USA Today",
-		"The Athletic": "Athletic",
-		"Just Women's Sports": "JWS"
-	};
+	const SHORT = { ...SHORT_NAMES, ...POOL_SHORT };
 	let themShort = $derived(
 		against === ALL ? "others" : (SHORT[against] ?? against)
 	);
@@ -273,7 +268,7 @@
 	const ratioTag = (person) => {
 		const k = Math.abs(person.times) + 1;
 		if (Math.abs(person.times) < 0.05) return "1× (equal)";
-		return `${k.toFixed(k < 10 ? 1 : 0)}× ${person.times > 0 ? "Fox" : themShort}`;
+		return `${k.toFixed(k < 10 ? 1 : 0)}× ${person.times > 0 ? topShort : themShort}`;
 	};
 	const ringColor = (person) =>
 		person.times > 0.12
@@ -451,25 +446,24 @@
 			? `${(x(0) / WIDTH) * 100}%`
 			: `${equalLeft}px`}"
 	>
-		<h4 class="vs">Fox News vs. {against === ALL ? "All Outlets" : against}</h4>
+		<h4 class="vs">Fox News vs. {POOL_TITLE[against] ?? against}</h4>
 		<p class="sub">Mentions in headlines (2020–2026)</p>
 		<div class="picker">
-			<button
-				class="all"
-				class:active={against === ALL}
-				onclick={() => (against = ALL)}>all</button
-			>
+			{#each AGGREGATES as group (group)}
+				<button
+					class="all"
+					class:active={against === group}
+					onclick={() => (against = group)}>{POOL_SHORT[group] ?? group}</button
+				>
+			{/each}
 			{#each outlets as outlet}
 				<button
 					class:active={against === outlet}
-					class:pooled={against === ALL}
-					class:square={LOGOS[outlet].endsWith(".png")}
+					class:pooled={(GROUPS[against] ?? []).includes(outlet)}
 					title={outlet}
 					aria-label={outlet}
-					onclick={() => (against = outlet)}
+					onclick={() => (against = outlet)}>{SHORT_NAMES[outlet] ?? outlet}</button
 				>
-					<img src="{base}/logos/{LOGOS[outlet]}" alt="" />
-				</button>
 			{/each}
 		</div>
 	</div>
@@ -505,7 +499,7 @@
 				x={narrow ? NAMES + PLOT - 10 : x(0) + 22}
 				y={TOP - (narrow ? 22 : 0)}
 				text-anchor={narrow ? "end" : "start"}
-				fill={FOX}>{narrow ? "More Fox →" : "More Fox News →"}</text
+				fill={FOX}>{narrow ? `More ${topShort} →` : `More ${topName} →`}</text
 			>
 			<!-- the ends of the axis, in each side's colour -->
 			<line
@@ -730,11 +724,11 @@
 			<strong>{tooltip.person.name}</strong>
 			<div>
 				<span class="swatch" style="background:{FOX}"></span>
-				{pct(tooltip.person.fox)} of Fox's WNBA headlines
+				{pct(tooltip.person.top.share)} of Fox's WNBA headlines
 				<!-- raw counts only against one outlet: pooled, the totals are
 				     lopsided and the percentages are the comparison -->
 				{#if against !== ALL}
-					<span class="count">({tooltip.person.foxN.toLocaleString()})</span>
+					<span class="count">({tooltip.person.top.n.toLocaleString()})</span>
 				{/if}
 			</div>
 			<div>
@@ -805,7 +799,10 @@
 		align-items: center;
 		gap: 5px;
 		margin-bottom: 6px;
-		flex-wrap: nowrap;
+		/* named pills, two rows on a desktop rather than one unreadable row of logos */
+		flex-wrap: wrap;
+		row-gap: 5px;
+		max-width: 760px;
 	}
 	/* title and pills sit centred over the equal line, not the whole box */
 	.head {
@@ -858,6 +855,7 @@
 		font-size: 12px;
 		font-weight: 600;
 		line-height: 1.3;
+		white-space: nowrap;
 		color: var(--color-ink);
 		opacity: 0.55;
 		transition:
@@ -876,14 +874,6 @@
 		border-color: var(--color-ink);
 		font-weight: 800;
 		box-shadow: 0 1px 4px rgba(42, 21, 3, 0.18);
-	}
-	.picker img {
-		display: block;
-		height: 12px;
-		width: auto;
-	}
-	.picker button.square img {
-		height: 15px;
 	}
 	.picker .all {
 		padding: 3px 9px;
@@ -912,12 +902,6 @@
 		.picker .all {
 			padding: 2px 7px;
 			font-size: 10px;
-		}
-		.picker img {
-			height: 10px;
-		}
-		.picker button.square img {
-			height: 12px;
 		}
 	}
 	.slot-card {

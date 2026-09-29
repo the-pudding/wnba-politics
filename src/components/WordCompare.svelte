@@ -30,10 +30,8 @@
 	let wordList = $derived(String(words).split(",").map((w) => w.trim()).filter(Boolean));
 	// the panes, on the outlet-topic panels' 30-column grid: Fox alone on top
 	// (a third wide, centred), then rows of three
-	const OTHERS = OUTLETS_LIST();
-	function OUTLETS_LIST() {
-		return ["ESPN", "CBS Sports", "USA Today", "The Athletic", "Just Women's Sports"];
-	}
+	import { COMPARISON, LOGO as LOGOS } from "$utils/outlets.js";
+	const OTHERS = COMPARISON;
 	const cells = [{ outlet: "Fox News", start: 10, span: 10, solo: true }];
 	OTHERS.forEach((o, i) => {
 		const row = Math.floor(i / 3), k = i % 3;
@@ -42,15 +40,7 @@
 		cells.push({ outlet: o, start: start + 10 * k, span: 10, solo: false });
 	});
 
-	const OUTLETS = ["Fox News", "ESPN", "CBS Sports", "USA Today", "The Athletic", "Just Women's Sports"];
-	const LOGOS = {
-		"Fox News": "fox-news.svg",
-		ESPN: "espn.svg",
-		"CBS Sports": "cbs-sports.svg",
-		"USA Today": "usa-today.svg",
-		"The Athletic": "the-athletic.png",
-		"Just Women's Sports": "jws.png"
-	};
+	const OUTLETS = ["Fox News", ...COMPARISON];
 	let outlet = $state("Fox News");
 </script>
 

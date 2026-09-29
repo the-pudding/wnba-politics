@@ -27,14 +27,9 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 HERE = Path(__file__).resolve().parent.parent
-OUTLETS = {
-    "Fox News": HERE / "data" / "fox_wnba.csv",
-    "ESPN": HERE / "data" / "espn.csv",
-    "CBS Sports": HERE / "data" / "cbs_sports.csv",
-    "USA Today": HERE / "data" / "usa_today.csv",
-    "The Athletic": HERE / "data" / "the_athletic.csv",
-    "Just Women's Sports": HERE / "data" / "just_womens_sports.csv",
-}
+import sys as _sys; _sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))
+from outlets import FILES as OUTLET_FILES, SPORTS, NEWS, COMPARISON, GROUPS as OUTLET_GROUPS, OUTLETS as OUTLET_TABLE
+OUTLETS = {label: HERE / "data" / f for label, f in OUTLET_FILES.items()}
 PEOPLE = json.loads((HERE / "src" / "data" / "people.json").read_text())
 NAME_RX = {name: re.compile(info["rx"], re.I) for name, info in PEOPLE.items()}
 MAX_CHARS = 12000     # fastcoref is quadratic-ish; the bodies are capped anyway

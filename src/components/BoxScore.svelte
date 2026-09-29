@@ -18,6 +18,7 @@
 		"yahoo.svg",
 		"cbs-sports.svg",
 		"usa-today.svg",
+		"cbs.svg",
 		"cnn.svg",
 		"ms-now.svg"
 	]);
@@ -28,13 +29,28 @@
 		"yahoo sports": "yahoo.svg",
 		yahoo: "yahoo.svg",
 		"cbs sports": "cbs-sports.svg",
+		cbs: "cbs.svg",
+		outkick: "fox-news.svg",
+		andscape: "espn.svg",
 		"usa today": "usa-today.svg",
 		"the athletic": "the-athletic.png",
 		"just women's sports": "jws.png",
 		jws: "jws.png",
 		cnn: "cnn.svg",
 		msnbc: "ms-now.svg",
-		"ms now": "ms-now.svg"
+		"ms now": "ms-now.svg",
+		"fox sports": "fox-sports.svg",
+		"nbc news": "nbc-news.svg",
+		nbc: "nbc-news.svg",
+		"cbs news": "cbs-news.svg",
+		npr: "npr.svg",
+		ap: "ap.svg",
+		"associated press": "ap.svg",
+		"washington post": "washington-post.svg",
+		"the washington post": "washington-post.svg",
+		"new york times": "nyt.svg",
+		"the new york times": "nyt.svg",
+		nyt: "nyt.svg"
 	};
 	const clean = (rows ?? []).filter((r) => r && (r.outlet ?? "").trim());
 	const columns = clean.length

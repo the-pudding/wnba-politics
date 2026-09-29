@@ -129,4 +129,9 @@
 			max-width: 84vw;
 		}
 	}
+	/* the step cards let the pointer through to the chart behind them, but a
+	   link in a step's text must still be clickable */
+	.steps :global(a) {
+		pointer-events: auto;
+	}
 </style>

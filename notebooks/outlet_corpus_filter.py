@@ -19,7 +19,7 @@ and what went, and why, in data/<outlet>_dropped.csv.
     python3 notebooks/outlet_corpus_filter.py            # filter
     python3 notebooks/outlet_corpus_filter.py --report   # list, change nothing
 """
-import csv, shutil, sys
+import csv, shutil, sys, re
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -27,7 +27,9 @@ from fox_corpus_filter import reason
 
 HERE = Path(__file__).resolve().parent.parent
 csv.field_size_limit(10 ** 9)
-OUTLETS = ["espn", "cbs_sports", "usa_today", "the_athletic", "just_womens_sports"]
+OUTLETS = ["espn", "cbs_sports", "usa_today", "the_athletic", "just_womens_sports",
+           "cnn", "nbc_news", "cbs_news", "npr", "ap", "washington_post", "new_york_times",
+           "breitbart", "redstate", "hotair", "gatewaypundit", "brobible", "outkick", "andscape"]
 
 
 # articles the rule keeps but a reading rejects: other sports' stories that
@@ -43,10 +45,26 @@ DROP_HEADLINES = {
 }
 
 
+# the opinion sites' daily roundups: a WNBA item among a dozen others
+ROUNDUP = re.compile(r"^(?:Morning Minute|Sunday Smiles|RedState Sports Report|The Morning Briefing|Weekend Parting Shot)\b|Newsletter", re.I)
+
+
+# pages that are not articles: crossword answer pages whose clue says "WNBA team",
+# podcast episode pages, video pages, lesson plans (the Times' Learning Network)
+WNBA_SECTION = re.compile(r"(?<![a-z0-9])wnba(?![a-z0-9])", re.I)
+NOT_ARTICLE = re.compile(r"/(crosswords|puzzles|podcasts|videos?|slideshow|gallery|interactive|learning|audio|newsletters)/", re.I)
+
+
 def why_drop(row):
     if (row.get("url") or "").strip() in DROP_URLS or (row.get("headline") or "").strip() in DROP_HEADLINES:
         return "about another sport, with a passing WNBA mention"
-    if "wnba" in (row.get("url") or "").lower():
+    if NOT_ARTICLE.search(row.get("url") or ""):
+        return "not an article: a crossword, podcast, video or lesson page"
+    if row.get("outlet") in ("RedState", "Hot Air", "Breitbart", "Gateway Pundit") and ROUNDUP.search(row.get("headline") or ""):
+        return "a daily roundup with a WNBA item in it"
+    # the outlet's own WNBA section: a path segment, not any "wnba" inside a
+    # word (Breitbart's Sam Brownback interviews slipped in on "brownback")
+    if WNBA_SECTION.search(row.get("url") or ""):
         return None
     if not (row.get("body") or "").strip():
         return None

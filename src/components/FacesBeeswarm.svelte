@@ -23,7 +23,7 @@
 			.map((p) => [p.slug, p.face.slice(p.slug.length)])
 	);
 	// the five sports outlets Fox is set against, pooled for the tone comparison
-	const OUTLETS = ["ESPN", "CBS Sports", "USA Today", "The Athletic", "Just Women's Sports"];
+	import { COMPARISON as OUTLETS } from "$utils/outlets.js";
 
 	const headlines = {
 		rows: headlineRows.map((r) => ({

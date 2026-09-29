@@ -1844,4 +1844,9 @@
 		font-size: 11px;
 		color: rgba(42, 21, 3, 0.55);
 	}
+	/* the step cards let the pointer through to the chart behind them, but a
+	   link in a step's text must still be clickable */
+	.steps :global(a) {
+		pointer-events: auto;
+	}
 </style>

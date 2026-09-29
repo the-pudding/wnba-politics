@@ -23,6 +23,7 @@
 	import BoxScore from "$components/BoxScore.svelte";
 	import HeadlineGallery from "$components/HeadlineGallery.svelte";
 	import TvSet from "$components/TvSet.svelte";
+	import Subsections from "$components/Subsections.svelte";
 
 	const copy = getContext("copy");
 	const { body } = copy;
@@ -51,6 +52,7 @@
 		HeadlineGallery,
 		Gallery: HeadlineGallery,
 		TvSet,
+		Subsections,
 		// legacy Doc ids — delete once the Doc carries component names
 		toc: Toc,
 		"outlet-topics": OutletTopicCompare,

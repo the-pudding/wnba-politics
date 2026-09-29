@@ -31,7 +31,24 @@ export function playerWordsPeople() {
 	return (data.order ?? []).filter((name) => data.players?.[name]?.vsOutlets);
 }
 
-export function playerWordsSource({ who, rel, vs, pair }) {
+// the single outlets a player's relation can be set against on its own
+// (notebook 09 stores one contrast per outlet that clears the same floor)
+export function playerWordsOutlets(who, rel) {
+	return data.players?.[who]?.vsByOutletKeys?.[rel] ?? [];
+}
+
+// the file holding a player's single-outlet comparisons (notebooks/site_data.py)
+export function playerOutletFile(who) {
+	return `player_outlet/${who.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}.json`;
+}
+
+// `outlet`: one comparison outlet's name, or null for everyone pooled. The
+// pooled groups ship in the bundle; a single outlet's block comes from the
+// player's fetched file, passed in as `byOutlet`
+export function playerWordsSource({ who, rel, vs, pair, outlet = null, byOutlet = null }) {
+	// the pooled comparison's examples, borrowed by a single-outlet view whose
+	// own words ship without any
+	let borrowed = null;
 	let block = null;
 	if (vs === "pair" && pair && data.pairs?.[pair]) {
 		const entry = data.pairs[pair];
@@ -58,7 +75,22 @@ export function playerWordsSource({ who, rel, vs, pair }) {
 	} else {
 		const person = data.players?.[who];
 		if (!person) return null;
-		if (vs === "outlets" && person.vsOutlets?.[rel]) {
+		const singleBlock = person.vsByOutlet?.[rel]?.[outlet] ?? byOutlet?.[rel]?.[outlet];
+		if (vs === "outlets" && outlet && singleBlock) {
+			const single = singleBlock;
+			borrowed = new Map();
+			for (const side of ["clark", "others"])
+				for (const entry of person.vsOutlets?.[rel]?.[side] ?? [])
+					if (entry.eg && !borrowed.has(entry.word)) borrowed.set(entry.word, entry);
+			block = {
+				scored: single.scored,
+				counts: single.counts,
+				top: `${who} in Fox News`,
+				bottom: `${/outlets|news$/.test(outlet) ? "the " + outlet : outlet} writing about her`,
+				topShort: "in Fox News",
+				bottomShort: `in ${/outlets|news$/.test(outlet) ? "the " + outlet : outlet}`
+			};
+		} else if (vs === "outlets" && person.vsOutlets?.[rel]) {
 			block = {
 				scored: person.vsOutlets[rel],
 				counts: person.vsCounts?.[rel],
@@ -90,6 +122,13 @@ export function playerWordsSource({ who, rel, vs, pair }) {
 			const no = entry.others ?? 0;
 			const n = nf + no;
 			const own = overrides[`${who} | ${rel} | ${entry.word}`];
+			// a single-outlet word borrows the pooled example only when that
+			// example is Fox's or the chosen outlet's own
+			const pooled = borrowed?.get(entry.word);
+			const lent =
+				pooled && (!pooled.ego || pooled.ego === "Fox News" || pooled.ego === outlet)
+					? pooled
+					: null;
 			if (n > 0)
 				points.push({
 					word: entry.word,
@@ -97,11 +136,11 @@ export function playerWordsSource({ who, rel, vs, pair }) {
 					n,
 					nf,
 					no,
-					eg: own?.eg ?? entry.eg,
-					egw: own?.egw ?? entry.egw,
+					eg: own?.eg ?? entry.eg ?? lent?.eg,
+					egw: own?.egw ?? entry.egw ?? lent?.egw,
 					// the outlet the example is from ("ESPN", "The Athletic"); a
 					// hand-picked override names its own, else it is Fox's
-					ego: own?.ego ?? (own?.eg ? "Fox News" : entry.ego)
+					ego: own?.ego ?? (own?.eg ? "Fox News" : (entry.ego ?? lent?.ego))
 				});
 		}
 	}

@@ -22,9 +22,9 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
 csv.field_size_limit(10 ** 9)
-FILES = [("fox_wnba", "Fox News"), ("espn", "ESPN"), ("cbs_sports", "CBS Sports"),
-         ("usa_today", "USA Today"), ("the_athletic", "The Athletic"),
-         ("just_womens_sports", "Just Women's Sports")]
+import sys as _sys; _sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))
+from outlets import FILES as OUTLET_FILES, SPORTS, NEWS, COMPARISON, GROUPS as OUTLET_GROUPS, OUTLETS as OUTLET_TABLE
+FILES = [(key, label) for key, label, *_ in OUTLET_TABLE]
 WORDS = {
     "hip-check": r"hip[- ]?check",
     "poke": r"\bpok(?:e|ed|es|ing)\b",

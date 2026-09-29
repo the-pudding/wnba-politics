@@ -7,6 +7,25 @@
 	const data = fw.grid;
 	// story-word examples ship inline
 	const litExamples = fw.lit;
+	// the bundle carries the pooled comparisons only (stats as [z, n, fox, other]
+	// under `s`); article words and phrases, and each single outlet's numbers,
+	// are fetched from static/data when first shown (notebooks/site_data.py).
+	// The single-outlet pills are an evaluation tool: the dev server only.
+	const DEV = import.meta.env.DEV;
+	const slug = (label) => label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+	let articleWords = $state(null);
+	let articleBigrams = $state(null);
+	let outletStats = $state({});
+	const fetching = new Set();
+	async function ensureFile(key, url, assign) {
+		if (fetching.has(key)) return;
+		fetching.add(key);
+		try {
+			assign(await (await fetch(url)).json());
+		} catch {
+			assign([]);
+		}
+	}
 
 	const FOX = "var(--color-fox-navy)"; // Fox's chart colour, set once in variables.css
 	const OTHER = "var(--color-outlets)"; // the other outlets' purple
@@ -38,37 +57,16 @@
 	// the logos drawn under "use this more ↓" for each comparison pool
 	// the logos each comparison group stands for (the footnote), and the one
 	// logo each outlet's pill shows
+	import { COMPARISON, SPORTS, NEWS, GROUPS, AGGREGATES, LOGO as PILL_LOGO, LOGO_WIDTH } from "$utils/outlets.js";
+	// the wordmarks drawn under the chart for whatever Fox is set against: an
+	// outlet's own, or a group's members (all 13 would not fit: none for "all")
 	const LOGOS = {
-		"all outlets": [
-			"espn.svg",
-			"cbs-sports.svg",
-			"usa-today.svg",
-			"the-athletic.png",
-			"jws.png"
-		],
-		ESPN: ["espn.svg"],
-		"CBS Sports": ["cbs-sports.svg"],
-		"USA Today": ["usa-today.svg"],
-		"The Athletic": ["the-athletic.png"],
-		"Just Women's Sports": ["jws.png"],
-		"CBS + USA Today": ["cbs-sports.svg", "usa-today.svg"]
+		"sports outlets": SPORTS.map((o) => PILL_LOGO[o]),
+		"news outlets": NEWS.map((o) => PILL_LOGO[o]),
+		...Object.fromEntries(COMPARISON.map((o) => [o, [PILL_LOGO[o]]]))
 	};
-	const PILL_LOGO = {
-		ESPN: "espn.svg",
-		"CBS Sports": "cbs-sports.svg",
-		"USA Today": "usa-today.svg",
-		"The Athletic": "the-athletic.png",
-		"Just Women's Sports": "jws.png"
-	};
-	const LOGO_WIDTH = {
-		"yahoo.svg": 44,
-		"espn.svg": 42,
-		"cbs-sports.svg": 44,
-		"usa-today.svg": 56,
-		"the-athletic.png": 13,
-		"jws.png": 13,
-		"fox-news": 22
-	};
+	const PILL_NAME = { "sports outlets": "sports", "news outlets": "news" };
+	const pooledIn = (group, outlet) => (GROUPS[group] ?? []).includes(outlet);
 
 	// `source` ({points, topLabel, bottomLabel}) lets another dataset borrow the chart
 	let {
@@ -114,36 +112,64 @@
 	let text = $state(mode ?? "headlines");
 	let against = $state(data.outlets[0]);
 	let player = $state(ALL);
+	const topName = "Fox";
+	const bottomName = "others";
 
-	let bodyMode = $derived(
-		text === "articles" &&
-			player === ALL &&
-			(data.articleWords ?? []).length > 0
-	);
-	let words = $derived(
-		bodyMode
+	let bodyMode = $derived(text === "articles" && player === ALL && !!data.hasArticles);
+	// while a file is still loading, keep showing what is on screen rather than
+	// flashing an empty chart (the words/phrases switch used to blank it)
+	let lastWords = [];
+	let words = $derived.by(() => {
+		const next = bodyMode
 			? bigrams
-				? (data.articleBigrams ?? [])
-				: data.articleWords
+				? articleBigrams
+				: articleWords
 			: player === ALL
 				? data.words
-				: (data.byPlayer?.[player] ?? [])
-	);
+				: (data.byPlayer?.[player] ?? []);
+		if (next) lastWords = next;
+		return next ?? lastWords;
+	});
+	// both article files load together as soon as articles are shown, so the
+	// words/phrases switch has nothing left to fetch
+	$effect(() => {
+		if (!bodyMode) return;
+		if (!articleWords) ensureFile("articles", `${base}/data/fw_articles.json`, (v) => (articleWords = v));
+		if (!articleBigrams) ensureFile("bigrams", `${base}/data/fw_bigrams.json`, (v) => (articleBigrams = v));
+	});
+	// a single outlet's numbers, one file per outlet, fetched on its pill
+	// the pools, the pair and the comparison outlets ship in the bundle; other pills are dev-only
+	const POOLED = [...AGGREGATES, ...COMPARISON];
+	let single = $derived(!POOLED.includes(against));
+	$effect(() => {
+		if (single && !outletStats[against])
+			ensureFile(against, `${base}/data/fw_outlet/${slug(against)}.json`, (v) => (outletStats = { ...outletStats, [against]: v }));
+	});
+	// the stats of a word in the current comparison: [z, n, fox, other]
+	let modeKey = $derived(bodyMode ? (bigrams ? "bigrams" : "articles") : "headlines");
+	function statOf(entry) {
+		if (!single) return entry.s?.[against];
+		const table = outletStats[against];
+		if (!table) return undefined;
+		return player === ALL ? table[modeKey]?.[entry.word] : table.players?.[player]?.[entry.word];
+	}
 	// over articles, "all outlets" is literally the same corpus as "Yahoo + ESPN" — dedupe
 	let articleOutlets = $derived.by(() => {
 		const seen = new Map();
 		for (const name of data.articleOutlets ?? []) {
 			const key = JSON.stringify(data.articleOutletN?.[name] ?? {});
-			if (!seen.has(key) || name !== "all outlets") seen.set(key, name);
+			// a later duplicate replaces "all outlets" only
+			if (!seen.has(key) || seen.get(key) === "all outlets") seen.set(key, name);
 		}
 		return [...seen.values()];
 	});
 	let outletsHere = $derived(
-		bodyMode
+		(bodyMode
 			? articleOutlets
 			: player === ALL
-				? data.outlets
+				? [...data.outlets, ...(data.outletsExtra ?? [])]
 				: Object.keys(data.playerN?.[player] ?? {}).sort()
+		).filter((o) => DEV || POOLED.includes(o))
 	);
 	let sample = $derived(
 		(bodyMode
@@ -211,17 +237,14 @@
 		source
 			? source.points
 			: words
-					.filter(
-						(entry) =>
-							entry.z[against] !== undefined &&
-							(entry.n?.[against] ?? 0) >= floor
-					)
-					.map((entry) => ({
+					.map((entry) => [entry, statOf(entry)])
+					.filter(([, s]) => s && s[1] >= floor)
+					.map(([entry, s]) => ({
 						word: entry.word,
-						z: entry.z[against],
-						n: entry.n[against],
-						nf: entry.nf?.[against] ?? 0,
-						no: entry.no?.[against] ?? 0
+						z: s[0],
+						n: s[1],
+						nf: s[2] ?? 0,
+						no: s[3] ?? 0
 					}))
 	);
 
@@ -441,12 +464,19 @@
 	$effect(() => {
 		if (against !== ALL_OUTLETS) ensureOutletExamples();
 	});
-	// the example for a word: the chosen outlet's own sentence when the word
-	// sits on that outlet's side, else the shared one
+	// the example for a word on the comparison side: the chosen outlet's own
+	// sentence, or for a pooled group one of its members' sentences. A word on
+	// that side never borrows a sentence from an outlet outside the comparison
+	// (a Breitbart word once showed a CBS Sports quote), so with no sentence
+	// found the card shows none. Fox's side and "all outlets" use the shared store.
 	function exampleFor(mode, word, z) {
-		if (against !== ALL_OUTLETS && z < 0) {
-			const own = outletExamples?.[against]?.[mode]?.[word];
-			if (own) return own;
+		if (z < 0 && against !== ALL_OUTLETS) {
+			const members = AGGREGATES.includes(against) ? (GROUPS[against] ?? []) : [against];
+			for (const outlet of members) {
+				const own = outletExamples?.[outlet]?.[mode]?.[word];
+				if (own) return own;
+			}
+			return outletExamples ? null : undefined;
 		}
 		return litExamples[mode]?.[word] ?? fullExamples?.[mode]?.[word];
 	}
@@ -457,7 +487,7 @@
 			points,
 			topShort: "in Fox News",
 			bottomShort:
-				against === ALL_OUTLETS ? "in the other outlets" : `in ${against}`
+				against === ALL_OUTLETS ? "in the other outlets" : AGGREGATES.includes(against) ? `in the ${against}` : `in ${against}`
 		}
 	);
 	// a bar's example on hover, from the same stores as the scatter's card
@@ -543,10 +573,16 @@
 							class:active={against === outlet}
 							onclick={() => (against = outlet)}>all</button
 						>
+					{:else if PILL_NAME[outlet]}
+						<button
+							class="named"
+							class:active={against === outlet}
+							onclick={() => (against = outlet)}>{PILL_NAME[outlet]}</button
+						>
 					{:else if PILL_LOGO[outlet]}
 						<button
 							class:active={against === outlet}
-							class:pooled={against === ALL_OUTLETS}
+							class:pooled={pooledIn(against, outlet)}
 							class:square={PILL_LOGO[outlet].endsWith(".png")}
 							title={outlet}
 							aria-label={outlet}
@@ -568,7 +604,7 @@
 	{#if controls && !source}
 		<!-- the explore step: find a word on the chart -->
 		<div class="controls find">
-			{#if bodyMode && (data.articleBigrams ?? []).length}
+			{#if bodyMode}
 				<div class="picker ngram" role="group" aria-label="Words or phrases">
 					<button class="named" class:active={!bigrams} onclick={() => (bigrams = false)}
 						>words</button
@@ -602,7 +638,7 @@
 							>
 								<span class="term">{t.term}</span>
 								<span class="uses" style="color:{t.z > 0 ? FOX : OTHER}"
-									>{t.z > 0 ? "Fox" : "others"} · {t.n.toLocaleString()}</span
+									>{t.z > 0 ? topName : bottomName} · {t.n.toLocaleString()}</span
 								>
 							</li>
 						{/each}
@@ -648,6 +684,7 @@
 			{fill}
 			{note}
 			otherName={against === ALL_OUTLETS ? "others" : against}
+			{topName}
 			highlight={[...HIGHLIGHT]}
 			top={mobile ? 10 : 14}
 			example={barExample}
@@ -825,7 +862,7 @@
 				<span class="tip-head" style="color:{side}">{tip.word}</span>
 				<!-- the split behind the dot: uses on each side, and the score -->
 				<span class="tip-count"
-					>Fox {tip.nf.toLocaleString()} · others {tip.no.toLocaleString()} · z {tip.z > 0 ? "+" : ""}{tip.z.toFixed(1)}</span
+					>{topName} {tip.nf.toLocaleString()} · {bottomName} {tip.no.toLocaleString()} · z {tip.z > 0 ? "+" : ""}{tip.z.toFixed(1)}</span
 				>
 				{#if cardEx?.s}
 					<p>{@html markWord(cardEx.s, tip.word, side, cardEx.w)}</p>

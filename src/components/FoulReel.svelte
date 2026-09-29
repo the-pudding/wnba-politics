@@ -56,7 +56,7 @@
 		(Array.isArray(slides) ? slides : [])
 			.map((sl) => ({
 				d: "",
-				oth: rowFromText(sl.outletText, sl.outlet || "the sports outlets", sl.outletLink, sl.outletDate),
+				oth: rowFromText(sl.outletText, sl.outlet || "the other outlets", sl.outletLink, sl.outletDate),
 				fox: rowFromText(sl.foxText, sl.fox || "Fox News", sl.foxLink, sl.foxDate)
 			}))
 			.filter((sl) => sl.oth || sl.fox)
@@ -81,16 +81,8 @@
 	}
 	const mast = (o) => (o === "Fox News" ? "Fox News" : o);
 	// the outlet's logo for the clipping's masthead, when the site has one
-	const LOGOS = {
-		"Fox News": "fox-news.svg",
-		ESPN: "espn.svg",
-		"CBS Sports": "cbs-sports.svg",
-		"USA Today": "usa-today.svg",
-		"The Athletic": "the-athletic.png",
-		"Just Women's Sports": "jws.png",
-		CNN: "cnn.svg",
-		MSNBC: "ms-now.svg"
-	};
+	import { LOGO } from "$utils/outlets.js";
+	const LOGOS = { ...LOGO, MSNBC: "ms-now.svg", "MS NOW": "ms-now.svg" };
 	// a hand-written slide may carry its own <b>, <i> or <a>
 	const esc = (t) => t;
 	function markup(r, color) {
@@ -137,7 +129,7 @@
 	const OTHER = "var(--color-outlets)";
 	const OUTLETS = [
 		["fox", "Fox News"],
-		["outlets", "the sports outlets"],
+		["outlets", "the other outlets"],
 		["all", "everyone"]
 	];
 	let who = $state(String(player).trim() || ALL);
@@ -392,9 +384,9 @@
 			{#if gallery}
 				{""}
 			{:else if paired && pickList.length}
-				<b>{pairs.length}</b> hand-picked incidents. Fox News on the left, the sports outlets on the right.
+				<b>{pairs.length}</b> hand-picked incidents. Fox News on the left, the other outlets on the right.
 			{:else if paired}
-				<b>{pairs.length.toLocaleString()}</b> incidents{who === ALL ? "" : ` involving ${surname(who)}`}, <b>{pairedCount}</b> told by both sides. Fox News on the left, the sports outlets on the right.
+				<b>{pairs.length.toLocaleString()}</b> incidents{who === ALL ? "" : ` involving ${surname(who)}`}, <b>{pairedCount}</b> told by both sides. Fox News on the left, the other outlets on the right.
 			{:else if pickList.length}
 				<b>{rows.length}</b> hand-picked sentences. Scroll through them.
 			{:else}
@@ -441,7 +433,7 @@
 										</p>
 									</figure>
 								{:else}
-									<figure class="clip empty" class:fox><figcaption class="mast" style:color={fox ? FOX : OTHER}>{fox ? "Fox News" : "the sports outlets"}</figcaption><p class="none">No sentence on this incident.</p></figure>
+									<figure class="clip empty" class:fox><figcaption class="mast" style:color={fox ? FOX : OTHER}>{fox ? "Fox News" : "the other outlets"}</figcaption><p class="none">No sentence on this incident.</p></figure>
 								{/if}
 							{/each}
 						</div>

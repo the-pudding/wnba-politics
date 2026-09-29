@@ -7,8 +7,11 @@
 	import FacePicker from "$components/helpers/FacePicker.svelte";
 	import {
 		playerWordsSource,
-		playerWordsPeople
+		playerWordsPeople,
+		playerWordsOutlets,
+		playerOutletFile
 	} from "../utils/playerWords.js";
+	import { COMPARISON, GROUPS, SHORT } from "$utils/outlets.js";
 	import { base } from "$app/paths";
 	import roster from "$data/people.json";
 	import data from "$data/player_words.json";
@@ -79,11 +82,40 @@
 	};
 	let pickedWho = $state(PEOPLE[0] ?? "");
 	let pickedRel = $state("describe");
+	// "all": Fox against every comparison outlet pooled (the story's chart);
+	// an outlet's name: Fox against that outlet alone, to see what each one
+	// contributes to the pooled picture
+	let pickedOutlet = $state("all");
 	$effect(() => {
 		const step = current;
 		if (step.who && PEOPLE.includes(step.who)) pickedWho = step.who;
 		if (step.rel) pickedRel = step.rel;
+		pickedOutlet = "all";
 	});
+	// the outlets with enough of this player's words, in this relation, to
+	// stand alone; the rest grey out
+	let outletsHere = $derived(new Set(playerWordsOutlets(pickedWho, pickedRel)));
+	$effect(() => {
+		if (pickedOutlet !== "all" && !outletsHere.has(pickedOutlet)) pickedOutlet = "all";
+	});
+	let outlet = $derived(pickedOutlet === "all" ? null : pickedOutlet);
+	// a single outlet's comparisons live in one file per player
+	// (static/data/player_outlet, notebooks/site_data.py), fetched on first use
+	let byOutlet = $state({});
+	const fetching = new Set();
+	$effect(() => {
+		const who = pickedWho;
+		if (!outlet || !who || byOutlet[who] || fetching.has(who)) return;
+		fetching.add(who);
+		fetch(`${base}/data/${playerOutletFile(who)}`)
+			.then((r) => (r.ok ? r.json() : {}))
+			.catch(() => ({}))
+			.then((block) => (byOutlet = { ...byOutlet, [who]: block }));
+	});
+	// the pooled groups beside the single outlets; "all outlets" is the story's own chart
+	// only the pools the registry has members for
+	const GROUP_PILLS = [["sports outlets", "sports"], ["news outlets", "news"]]
+		.filter(([name]) => (GROUPS[name] ?? []).length);
 	// a smaller cast member has too few attachments for some relations; those
 	// buttons grey out, and the choice falls back to every word
 	let available = $derived(
@@ -97,17 +129,18 @@
 	let onStep = $derived(pickedWho === current.who && pickedRel === current.rel);
 	let shown = $derived(
 		onStep
-			? current
+			? { ...current, outlet, title: outlet ? "" : current.title }
 			: {
 					who: pickedWho,
 					rel: pickedRel,
 					vs: "outlets",
 					pair: null,
 					words: [],
-					title: ""
+					title: "",
+					outlet
 				}
 	);
-	let source = $derived(playerWordsSource(shown));
+	let source = $derived(playerWordsSource({ ...shown, byOutlet: byOutlet[shown.who] ?? null }));
 	let faces = $derived(
 		(shown.vs === "pair" && shown.pair
 			? shown.pair.split(" vs ")
@@ -154,11 +187,44 @@
 						>
 					{/each}
 				</div>
+				{#if shown.vs === "outlets"}
+					<div class="toggle-group outlets" role="group" aria-label="Compared with">
+						<button
+							class:active={pickedOutlet === "all"}
+							onclick={() => (pickedOutlet = "all")}>all outlets</button
+						>
+						{#each GROUP_PILLS as [name, label] (name)}
+							<button
+								class="group"
+								class:active={pickedOutlet === name}
+								disabled={!outletsHere.has(name)}
+								title={outletsHere.has(name)
+									? `Fox News against the ${name} pooled`
+									: `Too few words about ${pickedWho} in the ${name}`}
+								onclick={() => (pickedOutlet = name)}>{label}</button
+							>
+						{/each}
+						{#each COMPARISON as name (name)}
+							<button
+								class:active={pickedOutlet === name}
+								disabled={!outletsHere.has(name)}
+								title={outletsHere.has(name)
+									? `Fox News against ${name} alone`
+									: `Too few words about ${pickedWho} in ${name}`}
+								onclick={() => (pickedOutlet = name)}>{SHORT[name] ?? name}</button
+							>
+						{/each}
+					</div>
+				{/if}
 			</div>
 			{#if chart === "bars"}
 				<WordBars {source} {labels} {scale} {caps} {scores} highlight={shown.words} top={12} fill {note} />
 			{:else}
 				<FightinWords {source} highlight={shown.words} bare controls={false} />
+			{/if}
+			<!-- a thin comparison is shown, but labelled as one -->
+			{#if source?.counts && Math.min(source.counts.clark ?? 0, source.counts.others ?? 0) < 25}
+				<p class="thin">Only {Math.min(source.counts.clark ?? 0, source.counts.others ?? 0).toLocaleString()} words on one side — read this one as a sketch, not a finding.</p>
 			{/if}
 		{:else}
 			<p class="heading">
@@ -286,6 +352,26 @@
 		color: rgba(42, 21, 3, 0.35);
 		cursor: not-allowed;
 	}
+	/* the outlet row wraps under the player and relation pickers */
+	.toggle-group.outlets {
+		flex-wrap: wrap;
+		flex-basis: 100%;
+		justify-content: center;
+		border: 0;
+		gap: 4px;
+	}
+	.toggle-group.outlets button {
+		border: 1px solid rgba(42, 21, 3, 0.3);
+		border-radius: 999px;
+		padding: 3px 9px;
+		font-size: 11.5px;
+	}
+	.toggle-group.outlets button.active {
+		border-color: var(--color-ink);
+	}
+	.toggle-group.outlets button.group {
+		font-weight: 800;
+	}
 	/* the bars size their own rows to the viewport; the scatter is capped */
 	.words-scrolly:not(.bars) .sticky :global(svg) {
 		max-height: 74vh;
@@ -338,5 +424,19 @@
 		.card {
 			max-width: 84vw;
 		}
+	}
+	/* the step cards let the pointer through to the chart behind them, but a
+	   link in a step's text must still be clickable */
+	.steps :global(a) {
+		pointer-events: auto;
+	}
+	.thin {
+		margin: 6px auto 0;
+		max-width: 520px;
+		text-align: center;
+		font-family: var(--font-chart);
+		font-size: 12px;
+		font-style: italic;
+		opacity: 0.8;
 	}
 </style>

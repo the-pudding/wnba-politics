@@ -9,3 +9,34 @@ media/
 data/fox_wnba.unfiltered.csv
 data/*.unfiltered.csv
 archive/
+.env
+data/samples/
+data/audit/
+
+# data collection scripts: kept local, not published (2026-09-29)
+notebooks/nyt_search.py
+notebooks/athletic-scrape.ipynb
+notebooks/nyt_proquest.py
+notebooks/wapo_proquest.py
+notebooks/proquest.py
+notebooks/merge_exports.py
+notebooks/refresh_bodies.py
+notebooks/coverage_audit.py
+notebooks/corpus_sources.py
+data/corpus_sources.md
+notebooks/refresh_harvest.sh
+notebooks/news_arms.py
+
+# article text stays local: the corpora hold full bodies (copyrighted, some
+# paywalled, the NYT and Post via a licence that bars redistribution) and the
+# site does not read them. Headline/URL tables and the term lists stay public.
+data/*.csv
+!data/topic_terms.csv
+!data/politicization_terms.csv
+!data/framing_terms.csv
+!data/framing_review.csv
+!data/framing_machine.csv
+!data/all_outlets_index.csv
+!data/*_dropped.csv
+!data/chyron_words.csv
+!data/fox_people_mentions.csv
