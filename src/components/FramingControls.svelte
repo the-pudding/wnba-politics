@@ -141,11 +141,11 @@
 		justify-content: center;
 		text-align: center;
 		padding: 8px 16px 7px;
-		border: 2px solid transparent;
+		border: 2px solid var(--color-ink-dark);
 		border-bottom: 0;
 		border-radius: 8px 8px 0 0;
-		background: transparent;
-		color: var(--ink-muted);
+		background: #fff;
+		color: var(--color-ink-dark);
 		font-family: var(--font-sans);
 		font-size: 14px;
 		font-weight: 700;
@@ -155,8 +155,7 @@
 		margin-left: 0;
 	}
 	.toggle-group.tabs button:hover:not(.active) {
-		color: var(--color-ink-dark);
-		background: rgba(255, 255, 255, 0.35);
+		background: #f2f2f2;
 	}
 	.toggle-group.tabs button.active {
 		background: var(--color-ink-dark);

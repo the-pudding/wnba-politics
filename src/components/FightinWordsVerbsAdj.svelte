@@ -333,21 +333,19 @@
 		flex: 0 1 auto;
 		margin-bottom: -2px;
 		padding: 8px 14px 7px;
-		border: 2px solid transparent;
+		border: 2px solid var(--color-ink-dark);
 		border-bottom: 0;
 		border-radius: 8px 8px 0 0;
-		background: transparent;
+		background: #fff;
 		color: var(--color-ink-dark);
 		font-family: var(--font-sans);
 		font-size: 13.5px;
 		font-weight: 700;
 		cursor: pointer;
-		opacity: 0.62;
-		transition: opacity 150ms ease, background 150ms ease;
+		transition: background 150ms ease;
 	}
 	.toggle-group button:hover:not(.active):not(:disabled) {
-		opacity: 1;
-		background: rgba(255, 255, 255, 0.35);
+		background: #f2f2f2;
 	}
 	.toggle-group button.active {
 		opacity: 1;

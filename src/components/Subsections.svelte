@@ -248,19 +248,19 @@
 		gap: 2px;
 		padding: 10px 16px 9px;
 		margin-bottom: -2px;
-		border: 2px solid transparent;
+		/* every tab a solid white folder tab edged in ink; the open one filled
+		   in ink (2026-09-30) */
+		border: 2px solid var(--color-ink-dark);
 		border-bottom: 0;
 		border-radius: 8px 8px 0 0;
-		background: transparent;
+		background: #fff;
 		font-family: var(--font-sans);
 		color: var(--color-ink-dark);
 		cursor: pointer;
-		opacity: 0.62;
 		transition: opacity 150ms ease, background 150ms ease;
 	}
-	.tab:hover {
-		opacity: 1;
-		background: rgba(255, 255, 255, 0.35);
+	.tab:hover:not(.active) {
+		background: #f2f2f2;
 	}
 	/* the open thread's tab filled in ink, standing on the sheet's top edge
 	   rather than melting into the white below it (2026-09-29) */

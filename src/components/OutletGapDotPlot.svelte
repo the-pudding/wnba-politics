@@ -725,20 +725,15 @@
 			<div>
 				<span class="swatch" style="background:{FOX}"></span>
 				{pct(tooltip.person.top.share)} of Fox's WNBA headlines
-				<!-- raw counts only against one outlet: pooled, the totals are
-				     lopsided and the percentages are the comparison -->
-				{#if against !== ALL}
-					<span class="count">({tooltip.person.top.n.toLocaleString()})</span>
-				{/if}
+				<!-- the raw count beside every share (2026-09-30) -->
+				<span class="count">({tooltip.person.top.n.toLocaleString()})</span>
 			</div>
 			<div>
 				<span class="swatch" style="background:{THEM}"></span>
 				{pct(tooltip.person.them.share)} of {them === "other outlets"
 					? "the other outlets'"
 					: them + "'s"}
-				{#if against !== ALL}
-					<span class="count">({tooltip.person.them.n.toLocaleString()})</span>
-				{/if}
+				<span class="count">({tooltip.person.them.n.toLocaleString()})</span>
 			</div>
 			{#if tooltip.person.ex}
 				<p class="ex">“{tooltip.person.ex.headline}” <span class="count">Fox, {tooltip.person.ex.date.slice(0, 4)}</span></p>

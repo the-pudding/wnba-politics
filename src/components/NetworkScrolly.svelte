@@ -1473,8 +1473,10 @@
 	.hl tbody tr:hover td {
 		background: rgba(28, 25, 23, 0.045);
 	}
+	/* the width includes the cell's padding (border-box): 14 + 12 of it, and
+	   room for "YEAR" in spaced capitals (2026-09-30) */
 	.hl .col-year {
-		width: 44px;
+		width: 80px;
 		white-space: nowrap;
 	}
 	.hl tbody .col-year {
@@ -1914,7 +1916,7 @@
 			padding: 7px 8px 7px 0;
 		}
 		.hl .col-year {
-			width: 34px;
+			width: 56px;
 		}
 		.hl tbody .col-head {
 			font-size: 13px;

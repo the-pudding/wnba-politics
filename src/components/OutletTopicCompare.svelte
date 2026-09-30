@@ -149,6 +149,8 @@
 	const readable = (term) =>
 		PRETTY[term] ??
 		term
+			// lookarounds like (?!- ) only guard a match; they are not words
+			.replace(/\(\?<?[=!][^)]*\)/g, "")
 			.replace(/\\b/g, "")
 			.replace(/\(\?:([^)]+)\)/g, (_, alts) => alts.split("|").join(" / "))
 			.replace(/\[ae\]/g, "a")
