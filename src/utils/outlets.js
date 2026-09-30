@@ -20,3 +20,16 @@ export const LOGO_WIDTH = {
 	"washington-post.svg": 70, "nyt.svg": 70, "yahoo.svg": 44,
 	"breitbart.svg": 60, "redstate.svg": 54, "hotair.svg": 46, "gatewaypundit.svg": 64, "brobible.svg": 52
 };
+
+// each wordmark's width over its height, from its file's viewBox (2026-09-29):
+// the chart heads size a logo from this so it keeps its shape
+export const LOGO_RATIO = {"ap.svg": 0.864, "breitbart.svg": 4.0, "brobible.svg": 3.467, "cbs-news.svg": 7.5, "cbs-sports.svg": 4.683, "cbs.svg": 4.615, "espn.svg": 4.044, "fox-news.svg": 1.0, "fox-sports.svg": 1.689, "gatewaypundit.svg": 4.267, "hotair.svg": 3.067, "ms-now.svg": 6.255, "nbc-news.svg": 1.317, "nyt.svg": 7.4, "redstate.svg": 3.6, "usa-today.svg": 6.68, "washington-post.svg": 6.431, "yahoo.svg": 3.606, "jws.png": 1, "the-athletic.png": 1};
+
+// how a chart head names an outlet in a sentence: the wire service spelled
+// out, the papers with their article ("in the New York Times")
+const SPOKEN = { AP: "the Associated Press", "New York Times": "the New York Times", "Washington Post": "the Washington Post" };
+export const inOutlet = (outlet) =>
+	"in " + (SPOKEN[outlet] ?? (/outlets|news$/.test(outlet) ? "the " + outlet : outlet));
+// an outlet's name on its own, for "Caitlin Clark in Fox News vs. Associated Press"
+export const outletName = (outlet) =>
+	outlet === "AP" ? "Associated Press" : /outlets|news$/.test(outlet) ? "the " + outlet : outlet;

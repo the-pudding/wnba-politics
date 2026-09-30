@@ -10,7 +10,8 @@ from outlets import OUTLETS
 import topics
 csv.field_size_limit(10 ** 9)
 pats = topics.patterns()
-PATTERNS = {"polrace": re.compile(pats["politics or race"], re.I),
+# the race panels: race terms only, BLM among them (2026-09-29)
+PATTERNS = {"polrace": re.compile(pats["race / racism"], re.I),
             "lgbtq": re.compile(pats["LGBTQ or trans"], re.I),
             "fouls": re.compile(pats["fouls"], re.I),
             "protect": re.compile(pats["protect"], re.I)}

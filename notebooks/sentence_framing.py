@@ -44,15 +44,26 @@ for r in rows:
     seen.add(r.get("url")); heads.append(clean(r.get("headline"))); bodies.append(clean(r.get("body")))
     meta.append((r.get("date", "")[:10], r.get("url", "")))
 sentences = []   # (date, url, text, [names], is_headline)
-def note(date, url, text, is_head):
-    who = [n for n, rx in name_rx.items() if rx.search(text)]
+# a bare surname someone else shares goes to whoever the article last named in
+# full ("Ryan Clark is so dumb ... Clark's stupidity" is not Caitlin); the
+# article is the headline, a newline, then the body (2026-09-29)
+from lookalikes import bare_is_her
+def note(date, url, text, is_head, article="", offset=0):
+    who = []
+    for n, rx in name_rx.items():
+        for m in rx.finditer(text):
+            if " " in m.group(0).strip() or bare_is_her(n, article, offset + m.start(), offset):
+                who.append(n)
+                break
     if who: sentences.append((date, url, text, who, is_head))
-for (d, u), h in zip(meta, heads):
-    if h: note(d, u, h, True)
-for (d, u), doc in zip(meta, nlp.pipe(bodies, batch_size=64)):
+for (d, u), h, b in zip(meta, heads, bodies):
+    if h: note(d, u, h, True, h + "\n" + b, 0)
+for (d, u), h, doc in zip(meta, heads, nlp.pipe(bodies, batch_size=64)):
+    article = h + "\n" + doc.text
     for s in doc.sents:
         t = s.text.strip()
-        if len(t) >= 15: note(d, u, t, False)
+        if len(t) >= 15:
+            note(d, u, t, False, article, len(h) + 1 + s.start_char + (len(s.text) - len(s.text.lstrip())))
 print(f"{len(sentences):,} Fox sentences name someone", file=sys.stderr, flush=True)
 
 # --- the measures, as in 01 ---------------------------------------------------------

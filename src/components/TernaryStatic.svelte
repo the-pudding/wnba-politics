@@ -600,8 +600,7 @@
 		<div
 			class="tooltip"
 			class:above={tip.above}
-			style="left:{tip.x}%; top:{tip.y}%; border-left-color:{tip.term.lit ??
-				'var(--color-ink)'}"
+			style="left:{tip.x}%; top:{tip.y}%"
 		>
 			<strong
 				>“{tip.term.term}” · {tip.term.total.toLocaleString()} total uses</strong
@@ -618,10 +617,8 @@
 				{/each}
 			</div>
 			{#if tip.term.ex}
-				<p class="example">
-					<span class="who" style="color:{CHANNEL_COLORS[tip.term.ex_ch]}"
-						>{tip.term.ex_ch}</span
-					>
+				<p class="example" style="border-left-color:{CHANNEL_COLORS[tip.term.ex_ch]}">
+					<span class="who">{tip.term.ex_ch}</span>
 					“{tip.term.ex}”
 				</p>
 			{/if}
@@ -755,25 +752,22 @@
 		position: absolute;
 		transform: translate(-50%, 0);
 		width: 200px;
-		background: var(--color-paper);
-		border: 1px solid rgba(42, 21, 3, 0.14);
-		border-left: 3px solid var(--color-ink);
-		border-radius: 3px;
-		padding: 9px 12px 10px;
-		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
+		background: var(--tip-bg);
+		border: 1px solid var(--tip-border);
+		border-radius: var(--tip-radius);
+		padding: var(--tip-pad);
+		box-shadow: var(--tip-shadow);
 		pointer-events: none;
 		z-index: 5;
 	}
 	.tooltip.above {
 		transform: translate(-50%, -100%);
 	}
+	/* the shared tooltip (variables.css) */
 	.tooltip strong {
-		font-family: var(--font-chart);
-		font-size: 11px;
-		font-weight: 700;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: rgba(42, 21, 3, 0.6);
+		display: block;
+		font: var(--tip-title);
+		color: var(--tip-ink);
 	}
 	.rows {
 		margin-top: 6px;
@@ -782,32 +776,29 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
-		font-family: var(--font-chart);
-		font-size: 12.5px;
-		line-height: 1.7;
+		font: var(--tip-body);
+		line-height: 1.6;
+		color: var(--tip-ink);
 	}
 	.row .who {
 		font-weight: 700;
 	}
 	.row .pct {
 		font-weight: 600;
-		color: var(--color-ink);
+		color: var(--tip-ink);
 		font-variant-numeric: tabular-nums;
 	}
 	.example {
-		margin: 7px 0 0;
-		padding-top: 6px;
-		border-top: 1px solid rgba(42, 21, 3, 0.12);
-		font-family: var(--font-chart);
-		font-size: 11.5px;
-		line-height: 1.45;
-		color: rgba(42, 21, 3, 0.75);
-		text-transform: uppercase;
-		letter-spacing: 0.01em;
+		margin: 9px 0 0;
+		padding: 1px 0 1px 9px;
+		border-left: 3px solid var(--tip-rule);
+		font: var(--tip-quote);
+		color: var(--tip-ink);
 	}
 	.example .who {
-		font-weight: 800;
-		margin-right: 4px;
+		display: block;
+		font: var(--tip-small);
+		color: var(--tip-sub);
 	}
 	/* the triangle is drawn 700 units wide and scaled to the screen: on a
 	   phone that halves every label, so they are set larger there */

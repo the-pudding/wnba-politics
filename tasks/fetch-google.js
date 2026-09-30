@@ -63,7 +63,17 @@ const warnUnbalancedTags = (text) => {
 (async () => {
 	for (let d of docs) {
 		try {
-			const str = await fetchGoogle(d);
+			let str = await fetchGoogle(d);
+			// a sheet row whose cells were cleared instead of deleted comes down as
+			// ",,": an empty term matches every sentence (it made every player
+			// 100% political, 2026-09-29), so blank rows are dropped here
+			if (d.sheet) {
+				const lines = str.split(/\r?\n/);
+				const kept = lines.filter((line) => line.replace(/[",\s]/g, "") !== "");
+				if (kept.length < lines.length)
+					console.log(`    dropped ${lines.length - kept.length} blank row(s) from ${d.filepath}`);
+				str = kept.join("\n") + "\n";
+			}
 			const file = `${CWD}/${d.filepath}`;
 			fs.writeFileSync(file, str);
 		} catch (err) {

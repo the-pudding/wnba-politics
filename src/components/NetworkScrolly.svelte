@@ -27,7 +27,6 @@
 		forceManyBody,
 		forceLink,
 		forceCollide,
-		forceCenter,
 		forceX,
 		forceY
 	} from "d3-force";
@@ -618,27 +617,52 @@
 	});
 	const shownSize = (node) => sizeTweens.get(node.name)?.current ?? radius(node);
 
-	onMount(() => {
-		simulation = forceSimulation(nodes)
-			.force("charge", forceManyBody().strength(MOBILE_NET ? -280 : -420))
-			.force("center", forceCenter(CENTER_X, CENTER_Y))
-			.force("towardMiddleX", forceX(CENTER_X).strength(0.035))
-			.force("towardMiddleY", forceY(CENTER_Y).strength(0.06))
+	// only the faces on screen take part in the layout (2026-09-29): a hidden
+	// face pushed nothing but still took up room, repelled the rest and
+	// dragged the centring, so a month with three people scattered them to
+	// the edges. Hidden faces now weigh nothing; the shown ones are centred
+	// on their own middle, and pulled in harder the fewer there are.
+	const shownNow = (node) => radius(node) > 0;
+	function centreShown(strength = 0.12) {
+		let list = [];
+		const force = () => {
+			if (!list.length) return;
+			let sx = 0, sy = 0;
+			for (const n of list) { sx += n.x; sy += n.y; }
+			const dx = (CENTER_X - sx / list.length) * strength;
+			const dy = (CENTER_Y - sy / list.length) * strength;
+			for (const n of list) { n.x += dx; n.y += dy; }
+		};
+		force.initialize = (all) => (list = all.filter(shownNow));
+		return force;
+	}
+	function layoutForces() {
+		const shown = nodes.filter(shownNow).length || 1;
+		// the pull toward the middle: as before for a full cast, up to
+		// four times stronger for a handful
+		const pull = Math.min(4, Math.max(1, 14 / shown));
+		simulation
+			.force("charge", forceManyBody().strength((n) => (shownNow(n) ? (MOBILE_NET ? -280 : -420) : 0)))
+			.force("center", centreShown())
+			.force("towardMiddleX", forceX(CENTER_X).strength((n) => (shownNow(n) ? 0.035 * pull : 0.01)))
+			.force("towardMiddleY", forceY(CENTER_Y).strength((n) => (shownNow(n) ? 0.06 * pull : 0.01)))
 			.force(
 				"collide",
-				forceCollide(
-					(node) => radius(node) + (MOBILE_NET ? 10 : 16)
-				).iterations(2)
-			)
-			.on("tick", () => {
-				// mutate in place: $state tracks x/y per node
-				// whole faces stay on the canvas, not just their centres
-				for (const node of nodes) {
-					const r = radius(node) + 4;
-					node.x = Math.max(r, Math.min(WIDTH - r, node.x));
-					node.y = Math.max(r, Math.min(HEIGHT - r, node.y));
-				}
-			});
+				forceCollide((n) => (shownNow(n) ? radius(n) + (MOBILE_NET ? 10 : 16) : 0)).iterations(2)
+			);
+	}
+
+	onMount(() => {
+		simulation = forceSimulation(nodes).on("tick", () => {
+			// mutate in place: $state tracks x/y per node
+			// whole faces stay on the canvas, not just their centres
+			for (const node of nodes) {
+				const r = radius(node) + 4;
+				node.x = Math.max(r, Math.min(WIDTH - r, node.x));
+				node.y = Math.max(r, Math.min(HEIGHT - r, node.y));
+			}
+		});
+		layoutForces();
 		return () => simulation?.stop();
 	});
 
@@ -646,10 +670,17 @@
 	let lastEdgeSig = "";
 	$effect(() => {
 		if (!simulation) return;
-		const sig = edges
-			.map((e) => `${e.a}|${e.b}|${e.n}`)
-			.sort()
-			.join(";");
+		// the edges and who is on screen: either change re-runs the layout
+		const sig =
+			edges
+				.map((e) => `${e.a}|${e.b}|${e.n}`)
+				.sort()
+				.join(";") +
+			"#" +
+			nodes
+				.filter(shownNow)
+				.map((n) => n.name)
+				.join(",");
 		if (sig === lastEdgeSig) return;
 		lastEdgeSig = sig;
 		const links = edges
@@ -659,18 +690,13 @@
 				weight: e.n
 			}))
 			.filter((l) => l.source && l.target);
+		layoutForces();
 		simulation
 			.force(
 				"link",
 				forceLink(links)
 					.distance((l) => 170 - 60 * (l.weight / maxWeight))
 					.strength((l) => 0.1 + 0.4 * (l.weight / maxWeight))
-			)
-			.force(
-				"collide",
-				forceCollide(
-					(node) => radius(node) + (MOBILE_NET ? 10 : 16)
-				).iterations(2)
 			)
 			.alpha(0.45)
 			.alphaDecay(0.02)
@@ -1136,7 +1162,15 @@
 								{#each drawerRows.slice(0, DRAWER_CAP) as row}
 									<tr>
 										<td class="col-year">{row.year}</td>
-										<td class="col-head">{row.headline}</td>
+										<td class="col-head"
+											>{row.headline}
+											<!-- on a phone the names sit under the headline, not in a column of their own -->
+											<span class="tags-inline">
+												{#each namesIn(row.headline) as who (who.name)}
+													<span class="tag" style="background:{who.color}">{who.name.split(" ").slice(-1)[0]}</span>
+												{/each}
+											</span></td
+										>
 										<td class="col-who">
 											{#each namesIn(row.headline) as who (who.name)}
 												<span class="tag" style="background:{who.color}">
@@ -1576,29 +1610,26 @@
 	.line-tip-box.below {
 		align-items: flex-start;
 	}
+	/* the shared tooltip (variables.css): the month small and grey, the
+	   headline as the card's serif title */
 	.line-tip-box p {
 		margin: 0;
 		width: 100%;
 		box-sizing: border-box;
-		background: var(--color-paper);
-		border: 1px solid var(--color-rule);
-		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
-		padding: 8px 11px;
-		font-family: var(--font-serif);
-		font-size: 13px;
-		font-weight: 700;
-		line-height: 1.35;
-		color: var(--color-ink-dark);
+		background: var(--tip-bg);
+		border: 1px solid var(--tip-border);
+		border-radius: var(--tip-radius);
+		box-shadow: var(--tip-shadow);
+		padding: var(--tip-pad);
+		font: var(--tip-title);
+		font-size: 14px;
+		color: var(--tip-ink);
 	}
 	.line-tip-box .when {
 		display: block;
-		font-family: var(--font-sans);
-		font-size: 10px;
-		font-weight: 700;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: rgba(42, 21, 3, 0.55);
-		margin-bottom: 2px;
+		font: var(--tip-small);
+		color: var(--tip-sub);
+		margin-bottom: 3px;
 	}
 
 	.headline-clip {
@@ -1848,5 +1879,45 @@
 	   link in a step's text must still be clickable */
 	.steps :global(a) {
 		pointer-events: auto;
+	}
+	/* a phone: two columns (year, headline), the names under each headline */
+	.tags-inline {
+		display: none;
+	}
+	@media (max-width: 640px) {
+		/* fixed layout kept the hidden names column's share of the width */
+		.hl {
+			table-layout: auto;
+		}
+		.hl .col-who {
+			display: none;
+		}
+		.hl .col-head {
+			width: auto;
+		}
+		.tags-inline {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 3px;
+			margin-top: 4px;
+		}
+		.hl thead th {
+			font-size: 9px;
+			letter-spacing: 0.08em;
+			padding: 6px 8px 5px 0;
+		}
+		.hl thead th:first-child,
+		.hl tbody td:first-child {
+			padding-left: 10px;
+		}
+		.hl tbody td {
+			padding: 7px 8px 7px 0;
+		}
+		.hl .col-year {
+			width: 34px;
+		}
+		.hl tbody .col-head {
+			font-size: 13px;
+		}
 	}
 </style>

@@ -14,9 +14,6 @@ politics / protest,social justice
 politics / protest,black lives matter
 politics / protest,\bblm\b
 politics / protest,\banthem\b
-politics / protest,protest
-politics / protest,kneel
-politics / protest,boycott
 politics / protest,police shooting
 politics / protest,shooting of
 LGBTQ / sexuality,lgbt?\b
@@ -28,21 +25,13 @@ LGBTQ / sexuality,\bqueer\b
 LGBTQ / sexuality,sexual orientation
 LGBTQ / sexuality,openly gay
 LGBTQ / sexuality,same-sex
-LGBTQ / sexuality,athlete ally
-LGBTQ / sexuality,pride night
-LGBTQ / sexuality,pride month
 LGBTQ / sexuality,bisexual
 LGBTQ / sexuality,non-?binary
 “woke”,\bwoke\b(?!\s+up\b)
 Trump,\btrump\b
 LGBTQ / sexuality,transgender
-LGBTQ / sexuality,trans athlete
-LGBTQ / sexuality,trans player
-LGBTQ / sexuality,trans wom[ae]n
-LGBTQ / sexuality,trans rights
 LGBTQ / sexuality,gender eligib
 LGBTQ / sexuality,biological (?:male|man|men|wom[ae]n|female)
-LGBTQ / sexuality,gender
 race / racism,discrimination
 fouls,hip-?check
 fouls,\bpunch
@@ -52,3 +41,4 @@ fouls,\beye\b
 fouls,\bflagrant\b
 fouls,\bfouls?\b
 fouls,\bstrike\b
+LGBTQ / sexuality,\btrans\b(?!- )

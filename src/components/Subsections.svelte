@@ -36,7 +36,25 @@
 
 	// a swipe on a phone: a mostly horizontal drag of 50px or more
 	let touch = null;
+	// a swipe that starts inside something that scrolls or slides sideways on
+	// its own (the headline galleries, a wide table, a chart's scrubber)
+	// belongs to that thing, not to the tabs
+	function ownsSwipe(el) {
+		for (let n = el; n && n !== root; n = n.parentElement) {
+			const tag = n.tagName?.toLowerCase();
+			if (tag === "swiper-container" || tag === "swiper-slide" || n.classList?.contains("swiper")) return true;
+			if (tag === "input" || tag === "select" || tag === "textarea") return true;
+			const ox = getComputedStyle(n).overflowX;
+			if ((ox === "auto" || ox === "scroll") && n.scrollWidth > n.clientWidth + 2) return true;
+			if (n.dataset?.swipe !== undefined) return true;
+		}
+		return false;
+	}
 	function onTouchStart(e) {
+		if (ownsSwipe(e.target)) {
+			touch = null;
+			return;
+		}
 		const t = e.changedTouches[0];
 		touch = { x: t.clientX, y: t.clientY };
 	}
@@ -58,7 +76,6 @@
 
 {#snippet tabRow(where)}
 	<div class="tabs" class:bottom={where === "bottom"} role="tablist" aria-label={title || "Threads"} onkeydown={onKey}>
-		<button class="arrow" aria-label="Previous" onclick={() => prev(where)} disabled={items.length < 2}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
 		{#each items as tab, i (i)}
 			<button
 				role="tab"
@@ -72,7 +89,6 @@
 				{#if tab.kicker}<span class="kicker">{tab.kicker}</span>{/if}
 			</button>
 		{/each}
-		<button class="arrow" aria-label="Next" onclick={() => next(where)} disabled={items.length < 2}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
 	</div>
 {/snippet}
 
@@ -83,14 +99,36 @@
 	{@render tabRow("top")}
 
 	{#if current >= 0 && items[current]}
+		<!-- the thread and its pager on one white sheet under the tabs -->
+		<div class="sheet">
 		{#key current}
 			<div class="panel" role="tabpanel" style="--from: {dir * 24}px">
 				<CMS body={bodyOf(items[current], current)} {components} />
 			</div>
 		{/key}
-		<!-- the same row again under the thread, for the reader who has just finished it -->
-		<div class="foot">
-			{@render tabRow("bottom")}
+		<!-- under the thread, for the reader who has just finished it: the
+		     neighbouring threads by name, no "previous" before the first and
+		     no "next" after the last -->
+		<nav class="pager" aria-label="More threads">
+			{#if current > 0}
+				<button class="page prev" onclick={() => go(current - 1, "bottom")}>
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+					<span class="page-text">
+						<span class="page-label">Previous</span>
+						<span class="page-title">{items[current - 1].title ?? `Part ${current}`}</span>
+					</span>
+				</button>
+			{/if}
+			{#if current < items.length - 1}
+				<button class="page next" onclick={() => go(current + 1, "bottom")}>
+					<span class="page-text">
+						<span class="page-label">Next</span>
+						<span class="page-title">{items[current + 1].title ?? `Part ${current + 2}`}</span>
+					</span>
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+				</button>
+			{/if}
+		</nav>
 		</div>
 
 	{:else}
@@ -99,8 +137,84 @@
 </div>
 
 <style>
+	/* a solid ink band across the foot of the sheet, edge to edge, to answer
+	   the ink tab at its top (2026-09-29) */
+	.pager {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 16px;
+		margin: 28px -24px -16px;
+		padding: 12px 20px;
+		background: var(--color-ink-dark);
+		border-radius: 0 0 6px 6px;
+	}
+	.page {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		max-width: 48%;
+		padding: 4px 0;
+		border: 0;
+		background: none;
+		color: #fff;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+	/* on its own, "next" still sits on the right */
+	.page.next {
+		margin-left: auto;
+		text-align: right;
+	}
+	.page svg {
+		flex: none;
+		width: 20px;
+		height: 20px;
+	}
+	.page-text {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.page-label {
+		font-family: var(--font-sans);
+		font-size: 14px;
+	}
+	.page-title {
+		font-family: var(--font-sans);
+		font-size: 18px;
+		font-weight: 600;
+		line-height: 1.25;
+		text-decoration: underline;
+		text-decoration-thickness: 1.5px;
+		text-underline-offset: 3px;
+	}
+	.page:hover .page-title {
+		text-decoration-thickness: 3px;
+	}
+	.page:focus-visible {
+		outline: 2px solid #fff;
+		outline-offset: 3px;
+	}
+	@media (max-width: 640px) {
+		.page-title {
+			font-size: 16px;
+		}
+	}
 	.subsections {
 		margin: 32px 0 40px;
+	}
+	/* the thread on a white sheet, like the headline table (2026-09-29): the
+	   tabs stay on the page, and the open one runs into the sheet below */
+	.sheet {
+		padding: 18px 24px 16px;
+		background: #fff;
+		/* the same heavy ink edge as the tabs, all the way round; the tab
+		   rule is its top */
+		border: 2px solid var(--color-ink-dark);
+		border-top: 0;
+		border-radius: 0 0 8px 8px;
 	}
 	.title {
 		text-align: center;
@@ -112,80 +226,70 @@
 		opacity: 0.8;
 		margin: 0 0 14px;
 	}
+	/* tabs in the headline table's style (2026-09-29): sans labels on a heavy
+	   ink rule; the open thread's tab is white, edged in ink, and opens
+	   into the panel below it */
 	.tabs {
 		display: flex;
-		align-items: center;
+		align-items: stretch;
 		justify-content: center;
-		gap: 10px;
-		margin: 0 0 18px;
+		gap: 4px;
+		margin: 0;
+		padding: 0 4px;
+		border-bottom: 2px solid var(--color-ink-dark);
 	}
 	.tab {
-		flex: 1 1 0;
-		max-width: 220px;
+		flex: 0 1 200px;
+		min-width: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		gap: 2px;
-		padding: 12px 10px;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		border-radius: 10px;
-		background: rgba(255, 253, 248, 0.35);
-		font: inherit;
-		color: var(--color-ink);
+		padding: 10px 16px 9px;
+		margin-bottom: -2px;
+		border: 2px solid transparent;
+		border-bottom: 0;
+		border-radius: 8px 8px 0 0;
+		background: transparent;
+		font-family: var(--font-sans);
+		color: var(--color-ink-dark);
 		cursor: pointer;
-		opacity: 0.7;
-		transition: opacity 150ms ease, background 150ms ease, transform 150ms ease;
+		opacity: 0.62;
+		transition: opacity 150ms ease, background 150ms ease;
 	}
 	.tab:hover {
 		opacity: 1;
+		background: rgba(255, 255, 255, 0.35);
 	}
+	/* the open thread's tab filled in ink, standing on the sheet's top edge
+	   rather than melting into the white below it (2026-09-29) */
 	.tab.active {
 		opacity: 1;
-		background: rgba(255, 253, 248, 0.95);
-		border-color: var(--color-ink);
-		box-shadow: 0 1px 4px rgba(42, 21, 3, 0.18);
-		transform: translateY(-1px);
+		margin-bottom: 0;
+		background: var(--color-ink-dark);
+		border-color: var(--color-ink-dark);
+		color: #fff;
+	}
+	.tab:focus-visible {
+		outline: 2px solid var(--color-fox);
+		outline-offset: 2px;
 	}
 	.name {
-		font-weight: 800;
-		font-size: 16px;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 15px;
 		line-height: 1.15;
 	}
 	.kicker {
 		font-size: 12px;
+		font-weight: 400;
 		line-height: 1.2;
 		opacity: 0.75;
 		text-align: center;
 	}
-	/* the arrows match the foul gallery's: a paper disc with a stroked chevron, centred on the row */
-	.arrow {
-		flex: 0 0 auto;
-		align-self: center;
-		width: 38px;
-		height: 38px;
-		border-radius: 50%;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		background: var(--color-paper);
-		color: var(--color-ink);
-		cursor: pointer;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		box-shadow: 0 1px 4px rgba(42, 21, 3, 0.15);
-		padding: 0;
-	}
-	.arrow :global(svg) {
-		width: 20px;
-		height: 20px;
-	}
-	.arrow:disabled {
-		opacity: 0.3;
-		cursor: default;
-	}
 	.panel {
 		animation: slide-in 260ms ease-out;
-		border-top: 1px solid rgba(42, 21, 3, 0.15);
 		padding-top: 6px;
 	}
 	@keyframes slide-in {
@@ -208,27 +312,25 @@
 		padding: 0;
 		margin: 0;
 	}
-	.foot {
-		margin-top: 22px;
-		padding-top: 14px;
-		border-top: 1px solid rgba(42, 21, 3, 0.15);
-	}
-	.foot .tabs {
-		margin-bottom: 0;
-	}
 	.hint {
 		text-align: center;
 		opacity: 0.7;
 	}
 	@media (max-width: 640px) {
-		.arrow {
-			display: none;
+		.sheet {
+			padding: 14px 12px 12px;
+		}
+		.pager {
+			margin: 22px -12px -12px;
+			padding: 10px 12px;
 		}
 		.tabs {
-			gap: 4px;
+			gap: 2px;
+			padding: 0;
 		}
 		.tab {
-			padding: 8px 6px 6px;
+			flex: 1 1 0;
+			padding: 8px 6px 7px;
 		}
 		.name {
 			font-size: 14px;

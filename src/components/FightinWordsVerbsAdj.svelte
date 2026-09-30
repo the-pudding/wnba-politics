@@ -11,7 +11,8 @@
 		playerWordsOutlets,
 		playerOutletFile
 	} from "../utils/playerWords.js";
-	import { COMPARISON, GROUPS, SHORT } from "$utils/outlets.js";
+	import { COMPARISON, LOGO } from "$utils/outlets.js";
+	import LogoSelect from "$components/helpers/LogoSelect.svelte";
 	import { base } from "$app/paths";
 	import roster from "$data/people.json";
 	import data from "$data/player_words.json";
@@ -112,10 +113,8 @@
 			.catch(() => ({}))
 			.then((block) => (byOutlet = { ...byOutlet, [who]: block }));
 	});
-	// the pooled groups beside the single outlets; "all outlets" is the story's own chart
-	// only the pools the registry has members for
-	const GROUP_PILLS = [["sports outlets", "sports"], ["news outlets", "news"]]
-		.filter(([name]) => (GROUPS[name] ?? []).length);
+	// "all" is the story's own chart; then each comparison outlet on its own
+	const OUTLET_OPTIONS = ["all", ...COMPARISON];
 	// a smaller cast member has too few attachments for some relations; those
 	// buttons grey out, and the choice falls back to every word
 	let available = $derived(
@@ -140,7 +139,12 @@
 					outlet
 				}
 	);
-	let source = $derived(playerWordsSource({ ...shown, byOutlet: byOutlet[shown.who] ?? null }));
+	// Fox's column head carries its wordmark; the other side is named in words
+	let source = $derived.by(() => {
+		const src = playerWordsSource({ ...shown, byOutlet: byOutlet[shown.who] ?? null });
+		if (!src || shown.vs !== "outlets") return src;
+		return { ...src, topLogo: LOGO["Fox News"] };
+	});
 	let faces = $derived(
 		(shown.vs === "pair" && shown.pair
 			? shown.pair.split(" vs ")
@@ -167,14 +171,32 @@
 						{@html shown.title}
 					{:else}
 						<b>{source.relation}</b><br />
-						{source.topLabel} <span class="vs">against</span>
+						{source.topLabel} <span class="vs">vs.</span>
 						{source.bottomLabel}
 					{/if}
 				</p>
 			</div>
 			<!-- the picker, live at every step: the Doc sets it, the reader can change it -->
 			<div class="pick">
-				<FacePicker names={PICKABLE} bind:value={pickedWho} faceOf={faceUrl} />
+				<!-- the player and the outlet side by side, labelled fields like the
+				     main chart's; the kind of word underneath -->
+				<div class="pick-fields">
+					<FacePicker names={PICKABLE} bind:value={pickedWho} faceOf={faceUrl} />
+					{#if shown.vs === "outlets"}
+						<div class="outlet-pick">
+							<span class="field-label">Compared with</span>
+							<LogoSelect
+								options={OUTLET_OPTIONS}
+								bind:value={pickedOutlet}
+								logoOf={(o) => (o === "all" ? null : LOGO[o] ?? null)}
+								nameOf={(o) => (o === "all" ? "All other outlets" : o)}
+								isDisabled={(o) =>
+									o !== "all" && !outletsHere.has(o) ? `Too few words about ${pickedWho} in ${o}` : false}
+								label="Compared with"
+							/>
+						</div>
+					{/if}
+				</div>
 				<div class="toggle-group" role="group" aria-label="Kind of word">
 					{#each RELATIONS as [rel, label] (rel)}
 						<button
@@ -187,44 +209,11 @@
 						>
 					{/each}
 				</div>
-				{#if shown.vs === "outlets"}
-					<div class="toggle-group outlets" role="group" aria-label="Compared with">
-						<button
-							class:active={pickedOutlet === "all"}
-							onclick={() => (pickedOutlet = "all")}>all outlets</button
-						>
-						{#each GROUP_PILLS as [name, label] (name)}
-							<button
-								class="group"
-								class:active={pickedOutlet === name}
-								disabled={!outletsHere.has(name)}
-								title={outletsHere.has(name)
-									? `Fox News against the ${name} pooled`
-									: `Too few words about ${pickedWho} in the ${name}`}
-								onclick={() => (pickedOutlet = name)}>{label}</button
-							>
-						{/each}
-						{#each COMPARISON as name (name)}
-							<button
-								class:active={pickedOutlet === name}
-								disabled={!outletsHere.has(name)}
-								title={outletsHere.has(name)
-									? `Fox News against ${name} alone`
-									: `Too few words about ${pickedWho} in ${name}`}
-								onclick={() => (pickedOutlet = name)}>{SHORT[name] ?? name}</button
-							>
-						{/each}
-					</div>
-				{/if}
 			</div>
 			{#if chart === "bars"}
 				<WordBars {source} {labels} {scale} {caps} {scores} highlight={shown.words} top={12} fill {note} />
 			{:else}
 				<FightinWords {source} highlight={shown.words} bare controls={false} />
-			{/if}
-			<!-- a thin comparison is shown, but labelled as one -->
-			{#if source?.counts && Math.min(source.counts.clark ?? 0, source.counts.others ?? 0) < 25}
-				<p class="thin">Only {Math.min(source.counts.clark ?? 0, source.counts.others ?? 0).toLocaleString()} words on one side — read this one as a sketch, not a finding.</p>
 			{/if}
 		{:else}
 			<p class="heading">
@@ -301,7 +290,7 @@
 		line-height: 1.35;
 	}
 	.heading .vs {
-		color: rgba(42, 21, 3, 0.55);
+		color: inherit;
 	}
 
 	/* the explore step's picker, live above the chart */
@@ -321,56 +310,123 @@
 		font-size: 13px;
 		color: var(--color-ink);
 	}
-	.pick-label {
-		font-family: var(--font-chart);
-		font-size: 11px;
-		font-weight: 800;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: rgba(42, 21, 3, 0.65);
-	}
+	/* the kinds of word as tabs, like the thread tabs (2026-09-29): sans
+	   labels on a heavy ink rule, the open one white and edged in ink */
+	/* the rule runs only as wide as the tabs; the row breaks onto its own
+	   line under the pickers, which take the full width */
 	.toggle-group {
-		display: inline-flex;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		border-radius: 4px;
-		overflow: hidden;
+		display: flex;
+		flex: 0 0 auto;
+		width: fit-content;
+		margin: 0 auto;
+		justify-content: center;
+		/* every tab the row's height, its label centred in it */
+		align-items: stretch;
+		gap: 2px;
+		border-bottom: 2px solid var(--color-ink-dark);
 	}
 	.toggle-group button {
-		border: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		flex: 0 1 auto;
+		margin-bottom: -2px;
+		padding: 8px 14px 7px;
+		border: 2px solid transparent;
+		border-bottom: 0;
+		border-radius: 8px 8px 0 0;
 		background: transparent;
-		color: var(--color-ink);
-		padding: 5px 10px;
-		font-size: 12.5px;
-		font-weight: 600;
+		color: var(--color-ink-dark);
+		font-family: var(--font-sans);
+		font-size: 13.5px;
+		font-weight: 700;
 		cursor: pointer;
+		opacity: 0.62;
+		transition: opacity 150ms ease, background 150ms ease;
+	}
+	.toggle-group button:hover:not(.active):not(:disabled) {
+		opacity: 1;
+		background: rgba(255, 255, 255, 0.35);
 	}
 	.toggle-group button.active {
-		background: var(--color-ink);
+		opacity: 1;
+		margin-bottom: 0;
+		background: var(--color-ink-dark);
+		border-color: var(--color-ink-dark);
 		color: #fff;
 	}
+	.toggle-group button:focus-visible {
+		outline: 2px solid var(--color-fox);
+		outline-offset: 2px;
+	}
 	.toggle-group button:disabled {
-		color: rgba(42, 21, 3, 0.35);
+		opacity: 0.3;
 		cursor: not-allowed;
 	}
-	/* the outlet row wraps under the player and relation pickers */
-	.toggle-group.outlets {
-		flex-wrap: wrap;
+	/* the outlet dropdown sits beside the player and relation pickers, its
+	   label in the face picker's small capitals */
+	.pick-fields {
+		display: flex;
 		flex-basis: 100%;
 		justify-content: center;
-		border: 0;
-		gap: 4px;
+		align-items: flex-end;
+		flex-wrap: wrap;
+		gap: 12px 14px;
 	}
-	.toggle-group.outlets button {
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		border-radius: 999px;
-		padding: 3px 9px;
-		font-size: 11.5px;
+	.outlet-pick {
+		display: inline-flex;
+		flex-direction: column;
+		gap: 5px;
 	}
-	.toggle-group.outlets button.active {
-		border-color: var(--color-ink);
+	.field-label {
+		font-family: var(--font-sans);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-ink-dark);
 	}
-	.toggle-group.outlets button.group {
-		font-weight: 800;
+	/* on a phone the pickers shrink to the bars' scale, as on the main chart */
+	@media (max-width: 640px) {
+		.pick-fields {
+			gap: 8px;
+		}
+		.pick-fields > :global(*) {
+			flex: 1 1 calc(50% - 4px);
+			min-width: 0;
+		}
+		.field-label,
+		.pick-fields :global(.pick-label) {
+			font-size: 11.5px;
+		}
+		.pick-fields :global(.face-picker .current),
+		.pick-fields :global(.logo-select .current) {
+			width: 100%;
+			min-width: 0;
+			height: 32px;
+			border-radius: 6px;
+			font-size: 13px;
+		}
+		.pick-fields :global(.logo-select),
+		.pick-fields :global(.face-picker) {
+			width: 100%;
+		}
+		.pick-fields :global(.face-picker img),
+		.pick-fields :global(.face-picker .blank) {
+			width: 22px;
+			height: 22px;
+		}
+		/* the kinds of word: the full width, smaller type, two lines at most */
+		.toggle-group {
+			display: flex;
+			width: 100%;
+		}
+		.toggle-group button {
+			flex: 1 1 0;
+			min-width: 0;
+			padding: 6px 3px 5px;
+			font-size: 11.5px;
+			line-height: 1.15;
+		}
 	}
 	/* the bars size their own rows to the viewport; the scatter is capped */
 	.words-scrolly:not(.bars) .sticky :global(svg) {
@@ -429,14 +485,5 @@
 	   link in a step's text must still be clickable */
 	.steps :global(a) {
 		pointer-events: auto;
-	}
-	.thin {
-		margin: 6px auto 0;
-		max-width: 520px;
-		text-align: center;
-		font-family: var(--font-chart);
-		font-size: 12px;
-		font-style: italic;
-		opacity: 0.8;
 	}
 </style>

@@ -57,7 +57,9 @@
 	// the logos drawn under "use this more ↓" for each comparison pool
 	// the logos each comparison group stands for (the footnote), and the one
 	// logo each outlet's pill shows
-	import { COMPARISON, SPORTS, NEWS, GROUPS, AGGREGATES, LOGO as PILL_LOGO, LOGO_WIDTH } from "$utils/outlets.js";
+	import LogoSelect from "$components/helpers/LogoSelect.svelte";
+	import { properCase } from "$utils/properCase.js";
+	import { COMPARISON, SPORTS, NEWS, GROUPS, AGGREGATES, LOGO as PILL_LOGO, LOGO_WIDTH, inOutlet, outletName } from "$utils/outlets.js";
 	// the wordmarks drawn under the chart for whatever Fox is set against: an
 	// outlet's own, or a group's members (all 13 would not fit: none for "all")
 	const LOGOS = {
@@ -66,6 +68,11 @@
 		...Object.fromEntries(COMPARISON.map((o) => [o, [PILL_LOGO[o]]]))
 	};
 	const PILL_NAME = { "sports outlets": "sports", "news outlets": "news" };
+	// the dropdown's name for an outlet or a pool
+	const outletOption = (outlet) =>
+		outlet === ALL_OUTLETS
+			? "All other outlets"
+			: (PILL_NAME[outlet] ?? outlet).replace(/^./, (c) => c.toUpperCase());
 	const pooledIn = (group, outlet) => (GROUPS[group] ?? []).includes(outlet);
 
 	// `source` ({points, topLabel, bottomLabel}) lets another dataset borrow the chart
@@ -487,7 +494,9 @@
 			points,
 			topShort: "in Fox News",
 			bottomShort:
-				against === ALL_OUTLETS ? "in the other outlets" : AGGREGATES.includes(against) ? `in the ${against}` : `in ${against}`
+				against === ALL_OUTLETS ? "in the other outlets" : AGGREGATES.includes(against) ? `in the ${against}` : inOutlet(against),
+			// only Fox's head carries its wordmark; the other side is named in words
+			topLogo: PILL_LOGO["Fox News"] ?? "fox-news.svg"
 		}
 	);
 	// a bar's example on hover, from the same stores as the scatter's card
@@ -524,11 +533,21 @@
 			: new RegExp("\\b" + escRx(word) + "\\w*", "i");
 
 	// window around the word; irregular inflections may not match — fall back to the opening
+	// the occurrence nearest the middle of the stored passage is the one meant
+	// (the passage is the example sentence with a neighbour on either side)
+	function nearestMatch(text, rx) {
+		const g = new RegExp(rx.source, rx.flags.includes("g") ? rx.flags : rx.flags + "g");
+		let best = null;
+		for (const m of text.matchAll(g)) {
+			if (!best || Math.abs(m.index - text.length / 2) < Math.abs(best.index - text.length / 2)) best = m;
+		}
+		return best;
+	}
 	function excerpt(sentence, word, form, budget = 300) {
 		if (sentence.length <= budget) return sentence;
 		const m =
-			(form && wordRx(word, form).exec(sentence)) ||
-			wordRx(word).exec(sentence);
+			(form && nearestMatch(sentence, wordRx(word, form))) ||
+			nearestMatch(sentence, wordRx(word));
 		if (!m) return sentence.slice(0, budget).replace(/\s\S*$/, "") + "…";
 		let start = Math.max(0, m.index - Math.round(budget * 0.45));
 		if (start + budget > sentence.length)
@@ -543,12 +562,11 @@
 		const safe = escapeHtml(excerpt(sentence, word, form));
 		const rx =
 			form && wordRx(word, form).test(safe) ? wordRx(word, form) : wordRx(word);
-		return safe.replace(
-			rx,
-			(m) =>
-				`<mark style="background:${color}2e;box-shadow:inset 0 -2px 0 ${color}66;` +
-				`color:inherit;padding:0 1px;">${m}</mark>`
-		);
+		const m = nearestMatch(safe, rx);
+		if (!m) return safe;
+		return safe.slice(0, m.index) +
+			`<mark style="background:${color}2e;box-shadow:inset 0 -2px 0 ${color}66;` +
+			`color:inherit;padding:0 1px;">${m[0]}</mark>` + safe.slice(m.index + m[0].length);
 	}
 	const tickValues = [10, 100, 1000, 10000];
 </script>
@@ -563,61 +581,53 @@
 	bind:this={rootEl}
 >
 	{#if !source}
-		<div class="controls">
-			<span class="label">Fox News compared with</span>
-			<div class="picker" role="group" aria-label="Outlet">
-				{#each outletsHere as outlet}
-					{#if outlet === ALL_OUTLETS}
-						<button
-							class="all"
-							class:active={against === outlet}
-							onclick={() => (against = outlet)}>all</button
-						>
-					{:else if PILL_NAME[outlet]}
-						<button
-							class="named"
-							class:active={against === outlet}
-							onclick={() => (against = outlet)}>{PILL_NAME[outlet]}</button
-						>
-					{:else if PILL_LOGO[outlet]}
-						<button
-							class:active={against === outlet}
-							class:pooled={pooledIn(against, outlet)}
-							class:square={PILL_LOGO[outlet].endsWith(".png")}
-							title={outlet}
-							aria-label={outlet}
-							onclick={() => (against = outlet)}
-						>
-							<img src="{base}/logos/{PILL_LOGO[outlet]}" alt="" />
-						</button>
-					{:else}
-						<button
-							class="named"
-							class:active={against === outlet}
-							onclick={() => (against = outlet)}>{outlet}</button
-						>
-					{/if}
-				{/each}
-			</div>
+		<!-- a small title like the player chart's: the Fox wordmark where her
+		     face would be, what the words are, and who Fox is set against -->
+		<div class="chart-head">
+			<span class="head-mark"><img src="{base}/logos/{PILL_LOGO['Fox News'] ?? 'fox-news.svg'}" alt="" /></span>
+			<p class="heading">
+				<b>{bodyMode && bigrams ? "Phrases" : "Words"} in {player === ALL
+						? `WNBA ${bodyMode ? "articles" : "headlines"}`
+						: `headlines naming ${player}`}</b><br />
+				Fox News <span class="vs">vs.</span>
+				{against === ALL_OUTLETS ? "other outlets" : outletName(against)}
+			</p>
 		</div>
 	{/if}
-	{#if controls && !source}
-		<!-- the explore step: find a word on the chart -->
-		<div class="controls find">
-			{#if bodyMode}
-				<div class="picker ngram" role="group" aria-label="Words or phrases">
-					<button class="named" class:active={!bigrams} onclick={() => (bigrams = false)}
-						>words</button
-					>
-					<button class="named" class:active={bigrams} onclick={() => (bigrams = true)}
-						>phrases</button
-					>
+	{#if !source}
+		<!-- labelled fields in the headline table's style: a dropdown per choice,
+		     then the search box (2026-09-29) -->
+		<div class="controls filterbar">
+			<div class="field">
+				<span class="field-label">Fox News compared with</span>
+				<LogoSelect
+					options={outletsHere}
+					bind:value={against}
+					logoOf={(o) => PILL_LOGO[o] ?? null}
+					nameOf={outletOption}
+					label="Fox News compared with"
+				/>
+			</div>
+			{#if controls && bodyMode}
+				<!-- the same dropdown as the outlet's, with words for options -->
+				<div class="field">
+					<span class="field-label">Show</span>
+					<LogoSelect
+						options={["words", "phrases"]}
+						value={bigrams ? "phrases" : "words"}
+						onchange={(v) => (bigrams = v === "phrases")}
+						nameOf={(o) => (o === "phrases" ? "Phrases" : "Words")}
+						label="Show"
+					/>
 				</div>
 			{/if}
+			{#if controls}
+			<div class="field search-field">
+			<span class="field-label">Search</span>
 			<div class="search-box">
 				<input
 					type="search"
-					placeholder="Search for a word…"
+					placeholder="Search"
 					aria-label="Find a word"
 					bind:value={query}
 					autocomplete="off"
@@ -636,7 +646,7 @@
 								class:on={i === cursor}
 								onpointerdown={(e) => (e.preventDefault(), choose(t.term))}
 							>
-								<span class="term">{t.term}</span>
+								<span class="term">{properCase(t.term)}</span>
 								<span class="uses" style="color:{t.z > 0 ? FOX : OTHER}"
 									>{t.z > 0 ? topName : bottomName} · {t.n.toLocaleString()}</span
 								>
@@ -645,16 +655,8 @@
 					</ul>
 				{/if}
 			</div>
-			{#each picked as word (word)}
-				<span class="kept">
-					{word}
-					<button
-						type="button"
-						aria-label="Remove {word}"
-						onclick={() => unpick(word)}>×</button
-					>
-				</span>
-			{/each}
+			</div>
+			{/if}
 		</div>
 	{/if}
 
@@ -666,9 +668,6 @@
 			{:else}
 				{sample.fox.toLocaleString()} Fox headlines name {player}, against
 				{sample.other.toLocaleString()} from {against}.
-			{/if}
-			{#if Math.min(sample.fox, sample.other) < 400}
-				Thin on one side — read this one as a sketch, not a finding.
 			{/if}
 		</p>
 	{/if}
@@ -843,7 +842,7 @@
 					onpointerleave={hideTip}
 					role="presentation"
 				>
-					{point.word}
+					{properCase(point.word)}
 				</text>
 			{/each}
 		</svg>
@@ -856,16 +855,16 @@
 				style="left:{tip.cx}px; top:{Math.min(
 					Math.max(70, tip.cy),
 					(tip.boxH || 500) - 70
-				)}px;
-					border-left-color:{side}"
+				)}px"
 			>
-				<span class="tip-head" style="color:{side}">{tip.word}</span>
+				<!-- the side's colour in a swatch and on the quote's rule; the words in ink -->
+				<span class="tip-head"><i class="swatch" style="background:{side}"></i>{properCase(tip.word)}</span>
 				<!-- the split behind the dot: uses on each side, and the score -->
 				<span class="tip-count"
 					>{topName} {tip.nf.toLocaleString()} · {bottomName} {tip.no.toLocaleString()} · z {tip.z > 0 ? "+" : ""}{tip.z.toFixed(1)}</span
 				>
 				{#if cardEx?.s}
-					<p>{@html markWord(cardEx.s, tip.word, side, cardEx.w)}</p>
+					<p style="border-left-color:{side}">{@html markWord(cardEx.s, tip.word, side, cardEx.w)}</p>
 					{#if cardEx.o}<span class="tip-source">{cardEx.o}</span>{/if}
 				{/if}
 			</div>
@@ -899,24 +898,30 @@
 		pointer-events: none;
 		width: 320px;
 		transform: translate(14px, -50%);
-		background: var(--color-paper);
-		border: 1px solid rgba(42, 21, 3, 0.14);
-		border-left: 3px solid var(--color-fox); /* recoloured inline per side */
-		border-radius: 3px;
-		padding: 10px 13px 11px;
-		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
+		background: var(--tip-bg);
+		border: 1px solid var(--tip-border);
+		border-radius: var(--tip-radius);
+		padding: var(--tip-pad);
+		box-shadow: var(--tip-shadow);
+		color: var(--tip-ink);
 	}
 	.tip-card.flip {
 		transform: translate(calc(-100% - 14px), -50%);
 	}
+	/* the shared tooltip (variables.css) */
 	.tip-source {
 		display: block;
-		font-family: var(--font-chart);
-		font-size: 10.5px;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: rgba(42, 21, 3, 0.5);
+		font: var(--tip-small);
+		color: var(--tip-sub);
 		margin-top: 4px;
+	}
+	.tip-card .swatch {
+		display: inline-block;
+		width: 10px;
+		height: 10px;
+		border-radius: 2px;
+		margin-right: 7px;
+		vertical-align: 1px;
 	}
 	.tip-count {
 		display: block;
@@ -926,17 +931,14 @@
 		margin-top: 2px;
 	}
 	.tip-head {
-		font-family: var(--font-chart);
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+		display: block;
+		font: var(--tip-title);
 	}
 	.tip-count {
-		font-family: var(--font-chart);
-		font-size: 10.5px;
-		color: rgba(42, 21, 3, 0.45);
-		margin-left: 6px;
+		display: block;
+		font: var(--tip-small);
+		color: var(--tip-sub);
+		margin: 3px 0 0;
 	}
 	.tip-weak {
 		display: block;
@@ -946,10 +948,11 @@
 		margin-top: 2px;
 	}
 	.tip-card p {
-		margin: 6px 0 0;
-		font-size: 13.5px;
-		line-height: 1.5;
-		color: var(--color-ink);
+		margin: 9px 0 0;
+		padding: 1px 0 1px 9px;
+		border-left: 3px solid var(--tip-rule);
+		font: var(--tip-quote);
+		color: var(--tip-ink);
 	}
 	.fightin-words.bare .note,
 	.fightin-words.bare .sample {
@@ -959,111 +962,136 @@
 		display: none;
 	}
 
-	.controls {
+	/* the chart's title, as on the player chart */
+	.chart-head {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 10px;
-		flex-wrap: wrap;
-		margin-bottom: 8px;
+		gap: 12px;
+		margin: 0 auto 10px;
 	}
-	.label {
-		font-size: 13px;
-		color: var(--color-ink);
-	}
-	/* the outlet pills, styled as on the dot plot */
-	.picker {
-		display: inline-flex;
+	.head-mark {
+		flex: none;
+		display: flex;
 		align-items: center;
+		justify-content: center;
+		width: 52px;
+		height: 52px;
+		border-radius: 50%;
+		background: #fff;
+		border: 2px solid rgba(255, 253, 248, 0.9);
+		box-shadow: 0 2px 8px rgba(42, 21, 3, 0.18);
+	}
+	.head-mark img {
+		width: 30px;
+		height: 30px;
+	}
+	.heading {
+		font-size: 14.5px;
+		color: var(--color-ink);
+		text-align: left;
+		margin: 0;
+		max-width: 460px;
+		line-height: 1.35;
+	}
+	.heading .vs {
+		color: inherit;
+	}
+	/* the controls in the headline table's style: labelled fields, a
+	   heavy-edged white dropdown with its own caret, the same search box */
+	.controls.filterbar {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: flex-end;
+		gap: 12px 14px;
+		max-width: 720px;
+		margin: 0 auto 12px;
+	}
+	.field {
+		display: flex;
+		flex-direction: column;
 		gap: 5px;
-		flex-wrap: wrap;
 	}
-	.picker button {
-		display: inline-flex;
-		align-items: center;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		border-radius: 999px;
-		background: rgba(255, 253, 248, 0.35);
-		padding: 3px 8px;
-		cursor: pointer;
-		font: inherit;
-		font-size: 12px;
-		color: var(--color-ink);
-		opacity: 0.6;
-		transition:
-			opacity 150ms ease,
-			background 150ms ease;
-	}
-	.picker button:hover {
-		opacity: 0.9;
-	}
-	.picker button.pooled {
-		opacity: 0.85;
-	}
-	.picker button.active {
-		opacity: 1;
-		background: rgba(255, 253, 248, 0.95);
-		border-color: var(--color-ink);
-		font-weight: 800;
-		box-shadow: 0 1px 4px rgba(42, 21, 3, 0.18);
-	}
-	.picker img {
-		display: block;
-		height: 12px;
-		width: auto;
-	}
-	.picker button.square img {
-		height: 15px;
-	}
-	.picker .all,
-	.picker .named {
-		padding: 3px 9px;
-		font-size: 11px;
-	}
-	.toggle-group {
-		display: inline-flex;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		border-radius: 4px;
-		overflow: hidden;
-	}
-	.toggle-group button {
-		border: 0;
-		background: transparent;
-		color: var(--color-ink);
-		padding: 5px 11px;
-		font-size: 12.5px;
+	.field-label {
+		font-family: var(--font-sans);
+		font-size: 13px;
 		font-weight: 600;
-		cursor: pointer;
+		color: var(--color-ink-dark);
 	}
-	.toggle-group button.active {
-		background: var(--color-ink);
-		color: #fff;
-	}
-	/* the search box, as on the ternary's explore step */
-	.controls.find {
-		gap: 8px;
-	}
-	.picker.ngram {
-		margin-right: 10px;
+	.search-field {
+		flex: 1 1 200px;
+		max-width: 300px;
 	}
 	.search-box {
 		position: relative;
-		width: min(260px, 60vw);
+		width: 100%;
 	}
 	.search-box input[type="search"] {
+		/* no browser search styling (Safari's inset edge made it look lighter) */
+		appearance: none;
+		-webkit-appearance: none;
+		box-shadow: none;
 		width: 100%;
+		height: 38px;
 		box-sizing: border-box;
-		font: inherit;
-		font-size: 14px;
-		padding: 6px 9px;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		border-radius: 3px;
+		padding: 0 12px;
+		border: 2px solid var(--color-ink-dark);
+		border-radius: 8px;
 		background: #fff;
-		color: var(--color-ink);
+		color: var(--color-ink-dark);
+		font-family: var(--font-sans);
+		font-size: 14.5px;
 	}
 	.search-box input[type="search"]:focus {
 		outline: 2px solid var(--color-fox);
 		outline-offset: 1px;
+	}
+	/* on a phone the controls shrink to the bars' scale: shorter fields,
+	   smaller type, and no "Search" label over a box that says Search */
+	@media (max-width: 640px) {
+		.controls.filterbar {
+			gap: 8px 8px;
+			margin-bottom: 10px;
+		}
+		.field {
+			flex: 1 1 calc(50% - 4px);
+			gap: 3px;
+		}
+		.field-label {
+			font-size: 11.5px;
+		}
+		.field :global(.logo-select),
+		.field :global(.logo-select .current) {
+			width: 100%;
+			min-width: 0;
+		}
+		.field :global(.logo-select .current) {
+			height: 32px;
+			padding: 0 28px 0 10px;
+			border-radius: 6px;
+			font-size: 13px;
+		}
+		.field :global(.logo-select .current::after) {
+			right: 10px;
+		}
+		.field :global(.logo-select .menu li) {
+			min-height: 30px;
+			font-size: 13px;
+		}
+		.search-field {
+			flex: 1 0 100%;
+			max-width: none;
+		}
+		.search-field .field-label {
+			display: none;
+		}
+		.search-box input[type="search"] {
+			height: 32px;
+			padding: 0 10px;
+			border-radius: 6px;
+			font-size: 13px;
+		}
 	}
 	.suggest {
 		position: absolute;

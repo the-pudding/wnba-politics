@@ -495,7 +495,7 @@
 
 	</svg>
 	{#if tip}
-		<div class="tip" style="left:{tip.x}px; top:{tip.y}px; border-left-color:{multi ? entries[tip.j].color : 'var(--color-fox)'}">
+		<div class="tip" style="left:{tip.x}px; top:{tip.y}px">
 			<strong>{weekly ? weekLabel(tip.bin) : fmt(tip.bin.start)}</strong>
 			{#if overlayBins && overlayBins[tip.i]}
 				<span class="stat" style="color:{overlayColor}">{overlayEntries[0].word}: {overlayBins[tip.i].hits} {unit}</span>
@@ -594,7 +594,7 @@
 		margin-right: 6px;
 	}
 	.tip .muted {
-		color: rgba(42, 21, 3, 0.5);
+		color: var(--tip-sub);
 	}
 	.grid {
 		stroke: rgba(42, 21, 3, 0.1);
@@ -635,25 +635,20 @@
 		transform: translate(-50%, calc(-100% - 12px));
 		width: 280px;
 		max-width: 80vw;
-		background: var(--color-paper);
-		color: var(--color-ink);
-		border: 1px solid rgba(42, 21, 3, 0.14);
-		border-left: 3px solid var(--color-fox);
-		border-radius: 3px;
-		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
-		font-size: 12.5px;
-		line-height: 1.4;
-		padding: 9px 12px 10px;
+		background: var(--tip-bg);
+		color: var(--tip-ink);
+		border: 1px solid var(--tip-border);
+		border-radius: var(--tip-radius);
+		box-shadow: var(--tip-shadow);
+		font: var(--tip-body);
+		padding: var(--tip-pad);
 		pointer-events: none;
 		z-index: 6;
 	}
+	/* the shared tooltip (variables.css) */
 	.tip strong {
-		font-family: var(--font-chart);
-		font-size: 11.5px;
-		font-weight: 700;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: var(--color-ink);
+		font: var(--tip-title);
+		color: var(--tip-ink);
 	}
 	.tip strong,
 	.tip .stat,
@@ -661,13 +656,15 @@
 		display: block;
 	}
 	.tip .stat {
-		color: rgba(42, 21, 3, 0.7);
-		margin-top: 2px;
+		color: var(--tip-ink);
+		margin-top: 3px;
 	}
 	.tip .example {
-		margin-top: 5px;
-		font-style: italic;
-		color: var(--color-ink);
+		margin-top: 9px;
+		padding: 1px 0 1px 9px;
+		border-left: 3px solid var(--tip-rule);
+		font: var(--tip-quote);
+		color: var(--tip-ink);
 	}
 	.area.overlay {
 		opacity: 0.38;

@@ -157,32 +157,27 @@
 		position: absolute;
 		transform: translate(14px, -50%);
 		width: 240px;
-		background: var(--color-paper);
-		border: 1px solid rgba(42, 21, 3, 0.14);
-		border-left: 3px solid rgba(42, 21, 3, 0.35);
-		border-radius: 3px;
-		padding: 9px 12px 10px;
-		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
+		background: var(--tip-bg);
+		border: 1px solid var(--tip-border);
+		border-radius: var(--tip-radius);
+		padding: var(--tip-pad);
+		box-shadow: var(--tip-shadow);
 		pointer-events: none;
 		z-index: 5;
 	}
 	.tooltip.flip {
 		transform: translate(calc(-100% - 14px), -50%);
 	}
+	/* the shared tooltip (variables.css): serif title, figures in the chart font */
 	.tooltip strong {
-		font-family: var(--font-chart);
-		font-size: 11px;
-		font-weight: 700;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: rgba(42, 21, 3, 0.6);
+		display: block;
+		font: var(--tip-title);
+		color: var(--tip-ink);
 	}
 	.tooltip .line {
 		margin: 5px 0 0;
-		font-size: 13px;
-		line-height: 1.5;
-		color: var(--color-ink);
-		font-family: var(--font-chart);
+		font: var(--tip-body);
+		color: var(--tip-ink);
 	}
 	/* the horizontal layout: a row per outlet, its wordmark on the left */
 	.rows {

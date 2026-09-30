@@ -52,7 +52,10 @@
 		// under the beeswarm: no lede, the tabs' width, no player chips
 		embedded = false,
 		// set from outside (a face clicked on the beeswarm): the players to show
-		players: playersProp = null
+		players: playersProp = null,
+		// told when the table's own tags or "clear" change the players, so a
+		// face picked on the beeswarm above follows along
+		onplayers = null
 	} = $props();
 
 	const PLAYER_COLORS = {
@@ -71,8 +74,6 @@
 	// on a phone the embedded table hides behind a bar: a tall scroll region
 	// in the middle of the page catches the finger and stops the page scrolling
 	let narrow = $state(false);
-	// open from the start, on phones too; the bar under the count folds it away
-	let open = $state(true);
 	$effect(() => {
 		const query = window.matchMedia("(max-width: 640px)");
 		const sync = () => (narrow = query.matches);
@@ -80,9 +81,6 @@
 		query.addEventListener("change", sync);
 		return () => query.removeEventListener("change", sync);
 	});
-	// on a phone the bar can fold the table away (a tall scroll region catches
-	// the finger); it starts open
-	let collapsed = $derived(narrow && !open);
 
 	let search = $state("");
 	let activePlayers = $state([]);
@@ -106,6 +104,12 @@
 			: [...activePlayers, name];
 	}
 
+	// a name tag in a row: only her headlines, or everyone again
+	function pickTag(name) {
+		activePlayers = activePlayers.length === 1 && activePlayers[0] === name ? [] : [name];
+		onplayers?.(activePlayers);
+	}
+
 	function sortByColumn(column) {
 		if (sortBy === column) ascending = !ascending;
 		else {
@@ -120,6 +124,20 @@
 		)
 	);
 
+	// the table draws its rows in pages: all 4,000-odd at once made every
+	// filter change (a face picked on the beeswarm above) slow on a phone.
+	// A new filter starts again at the first page; scrolling near the bottom
+	// of the box draws the next one.
+	const PAGE = 120;
+	let shown = $state(PAGE);
+	function onScroll(e) {
+		const el = e.currentTarget;
+		if (shown < rows.length && el.scrollTop + el.clientHeight > el.scrollHeight - 400) shown += PAGE;
+	}
+	$effect(() => {
+		rows;
+		shown = PAGE;
+	});
 	let rows = $derived.by(() => {
 		const term = search.trim().toLowerCase();
 		const filtered = data.rows.filter((row) => {
@@ -226,6 +244,7 @@
 		search = "";
 		mood = "all";
 		frame = "all";
+		onplayers?.([]);
 	};
 </script>
 
@@ -241,31 +260,44 @@
 			</p>
 		</header>{/if}
 
-	<div class="controls">
-		<input
-			type="search"
-			placeholder="Search"
-			bind:value={search}
-			aria-label="Search headlines"
-		/>
-		<div class="toggle-group" role="group" aria-label="Filter by sentiment">
-			{#each ["all", "negative", "neutral", "positive"] as option}
-				<button class:active={mood === option} onclick={() => (mood = option)}
-					>{option}</button
-				>
-			{/each}
-		</div>
-		<div
-			class="toggle-group"
-			role="group"
-			aria-label="Filter by what the headline is about"
-		>
-			{#each ["all", ...FRAMES] as option}
-				<button class:active={frame === option} onclick={() => (frame = option)}
-					>{frameLabel(option)}</button
-				>
-			{/each}
-		</div>
+	<!-- one white card: a title, the count as its subtitle, the filters, the table -->
+	<div class="card">
+	<h4 class="card-title">{embedded && title ? title : "Every Fox News WNBA headline"}</h4>
+	<p class="count" aria-live="polite">
+		{summary}
+		{#if filtering}<button type="button" class="clear-link" onclick={clearAll}>Clear filters</button>{/if}
+	</p>
+	<div class="controls filterbar">
+		<label class="field">
+			<span class="field-label">Tone</span>
+			<span class="select-wrap">
+				<select bind:value={mood}>
+					<option value="all">All tones</option>
+					<option value="negative">Negative</option>
+					<option value="positive">Positive</option>
+				</select>
+			</span>
+		</label>
+		<label class="field">
+			<span class="field-label">Category</span>
+			<span class="select-wrap">
+				<select bind:value={frame}>
+					<option value="all">All categories</option>
+					{#each FRAMES as option}
+						<option value={option}>{frameLabel(option)[0].toUpperCase() + frameLabel(option).slice(1)}</option>
+					{/each}
+				</select>
+			</span>
+		</label>
+		<label class="field search-field">
+			<span class="field-label">Search</span>
+			<input
+				type="search"
+				placeholder="Search"
+				bind:value={search}
+				aria-label="Search headlines"
+			/>
+		</label>
 	</div>
 
 	<div class="chips" class:hidden={embedded}>
@@ -282,15 +314,7 @@
 		{/if}
 	</div>
 
-	<p class="count" aria-live="polite">{summary}</p>
-
-	{#if narrow}
-		<button class="reveal" onclick={() => (open = !open)} aria-expanded={open}>
-			{open ? "Hide the headlines" : "See the headlines"}
-			<span class="caret">{open ? "▴" : "▾"}</span>
-		</button>
-	{/if}
-	<div class="scroller" class:short={narrow} hidden={collapsed}>
+	<div class="scroller" class:short={narrow} onscroll={onScroll}>
 		<table>
 			<thead>
 				<tr>
@@ -320,7 +344,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each rows as row (row.d + row.t)}
+				{#each rows.slice(0, shown) as row (row.d + row.t)}
 					{@const score = scoreOf(row.t)}
 					<tr>
 						<td class="col-date">
@@ -340,22 +364,33 @@
 							{/if}
 						</td>
 						<td class="col-who">
+							<!-- a tag is a filter: click to show only her headlines, again to undo -->
 							{#each visibleTags(row) as name}
-								<span
+								<button
+									type="button"
 									class="tag"
+									class:on={activePlayers.includes(name)}
 									style="background:{PLAYER_COLORS[name] ?? OTHER_COLOR}"
+									title={activePlayers.includes(name)
+										? `Show every player again`
+										: `Show only headlines naming ${name}`}
+									onclick={() => pickTag(name)}
 								>
 									{name.split(" ").slice(-1)[0]}
-								</span>
+								</button>
 							{/each}
 						</td>
 						<td class="col-frame">
 							{#each framesOf(row.t) as f}
-								<span
+								<button
+									type="button"
 									class="frame-tag"
-									style="color:{FRAME_COLORS[f]}; border-color:{FRAME_COLORS[
-										f
-									]}">{frameLabel(f)}</span
+									class:on={frame === f}
+									style="--frame:{FRAME_COLORS[f]}"
+									title={frame === f
+										? "Show every category again"
+										: `Show only ${frameLabel(f).toLowerCase()} headlines`}
+									onclick={() => (frame = frame === f ? "all" : f)}>{frameLabel(f)}</button
 								>
 							{/each}
 						</td>
@@ -394,6 +429,7 @@
 				{/each}
 			</tbody>
 		</table>
+	</div>
 	</div>
 
 	{#if caption}
@@ -696,6 +732,16 @@
 		width: 108px;
 		white-space: nowrap;
 	}
+	/* the framing tags stack, one per line, so the column stays narrow and the
+	   headline keeps the width */
+	.col-frame {
+		width: 104px;
+	}
+	tbody .col-frame .frame-tag {
+		display: block;
+		width: max-content;
+		margin: 0 0 4px;
+	}
 
 	.frame-tag {
 		display: inline-block;
@@ -704,11 +750,43 @@
 		font-weight: 700;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
-		border: 1px solid;
+		color: var(--frame);
+		border: 1px solid var(--frame);
 		border-radius: 3px;
 		padding: 1px 5px;
 		margin: 1px 3px 1px 0;
 		background: var(--color-paper);
+		line-height: inherit;
+		cursor: pointer;
+	}
+	/* the tags filter the table: a hover hint, and the active one filled */
+	.frame-tag:hover {
+		background: color-mix(in srgb, var(--frame) 12%, white);
+	}
+	.frame-tag.on {
+		color: #fff;
+		background: var(--frame);
+	}
+	.tag,
+	.frame-tag {
+		font-family: var(--font-chart);
+		appearance: none;
+	}
+	.tag {
+		border: 0;
+		line-height: 1.2;
+		cursor: pointer;
+	}
+	.tag:hover {
+		filter: brightness(0.88);
+	}
+	.tag.on {
+		box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--color-ink-dark);
+	}
+	.tag:focus-visible,
+	.frame-tag:focus-visible {
+		outline: 2px solid var(--color-ink-dark);
+		outline-offset: 2px;
 	}
 	.tag {
 		display: inline-block;
@@ -861,6 +939,158 @@
 
 		.lede h3 {
 			font-size: 25px;
+		}
+	}
+	/* the headline browser as one white panel: a title, the count as its
+	   subtitle, two labelled dropdowns and a search box, then the table */
+	/* the same heavy ink edge as the thread sheets and the dropdowns */
+	.card {
+		background: #fff;
+		border: 2px solid var(--color-ink-dark);
+		border-radius: 8px;
+		padding: 18px 18px 10px;
+	}
+	.card-title {
+		margin: 0 0 2px;
+		font-family: var(--font-serif);
+		font-size: 21px;
+		font-weight: 700;
+		line-height: 1.2;
+		color: var(--ink);
+	}
+	.card .count {
+		margin: 0 0 14px;
+		padding: 0;
+		font-size: 14px;
+		font-weight: 400;
+		color: #555;
+		background: transparent;
+		border: 0;
+	}
+	.clear-link {
+		margin-left: 6px;
+		padding: 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		color: var(--color-ink-dark);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		cursor: pointer;
+	}
+	.card .filterbar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px 14px;
+		align-items: flex-end;
+		background: transparent;
+		border: 0;
+		box-shadow: none;
+		margin: 0 0 14px;
+		overflow: visible;
+	}
+	.field {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+	}
+	.field-label {
+		font-family: var(--font-sans);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--ink);
+	}
+	.select-wrap {
+		position: relative;
+		display: inline-block;
+	}
+	/* the dropdown: a rounded, heavy-edged box with its own caret */
+	.select-wrap select {
+		appearance: none;
+		-webkit-appearance: none;
+		height: 38px;
+		min-width: 150px;
+		padding: 0 34px 0 12px;
+		border: 2px solid var(--ink);
+		border-radius: 8px;
+		background: #fff;
+		color: var(--ink);
+		font-family: var(--font-sans);
+		font-size: 14.5px;
+		font-weight: 500;
+		cursor: pointer;
+	}
+	.select-wrap::after {
+		content: "";
+		position: absolute;
+		right: 13px;
+		top: 50%;
+		margin-top: -2px;
+		border-left: 5px solid transparent;
+		border-right: 5px solid transparent;
+		border-top: 6px solid var(--ink);
+		pointer-events: none;
+	}
+	.select-wrap select:focus {
+		outline: 2px solid var(--accent);
+		outline-offset: 1px;
+	}
+	/* the search box grows with the row but stops at a comfortable width,
+	   now the table runs wider than the text */
+	.search-field {
+		flex: 1 1 180px;
+		max-width: 360px;
+	}
+	.card .filterbar .search-field input[type="search"] {
+		height: 38px !important;
+		min-height: 38px;
+		flex: none;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		padding: 0 12px;
+		border: 2px solid var(--ink);
+		border-radius: 8px;
+		box-shadow: none;
+		background: #fff;
+		font-size: 14.5px;
+	}
+	.card .filterbar .search-field input[type="search"]:focus {
+		outline: 2px solid var(--accent);
+		outline-offset: 1px;
+	}
+	.card .scroller {
+		border-top: 1px solid #333;
+		border-radius: 0;
+		box-shadow: none;
+		background: #fff;
+	}
+	/* the rows on a pale grey, hairlines between them */
+	.card tbody tr td {
+		background: #f7f7f7;
+		border-bottom: 1px solid #e2e2e2;
+	}
+	.card tbody tr:hover td {
+		background: #efefef;
+	}
+	.card thead th {
+		background: #fff;
+	}
+	@media (max-width: 640px) {
+		.card {
+			padding: 14px 12px 8px;
+		}
+		.field {
+			flex: 1 1 calc(50% - 7px);
+		}
+		.select-wrap,
+		.select-wrap select {
+			width: 100%;
+			min-width: 0;
+		}
+		.search-field {
+			flex: 1 0 100%;
+			max-width: none;
 		}
 	}
 </style>

@@ -1,5 +1,8 @@
 <script>
 	// Mirrored horizontal bars for a fightin'-words contrast
+	import { base } from "$app/paths";
+	import { LOGO_WIDTH, LOGO_RATIO } from "$utils/outlets.js";
+	import { properCase } from "$utils/properCase.js";
 	let {
 		source = null,
 		highlight = null,
@@ -111,6 +114,32 @@
 	let outside = $derived(String(labels).trim().toLowerCase() === "outside");
 	let tip_ = $derived(String(labels).trim().toLowerCase() === "tip");
 	let mid = $derived(WIDTH / 2);
+	// a column head can carry the outlet's wordmark on its outer side ("← [logo]
+	// in ESPN", "in Fox News [logo] →"): source.topLogo /
+	// source.bottomLogo name a file in static/logos (2026-09-29)
+	// a logo's height in the head: a long wordmark (the Times, the Post) a
+	// little shorter so it does not dwarf the words; its width from its shape
+	const logoHeight = (file) => ((LOGO_RATIO[file] ?? 3) > 5 ? 12 : 15);
+	const logoWidth = (file) =>
+		file
+			? LOGO_RATIO[file]
+				? LOGO_RATIO[file] * logoHeight(file)
+				: ((LOGO_WIDTH[file] ?? 40) * 15) / (file.endsWith(".png") ? 15 : 12)
+			: 0;
+	let topIn = $state(null);
+	let topInWidth = $state(80);
+	let bottomIn = $state(null);
+	let bottomInWidth = $state(60);
+	$effect(() => {
+		source?.bottomLogo;
+		source?.bottomShort;
+		if (bottomIn) bottomInWidth = bottomIn.getComputedTextLength();
+	});
+	$effect(() => {
+		source?.topLogo;
+		source?.topShort;
+		if (topIn) topInWidth = topIn.getComputedTextLength();
+	});
 	// a phone gets the square-root scale unless the Doc asked for another, so
 	// the bars spread across the little width they have
 	const scaleMode = $derived.by(() => {
@@ -122,12 +151,13 @@
 	let capZ = $derived(scaleMode === "cap" && zs.length > 1 ? zs[1] * 1.2 : Infinity);
 	let maxZ = $derived(Math.max(1, Math.min(zs[0] ?? 1, capZ)));
 	const shape = (z) => (scaleMode === "sqrt" ? Math.sqrt(z) : z);
+	// team names always in capitals (utils/properCase.js), then the caps setting
 	const wordCase = (w) =>
 		caps === true || String(caps) === "true"
 			? w.toUpperCase()
 			: String(caps).toLowerCase() === "title"
 				? w.replace(/(^|[\s-])([a-z])/g, (m, a, b) => a + b.toUpperCase())
-				: w;
+				: properCase(w);
 	// bar length: leaves room past the end for a word that does not fit inside
 	// outside: the bars keep the middle, the words take the outer column, with
 	// room for the score between them
@@ -202,10 +232,28 @@
 					"'": "&#39;"
 				})[c]
 		);
-	function excerpt(sentence, form) {
+	// the stored example is the sentence with its neighbours on either side, so
+	// the word it is an example of sits in the middle: when the word occurs more
+	// than once ("the 2023 draft … No. 1 draft pick Caitlin Clark"), the
+	// occurrence nearest the middle is the one meant
+	function nearestMatch(text, rx) {
+		const g = new RegExp(rx.source, rx.flags.includes("g") ? rx.flags : rx.flags + "g");
+		let best = null;
+		for (const m of text.matchAll(g)) {
+			if (!best || Math.abs(m.index - text.length / 2) < Math.abs(best.index - text.length / 2)) best = m;
+		}
+		return best;
+	}
+	const esc = (w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const wordRx = (word, form) => {
+		const stem = esc(word.length > 4 ? word.slice(0, -1) : word);
+		return new RegExp(`\\b(?:${esc(form ?? word)}|${stem}\\w*)\\b`, "i");
+	};
+	function excerpt(sentence, word, form) {
 		const MAX = 170;
 		if (sentence.length <= MAX) return sentence;
-		const at = sentence.toLowerCase().indexOf((form ?? "").toLowerCase());
+		const m = nearestMatch(sentence, wordRx(word, form));
+		const at = m ? m.index : 0;
 		const start = Math.max(0, Math.min(at - 90, sentence.length - MAX));
 		let cut = sentence.slice(start, start + MAX);
 		if (start > 0) cut = "…" + cut.replace(/^\S*\s/, "");
@@ -213,16 +261,12 @@
 		return cut;
 	}
 	function markWord(sentence, word, form, color) {
-		const safe = escapeHtml(excerpt(sentence, form ?? word));
-		const esc = (w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-		const stem = esc(word.length > 4 ? word.slice(0, -1) : word);
-		const rx = new RegExp(`\\b(?:${esc(form ?? word)}|${stem}\\w*)\\b`, "i");
-		return safe.replace(
-			rx,
-			(m) =>
-				`<mark style="background:${color}2e;box-shadow:inset 0 -2px 0 ${color}66;` +
-				`color:inherit;padding:0 1px;">${m}</mark>`
-		);
+		const safe = escapeHtml(excerpt(sentence, word, form));
+		const m = nearestMatch(safe, wordRx(word, form));
+		if (!m) return safe;
+		return safe.slice(0, m.index) +
+			`<mark style="background:${color}2e;box-shadow:inset 0 -2px 0 ${color}66;` +
+			`color:inherit;padding:0 1px;">${m[0]}</mark>` + safe.slice(m.index + m[0].length);
 	}
 	let tip = $derived.by(() => {
 		if (!hovered) return null;
@@ -280,12 +324,43 @@
 			role="presentation"
 		>
 			<!-- column heads -->
-			<text class="head others" x={mid - GAP} y="16" text-anchor="end"
-				>← {source.bottomShort ?? "everyone else"}</text
-			>
-			<text class="head fox" x={mid + GAP} y="16" text-anchor="start"
-				>{source.topShort ?? "in Fox News"} →</text
-			>
+			{#if source.bottomLogo}
+				<!-- mirrored: "← [logo] in ESPN", the wordmark on the outer side -->
+				{@const w = logoWidth(source.bottomLogo)}
+				<text class="head others" x={mid - GAP} y="16" text-anchor="end" bind:this={bottomIn}
+					>{source.bottomShort}</text
+				>
+				<image
+					href="{base}/logos/{source.bottomLogo}"
+					x={mid - GAP - bottomInWidth - 6 - w}
+					y={16 - logoHeight(source.bottomLogo) + 2 - (15 - logoHeight(source.bottomLogo)) / 2}
+					width={w}
+					height={logoHeight(source.bottomLogo)}
+					preserveAspectRatio="xMaxYMid meet"
+				><title>{source.bottomShort}</title></image>
+				<text class="head others" x={mid - GAP - bottomInWidth - 6 - w - 6} y="16" text-anchor="end">←</text>
+			{:else}
+				<text class="head others" x={mid - GAP} y="16" text-anchor="end"
+					>← {source.bottomShort ?? "everyone else"}</text
+				>
+			{/if}
+			{#if source.topLogo}
+				{@const w = logoWidth(source.topLogo)}
+				<text class="head fox" x={mid + GAP} y="16" text-anchor="start" bind:this={topIn}>{source.topShort}</text>
+				<image
+					href="{base}/logos/{source.topLogo}"
+					x={mid + GAP + topInWidth + 6}
+					y={16 - logoHeight(source.topLogo) + 2 - (15 - logoHeight(source.topLogo)) / 2}
+					width={w}
+					height={logoHeight(source.topLogo)}
+					preserveAspectRatio="xMinYMid meet"
+				><title>{source.topShort}</title></image>
+				<text class="head fox" x={mid + GAP + topInWidth + 6 + w + 6} y="16" text-anchor="start">→</text>
+			{:else}
+				<text class="head fox" x={mid + GAP} y="16" text-anchor="start"
+					>{source.topShort ?? "in Fox News"} →</text
+				>
+			{/if}
 			<line class="axis" x1={mid} x2={mid} y1={TOP - 6} y2={height - BOTTOM} />
 
 			{#each [[fox, 1], [others, -1]] as [list, sign]}
@@ -369,14 +444,15 @@
 				bind:clientWidth={cardW}
 				bind:clientHeight={cardH}
 				class:below={!tipBox.above}
-				style="left:{tipBox.left}px; top:{tipBox.top}px; border-left-color:{color}; --arrow:{tipBox.arrow}px"
+				style="left:{tipBox.left}px; top:{tipBox.top}px; --arrow:{tipBox.arrow}px"
 			>
-				<span class="tip-head" style="color:{color}">{tip.p.word}</span>
+				<!-- the side's colour in a swatch and on the quote's rule; the words in ink -->
+				<span class="tip-head"><i class="swatch" style="background:{color}"></i>{properCase(tip.p.word)}</span>
 				<span class="tip-count"
 					>{topName} {tip.p.nf} · {otherName} {tip.p.no} · score {fmt(tip.p.z)}</span
 				>
 				{#if tip.eg}
-					<p>{@html markWord(tip.eg.s, tip.p.word, tip.eg.w, color)}</p>
+					<p style="border-left-color:{color}">{@html markWord(tip.eg.s, tip.p.word, tip.eg.w, color)}</p>
 					{#if tip.eg.o}<span class="tip-source">{tip.eg.o}</span>{/if}
 				{/if}
 			</div>
@@ -472,40 +548,44 @@
 		pointer-events: none;
 		width: 300px;
 		max-width: 80vw;
-		background: var(--color-paper);
-		border: 1px solid rgba(42, 21, 3, 0.14);
-		border-left: 3px solid var(--color-fox);
-		border-radius: 3px;
-		padding: 10px 13px 11px;
-		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
+		background: var(--tip-bg);
+		border: 1px solid var(--tip-border);
+		border-radius: var(--tip-radius);
+		padding: var(--tip-pad);
+		box-shadow: var(--tip-shadow);
+		color: var(--tip-ink);
 	}
+	/* the shared tooltip (variables.css) */
 	.tip-head {
-		font-family: var(--font-chart);
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+		display: block;
+		font: var(--tip-title);
+	}
+	.tip-card .swatch {
+		display: inline-block;
+		width: 10px;
+		height: 10px;
+		border-radius: 2px;
+		margin-right: 7px;
+		vertical-align: 1px;
 	}
 	.tip-source {
 		display: block;
-		font-family: var(--font-chart);
-		font-size: 10.5px;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: rgba(42, 21, 3, 0.5);
+		font: var(--tip-small);
+		color: var(--tip-sub);
 		margin-top: 4px;
 	}
 	.tip-count {
-		font-family: var(--font-chart);
-		font-size: 10.5px;
-		color: rgba(42, 21, 3, 0.5);
-		margin-left: 6px;
+		display: block;
+		font: var(--tip-small);
+		color: var(--tip-sub);
+		margin: 3px 0 0;
 	}
 	.tip-card p {
-		margin: 5px 0 0;
-		font-size: 13px;
-		line-height: 1.45;
-		color: var(--color-ink);
+		margin: 9px 0 0;
+		padding: 1px 0 1px 9px;
+		border-left: 3px solid var(--tip-rule);
+		font: var(--tip-quote);
+		color: var(--tip-ink);
 	}
 	/* the pointer: a paper triangle with the same hairline, at the bar */
 	.tip-card::after,
@@ -518,23 +598,23 @@
 	}
 	.tip-card::before {
 		bottom: -17px;
-		border-top-color: rgba(42, 21, 3, 0.18);
+		border-top-color: var(--tip-border);
 	}
 	.tip-card::after {
 		bottom: -15px;
-		border-top-color: var(--color-paper);
+		border-top-color: var(--tip-bg);
 	}
 	.tip-card.below::before {
 		bottom: auto;
 		top: -17px;
 		border-top-color: transparent;
-		border-bottom-color: rgba(42, 21, 3, 0.18);
+		border-bottom-color: var(--tip-border);
 	}
 	.tip-card.below::after {
 		bottom: auto;
 		top: -15px;
 		border-top-color: transparent;
-		border-bottom-color: var(--color-paper);
+		border-bottom-color: var(--tip-bg);
 	}
 	.note {
 		margin: 6px 0 0;

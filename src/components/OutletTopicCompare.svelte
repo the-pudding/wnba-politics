@@ -37,7 +37,7 @@
 		measure: startMeasure = "share",
 		// chips: the per-pane numbers beside the wordmark (false hides them)
 		chips = true,
-		wordsLabel = "See the words included",
+		wordsLabel = "See words included",
 		wordsNote = "An article counts when its headline or text contains any of these words or phrases."
 	} = $props();
 
@@ -62,7 +62,7 @@
 			? "mention LGBTQ topics"
 			: topic === "fouls"
 				? "use the letter's foul words"
-				: "mention race or protest politics";
+				: "mention race";
 	const COLOR_OF = {
 		lgbtq: "var(--color-lgbtq)",
 		polrace: "var(--color-politics)",
@@ -71,7 +71,7 @@
 	};
 	const PHRASE_OF = {
 		lgbtq: "LGBTQ+ topics",
-		polrace: "race or protest politics",
+		polrace: "race",
 		fouls: "the letter's foul words",
 		protect: "“protect”"
 	};
@@ -118,10 +118,7 @@
 	// the same unions as notebooks/topics.py
 	// each entry is one list in the drop-down: a label and the term groups it pools
 	const TOPIC_GROUPS = {
-		polrace: [
-			["Race", ["race / racism"]],
-			["Politics and protest", ["politics / protest"]]
-		],
+		polrace: [["Race", ["race / racism"]]],
 		lgbtq: [["LGBTQ+", ["LGBTQ / sexuality", "transgender / trans"]]],
 		fouls: [["The letter's foul words", ["fouls"]]],
 		protect: [["“Protect”", ["protect"]]]
@@ -592,15 +589,17 @@
 				onclick={() => (wordsOpen = !wordsOpen)}
 				aria-expanded={wordsOpen}
 			>
-				{wordsOpen ? wordsLabel.replace(/^See/i, "Hide") : wordsLabel}
+				<!-- the label stays put; the caret says whether it is open -->
+				{wordsLabel}
 				<span class="caret">{wordsOpen ? "▴" : "▾"}</span>
 			</button>
 			{#if wordsOpen}
 				<div class="word-list">
+					<!-- what counts, then the words, in the same type -->
+					{#if wordsNote}<p>{@html wordsNote}</p>{/if}
 					{#each wordGroups as group (group.label)}
 						<p><b>{group.label}:</b> {group.words.join(", ")}</p>
 					{/each}
-					{#if wordsNote}<p class="how">{@html wordsNote}</p>{/if}
 				</div>
 			{/if}
 		</div>
@@ -620,9 +619,9 @@
 			<strong>{SHORT_NAME[tip.outlet] ?? tip.outlet} · {periodLabel(tip.year)}</strong>
 			{#if second}
 				<!-- two topics: a line for each, in its colour, out of the same articles -->
-				<p class="line"><i class="swatch" style="background:{MAIN}"></i><b>{PHRASE_OF[topic] ?? topic}</b>: {tip.hit} of {tip.n.toLocaleString()} {method === "headline" ? "headlines" : "articles"} ({pct(tip.hit / tip.n)})</p>
+				<p class="line"><i class="swatch" style="background:{MAIN}"></i><b>{LEGEND_OF[topic] ?? PHRASE_OF[topic] ?? topic}</b>: {tip.hit} of {tip.n.toLocaleString()} {method === "headline" ? "headlines" : "articles"} ({pct(tip.hit / tip.n)})</p>
 				{#if tip.second}
-					<p class="line"><i class="swatch" style="background:{SECOND}"></i><b>{PHRASE_OF[second] ?? second}</b>: {tip.second.hit} of {tip.second.n.toLocaleString()} ({pct(tip.second.hit / tip.second.n)})</p>
+					<p class="line"><i class="swatch" style="background:{SECOND}"></i><b>{LEGEND_OF[second] ?? PHRASE_OF[second] ?? second}</b>: {tip.second.hit} of {tip.second.n.toLocaleString()} ({pct(tip.second.hit / tip.second.n)})</p>
 				{/if}
 				{#if parts && byBoth?.[tip.outlet]?.[tip.year]}
 					{@const b = byBoth[tip.outlet][tip.year]}
@@ -654,37 +653,35 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 5px;
-		margin: 0 auto;
+		margin: 0;
 		padding: 4px 6px;
 		border: 0;
 		background: transparent;
 		font: inherit;
 		font-size: 12.5px;
 		font-weight: 600;
-		color: rgba(42, 21, 3, 0.6);
+		color: var(--color-ink-dark);
 		cursor: pointer;
 	}
 	.reveal:hover {
-		color: var(--color-ink);
+		text-decoration: underline;
+		text-underline-offset: 3px;
 	}
+	/* the toggle and the list sit at the left edge of the column */
 	.words {
-		text-align: center;
+		text-align: left;
 	}
 	.word-list {
 		text-align: left;
 	}
 	.word-list {
-		padding: 10px 14px 4px;
+		padding: 10px 0 4px;
 		font-size: 13px;
 		line-height: 1.55;
-		color: var(--color-ink);
+		color: var(--color-ink-dark);
 	}
 	.word-list p {
 		margin: 0 0 8px;
-	}
-	.word-list .how {
-		color: rgba(42, 21, 3, 0.62);
-		font-size: 12px;
 	}
 	.otc {
 		position: relative;
@@ -855,32 +852,27 @@
 		position: absolute;
 		transform: translate(14px, -50%);
 		width: 240px;
-		background: var(--color-paper);
-		border: 1px solid rgba(42, 21, 3, 0.14);
-		border-left: 3px solid rgba(42, 21, 3, 0.35);
-		border-radius: 3px;
-		padding: 9px 12px 10px;
-		box-shadow: 0 5px 20px rgba(42, 21, 3, 0.16);
+		background: var(--tip-bg);
+		border: 1px solid var(--tip-border);
+		border-radius: var(--tip-radius);
+		padding: var(--tip-pad);
+		box-shadow: var(--tip-shadow);
 		pointer-events: none;
 		z-index: 5;
 	}
 	.tooltip.flip {
 		transform: translate(calc(-100% - 14px), -50%);
 	}
+	/* the shared tooltip (variables.css): serif title, figures in the chart font */
 	.tooltip strong {
-		font-family: var(--font-chart);
-		font-size: 11px;
-		font-weight: 700;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: rgba(42, 21, 3, 0.6);
+		display: block;
+		font: var(--tip-title);
+		color: var(--tip-ink);
 	}
 	.tooltip .line {
 		margin: 5px 0 0;
-		font-size: 13px;
-		line-height: 1.5;
-		color: var(--color-ink);
-		font-family: var(--font-chart);
+		font: var(--tip-body);
+		color: var(--tip-ink);
 	}
 	.topic-area.solid {
 		opacity: 0.85;

@@ -72,7 +72,6 @@
 			<span class="blank"></span>
 		{/if}
 		<span class="name">{nameOf(value) ?? "—"}</span>
-		<span class="caret" aria-hidden="true">▾</span>
 	</button>
 	{#if open}
 		<ul class="menu" role="listbox">
@@ -98,43 +97,61 @@
 </div>
 
 <style>
+	/* a labelled field in the headline table's style (2026-09-29): the label
+	   above, a heavy-edged white box with the table's caret */
 	.face-picker {
 		position: relative;
 		display: inline-flex;
-		align-items: center;
-		gap: 6px;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 5px;
 	}
 	.pick-label {
-		font-family: var(--font-chart);
-		font-size: 11px;
-		font-weight: 800;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: rgba(42, 21, 3, 0.65);
+		font-family: var(--font-sans);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-ink-dark);
 	}
 	.current {
+		position: relative;
 		display: inline-flex;
 		align-items: center;
 		gap: 8px;
-		padding: 3px 8px 3px 4px;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		border-radius: 4px;
-		background: var(--color-paper, var(--color-paper));
-		color: var(--color-ink);
-		font-size: 13.5px;
+		height: 38px;
+		box-sizing: border-box;
+		padding: 0 34px 0 5px;
+		border: 2px solid var(--color-ink-dark);
+		border-radius: 8px;
+		background: #fff;
+		color: var(--color-ink-dark);
+		font-family: var(--font-sans);
+		font-size: 14.5px;
+		font-weight: 500;
 		line-height: normal;
 		cursor: pointer;
-		min-width: 190px;
+		min-width: 200px;
 		text-align: left;
+	}
+	.current::after {
+		content: "";
+		position: absolute;
+		right: 13px;
+		top: 50%;
+		margin-top: -2px;
+		border-left: 5px solid transparent;
+		border-right: 5px solid transparent;
+		border-top: 6px solid var(--color-ink-dark);
+	}
+	/* a long name stays on one line, trimmed with an ellipsis if it must */
+	.current .name {
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
 	}
 	.current:focus-visible {
 		outline: 2px solid var(--color-fox);
 		outline-offset: 1px;
-	}
-	.caret {
-		margin-left: auto;
-		color: rgba(42, 21, 3, 0.55);
-		font-size: 12px;
 	}
 	img,
 	.blank {
@@ -161,24 +178,25 @@
 		min-width: 100%;
 		max-height: 320px;
 		overflow-y: auto;
-		background: var(--color-paper);
-		border: 1px solid rgba(42, 21, 3, 0.2);
-		border-radius: 4px;
-		box-shadow: 0 8px 22px rgba(42, 21, 3, 0.2);
-		z-index: 8;
+		background: var(--tip-bg, #fff);
+		border: 1px solid var(--tip-border, rgba(28, 25, 23, 0.14));
+		border-radius: 8px;
+		box-shadow: var(--tip-shadow, 0 6px 24px rgba(28, 25, 23, 0.14));
+		z-index: 9;
 	}
 	.menu li {
 		display: flex;
 		align-items: center;
 		gap: 9px;
 		padding: 4px 12px 4px 8px;
-		font-size: 13.5px;
-		color: var(--color-ink);
+		font-family: var(--font-sans);
+		font-size: 14.5px;
+		color: var(--color-ink-dark);
 		cursor: pointer;
 		white-space: nowrap;
 	}
 	.menu li.on {
-		background: rgba(42, 21, 3, 0.08);
+		background: #f2f2f2;
 	}
 	.menu li.picked .name {
 		font-weight: 700;

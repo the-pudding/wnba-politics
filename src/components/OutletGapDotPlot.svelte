@@ -761,36 +761,45 @@
 	}
 
 	.tip .ex {
-		margin: 6px 0 0;
-		font-size: 12px;
-		line-height: 1.4;
-		font-weight: 400;
+		margin: 9px 0 0;
+		padding-left: 9px;
+		border-left: 3px solid var(--tip-rule);
+		font: var(--tip-quote);
 		max-width: 260px;
 	}
 	.tip {
 		position: absolute;
 		transform: translate(-50%, -100%);
-		background: var(--color-ink-dark);
-		color: #fff;
-		font-size: 12.5px;
-		line-height: 1.5;
-		padding: 8px 11px;
-		border-radius: 4px;
+		background: var(--tip-bg);
+		color: var(--color-ink-dark);
+		border: 1px solid var(--tip-border);
+		border-radius: var(--tip-radius);
+		box-shadow: var(--tip-shadow);
+		font: var(--tip-body);
+		color: var(--tip-ink);
+		padding: var(--tip-pad);
 		pointer-events: none;
 		width: 270px;
 		z-index: 6;
 		text-align: left;
 	}
+	.tip strong {
+		display: block;
+		margin-bottom: 3px;
+		font: var(--tip-title);
+		color: var(--tip-ink);
+	}
 	.tip .count {
-		color: var(--color-tip-none);
-		font-size: 11px;
+		font: var(--tip-small);
+		color: var(--tip-sub);
 	}
 	.tip .swatch {
 		display: inline-block;
-		width: 8px;
-		height: 8px;
+		width: 10px;
+		height: 10px;
 		border-radius: 2px;
 		margin-right: 5px;
+		vertical-align: -1px;
 	}
 
 	.picker {

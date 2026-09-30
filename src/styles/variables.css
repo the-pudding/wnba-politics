@@ -61,11 +61,21 @@
   --color-grape: #9061c2; /** ternary word groups: the first */
   --color-pine: #1f7a5a; /** ternary word groups: the third */
   --color-dot: #b3a58a; /** an unlit dot on the ternary */
-  --color-tip-muted: #d8d6cc; /** secondary text in a dark tooltip */
-  --color-tip-quote: #e8e6dc; /** the quoted example in a dark tooltip */
-  --color-tip-harsh: #f0917f; /** a harsh score in a dark tooltip */
-  --color-tip-warm: #8fd6b4; /** a warm score in a dark tooltip */
-  --color-tip-none: #bdbdb5; /** an unscored line in a dark tooltip */
+  --tip-bg: #fff; /** every tooltip is a white card, like the headline table */
+  --tip-border: rgba(28, 25, 23, 0.14); /** the card's hairline */
+  --tip-shadow: 0 6px 24px rgba(28, 25, 23, 0.14), 0 1px 2px rgba(28, 25, 23, 0.06);
+  --tip-sub: #555; /** the card's secondary lines (counts, sources) */
+  /* one tooltip for the whole piece (2026-09-29): every chart's card takes
+     its padding, corners and type from these */
+  --tip-pad: 12px 14px 13px;
+  --tip-radius: 4px;
+  --tip-ink: #1a1a1a; /** the card's title and figures */
+  --tip-title: 700 16px/1.25 "Tiempos Text", Iowan Old Style, Times New Roman, Times, serif; /** name, outlet, date */
+  --tip-body: 400 13px/1.45 "Atlas Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif; /** the figures */
+  --tip-small: 400 12px/1.4 "Atlas Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif; /** counts, sources */
+  --tip-quote: 400 14px/1.4 "Tiempos Text", Iowan Old Style, Times New Roman, Times, serif; /** a quoted headline or sentence */
+  --tip-rule: rgba(28, 25, 23, 0.22); /** the quote's left rule when it carries no colour */
+  --ink-muted: rgba(26, 26, 26, 0.62); /** the one secondary text colour for controls and chart notes: unchosen tabs, a chart's description */
   --12px: 0.75rem;
   --14px: 0.875rem;
   --16px: 1rem;

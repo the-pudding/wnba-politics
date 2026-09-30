@@ -250,7 +250,10 @@
 		},
 		celebrity: {
 			left: "← less about celebrity life",
-			right: "more about celebrity  life →",
+			right: "more about celebrity life →",
+			// a phone has room for about 18 characters a side at 14px
+			leftShort: "← less celebrity",
+			rightShort: "more celebrity →",
 			format: (v) => `${(v * 100).toFixed(1)}%`,
 			centred: false,
 			spread: true
@@ -258,6 +261,8 @@
 		performance: {
 			left: "← rarely about her play",
 			right: "more about points and rebounds →",
+			leftShort: "← less on her play",
+			rightShort: "more on her play →",
 			format: (v) => `${(v * 100).toFixed(0)}%`,
 			centred: false
 		},
@@ -288,38 +293,58 @@
 	});
 
 	let WIDTH = $derived(narrow ? 460 : 900);
+	// the svg is drawn WIDTH wide and scaled to fit, so its type is set in
+	// frame units that land at a fixed size on screen: 14px axis ends (the
+	// controls' size), 12px
+	// ticks, whatever the column width (2026-09-29)
+	let shownWidth = $state(0);
+	// the axis ends read as phrases: "← Harsher coverage" (the first letter up)
+	const sentenceCase = (t) => (t ?? "").replace(/[a-z]/, (c) => c.toUpperCase());
+	let toScreen = $derived(shownWidth ? WIDTH / shownWidth : 1);
 	let PAD = $derived(
 		narrow
-			? { top: 30, right: 26, bottom: 52, left: 26 }
-			: { top: 26, right: 54, bottom: 46, left: 54 }
+			// the axis runs edge to edge, on the column's edge like the controls
+			// above it (2026-09-29); faces are kept inside by their own radius
+			? { top: 30, right: 2, bottom: 52, left: 2 }
+			: { top: 26, right: 2, bottom: 46, left: 2 }
 	);
 
 	let biggest = $derived(Math.max(1, ...people.map((p) => p.count)));
 	let sizeScale = $derived(
 		scaleLinear()
 			.domain([0, Math.sqrt(biggest)])
-			.range([0, narrow ? 26 : 38])
+			.range([0, narrow ? 32 : 66])
 	);
 	const radiusOf = (person) =>
 		sizing === "count"
-			? (narrow ? 15 : 16) + sizeScale(Math.sqrt(person.count))
+			? (narrow ? 18 : 28) + sizeScale(Math.sqrt(person.count))
 			: narrow
-				? 24
-				: 32;
+				? 29
+				: 56;
 	// the rows: the axis across the top, then a row per player, her name and
 	// value beside her face. The faces are drawn at swarm size and scaled
 	// down as a group, so the shrink rides the same slide as the move
 	const ROWS_SCALE = 0.5;
 	let swarmMax = $derived(
-		sizing === "count" ? (narrow ? 15 : 16) + sizeScale(Math.sqrt(biggest)) : narrow ? 24 : 32
+		sizing === "count" ? (narrow ? 18 : 28) + sizeScale(Math.sqrt(biggest)) : narrow ? 29 : 56
 	);
 	let AXIS_TOP = 58;
+	let PACKING = 0.4;
 	// a little taller when many same-size faces have to fit (37 by sentence,
 	// 34 by headline): the swarm spreads sideways first, so a dozen pixels a
 	// face beyond the first twenty is enough
+	// on a desktop the faces are big (2026-09-29): the frame grows with their
+	// total area, packed about half full, so they never pile against an edge
+	let faceArea = $derived(
+		people.reduce((sum, p) => sum + Math.PI * (radiusOf(p) + 1.5) ** 2, 0)
+	);
 	let swarmHeight = $derived(
-		(narrow ? 620 : 520) +
-			(sizing === "equal" ? Math.max(0, people.length - 20) * (narrow ? 10 : 12) : 0)
+		narrow
+			? 660 + (sizing === "equal" ? Math.max(0, people.length - 20) * 13 : 0)
+			: Math.max(
+					600,
+					Math.round(faceArea / ((WIDTH - PAD.left - PAD.right) * PACKING)) + PAD.top + PAD.bottom
+				)
 	);
 	// the rows: tall frame — half-size faces, a row each; shared frame — the
 	// swarm's height split into rows, faces as big as a row allows
@@ -431,7 +456,8 @@
 
 	let hovered = $state(null);
 	let tooltip = $state(null);
-	const HALF = 190;
+	// half the card plus a margin, never more than half the chart (a phone)
+	const half = (width) => Math.min(180, width / 2);
 	function showTooltip(event, person) {
 		const box = event.currentTarget
 			.closest(".faces-beeswarm")
@@ -439,11 +465,28 @@
 		hovered = person.name;
 		onhover?.(person.name);
 		tooltip = {
-			x: Math.min(Math.max(event.clientX - box.left, HALF), box.width - HALF),
+			x: Math.min(Math.max(event.clientX - box.left, half(box.width)), box.width - half(box.width)),
 			y: event.clientY - box.top,
 			person
 		};
 	}
+	// on a mouse the card follows the pointer; only its position changes, so
+	// nothing else re-renders while it moves
+	function moveTooltip(event, person) {
+		if (!tooltip || tooltip.person !== person) return showTooltip(event, person);
+		const box = event.currentTarget.closest(".faces-beeswarm").getBoundingClientRect();
+		tooltip.x = Math.min(Math.max(event.clientX - box.left, half(box.width)), box.width - half(box.width));
+		tooltip.y = event.clientY - box.top;
+	}
+	// a touch screen: taps pin the card; a tap anywhere else clears it
+	let touchLike = $state(false);
+	$effect(() => {
+		touchLike = window.matchMedia?.("(hover: none)").matches ?? false;
+		if (!touchLike) return;
+		const clear = () => tooltip && hideTooltip();
+		document.addEventListener("click", clear);
+		return () => document.removeEventListener("click", clear);
+	});
 	const hideTooltip = () => {
 		hovered = null;
 		onhover?.(null);
@@ -473,7 +516,7 @@
 	};
 </script>
 
-<div class="faces-beeswarm">
+<div class="faces-beeswarm" bind:clientWidth={shownWidth}>
 	<svg viewBox="0 0 {WIDTH} {HEIGHT}" role="img">
 		<line
 			class="baseline"
@@ -501,6 +544,7 @@
 			{/if}
 			<text
 				class="axis"
+				style="font-size:{12 * toScreen}px"
 				x={xScale(tick)}
 				y={baselineY + (rowsTall ? -8 : 17)}
 				text-anchor="middle">{tickLabel(tick)}</text
@@ -517,15 +561,17 @@
 		{/if}
 		<text
 			class="end-label"
+			style="font-size:{14 * toScreen}px"
 			x={plotLeft}
 			y={rowsTall ? baselineY - 24 : PAD.top - 8}
-			text-anchor="start">{axis.left}</text
+			text-anchor="start">{sentenceCase(narrow && axis.leftShort ? axis.leftShort : axis.left)}</text
 		>
 		<text
 			class="end-label"
+			style="font-size:{14 * toScreen}px"
 			x={WIDTH - PAD.right}
 			y={rowsTall ? baselineY - 24 : PAD.top - 8}
-			text-anchor="end">{axis.right}</text
+			text-anchor="end">{sentenceCase(narrow && axis.rightShort ? axis.rightShort : axis.right)}</text
 		>
 		{#if rowsMode}
 			<!-- the rows: a guide line and her name; the face slides onto it -->
@@ -562,11 +608,17 @@
 				class:faded={(hovered && hovered !== person.name) || (!hovered && !isLit(person.name))}
 				class:picked={selected === person.name}
 				class:pickable={Boolean(onselect)}
-				onpointerenter={(e) => showTooltip(e, person)}
-				onpointermove={(e) => showTooltip(e, person)}
-				onpointerleave={hideTooltip}
-				onclick={() =>
-					onselect?.(selected === person.name ? null : person.name)}
+				onpointerenter={(e) => e.pointerType === "mouse" && showTooltip(e, person)}
+				onpointermove={(e) => e.pointerType === "mouse" && moveTooltip(e, person)}
+				onpointerleave={(e) => e.pointerType === "mouse" && hideTooltip()}
+				onclick={(e) => {
+					// a tap on a phone shows the card and keeps it until a tap elsewhere
+					if (touchLike) {
+						e.stopPropagation();
+						showTooltip(e, person);
+					}
+					onselect?.(selected === person.name ? null : person.name);
+				}}
 				role={onselect ? "button" : undefined}
 				tabindex={onselect ? 0 : undefined}
 				onkeydown={(e) =>
@@ -607,13 +659,13 @@
 			<strong>{person.name}</strong>
 			{#if metric === "tone"}
 				<div class="stat">
-					{person.count} {unit} · average {axis.format(person.tone)}
+					{person.count.toLocaleString()} {unit} · average {axis.format(person.tone)}
 				</div>
 				<div class="example harsh">{person.worst.headline}</div>
 				<div class="example warm">{person.best.headline}</div>
 			{:else if metric === "political"}
 				<div class="stat">
-					{person.politicalN} of her {person.count} {unit} are political ({axis.format(
+					{person.politicalN.toLocaleString()} of her {person.count.toLocaleString()} {unit} are political ({axis.format(
 						person.political
 					)})
 				</div>
@@ -622,7 +674,7 @@
 					</div>{/if}
 			{:else if metric === "appearance"}
 				<div class="stat">
-					{person.appearanceN} of her {person.count} {unit} are about her looks
+					{person.appearanceN.toLocaleString()} of her {person.count.toLocaleString()} {unit} are about her looks
 					({axis.format(person.appearance)})
 				</div>
 				{#if person.appearanceExample}<div class="example">
@@ -633,7 +685,7 @@
 					</div>{/if}
 			{:else if metric === "celebrity"}
 				<div class="stat">
-					{person.celebrityN} of her {person.count} {unit} are about her private
+					{person.celebrityN.toLocaleString()} of her {person.count.toLocaleString()} {unit} are about her private
 					life or looks ({axis.format(person.celebrity)})
 				</div>
 				{#if person.celebrityExample}<div class="example">
@@ -643,16 +695,16 @@
 						Fox never wrote about her private life or her looks.
 					</div>{/if}
 			{:else if metric === "performance"}
-				<p>
-					{person.performanceN} of her {person.count} {unit} are about her play
-					({axis.format(person.performance)}).
-				</p>
+				<div class="stat">
+					{person.performanceN.toLocaleString()} of her {person.count.toLocaleString()} {unit} are about her play
+					({axis.format(person.performance)})
+				</div>
 				{#if person.performanceExample}<div class="example">
 						{person.performanceExample}
 					</div>{/if}
 			{:else if metric === "differential"}
 				<div class="stat">
-					Fox {person.foxTone > 0 ? "+" : ""}{person.foxTone?.toFixed(2)} ({person.count})
+					Fox {person.foxTone > 0 ? "+" : ""}{person.foxTone?.toFixed(2)} ({person.count.toLocaleString()})
 					· other outlets {person.outletsTone > 0 ? "+" : ""}{person.outletsTone?.toFixed(
 						2
 					)} ({person.outletsN.toLocaleString()})
@@ -665,7 +717,7 @@
 				</div>
 			{:else}
 				<div class="stat">
-					{person.victimN} of {person.count} headlines ({axis.format(
+					{person.victimN.toLocaleString()} of {person.count.toLocaleString()} headlines ({axis.format(
 						person.victim
 					)})
 				</div>
@@ -692,24 +744,38 @@
 		display: block;
 	}
 
-	.baseline,
+	/* crisp axes to go with the headline table: a solid ink rule, ink
+	   ticks and labels in the chart face, the zero line a firm dash */
+	.baseline {
+		stroke: var(--color-ink-dark);
+		stroke-width: 1.5;
+		shape-rendering: crispEdges;
+	}
 	.tick {
-		stroke: rgba(42, 21, 3, 0.35);
+		stroke: var(--color-ink-dark);
 		stroke-width: 1;
+		shape-rendering: crispEdges;
 	}
 	.zero {
-		stroke: rgba(42, 21, 3, 0.28);
+		stroke: var(--color-ink-dark);
+		stroke-opacity: 0.55;
 		stroke-width: 1;
-		stroke-dasharray: 4 4;
+		stroke-dasharray: 3 3;
+		shape-rendering: crispEdges;
 	}
 	.axis {
-		font-size: 11px;
-		fill: rgba(42, 21, 3, 0.6);
-	}
-	.end-label {
+		font-family: var(--font-chart);
 		font-size: 12px;
+		font-variant-numeric: tabular-nums;
+		fill: var(--color-ink-dark);
+	}
+	/* the direction labels: the controls' face at a step down, in ink,
+	   ordinary capitals (one type system with the tabs above) */
+	.end-label {
+		font-family: var(--font-chart);
+		font-size: 13px;
 		font-weight: 700;
-		fill: rgba(42, 21, 3, 0.65);
+		fill: var(--color-ink-dark);
 	}
 
 	.face {
@@ -764,39 +830,50 @@
 		stroke-width: 3;
 	}
 
+	/* a white card like the headline table: the name as its serif title,
+	   the count as a grey subtitle, the headline as a quoted row */
 	.tip {
 		position: absolute;
 		transform: translate(-50%, -100%);
-		background: var(--color-ink-dark);
-		color: #fff;
-		font-size: 12.5px;
-		line-height: 1.45;
-		padding: 8px 11px;
-		border-radius: 4px;
+		background: var(--tip-bg);
+		color: var(--tip-ink);
+		border: 1px solid var(--tip-border);
+		border-radius: var(--tip-radius);
+		box-shadow: var(--tip-shadow);
+		font: var(--tip-body);
+		padding: var(--tip-pad);
 		pointer-events: none;
-		width: 360px;
+		width: 340px;
+		max-width: 100%;
 		z-index: 6;
 	}
+	/* the shared tooltip (variables.css) */
+	.tip strong {
+		display: block;
+		font: var(--tip-title);
+	}
 	.tip .stat {
-		color: var(--color-tip-muted);
-		margin-top: 2px;
+		margin-top: 3px;
+		font: var(--tip-body);
+		color: var(--tip-ink);
 	}
 	.tip .example {
-		margin-top: 6px;
-		padding-left: 8px;
-		font-style: italic;
-		border-left: 2px solid currentColor;
-		color: var(--color-tip-quote);
+		margin-top: 9px;
+		padding: 1px 0 1px 9px;
+		font: var(--tip-quote);
+		border-left: 3px solid var(--tip-rule);
 	}
+	/* the rule carries the tone; the words stay in ink */
 	.tip .harsh {
-		color: var(--color-tip-harsh);
+		border-left-color: var(--color-fox);
 	}
 	.tip .warm {
-		color: var(--color-tip-warm);
+		border-left-color: var(--color-politics);
 	}
 	.tip .none {
-		color: var(--color-tip-none);
-		border-left-color: rgba(255, 255, 255, 0.3);
+		color: var(--tip-sub);
+		font-style: italic;
+		border-left-color: rgba(28, 25, 23, 0.12);
 	}
 	/* a face that can be clicked, and the one that has been */
 	.face.pickable {

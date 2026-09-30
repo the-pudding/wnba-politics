@@ -1,35 +1,35 @@
 {
 	"Caitlin Clark": {
 		"group": "players",
-		"rx": "caitlin clark|\\bclark\\b",
+		"rx": "caitlin clark|(?<!alysha )(?<!ryan )\\bclark\\b",
 		"face": "caitlin-clark.png",
 		"bio": "Caitlin Elizabeth Clark is an American professional basketball player for the Indiana Fever of the Women's National Basketball Association (WNBA).",
 		"slug": "caitlin-clark"
 	},
 	"Angel Reese": {
 		"group": "players",
-		"rx": "angel reese|\\breese\\b",
+		"rx": "angel reese|(?<!arvell )(?<!julian )(?<!cate )\\breese\\b",
 		"face": "angel-reese.png",
 		"bio": "Angel Reese is an American professional basketball player for the Atlanta Dream of the Women's National Basketball Association (WNBA) and Rose of Unrivaled.",
 		"slug": "angel-reese"
 	},
 	"Brittney Griner": {
 		"group": "players",
-		"rx": "brittney griner|\\bgriner\\b",
+		"rx": "brittney griner|(?<!cherelle )\\bgriner\\b",
 		"face": "brittney-griner.png",
 		"bio": "Brittney Yvette Griner is an American professional basketball player for the Connecticut Sun of the Women's National Basketball Association (WNBA) and for the Vinyl of Unrivaled. She is a three-time Olympic gold medalist with the U.S.",
 		"slug": "brittney-griner"
 	},
 	"Sophie Cunningham": {
 		"group": "players",
-		"rx": "sophie cunningham|\\bcunningham\\b",
+		"rx": "sophie cunningham|(?<!cade )(?<!lindsey )(?<!ian )(?<!randall )(?<!brock )\\bcunningham\\b",
 		"face": "sophie-cunningham.png",
 		"bio": "Sophie Elizabeth Cunningham is an American professional basketball player for the Indiana Fever of the Women's National Basketball Association (WNBA). She played college basketball for the Missouri Tigers.",
 		"slug": "sophie-cunningham"
 	},
 	"DiJonai Carrington": {
 		"group": "players",
-		"rx": "dijonai|carrington",
+		"rx": "dijonai|(?<!bub )(?<!darren )\\bcarrington\\b",
 		"face": "dijonai-carrington.png",
 		"bio": "DiJonai Victoria Carrington is an American professional basketball player for the Chicago Sky of the Women's National Basketball Association (WNBA).",
 		"slug": "dijonai-carrington"
@@ -57,7 +57,7 @@
 	},
 	"Paige Bueckers": {
 		"group": "players",
-		"rx": "bueckers",
+		"rx": "(?<!bob )\\bbueckers\\b",
 		"face": "paige-bueckers.png",
 		"bio": "Paige Madison Bueckers is an American professional basketball player for the Dallas Wings of the Women's National Basketball Association (WNBA) and for Breeze of Unrivaled. She played college basketball for the UConn Huskies.",
 		"slug": "paige-bueckers"
@@ -71,7 +71,7 @@
 	},
 	"Breanna Stewart": {
 		"group": "players",
-		"rx": "breanna stewart|\\bstewart\\b",
+		"rx": "breanna stewart|(?<!isaiah )\\bstewart\\b",
 		"face": "breanna-stewart.png",
 		"bio": "Breanna Mackenzie Stewart, nicknamed \"Stewie\", is an American professional basketball player for the New York Liberty of the Women's National Basketball Association (WNBA) and for the Mist of Unrivaled.",
 		"slug": "breanna-stewart"
@@ -129,7 +129,7 @@
 	},
 	"Napheesa Collier": {
 		"group": "players",
-		"rx": "napheesa|collier",
+		"rx": "napheesa|(?<!charli )\\bcollier\\b",
 		"face": "napheesa-collier.png",
 		"bio": "Napheesa Collier, nicknamed \"Phee\", is an American professional basketball player for the Minnesota Lynx of the Women's National Basketball Association (WNBA) and for the Lunar Owls of Unrivaled.",
 		"slug": "napheesa-collier"
@@ -157,7 +157,7 @@
 	},
 	"DeWanna Bonner": {
 		"group": "players",
-		"rx": "dewanna|\\bbonner\\b",
+		"rx": "dewanna|(?<!wales )\\bbonner\\b",
 		"face": "dewanna-bonner.png",
 		"bio": "DeWanna Bonner is an American professional basketball player for the Atlanta Dream of the Women's National Basketball Association (WNBA). Bonner played college basketball for Auburn University. After a successful college career at Auburn, s",
 		"slug": "dewanna-bonner"
@@ -180,7 +180,7 @@
 	},
 	"Arike Ogunbowale": {
 		"group": "players",
-		"rx": "arike|ogunbowale",
+		"rx": "arike|(?<!dare )\\bogunbowale\\b",
 		"face": "arike-ogunbowale.png",
 		"bio": "Arike Faulina “Goomba” Ogunbowale is a Nigerian-American professional basketball player for the Dallas Wings of the Women's National Basketball Association (WNBA) and for the Mist of Unrivaled. She played college basketball for the Notre Dame Fighting Irish, before being drafted by the Wings with the fifth overall pick of the 2019 WNBA draft.",
 		"slug": "arike-ogunbowale",
@@ -188,7 +188,7 @@
 	},
 	"Marina Mabrey": {
 		"group": "players",
-		"rx": "marina mabrey|mabrey",
+		"rx": "marina mabrey|(?<!dara )(?<!michaela )\\bmabrey\\b",
 		"face": "marina-mabrey.png",
 		"bio": "Marina Alise Mabrey, nicknamed \"Money Mabrey\", is an American professional basketball player for the Toronto Tempo of the Women's National Basketball Association (WNBA) and for Lunar Owls of Unrivaled.",
 		"slug": "marina-mabrey",
@@ -196,7 +196,7 @@
 	},
 	"Jewell Loyd": {
 		"group": "players",
-		"rx": "jewell loyd|\\bloyd\\b",
+		"rx": "jewell loyd|(?<!jarryd )\\bloyd\\b",
 		"face": "jewell-loyd.png",
 		"bio": "Jewell Loyd is an American professional basketball player for the Las Vegas Aces of the Women's National Basketball Association (WNBA). Nicknamed the \"Gold Mamba\", she played college basketball at Notre Dame and was selected first overall by the Seattle Storm in the 2015 WNBA draft.",
 		"slug": "jewell-loyd",

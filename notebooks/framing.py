@@ -99,6 +99,9 @@ def words_under(tokens):
     return {clean(sub.text) for t in tokens for sub in t.subtree}
 
 
+from lookalikes import mask
+
+
 def attribute(nlp, headlines, groups, register, name_rx=None):
     """{player: [headline rows]} each qualifying headline is grammatically about.
 
@@ -117,7 +120,9 @@ def attribute(nlp, headlines, groups, register, name_rx=None):
     # pattern-matching rewrite of 2026-09-28)
     trigger_rx = re.compile(r"\b(?:" + "|".join(rf"(?:{t})" for t in sorted(trigger_terms, key=len, reverse=True)) + r")\b", re.I) if trigger_terms else None
     scrub = scrub_rx(register)
-    text_for = (lambda r: scrub.sub(" ", r["t"])) if scrub else (lambda r: r["t"])
+    # look-alikes' surnames blanked ("Ryan Clark" -> "Ryan Cxxxx", same length)
+    # so the surname test below cannot hand his words to Caitlin (2026-09-29)
+    text_for = (lambda r: scrub.sub(" ", mask(r["t"]))) if scrub else (lambda r: mask(r["t"]))
     attributed = defaultdict(list)
     for row, doc in zip(headlines, nlp.pipe([text_for(r) for r in headlines], batch_size=64)):
         # who is in the headline: each person's own pattern from people.json
@@ -151,7 +156,7 @@ def attribute(nlp, headlines, groups, register, name_rx=None):
             if owned & PRONOUNS:
                 pronoun_at = min(pronoun_at, hit.idx) if pronoun_at is not None else hit.idx
         if not owners_found and pronoun_at is not None:
-            who = nearest_named(row["t"], present, pronoun_at)
+            who = nearest_named(mask(row["t"]), present, pronoun_at)
             if who:
                 owners_found.add(who)
         for name in owners_found:

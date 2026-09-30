@@ -6,6 +6,7 @@
 // frequency for the x-axis, and the per-side counts for the hover. Our data
 // stores each side's list separately with an unsigned score, so the sign is put
 // back on and the two lists are merged.
+import { inOutlet, outletName } from "$utils/outlets.js";
 import data from "$data/player_words.json";
 import phrases from "$data/player_phrases.json";
 // hand-picked tooltip examples, keyed "player | relation | word"
@@ -68,7 +69,7 @@ export function playerWordsSource({ who, rel, vs, pair, outlet = null, byOutlet 
 			scored: entry.scored,
 			counts: entry.counts,
 			top: `${who} in Fox News`,
-			bottom: "everyone else writing about her",
+			bottom: "other outlets",
 			topShort: "in Fox News",
 			bottomShort: "in the other outlets"
 		};
@@ -86,16 +87,16 @@ export function playerWordsSource({ who, rel, vs, pair, outlet = null, byOutlet 
 				scored: single.scored,
 				counts: single.counts,
 				top: `${who} in Fox News`,
-				bottom: `${/outlets|news$/.test(outlet) ? "the " + outlet : outlet} writing about her`,
+				bottom: outletName(outlet),
 				topShort: "in Fox News",
-				bottomShort: `in ${/outlets|news$/.test(outlet) ? "the " + outlet : outlet}`
+				bottomShort: inOutlet(outlet)
 			};
 		} else if (vs === "outlets" && person.vsOutlets?.[rel]) {
 			block = {
 				scored: person.vsOutlets[rel],
 				counts: person.vsCounts?.[rel],
 				top: `${who} in Fox News`,
-				bottom: "everyone else writing about her",
+				bottom: "other outlets",
 				topShort: "in Fox News",
 				bottomShort: "in the other outlets"
 			};

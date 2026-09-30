@@ -127,49 +127,37 @@
 			onselect={(name) => (picked = name)}
 		/>
 	</div>
-	<p class="pick-note">
-		{#if picked}
-			Showing headlines naming <b>{picked}</b>.
-			<button class="clear" onclick={() => (picked = null)}
-				>show everyone</button
-			>
-		{:else}
-			Click a face to see only her headlines.
-		{/if}
-	</p>
-	<HeadlineTable
-		embedded
-		frame={FRAME_OF[view]}
-		players={picked ? [picked] : []}
-	/>
+	<!-- a face picked on the swarm filters the table below; the table's own
+	     "Clear filters" undoes it -->
+	<div class="wide-table">
+		<HeadlineTable
+			embedded
+			frame={FRAME_OF[view]}
+			players={picked ? [picked] : []}
+			onplayers={(list) => (picked = list[0] ?? null)}
+		/>
+	</div>
 </div>
 
 <style>
+	/* the table closes the section, so it runs wider than the text column,
+	   up to 860px, centred on the page as the full-bleed charts are */
+	.wide-table {
+		width: min(860px, calc(100vw - 32px));
+		margin-left: 50%;
+		transform: translateX(-50%);
+	}
 	.framing-tabs {
 		max-width: 920px;
 		margin: 0 auto;
 	}
+	/* the chart's subtitle, in the headline table's subtitle style, on the
+	   column's left edge under the control row */
 	.blurb {
-		text-align: center;
-		font-size: 12.5px;
-		color: rgba(42, 21, 3, 0.65);
-		margin: 0 0 14px;
-	}
-	.pick-note {
-		font-family: var(--font-chart);
-		font-size: 12.5px;
-		color: rgba(42, 21, 3, 0.65);
-		text-align: center;
-		margin: 6px 0 0;
-	}
-	.pick-note .clear {
-		font: inherit;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		background: transparent;
-		color: rgba(42, 21, 3, 0.7);
-		border-radius: 4px;
-		padding: 1px 8px;
-		margin-left: 6px;
-		cursor: pointer;
+		text-align: left;
+		font-family: var(--font-sans);
+		font-size: 14px;
+		color: var(--ink-muted);
+		margin: 8px 0 16px;
 	}
 </style>

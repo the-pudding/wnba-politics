@@ -76,39 +76,22 @@ def clean(text):
     return re.sub(r"\s+", " ", t).strip()
 
 
-# a surname shared with someone else in the corpus: when the look-alike is
-# named anywhere in the article and the player's own first name is not, a
-# bare surname in that article is not her ("Taurasi re-signs in Phoenix
-# while Clark heads to Washington" is Alysha Clark)
-LOOKALIKES = {
-    "Caitlin Clark": (re.compile(r"alysha\W{0,3}clark", re.I), re.compile(r"caitlin", re.I)),
-    "Brittney Griner": (re.compile(r"cherelle\W{0,3}griner", re.I), re.compile(r"brittney", re.I)),
-    "Napheesa Collier": (re.compile(r"charli\W{0,3}collier", re.I), re.compile(r"napheesa", re.I)),
-    "Sophie Cunningham": (re.compile(r"cade\W{0,3}cunningham", re.I), re.compile(r"sophie", re.I)),
-    "Breanna Stewart": (re.compile(r"isaiah\W{0,3}stewart", re.I), re.compile(r"breanna", re.I)),
-    "Angel Reese": (re.compile(r"arvell\W{0,3}reese", re.I), re.compile(r"angel", re.I)),
-}
+# a surname shared with someone else in the coverage (Ryan Clark, Cherelle
+# Griner, Cade Cunningham): a bare surname goes to whoever was last named in
+# full before it; see notebooks/lookalikes.py
+from lookalikes import bare_is_her
 
 
-def ambiguous_in(article_text):
-    return {name for name, (lookalike, required) in LOOKALIKES.items()
-            if lookalike.search(article_text) and not required.search(article_text)}
-
-
-def players_in(sentence, ambiguous=frozenset()):
+def players_in(sentence, article="", offset=0):
+    """The roster players a sentence names; `offset` is where the sentence
+    starts in `article` (headline, then body), for the look-alike rule."""
     text = sentence.replace("’", "'")
     found = set()
     for m in NAME_RE.finditer(text):
         alias = m.group(1).lower()
         name = LOOKUP[alias]
-        # in an ambiguous article only the full name counts; and a sentence
-        # that names the look-alike herself is hers even in a clear article
-        if " " not in alias:
-            if name in ambiguous:
-                continue
-            rule = LOOKALIKES.get(name)
-            if rule and rule[0].search(text) and not rule[1].search(text):
-                continue
+        if " " not in alias and not bare_is_her(name, article, offset + m.start(), offset):
+            continue
         found.add(name)
     return sorted(found)
 
@@ -139,18 +122,20 @@ def main():
                 heads.append(clean(r.get("headline")))
                 bodies.append(clean(r.get("body")))
                 meta.append((r.get("date", ""), r.get("url", "")))
-            amb = [ambiguous_in(h + " " + b) for h, b in zip(heads, bodies)]
+            # the article as the look-alike rule reads it: headline, then body
+            arts = [(h + "\n" + b).replace("’", "'") for h, b in zip(heads, bodies)]
             # headlines are one sentence each
-            for (date, url), head, a in zip(meta, heads, amb):
-                for player in players_in(head, a):
+            for (date, url), head, art in zip(meta, heads, arts):
+                for player in players_in(head, art, 0):
                     writer.writerow([outlet, date, url, player, 1, head])
                     rows_out += 1
-            for (date, url), doc, a in zip(meta, nlp.pipe(bodies, batch_size=64), amb):
+            for (date, url), head, doc, art in zip(meta, heads, nlp.pipe(bodies, batch_size=64), arts):
                 for sent in doc.sents:
                     text = sent.text.strip()
                     if len(text) < 15:
                         continue
-                    for player in players_in(text, a):
+                    start = len(head) + 1 + sent.start_char + (len(sent.text) - len(sent.text.lstrip()))
+                    for player in players_in(text, art, start):
                         writer.writerow([outlet, date, url, player, 0, text])
                         rows_out += 1
     print(f"wrote {OUT.relative_to(ROOT)} ({rows_out:,} rows)", file=sys.stderr)

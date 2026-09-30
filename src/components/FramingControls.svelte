@@ -26,7 +26,9 @@
 			</select>
 		</label>
 	{/if}
-	<div class="toggle-group" role="group" aria-label="How to measure the framing">
+	<!-- the measure as tabs, like the player-words chart's; the count basis
+	     is a smaller switch on the line below -->
+	<div class="toggle-group tabs" role="group" aria-label="How to measure the framing">
 		{#each views as option (option.key)}
 			<button class:active={view === option.key} onclick={() => (view = option.key)}
 				>{option.label}</button
@@ -34,12 +36,12 @@
 		{/each}
 	</div>
 	{#if showBasis}
-		<div class="toggle-group" role="group" aria-label="Counted over">
+		<div class="toggle-group switch" role="group" aria-label="Counted over">
 			<button class:active={basis === "headlines"} onclick={() => (basis = "headlines")}
-				>headlines</button
+				>Headlines</button
 			>
 			<button class:active={basis === "sentences"} onclick={() => (basis = "sentences")}
-				>sentences</button
+				>Sentences</button
 			>
 		</div>
 	{/if}
@@ -62,13 +64,19 @@
 </div>
 
 <style>
+	/* one control row on one ink rule, flush with the column's left edge
+	   (the section title, the chart's axis and the table below share it):
+	   the measure as tabs on the left, the count basis as a quiet text
+	   switch at the right end (2026-09-29) */
 	.pick {
 		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 10px;
 		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 0 16px;
+		width: 100%;
 		margin: 4px 0 8px;
+		border-bottom: 2px solid var(--color-ink-dark);
 	}
 	.pick label {
 		display: inline-flex;
@@ -93,8 +101,7 @@
 		background: var(--color-paper);
 		color: var(--color-ink);
 	}
-	/* the same tabs as the fightin' words chart: the browser's own button
-	   font, so the black tab and its frame line up crisply */
+	/* the other switches (rows / swarm, face size): a small outlined group */
 	.toggle-group {
 		display: inline-flex;
 		border: 1px solid rgba(42, 21, 3, 0.3);
@@ -116,5 +123,101 @@
 	.toggle-group button.active {
 		background: var(--color-ink);
 		color: #fff;
+	}
+
+	/* the measure as tabs: the open one filled in ink, standing on the rule */
+	.toggle-group.tabs {
+		display: flex;
+		align-items: stretch;
+		gap: 2px;
+		border: 0;
+		border-radius: 0;
+		overflow: visible;
+		margin-bottom: -2px;
+	}
+	.toggle-group.tabs button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		padding: 8px 16px 7px;
+		border: 2px solid transparent;
+		border-bottom: 0;
+		border-radius: 8px 8px 0 0;
+		background: transparent;
+		color: var(--ink-muted);
+		font-family: var(--font-sans);
+		font-size: 14px;
+		font-weight: 700;
+		transition: color 150ms ease, background 150ms ease;
+	}
+	.toggle-group.tabs button:first-child {
+		margin-left: 0;
+	}
+	.toggle-group.tabs button:hover:not(.active) {
+		color: var(--color-ink-dark);
+		background: rgba(255, 255, 255, 0.35);
+	}
+	.toggle-group.tabs button.active {
+		background: var(--color-ink-dark);
+		border-color: var(--color-ink-dark);
+		color: #fff;
+	}
+	.toggle-group.tabs button:focus-visible {
+		outline: 2px solid var(--color-fox);
+		outline-offset: 2px;
+	}
+
+	/* headlines / sentences: secondary, so quiet: two words, the chosen one
+	   in ink and underlined, sitting on the rule at the row's right end */
+	.toggle-group.switch {
+		display: flex;
+		align-items: baseline;
+		gap: 12px;
+		padding-bottom: 8px;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+		overflow: visible;
+	}
+	.toggle-group.switch button {
+		padding: 0;
+		background: transparent;
+		color: var(--ink-muted);
+		font-family: var(--font-sans);
+		font-size: 14px;
+		font-weight: 700;
+	}
+	.toggle-group.switch button:hover {
+		color: var(--color-ink-dark);
+	}
+	.toggle-group.switch button.active {
+		background: transparent;
+		color: var(--color-ink-dark);
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 4px;
+	}
+
+	@media (max-width: 640px) {
+		.pick {
+			border-bottom: 0;
+		}
+		.toggle-group.tabs {
+			width: 100%;
+			margin-bottom: 0;
+			border-bottom: 2px solid var(--color-ink-dark);
+		}
+		.toggle-group.tabs button {
+			flex: 1 1 0;
+			min-width: 0;
+			margin-bottom: -2px;
+			padding: 6px 2px 5px;
+			font-size: 12px;
+		}
+		.toggle-group.switch {
+			margin: 8px 0 0 auto;
+			padding-bottom: 0;
+		}
 	}
 </style>
