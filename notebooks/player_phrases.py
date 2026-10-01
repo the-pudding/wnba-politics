@@ -19,7 +19,8 @@ STOP = set("""a an the and or but of in on at to for with by from as is are was 
 this that these those i you he she they we his her their our your my not no do does did has have had
 will would can could should may might must about after before over under again more most other some
 such only own same so too very what which who whom when where why how all any both each few said says
-say new just also even still back one two her's she's it's""".split())
+say new just also even still back one two her's she's it's
+first second last""".split())   # first/second/last: game-time ordinals, not framing (2026-09-30)
 BAD = re.compile(r"\b(?:contributed report|click here|view post|instagram post|post instagram|getty images|"
                  r"associated press|fox news|fox sports|news digital|read more|foxnews com|usa today)\b")
 # names and teams, belt and braces: any part of a roster name (unless it is
@@ -68,7 +69,10 @@ for player, sides in rows.items():
             if m and len(s) <= 320: return s.strip(), m.group(0)
         return "", ""
     sides_out = {"clark": [], "others": []}
-    for phrase, z in scored:
+    # strongest first on both sides: bayes_compare_language returns the scores
+    # in ascending order, so reading it straight gave Fox's side the phrases
+    # nearest zero (fixed 2026-09-30)
+    for phrase, z in sorted(scored, key=lambda t: -abs(t[1])):
         i = idx.get(phrase)
         if i is None: continue
         nf, no = int(f_ct[i]), int(o_ct[i])
@@ -78,7 +82,6 @@ for player, sides in rows.items():
         if len(sides_out[side]) >= TOP: continue
         eg, egw = example(phrase, fox if side == "clark" else oth)
         sides_out[side].append({"word": phrase, "z": round(abs(float(z)), 2), "clark": nf, "others": no, "top": True, "eg": eg, "egw": egw})
-    # scored is sorted Fox-first; the others' side needs its own strongest first
     sides_out["others"].sort(key=lambda w: -w["z"])
     out[player] = {"scored": sides_out, "counts": {"clark": len(fox), "others": len(oth)}}
     print(f"{player:20} Fox {len(fox):5} · others {len(oth):5} · {[w['word'] for w in sides_out['clark'][:5]]}", flush=True)

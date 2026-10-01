@@ -97,3 +97,13 @@
   --128px: 8rem;
   --font-chart: "Atlas Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif; /** chart labels, in The Pudding's Atlas Grotesk (loaded in font.css) */
 }
+
+/* scrolly step cards: the essay's desktop text size on desktop (2026-09-30) */
+:root {
+  --step-text: 15.5px;
+}
+@media (min-width: 769px) {
+  :root {
+    --step-text: 19px;
+  }
+}

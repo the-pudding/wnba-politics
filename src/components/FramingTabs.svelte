@@ -140,12 +140,10 @@
 </div>
 
 <style>
-	/* the table closes the section, so it runs wider than the text column,
-	   up to 860px, centred on the page as the full-bleed charts are */
+	/* the table closes the section at the beeswarm's width, in the text
+	   column (2026-10-01) */
 	.wide-table {
-		width: min(860px, calc(100vw - 32px));
-		margin-left: 50%;
-		transform: translateX(-50%);
+		width: 100%;
 	}
 	.framing-tabs {
 		max-width: 920px;

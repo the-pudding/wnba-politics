@@ -162,7 +162,7 @@
 	.toggle-group button.active { background: var(--color-ink); color: #fff; }
 	.search-box { position: relative; width: min(240px, 60vw); }
 	.search-box input { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 6px 9px; border: 1px solid rgba(42, 21, 3, 0.3); border-radius: 3px; background: #fff; color: var(--color-ink); }
-	.search-box input:focus { outline: 2px solid var(--color-fox); outline-offset: 1px; }
+	.search-box input:focus { outline: none; outline-offset: 1px; }
 	.suggest { position: absolute; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 0; list-style: none; background: #fff; border: 1px solid rgba(42, 21, 3, 0.2); border-radius: 3px; box-shadow: 0 6px 18px rgba(42, 21, 3, 0.18); z-index: 6; overflow: hidden; text-align: left; }
 	.suggest li { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 6px 10px; font-size: 14px; cursor: pointer; }
 	.suggest li + li { border-top: 1px solid rgba(42, 21, 3, 0.08); }

@@ -7,7 +7,8 @@
 // stores each side's list separately with an unsigned score, so the sign is put
 // back on and the two lists are merged.
 import { inOutlet, outletName } from "$utils/outlets.js";
-import data from "$data/player_words.json";
+import DATA from "$data/player_words.json";
+const data = DATA;
 import phrases from "$data/player_phrases.json";
 // hand-picked tooltip examples, keyed "player | relation | word"
 import overrides from "$data/example_overrides.json";
@@ -18,7 +19,13 @@ const RELATION = {
 	describe: "how she is described",
 	play: "how her play is described",
 	all: "every word attached to her",
-	phrases: "two-word phrases in sentences about her"
+	phrases: "two-word phrases in sentences about her",
+	// each relation's two-word phrases (notebook 09, 2026-09-30)
+	subject2: "what she does, in two-word phrases",
+	object2: "what is done to her, in two-word phrases",
+	describe2: "how she is described, in two-word phrases",
+	play2: "how her play is described, in two-word phrases",
+	all2: "every two-word phrase attached to her"
 };
 
 // the players with a phrases comparison (notebooks/player_phrases.py)
@@ -34,8 +41,9 @@ export function playerWordsPeople() {
 
 // the single outlets a player's relation can be set against on its own
 // (notebook 09 stores one contrast per outlet that clears the same floor)
-export function playerWordsOutlets(who, rel) {
-	return data.players?.[who]?.vsByOutletKeys?.[rel] ?? [];
+// `alt`: another player_words.json to read instead (TEMPORARY: the no-college rerun)
+export function playerWordsOutlets(who, rel, alt = null) {
+	return (alt ?? data).players?.[who]?.vsByOutletKeys?.[rel] ?? [];
 }
 
 // the file holding a player's single-outlet comparisons (notebooks/site_data.py)
@@ -46,7 +54,8 @@ export function playerOutletFile(who) {
 // `outlet`: one comparison outlet's name, or null for everyone pooled. The
 // pooled groups ship in the bundle; a single outlet's block comes from the
 // player's fetched file, passed in as `byOutlet`
-export function playerWordsSource({ who, rel, vs, pair, outlet = null, byOutlet = null }) {
+export function playerWordsSource({ who, rel, vs, pair, outlet = null, byOutlet = null, alt = null }) {
+	const data = alt ?? DATA;
 	// the pooled comparison's examples, borrowed by a single-outlet view whose
 	// own words ship without any
 	let borrowed = null;

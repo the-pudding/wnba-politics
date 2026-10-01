@@ -53,12 +53,16 @@ def write_fighting_words(grid, lit):
     # article words and two-word phrases load separately, each when first shown
     (STATIC / "fw_articles.json").write_text(json.dumps(_compact(grid["articleWords"], POOLED), ensure_ascii=False))
     (STATIC / "fw_bigrams.json").write_text(json.dumps(_compact(grid["articleBigrams"], POOLED), ensure_ascii=False))
+    # three-word phrases (2026-09-30), when the notebook scored them
+    if grid.get("articleTrigrams"):
+        (STATIC / "fw_trigrams.json").write_text(json.dumps(_compact(grid["articleTrigrams"], POOLED), ensure_ascii=False))
     d = STATIC / "fw_outlet"; d.mkdir(exist_ok=True)
     for k in singles:
         (d / f"{slug(k)}.json").write_text(json.dumps({
             "headlines": _table(grid["words"], k),
             "articles": _table(grid["articleWords"], k),
             "bigrams": _table(grid["articleBigrams"], k),
+            "trigrams": _table(grid.get("articleTrigrams", []), k),
             "players": {p: _table(w, k) for p, w in grid["byPlayer"].items()}}, ensure_ascii=False))
     mb = lambda p: f"{p.stat().st_size / 1e6:.1f} MB"
     print(f"fighting_words.json {mb(SRC / 'fighting_words.json')} bundled; fw_articles.json {mb(STATIC / 'fw_articles.json')}, "
@@ -77,6 +81,18 @@ def write_player_words(slim):
         block["vsByOutletKeys"] = {rel: sorted(cmp) for rel, cmp in by.items()}
         if any(singles.values()):
             (d / f"{slug(who)}.json").write_text(json.dumps(singles, ensure_ascii=False))
+        # two-word phrases (the relations ending in 2, 2026-09-30) would double
+        # the bundle: they go to one file per player, fetched when switched on
+        phr = {}
+        for part in ("relations", "counts", "vsOutlets", "vsCounts", "vsByOutlet"):
+            got = {rel: v for rel, v in (block.get(part) or {}).items() if rel.endswith("2")}
+            for rel in got:
+                block[part].pop(rel)
+            if got:
+                phr[part] = got
+        if phr:
+            dp = STATIC / "player_phrases2"; dp.mkdir(parents=True, exist_ok=True)
+            (dp / f"{slug(who)}.json").write_text(json.dumps(phr, ensure_ascii=False))
     out = SRC / "player_words.json"
     out.write_text(json.dumps(slim, ensure_ascii=False))
     print(f"player_words.json {out.stat().st_size / 1e6:.1f} MB bundled; "

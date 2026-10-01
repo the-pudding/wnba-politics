@@ -24,6 +24,7 @@
 	import HeadlineGallery from "$components/HeadlineGallery.svelte";
 	import TvSet from "$components/TvSet.svelte";
 	import Subsections from "$components/Subsections.svelte";
+	import Aside from "$components/Aside.svelte";
 
 	const copy = getContext("copy");
 	const { body } = copy;
@@ -53,6 +54,7 @@
 		Gallery: HeadlineGallery,
 		TvSet,
 		Subsections,
+		Aside,
 		// legacy Doc ids — delete once the Doc carries component names
 		toc: Toc,
 		"outlet-topics": OutletTopicCompare,

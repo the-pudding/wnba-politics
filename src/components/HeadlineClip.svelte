@@ -97,7 +97,7 @@
 		font-family: var(--font-serif);
 		color: var(--color-ink-dark);
 	}
-	.clip-title :global(mark) {
+	.clip-title :global(mark:not(.pen)) {
 		color: inherit;
 		padding: 0 3px;
 		border-radius: 2px;

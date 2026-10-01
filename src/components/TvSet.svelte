@@ -112,7 +112,7 @@
 		outline: none;
 	}
 	.set:focus-visible .shell {
-		filter: drop-shadow(0 0 0 2px var(--color-fox));
+		filter: none;
 	}
 	/* the video behind, the set in front; the transparent screen shows it */
 	video {

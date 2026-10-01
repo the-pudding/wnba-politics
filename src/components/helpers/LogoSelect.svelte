@@ -150,7 +150,7 @@
 		text-overflow: ellipsis;
 	}
 	.current:focus-visible {
-		outline: 2px solid var(--color-fox);
+		outline: none;
 		outline-offset: 1px;
 	}
 	img {

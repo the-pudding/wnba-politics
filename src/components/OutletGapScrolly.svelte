@@ -105,7 +105,9 @@
 		justify-content: center;
 	}
 	.stack {
-		max-width: 300px;
+		/* the cards sit over the middle of the plot, which already shows
+		   through them: wider costs little here (2026-09-30) */
+		max-width: 420px;
 		opacity: 0.3;
 		transition: opacity 250ms ease;
 	}
@@ -118,7 +120,7 @@
 		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px;
 		border-radius: 3px;
-		font-size: 15.5px;
+		font-size: var(--step-text);
 		line-height: 1.5;
 		color: var(--color-ink);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);

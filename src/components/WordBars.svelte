@@ -7,6 +7,10 @@
 		source = null,
 		highlight = null,
 		top = 12,
+		// more: rank the list further than `top`, a page of `top` at a time
+		// with Previous / Next under the bars, the frame the same height
+		// (2026-10-01; it scrolled before)
+		more = 0,
 		example = null,
 		// labels: "on" (the word on its bar), "beside" (a column of words down
 		// the middle, the bars growing outward from it), "outside" (the bars
@@ -50,6 +54,11 @@
 	// fill: the scrolly asks the rows to stretch down the viewport, so a
 	// chart with fifteen bars uses the screen instead of a strip of it
 	let avail = $state(0);
+	// room left under the bars for what sits below them (the pager, the note),
+	// measured, so a two-line note under a pager is never cut off the screen
+	let belowEl = $state(null);
+	let pagerEl = $state(null);
+	const reserve = () => 24 + (belowEl?.offsetHeight ?? 0) + (pagerEl?.offsetHeight ?? 0);
 	$effect(() => {
 		if (!fill || !el) return;
 		rows;
@@ -60,9 +69,9 @@
 			const er = el.getBoundingClientRect();
 			if (sticky) {
 				const sr = sticky.getBoundingClientRect();
-				avail = sr.height - (er.top - sr.top) - 64;
+				avail = sr.height - (er.top - sr.top) - reserve();
 			} else {
-				avail = window.innerHeight - er.top - 64;
+				avail = window.innerHeight - er.top - reserve();
 			}
 		};
 		measure();
@@ -70,6 +79,7 @@
 		// the controls above the chart come and go with the step
 		const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
 		ro?.observe(el.parentElement ?? el);
+		if (belowEl) ro?.observe(belowEl);
 		return () => {
 			window.removeEventListener("resize", measure);
 			ro?.disconnect();
@@ -81,7 +91,7 @@
 		ROW_MAX = 44;
 	let ROW = $derived(
 		fill && avail > 0
-			? Math.max(ROW_MIN, Math.min(ROW_MAX, (avail - TOP - BOTTOM) / rows))
+			? Math.max(ROW_MIN, Math.min(ROW_MAX, (avail - TOP - BOTTOM) / viewRows))
 			: ROW_MIN
 	);
 	let height = $derived(TOP + rows * ROW + BOTTOM);
@@ -101,13 +111,29 @@
 			? Math.max(top, Math.min(TOP_MAX, Math.floor((avail - TOP - BOTTOM) / ROW_COMFY)))
 			: top
 	);
+	let paged = $derived(more > topN);
+	let page = $state(0);
+	// the words ranked on each side, up to `more`, and how many pages they fill
+	let ranked = $derived(Math.min(more, Math.max(side(1).length, side(-1).length)));
+	let pages = $derived(paged ? Math.max(1, Math.ceil(ranked / topN)) : 1);
 	function pick(list) {
+		if (paged) return list.slice(0, more).slice(page * topN, (page + 1) * topN);
 		const kept = list.slice(0, topN);
 		for (const p of list.slice(topN))
 			if (lit.has(p.word.toLowerCase())) kept.push(p);
 		return kept;
 	}
-	let rows = $derived(Math.max(fox.length, others.length, 1));
+	// every page is a full page tall, so the chart does not jump
+	let rows = $derived(paged ? topN : Math.max(fox.length, others.length, 1));
+	let viewRows = $derived(rows);
+	// a new comparison starts back on the first page
+	$effect(() => {
+		source;
+		page = 0;
+	});
+	$effect(() => {
+		if (page > pages - 1) page = pages - 1;
+	});
 
 	let GAP = $derived(narrow ? 4 : 10); // either side of the middle
 	let beside = $derived(String(labels).trim().toLowerCase() === "beside");
@@ -147,7 +173,13 @@
 		return narrow && (!m || m === "linear") ? "sqrt" : m;
 	});
 	let showScores = $derived(scores === true || String(scores) === "true");
-	let zs = $derived([...fox, ...others].map((p) => Math.abs(p.z)).sort((a, b) => b - a));
+	// paged, every page keeps the first page's scale: word 43's bar stays
+	// shorter than word 1's instead of filling the width again
+	let zs = $derived(
+		(paged ? [...side(1).slice(0, more), ...side(-1).slice(0, more)] : [...fox, ...others])
+			.map((p) => Math.abs(p.z))
+			.sort((a, b) => b - a)
+	);
 	let capZ = $derived(scaleMode === "cap" && zs.length > 1 ? zs[1] * 1.2 : Infinity);
 	let maxZ = $derived(Math.max(1, Math.min(zs[0] ?? 1, capZ)));
 	const shape = (z) => (scaleMode === "sqrt" ? Math.sqrt(z) : z);
@@ -211,6 +243,14 @@
 			: 0
 	);
 	const fmt = (z) => Math.abs(z).toFixed(1);
+	// the width the bars reach, both sides (the longest bar and its word), so
+	// the note under the chart wraps to the drawing rather than the frame
+	let plotWidth = $derived.by(() => {
+		let reach = 0;
+		for (const p of [...fox, ...others]) reach = Math.max(reach, LABEL + Math.max(len(p.z), textWidth(wordCase(p.word)) + 14));
+		// and no wider than 520px, so it reads as a caption, not a banner
+		return Math.round(Math.min(WIDTH, 520, 2 * (GAP + reach)));
+	});
 
 	// the example on hover, as on the scatter: the word's sentence with the
 	// form it took marked
@@ -316,14 +356,8 @@
 
 <div class="word-bars" bind:this={el}>
 	{#if source}
-		<svg
-			width={WIDTH}
-			{height}
-			viewBox="0 0 {WIDTH} {height}"
-			onmouseleave={() => (hovered = null)}
-			role="presentation"
-		>
-			<!-- column heads -->
+		<!-- the column heads -->
+		<svg width={WIDTH} height={TOP - 6} viewBox="0 0 {WIDTH} {TOP - 6}" role="presentation">
 			{#if source.bottomLogo}
 				<!-- mirrored: "← [logo] in ESPN", the wordmark on the outer side -->
 				{@const w = logoWidth(source.bottomLogo)}
@@ -361,6 +395,14 @@
 					>{source.topShort ?? "in Fox News"} →</text
 				>
 			{/if}
+		</svg>
+		<svg
+			width={WIDTH}
+			height={height - TOP + 6}
+			viewBox="0 {TOP - 6} {WIDTH} {height - TOP + 6}"
+			onmouseleave={() => (hovered = null)}
+			role="presentation"
+		>
 			<line class="axis" x1={mid} x2={mid} y1={TOP - 6} y2={height - BOTTOM} />
 
 			{#each [[fox, 1], [others, -1]] as [list, sign]}
@@ -370,7 +412,12 @@
 					{@const on = !anyLit || lit.has(p.word.toLowerCase())}
 					{@const weak = Math.abs(p.z) < WEAK_Z}
 					{@const color = sign > 0 ? FOX : OTHERS}
-					{@const tw = textWidth(wordCase(p.word))}
+					<!-- a label too long for its half (three-word phrases on a phone)
+					     shrinks just enough to fit, down to 9px -->
+					{@const room = mid - GAP - (beside || outside ? 0 : LABEL) - 18}
+					{@const tw0 = textWidth(wordCase(p.word))}
+					{@const fs = tw0 > room ? Math.max(9, (WORD_PX * room) / tw0) : WORD_PX}
+					{@const tw = (tw0 * fs) / WORD_PX}
 					{@const over = tw + 14 - w}
 					<!-- a word that overhangs its bar by a hair slides in by that much -->
 					{@const nudge = !beside && !outside && !tip_ && over > 0 && over <= 7 ? over : 0}
@@ -413,7 +460,7 @@
 							text-anchor={sign > 0 ? "start" : "end"}
 							fill="#fff"
 							style:--halo={color}
-							font-size={WORD_PX}>{wordCase(p.word)}</text
+							font-size={fs}>{wordCase(p.word)}</text
 						>
 						{#if capped(p.z)}
 							<!-- a break mark: the bar runs past the frame's scale -->
@@ -436,6 +483,13 @@
 				{/each}
 			{/each}
 		</svg>
+		{#if paged && pages > 1}
+			<div class="pager" bind:this={pagerEl}>
+				<button type="button" disabled={page === 0} onclick={() => (page -= 1)}>← Previous</button>
+				<span class="pager-range">{page * topN + 1}–{Math.min(ranked, (page + 1) * topN)} of {ranked}</span>
+				<button type="button" disabled={page >= pages - 1} onclick={() => (page += 1)}>Next →</button>
+			</div>
+		{/if}
 
 		{#if tip}
 			{@const color = tip.sign > 0 ? FOX : OTHERS}
@@ -459,9 +513,9 @@
 		{/if}
 
 		{#if noteMode === "custom"}
-			<p class="note">{@html note}</p>
+			<p class="note" bind:this={belowEl} style:max-width="{plotWidth}px">{@html note}</p>
 		{:else if noteMode === "stock"}
-			<p class="note">
+			<p class="note" bind:this={belowEl} style:max-width="{plotWidth}px">
 				Bars are each word's fightin'-words score. Faded bars score under {WEAK_Z},
 				within noise. Hover a bar for an example.
 			</p>
@@ -477,6 +531,37 @@
 	svg {
 		display: block;
 		overflow: visible;
+	}
+	/* Previous / Next: small underlined links, so they don't pull the eye off the bars */
+	.pager {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		margin-top: 6px;
+		font-family: var(--font-chart);
+		font-size: 12px;
+		color: var(--color-ink-dark);
+	}
+	.pager button {
+		appearance: none;
+		border: 0;
+		background: none;
+		padding: 2px 0;
+		color: var(--color-ink-dark);
+		font: inherit;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		cursor: pointer;
+	}
+	.pager button:disabled {
+		opacity: 0.3;
+		text-decoration: none;
+		cursor: default;
+	}
+	.pager-range {
+		font-variant-numeric: tabular-nums;
+		color: var(--ink-muted, rgba(26, 26, 26, 0.62));
 	}
 	.head {
 		font-family: var(--font-chart);
@@ -617,7 +702,7 @@
 		border-bottom-color: var(--tip-bg);
 	}
 	.note {
-		margin: 6px 0 0;
+		margin: 6px auto 0;
 		font-size: 12px;
 		color: rgba(42, 21, 3, 0.6);
 		text-align: center;

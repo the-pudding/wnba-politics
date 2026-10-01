@@ -14,6 +14,7 @@ before any notebook. Idempotent: a bundled fox_wnba.csv is unbundled first.
 """
 import csv, re, sys
 from pathlib import Path
+from dedupe import dedupe
 HERE = Path(__file__).resolve().parents[1]
 DATA = HERE / "data"
 csv.field_size_limit(10 ** 9)
@@ -64,6 +65,11 @@ for label, (out_name, members) in BUNDLES.items():
                 continue
             seen.add(k); r["outlet"] = label; rows.append(r); kept += 1
         print(f"  {label} <- {member}: {kept:,} rows" + (f" ({len(got) - kept} duplicate URLs skipped)" if len(got) != kept else ""))
+    # the same article under two members (a CBS Sports story on a CBS News
+    # station page, Fox's copy of an OutKick piece): one copy (dedupe.py)
+    rows, copies = dedupe(rows)
+    if copies:
+        print(f"  {label}: {len(copies)} duplicate copies across or within members dropped")
     rows.sort(key=lambda r: r["date"])
     with (DATA / out_name).open("w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=FIELDS); w.writeheader(); w.writerows(rows)

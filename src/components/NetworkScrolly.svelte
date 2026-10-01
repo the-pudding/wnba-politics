@@ -471,7 +471,7 @@
 	}
 
 	function highlightNames(headline) {
-		let html = escapeHtml(headline);
+		let html = escapeHtml(headline).replace(/==(.+?)==/g, '<mark class="pen">$1</mark>');
 		const used = new Set();
 		for (const { text, node } of NAME_PATTERNS) {
 			if (used.has(node.name)) continue;
@@ -733,12 +733,16 @@
 		node.fy = node.y = Math.max(24, Math.min(HEIGHT - 24, y));
 		dragMoved++;
 	}
-	function endDrag() {
-		if (!dragging && bgPressed && bgMoved < 4) selectedNames = [];
+	// click: false when the pointer only left the chart or the browser took the
+	// touch for a scroll (pointercancel). On a phone, a scroll that began on a
+	// face used to end in pointerleave and count as a tap on her, pinning her
+	// through every later step (2026-09-30)
+	function endDrag(event, click = true) {
+		if (!dragging && bgPressed && bgMoved < 4 && click) selectedNames = [];
 		bgPressed = false;
 		bgMoved = 0;
 		// moved < 4 = a click, not a drag
-		if (dragging && dragMoved < 4) {
+		if (dragging && dragMoved < 4 && click) {
 			selectedNames = selectedNames.includes(dragging)
 				? selectedNames.filter((n) => n !== dragging)
 				: [...selectedNames, dragging];
@@ -770,9 +774,33 @@
 
 	let hovered = $state(null);
 	const leaveGraph = (event) => {
-		endDrag(event);
+		endDrag(event, false);
 		hovered = null;
 	};
+	// a new step shows its own people: a face pinned on an earlier step lets go
+	let lastStep = stepIndex;
+	$effect(() => {
+		const s = stepIndex;
+		if (s !== lastStep) {
+			lastStep = s;
+			selectedNames = [];
+			hovered = null;
+		}
+	});
+	// a tap or click anywhere but the network and its own controls (the step
+	// cards included) lets go of the pinned faces; a tap on the chart's
+	// background already does
+	let rootEl = $state(null);
+	const KEEP = "svg.interactive, .compare-bar, .explore-bar, .drawer";
+	$effect(() => {
+		if (!selectedNames.length) return;
+		const away = (e) => {
+			const inside = e.target?.closest?.(KEEP);
+			if (!inside || !rootEl?.contains(inside)) selectedNames = [];
+		};
+		window.addEventListener("pointerdown", away);
+		return () => window.removeEventListener("pointerdown", away);
+	});
 	let neighbours = $derived.by(() => {
 		const map = new Map();
 		for (const edge of edges) {
@@ -887,7 +915,7 @@
 	}
 </script>
 
-<section class="network-scrolly" class:exploring={atFinalStep}>
+<section class="network-scrolly" class:exploring={atFinalStep} bind:this={rootEl}>
 	<div class="sticky">
 		<p class="year-label">
 			Fox News WNBA {LINK_WORD}s, 2019–<strong>{shownYear}</strong>
@@ -941,6 +969,7 @@
 			class="interactive"
 			onpointermove={moveDrag}
 			onpointerup={endDrag}
+			onpointercancel={(e) => endDrag(e, false)}
 			onpointerleave={leaveGraph}
 			onpointerdown={(e) => {
 				if (!dragging) {
@@ -1584,7 +1613,7 @@
 		opacity: 1;
 	}
 	.step-text {
-		font-size: 15.5px;
+		font-size: var(--step-text);
 		line-height: 1.55;
 		margin: 0;
 		color: var(--color-ink);
@@ -1657,7 +1686,7 @@
 		margin: 5px 0 0;
 		color: var(--color-ink-dark);
 	}
-	.headline-clip :global(mark) {
+	.headline-clip :global(mark:not(.pen)) {
 		background: transparent;
 		color: inherit;
 		padding: 0 1px;

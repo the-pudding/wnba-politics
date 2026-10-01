@@ -1,9 +1,5 @@
 topic,term
 transgender / trans,transgender
-transgender / trans,trans athlete
-transgender / trans,trans player
-transgender / trans,trans wom[ae]n
-transgender / trans,trans rights
 transgender / trans,gender eligib
 transgender / trans,biological (?:male|man|men|wom[ae]n|female)
 race / racism,racis
@@ -32,7 +28,6 @@ Trump,\btrump\b
 LGBTQ / sexuality,transgender
 LGBTQ / sexuality,gender eligib
 LGBTQ / sexuality,biological (?:male|man|men|wom[ae]n|female)
-race / racism,discrimination
 fouls,hip-?check
 fouls,\bpunch
 fouls,\bthroat\b

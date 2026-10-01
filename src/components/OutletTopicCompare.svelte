@@ -33,12 +33,18 @@
 		mark = "",
 		// markLabel: what the dashed rule is, shown on hover ("Republicans' letter to the WNBA")
 		markLabel = "",
+		// markNote: a short label with an arrow to the rule, on Fox's pane only
+		// ("Republicans send letter to commissioner" for the 2026-07-07 letter
+		// unless the Doc says otherwise; a long one wraps to two lines)
+		markNote = "",
 		// measure: what the panes open on, "share" or "count"
 		measure: startMeasure = "share",
 		// chips: the per-pane numbers beside the wordmark (false hides them)
 		chips = true,
-		wordsLabel = "See words included",
-		wordsNote = "An article counts when its headline or text contains any of these words or phrases."
+		// wordsLabel: the old fold-out's label, ignored now the words always show
+		wordsLabel = "",
+		// a line above the words, if the Doc gives one (none by default)
+		wordsNote = ""
 	} = $props();
 
 	const monthly = String(by).trim().toLowerCase() === "month";
@@ -61,7 +67,7 @@
 		topic === "lgbtq"
 			? "mention LGBTQ topics"
 			: topic === "fouls"
-				? "use the letter's foul words"
+				? "use foul words"
 				: "mention race";
 	const COLOR_OF = {
 		lgbtq: "var(--color-lgbtq)",
@@ -72,7 +78,7 @@
 	const PHRASE_OF = {
 		lgbtq: "LGBTQ+ topics",
 		polrace: "race",
-		fouls: "the letter's foul words",
+		fouls: "foul words",
 		protect: "“protect”"
 	};
 	const showAvg = average !== false && String(average).toLowerCase() !== "false";
@@ -92,6 +98,16 @@
 		return d.toLocaleDateString("en-US", m[3] ? { month: "long", day: "numeric", year: "numeric" } : { month: "long", year: "numeric" });
 	})();
 	// the piece's one dated rule is the Republicans' letter; a Doc can say otherwise with markLabel
+	const MARK_NOTE = String(markNote).trim() || (String(mark).trim() === "2026-07-07" ? "Republicans send letter to commissioner" : "");
+	// a long note breaks into two lines at the space nearest its middle
+	const MARK_LINES = (() => {
+		if (MARK_NOTE.length <= 22) return [MARK_NOTE];
+		const mid = MARK_NOTE.length / 2;
+		let cut = -1;
+		for (let i = 0; i < MARK_NOTE.length; i++)
+			if (MARK_NOTE[i] === " " && (cut < 0 || Math.abs(i - mid) < Math.abs(cut - mid))) cut = i;
+		return cut < 0 ? [MARK_NOTE] : [MARK_NOTE.slice(0, cut), MARK_NOTE.slice(cut + 1)];
+	})();
 	const MARK_TEXT = String(markLabel).trim() || (String(mark).trim() === "2026-07-07" ? "Republican lawmakers' letter to the WNBA" : "");
 	function showMarkTip(event, outlet) {
 		const box = event.currentTarget.closest(".otc").getBoundingClientRect();
@@ -102,15 +118,16 @@
 	const MAIN = COLOR_OF[topic] ?? "var(--color-politics)";
 	const SECOND = second ? COLOR_OF[second] : null;
 	const BOTH = second ? `color-mix(in srgb, ${MAIN} 50%, ${SECOND})` : null;
-	// the chips' shorthand for each topic, and the legend's words
+	// the chips' shorthand for each topic, and the tooltip's words
 	const SHORTHAND = { polrace: "race", lgbtq: "LGBTQ+", fouls: "foul words", protect: "protect" };
-	// the legend names the pinned topics' words outright
+	// the tooltip names the pinned topics' words outright
 	const LEGEND_OF = { fouls: "hip-check, poke, punch, throat", protect: "protect" };
-	const legend = [[topic, MAIN], ...(second ? [[second, SECOND]] : [])].map(([t, color]) => ({
-		label: LEGEND_OF[t] ?? PHRASE_OF[t] ?? t, color
+	// the key line's words: each topic by the name its caption below uses
+	const VERB_OF = { lgbtq: "mention", polrace: "mention", fouls: "use" };
+	const KEY_OF = { polrace: "race", lgbtq: "LGBTQ+ topics", fouls: "hip-check, poke, punch or throat", protect: "“protect”" };
+	const keyTopics = [[topic, MAIN], ...(second ? [[second, SECOND]] : [])].map(([t, color]) => ({
+		label: KEY_OF[t] ?? PHRASE_OF[t] ?? t, color
 	}));
-	if (second && ["parts", "split"].includes(String(stack).trim().toLowerCase()))
-		legend.splice(1, 0, { label: "both", color: `color-mix(in srgb, ${MAIN} 50%, ${SECOND})` });
 	const MIN_N = monthly ? 8 : 20;   // a period with fewer articles than this is not drawn: a share of 6 articles is noise
 	const AVG = "var(--color-ink-dark)"; // the average rule, apart from either topic colour
 
@@ -120,7 +137,7 @@
 	const TOPIC_GROUPS = {
 		polrace: [["Race", ["race / racism"]]],
 		lgbtq: [["LGBTQ+", ["LGBTQ / sexuality", "transgender / trans"]]],
-		fouls: [["The letter's foul words", ["fouls"]]],
+		fouls: [["Foul words", ["fouls"]]],
 		protect: [["“Protect”", ["protect"]]]
 	};
 	// the fouls topic is pinned in notebooks/topics.py (the sheet's rows are
@@ -136,7 +153,8 @@
 		"\\beye\\b": "eye",
 		"\\bflagrant\\b": "flagrant",
 		"\\bfouls?\\b": "foul / fouls",
-		"lgbtq?\\b": "LGBT / LGBTQ",
+		"lgbt?\\b": "LGBT",
+		"lgbtq?\\b": "LGBTQ",
 		"\\bblm\\b": "BLM",
 		"non-?binary": "nonbinary",
 		"trans wom[ae]n": "trans woman / women",
@@ -155,6 +173,21 @@
 			.replace(/\(\?:([^)]+)\)/g, (_, alts) => alts.split("|").join(" / "))
 			.replace(/\[ae\]/g, "a")
 			.replace(/\\/g, "");
+	// the list as a reader wants it: a phrase that only adds to a word already
+	// listed goes ("openly gay" under "gay", "trans women" under "trans"), and
+	// "trans" sits beside "transgender"
+	function tidyWords(words) {
+		const single = new Set(words.filter((w) => !/\s/.test(w)).map((w) => w.toLowerCase()));
+		let out = words.filter(
+			(w) => !/\s/.test(w) || !w.toLowerCase().split(/\s+/).some((part) => single.has(part))
+		);
+		const t = out.indexOf("trans"), tg = out.indexOf("transgender");
+		if (t > -1 && tg > -1 && t !== tg + 1) {
+			out.splice(t, 1);
+			out.splice(out.indexOf("transgender") + 1, 0, "trans");
+		}
+		return out;
+	}
 	const wordGroups = [
 		...(TOPIC_GROUPS[topic] ?? []),
 		...(second ? (TOPIC_GROUPS[second] ?? []) : [])
@@ -163,9 +196,8 @@
 		// a term listed in more than one of the pooled groups shows once
 		words: groups.length === 1 && PINNED_WORDS[groups[0]]
 			? PINNED_WORDS[groups[0]]
-			: [...new Set(termRows.filter((r) => groups.includes(r.topic)).map((r) => readable(r.term)))]
+			: tidyWords([...new Set(termRows.filter((r) => groups.includes(r.topic)).map((r) => readable(r.term)))])
 	}));
-	let wordsOpen = $state(false);
 
 	// the outlets with panels (shown most-to-least by their all-years average)
 	// (Fox's NBA coverage is in the data but not in the panels)
@@ -341,7 +373,9 @@
 
 	const W = 220,
 		H = 150;
-	const M = { left: 34, right: 8, top: 10, bottom: monthly ? 32 : 22 };
+	// right: room for the last year label, centred on the last point; left:
+	// the tick labels and the axis label turned up beside them
+	const M = { left: 46, right: 16, top: 10, bottom: monthly ? 32 : 22 };
 	// month mode: "Jan" / "Jul" on one row, the year on a row beneath at each
 	// January (and under the first column when the span starts mid-year)
 	const monthLabel = (period, index) => (period.endsWith("-01") ? "Jan" : period.endsWith("-07") ? "Jul" : "");
@@ -396,18 +430,21 @@
 <svelte:window bind:innerWidth={viewportWidth} />
 
 <div class="otc" class:mobile bind:this={root}>
-	<div class="top">
-		<div class="measure-toggle" role="group" aria-label="What the panes show">
+	<!-- the chart's key as one line over the panes: the measure switch,
+	     then what is counted, its colours named in the sentence -->
+	<p class="top">
+		<span class="measure-toggle" role="group" aria-label="What the panes show">
 			<button class:active={measure === "share"} onclick={() => (measure = "share")} title="Share of articles" aria-label="Share of articles">%</button>
 			<button class:active={measure === "count"} onclick={() => (measure = "count")} title="Number of articles" aria-label="Number of articles">#</button>
-		</div>
-		<!-- the colours, once, top right -->
-		<div class="legend" aria-label="Topics">
-			{#each legend as item (item.label)}
-				<span class="key"><i style="background:{item.color}"></i>{item.label}</span>
-			{/each}
-		</div>
-	</div>
+		</span>
+		<span class="key-words">
+			of WNBA {method === "headline" ? "headlines" : "articles"} that {VERB_OF[topic] ?? "mention"}
+			{#each keyTopics as item, k (item.label)}
+				{#if k > 0}{k < keyTopics.length - 1 ? ", " : keyTopics[k - 1].label.includes(" or ") ? ", or " : " or "}{/if}<span class="key"><i style="background:{item.color}"></i>{item.label}</span>
+			{/each}{#if parts}<span class="key both"> (<i style="background:{BOTH}"></i>both)</span>{/if},
+			by {monthly ? "month" : "year"}
+		</span>
+	</p>
 	<div class="grid">
 		{#each cells as cell, index (cell.outlet)}
 			{@const outlet = cell.outlet}
@@ -472,6 +509,11 @@
 							>
 						{/if}
 					{/each}
+					{#if showY}
+						<text class="y-label" transform="rotate(-90)" x={-(M.top + plotH / 2)} y="9" text-anchor="middle"
+							>{measure === "share" ? "% articles" : "# articles"}</text
+						>
+					{/if}
 					{#each yMinor as pct}
 						<line
 							class="grid-line minor"
@@ -566,6 +608,17 @@
 						<!-- a wider invisible line so the rule is easy to hover -->
 						<line class="mark-hit" x1={xMid(years.indexOf(MARK))} x2={xMid(years.indexOf(MARK))} y1={M.top} y2={M.top + plotH}
 							onpointermove={(e) => showMarkTip(e, outlet)} onpointerleave={() => (tip = null)} />
+						{#if MARK_NOTE && outlet === FOX}
+							<!-- on Fox's pane only: what the rule is, an arrow pointing at it -->
+							{@const mx = xMid(years.indexOf(MARK))}
+							<g class="mark-note">
+								<text x={mx - 16} y={M.top + 9} text-anchor="end"
+									>{#each MARK_LINES as line, i (i)}<tspan x={mx - 16} dy={i === 0 ? 0 : 11}>{line}</tspan>{/each}</text
+								>
+								<line x1={mx - 13} x2={mx - 3} y1={M.top + 5.5} y2={M.top + 5.5} />
+								<path d="M{mx - 2} {M.top + 5.5} l-4 -2.6 v5.2 z" />
+							</g>
+						{/if}
 					{/if}
 					{#each pts as p (p.year)}
 						<rect
@@ -583,27 +636,14 @@
 		{/each}
 	</div>
 
-	<!-- the vocabulary, folded away under the panels -->
+	<!-- the vocabulary, always shown under the panels as their caption
+	     (it was a fold-out "See words included" until 2026-10-01) -->
 	{#if wordGroups.length}
-		<div class="words">
-			<button
-				class="reveal"
-				onclick={() => (wordsOpen = !wordsOpen)}
-				aria-expanded={wordsOpen}
-			>
-				<!-- the label stays put; the caret says whether it is open -->
-				{wordsLabel}
-				<span class="caret">{wordsOpen ? "▴" : "▾"}</span>
-			</button>
-			{#if wordsOpen}
-				<div class="word-list">
-					<!-- what counts, then the words, in the same type -->
-					{#if wordsNote}<p>{@html wordsNote}</p>{/if}
-					{#each wordGroups as group (group.label)}
-						<p><b>{group.label}:</b> {group.words.join(", ")}</p>
-					{/each}
-				</div>
-			{/if}
+		<div class="word-list">
+			{#if wordsNote}<p>{@html wordsNote}</p>{/if}
+			{#each wordGroups as group (group.label)}
+				<p><b>{group.label}:</b> {group.words.join(", ")}</p>
+			{/each}
 		</div>
 	{/if}
 
@@ -646,54 +686,43 @@
 </div>
 
 <style>
-	.words {
+	/* the words counted: the chart's caption, in the caption type */
+	.word-list {
 		max-width: 640px;
-		margin: 14px auto 0;
-	}
-	/* a quiet text link on the page colour, not a box */
-	.reveal {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		margin: 0;
-		padding: 4px 6px;
-		border: 0;
-		background: transparent;
-		font: inherit;
+		margin: 12px auto 0;
 		font-size: 12.5px;
-		font-weight: 600;
-		color: var(--color-ink-dark);
-		cursor: pointer;
-	}
-	.reveal:hover {
-		text-decoration: underline;
-		text-underline-offset: 3px;
-	}
-	/* the toggle and the list sit at the left edge of the column */
-	.words {
+		line-height: 1.5;
 		text-align: left;
-	}
-	.word-list {
-		text-align: left;
-	}
-	.word-list {
-		padding: 10px 0 4px;
-		font-size: 13px;
-		line-height: 1.55;
-		color: var(--color-ink-dark);
+		color: rgba(42, 21, 3, 0.7);
 	}
 	.word-list p {
-		margin: 0 0 8px;
+		margin: 0 0 4px;
+	}
+	.word-list b {
+		font-weight: 600;
+		color: var(--color-ink-dark);
 	}
 	.otc {
 		position: relative;
 		max-width: 880px;
 		margin: 6px auto 4px;
 	}
+	/* thirty narrow columns, so a short last row can sit centred; the space
+	   between panes is each pane's own padding, not a column gap (thirty
+	   gaps of 22px outgrew a narrow box and squeezed every column to
+	   nothing, 2026-10-01) */
 	.grid {
 		display: grid;
 		grid-template-columns: repeat(30, minmax(0, 1fr));
-		gap: 16px 22px;
+		gap: 16px 0;
+	}
+	.grid > .pane {
+		padding: 0 11px;
+		min-width: 0;
+	}
+	/* a phone's two columns keep their own gap */
+	.mobile .grid > .pane {
+		padding: 0;
 	}
 	.mobile .grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -746,6 +775,11 @@
 	}
 	.mobile .tick {
 		font-size: 12px;
+	}
+	.y-label {
+		font-family: var(--font-sans);
+		font-size: 10.5px;
+		fill: rgba(42, 21, 3, 0.75);
 	}
 	.topic-line {
 		fill: none;
@@ -811,43 +845,40 @@
 		text-transform: uppercase;
 		opacity: 0.65;
 	}
+	/* the key line: the switch sits in the sentence at its size */
 	.top {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 10px;
-		margin: 0 0 10px;
-	}
-	.top .measure-toggle {
-		margin: 0;
-	}
-	.legend {
-		display: flex;
-		gap: 12px;
+		margin: 0 0 14px;
 		font-family: var(--font-chart);
-		font-size: 11px;
-		font-weight: 700;
+		font-size: 13px;
+		line-height: 1.6;
 		color: var(--color-ink);
 	}
-	.legend .key {
+	.top .measure-toggle {
 		display: inline-flex;
-		align-items: center;
-		gap: 5px;
+		vertical-align: 1px;
+		margin: 0 3px 0 0;
 	}
-	.legend i {
+	.top .measure-toggle button {
+		padding: 1px 8px;
+		min-width: 26px;
+		font-size: 12px;
+	}
+	.key {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 4px;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+	.key i {
 		display: inline-block;
-		width: 12px;
-		height: 12px;
-		border-radius: 3px;
+		width: 10px;
+		height: 10px;
+		border-radius: 2px;
+		align-self: center;
 	}
-	@media (max-width: 640px) {
-		.top {
-			flex-direction: column;
-			align-items: stretch;
-		}
-		.legend {
-			justify-content: flex-end;
-		}
+	.key.both {
+		font-weight: 400;
 	}
 
 	.tooltip {
@@ -895,6 +926,19 @@
 		border-radius: 2px;
 		margin-right: 5px;
 		vertical-align: -1px;
+	}
+	.mark-note text {
+		font-family: var(--font-chart);
+		font-size: 9.5px;
+		font-weight: 600;
+		fill: var(--color-ink-dark);
+	}
+	.mark-note line {
+		stroke: var(--color-ink-dark);
+		stroke-width: 1;
+	}
+	.mark-note path {
+		fill: var(--color-ink-dark);
 	}
 	.mark-hit {
 		stroke: transparent;

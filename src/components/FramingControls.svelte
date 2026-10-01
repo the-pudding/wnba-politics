@@ -76,7 +76,6 @@
 		gap: 0 16px;
 		width: 100%;
 		margin: 4px 0 8px;
-		border-bottom: 2px solid var(--color-ink-dark);
 	}
 	.pick label {
 		display: inline-flex;
@@ -133,7 +132,9 @@
 		border: 0;
 		border-radius: 0;
 		overflow: visible;
-		margin-bottom: -2px;
+		margin-bottom: 0; /* stands on the rule, which shows under each tab */
+		/* the rule runs only under the tabs (2026-10-01) */
+		border-bottom: 2px solid var(--color-ink-dark);
 	}
 	.toggle-group.tabs button {
 		display: flex;
@@ -163,7 +164,7 @@
 		color: #fff;
 	}
 	.toggle-group.tabs button:focus-visible {
-		outline: 2px solid var(--color-fox);
+		outline: none;
 		outline-offset: 2px;
 	}
 
@@ -199,9 +200,6 @@
 	}
 
 	@media (max-width: 640px) {
-		.pick {
-			border-bottom: 0;
-		}
 		.toggle-group.tabs {
 			width: 100%;
 			margin-bottom: 0;
@@ -210,7 +208,7 @@
 		.toggle-group.tabs button {
 			flex: 1 1 0;
 			min-width: 0;
-			margin-bottom: -2px;
+			margin-bottom: 0; /* stands on the rule, which shows under each tab */
 			padding: 6px 2px 5px;
 			font-size: 12px;
 		}

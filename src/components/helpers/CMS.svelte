@@ -35,10 +35,11 @@
 		"TvSet"
 	]);
 	// these render Doc copy of their own and need the component map for it
-	const NESTING = new Set(["Subsections"]);
+	const NESTING = new Set(["Subsections", "Aside"]);
 	// these draw their own title and caption
 	const SELF_CAPTIONED = new Set([
 		"Subsections",
+		"Aside",
 		"BoxScore",
 		"SimpleBars",
 		"HeadlineTable",
@@ -174,9 +175,12 @@
 					{/each}
 				</div>
 			{:else if b.type === "img"}
-				{@const [src, alt = "", caption = ""] = b.value
+				<!-- file | alt | caption | size (optional: small, medium, or a width
+				     in px) -->
+				{@const [src, alt = "", caption = "", size = ""] = b.value
 					.split("|")
 					.map((s) => s.trim())}
+				{@const maxW = { small: 380, medium: 500 }[size.toLowerCase()] ?? (parseInt(size) || null)}
 				{#if /\.pdf$/i.test(src)}
 					<!-- a PDF in the same block: letter.pdf | title | caption -->
 					<figure class="photo pdf">
@@ -188,7 +192,7 @@
 						{#if caption}<figcaption>{@html caption}</figcaption>{/if}
 					</figure>
 				{:else}
-					<figure class="photo">
+					<figure class="photo" style:max-width={maxW ? `${maxW}px` : null}>
 						<img src="{base}/images/{src}" {alt} loading="lazy" />
 						{#if caption}<figcaption>{@html caption}</figcaption>{/if}
 					</figure>
@@ -333,6 +337,16 @@
 		font-style: italic;
 		margin: 0;
 		color: var(--color-ink);
+	}
+	/* desktop: larger body text (2026-09-30); phones keep 17px */
+	@media (min-width: 769px) {
+		p,
+		ul,
+		ol,
+		.quote p {
+			font-size: 19px;
+			line-height: 1.6;
+		}
 	}
 	.quote cite {
 		display: block;

@@ -17,9 +17,14 @@ const RX = new RegExp(
 	"g"
 );
 
+// a nickname that is also a verb, followed by its particle, is the verb:
+// "fire off" (a tweet), "storm off", "sparks up" (2026-10-01)
+const PARTICLE = /^\s+(off|up|back|out|away|down|at|on|over|through)\b/;
+
 export function properCase(word) {
 	if (typeof word !== "string") return word;
-	return word.replace(RX, (m, before, name) =>
-		before + name.replace(/(^|\s)([a-z])/g, (x, s, c) => s + c.toUpperCase())
-	);
+	return word.replace(RX, (m, before, name, offset, whole) => {
+		if (PARTICLE.test(whole.slice(offset + m.length))) return m;
+		return before + name.replace(/(^|\s)([a-z])/g, (x, s, c) => s + c.toUpperCase());
+	});
 }

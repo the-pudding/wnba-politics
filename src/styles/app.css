@@ -252,3 +252,15 @@ span.other {
 	color: var(--color-outlets);
 	font-weight: 700;
 }
+
+/* the yellow marker pen behind ==highlighted== words, everywhere */
+mark.pen {
+	background: linear-gradient(to top, rgba(255, 230, 0, 0.55) 0 78%, transparent 78%);
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
+	padding: 0 2px;
+	margin: 0 -2px;
+	border-radius: 2px;
+	box-shadow: none;
+	color: inherit;
+}

@@ -15,6 +15,7 @@
 	const slug = (label) => label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 	let articleWords = $state(null);
 	let articleBigrams = $state(null);
+	let articleTrigrams = $state(null);
 	let outletStats = $state({});
 	const fetching = new Set();
 	async function ensureFile(key, url, assign) {
@@ -59,6 +60,9 @@
 	// logo each outlet's pill shows
 	import LogoSelect from "$components/helpers/LogoSelect.svelte";
 	import { properCase } from "$utils/properCase.js";
+	import { isGameTerm } from "$utils/gameWords.js";
+	import { isNameTerm } from "$utils/nameWords.js";
+	import { checks } from "$utils/checks.svelte.js";
 	import { COMPARISON, SPORTS, NEWS, GROUPS, AGGREGATES, LOGO as PILL_LOGO, LOGO_WIDTH, inOutlet, outletName } from "$utils/outlets.js";
 	// the wordmarks drawn under the chart for whatever Fox is set against: an
 	// outlet's own, or a group's members (all 13 would not fit: none for "all")
@@ -96,11 +100,15 @@
 		// note: the line under the bars (see WordBars)
 		note = undefined
 	} = $props();
-	// the explore step can flip this with the words/phrases pills
-	let bigrams = $state(false);
+	// words, two-word or three-word phrases: the Doc's `ngrams` sets it, the
+	// Show dropdown flips it (three-word phrases added 2026-09-30)
+	let gram = $state(1);
 	$effect(() => {
-		bigrams = String(ngrams).trim() === "2";
+		const n = String(ngrams).trim();
+		gram = n === "3" ? 3 : n === "2" ? 2 : 1;
 	});
+	// the article mode's key in the data and the example stores
+	let bodyKey = $derived(gram === 3 ? "trigrams" : gram === 2 ? "bigrams" : "articles");
 
 	// the outlet pills, as on the dot plot: "all", then one logo per outlet
 	const ALL_OUTLETS = "all outlets";
@@ -126,11 +134,38 @@
 	// while a file is still loading, keep showing what is on screen rather than
 	// flashing an empty chart (the words/phrases switch used to blank it)
 	let lastWords = [];
+	// A check, shown only with ?checks in the address (utils/checks.svelte.js):
+	// with or without college coverage, that the words hold on WNBA coverage
+	// alone. The no-college files come from a rerun of notebook 06 with college
+	// articles dropped from every outlet (static/data/nocollege/, 2026-09-30).
+	let college = $state("with");
+	let noCollege = $derived(college === "without" && player === ALL);
+	let nc = $state({ head: null, articles: null, bigrams: null, trigrams: null });
+	$effect(() => {
+		if (!noCollege) return;
+		if (!nc.head) ensureFile("nc-head", `${base}/data/nocollege/fw_headlines.json`, (v) => (nc = { ...nc, head: v }));
+		if (!nc.articles) ensureFile("nc-articles", `${base}/data/nocollege/fw_articles.json`, (v) => (nc = { ...nc, articles: v }));
+		if (!nc.bigrams) ensureFile("nc-bigrams", `${base}/data/nocollege/fw_bigrams.json`, (v) => (nc = { ...nc, bigrams: v }));
+		if (!nc.trigrams) ensureFile("nc-trigrams", `${base}/data/nocollege/fw_trigrams.json`, (v) => (nc = { ...nc, trigrams: v }));
+	});
+	// A check, shown only with ?checks: "Leave out" game words (the box score, results, teams and cities), so
+	// what is left is how the coverage talks about the league rather than the
+	// games, and/or people's names, so what is left is what is said rather than
+	// who it is said about (src/utils/gameWords.js, nameWords.js; 2026-09-30)
+	let leaveOut = $state("none");
+	let hideGame = $derived(leaveOut === "game" || leaveOut === "both");
+	let hideNames = $derived(leaveOut === "names" || leaveOut === "both");
 	let words = $derived.by(() => {
-		const next = bodyMode
-			? bigrams
-				? articleBigrams
-				: articleWords
+		const next = noCollege
+			? bodyMode
+				? nc[bodyKey]
+				: nc.head?.words
+			: bodyMode
+			? gram === 3
+				? articleTrigrams
+				: gram === 2
+					? articleBigrams
+					: articleWords
 			: player === ALL
 				? data.words
 				: (data.byPlayer?.[player] ?? []);
@@ -143,6 +178,7 @@
 		if (!bodyMode) return;
 		if (!articleWords) ensureFile("articles", `${base}/data/fw_articles.json`, (v) => (articleWords = v));
 		if (!articleBigrams) ensureFile("bigrams", `${base}/data/fw_bigrams.json`, (v) => (articleBigrams = v));
+		if (!articleTrigrams) ensureFile("trigrams", `${base}/data/fw_trigrams.json`, (v) => (articleTrigrams = v));
 	});
 	// a single outlet's numbers, one file per outlet, fetched on its pill
 	// the pools, the pair and the comparison outlets ship in the bundle; other pills are dev-only
@@ -153,7 +189,7 @@
 			ensureFile(against, `${base}/data/fw_outlet/${slug(against)}.json`, (v) => (outletStats = { ...outletStats, [against]: v }));
 	});
 	// the stats of a word in the current comparison: [z, n, fox, other]
-	let modeKey = $derived(bodyMode ? (bigrams ? "bigrams" : "articles") : "headlines");
+	let modeKey = $derived(bodyMode ? bodyKey : "headlines");
 	function statOf(entry) {
 		if (!single) return entry.s?.[against];
 		const table = outletStats[against];
@@ -179,7 +215,9 @@
 		).filter((o) => DEV || POOLED.includes(o))
 	);
 	let sample = $derived(
-		(bodyMode
+		(noCollege
+			? (bodyMode ? nc.head?.articleOutletN : nc.head?.outletN)?.[against]
+			: bodyMode
 			? data.articleOutletN?.[against]
 			: player === ALL
 				? data.outletN?.[against]
@@ -244,6 +282,7 @@
 		source
 			? source.points
 			: words
+					.filter((entry) => !(hideGame && isGameTerm(entry.word)) && !(hideNames && isNameTerm(entry.word)))
 					.map((entry) => [entry, statOf(entry)])
 					.filter(([, s]) => s && s[1] >= floor)
 					.map(([entry, s]) => ({
@@ -501,7 +540,7 @@
 	);
 	// a bar's example on hover, from the same stores as the scatter's card
 	function barExample(word, z = 0) {
-		const mode = bodyMode ? (bigrams ? "bigrams" : "articles") : "headlines";
+		const mode = bodyMode ? bodyKey : "headlines";
 		const hit = exampleFor(mode, word, z);
 		return hit?.[0] ? { s: hit[0], w: hit[1], o: hit[2] ?? null } : null;
 	}
@@ -509,7 +548,7 @@
 	let cardEx = $derived.by(() => {
 		if (!tip) return null;
 		if (source) return tip.eg ? { s: tip.eg, w: tip.egw, o: tip.ego ?? null } : null;
-		const mode = bodyMode ? (bigrams ? "bigrams" : "articles") : "headlines";
+		const mode = bodyMode ? bodyKey : "headlines";
 		const hit = exampleFor(mode, tip.word, tip.z ?? 0);
 		return { s: hit?.[0] ?? null, w: hit?.[1] ?? null, o: hit?.[2] ?? null };
 	});
@@ -586,7 +625,7 @@
 		<div class="chart-head">
 			<span class="head-mark"><img src="{base}/logos/{PILL_LOGO['Fox News'] ?? 'fox-news.svg'}" alt="" /></span>
 			<p class="heading">
-				<b>{bodyMode && bigrams ? "Phrases" : "Words"} in {player === ALL
+				<b>{bodyMode && gram === 3 ? "Three-word phrases" : bodyMode && gram === 2 ? "Phrases" : "Words"} in {player === ALL
 						? `WNBA ${bodyMode ? "articles" : "headlines"}`
 						: `headlines naming ${player}`}</b><br />
 				Fox News <span class="vs">vs.</span>
@@ -609,15 +648,42 @@
 				/>
 			</div>
 			{#if controls && bodyMode}
-				<!-- the same dropdown as the outlet's, with words for options -->
+				<!-- words at a time: 1, 2 or 3 (2026-10-01) -->
 				<div class="field">
-					<span class="field-label">Show</span>
+					<span class="field-label"># Words</span>
+					<div class="ngram-pick" role="group" aria-label="Words at a time">
+						{#each [1, 2, 3] as n (n)}
+							<button
+								type="button"
+								class:active={gram === n}
+								aria-pressed={gram === n}
+								title={n === 1 ? "Single words" : n === 2 ? "Two-word phrases" : "Three-word phrases"}
+								onclick={() => (gram = n)}>{n}</button
+							>
+						{/each}
+					</div>
+				</div>
+			{/if}
+			{#if checks.on && controls}
+				<div class="field">
+					<span class="field-label">Leave out</span>
 					<LogoSelect
-						options={["words", "phrases"]}
-						value={bigrams ? "phrases" : "words"}
-						onchange={(v) => (bigrams = v === "phrases")}
-						nameOf={(o) => (o === "phrases" ? "Phrases" : "Words")}
-						label="Show"
+						options={["none", "game", "names", "both"]}
+						bind:value={leaveOut}
+						nameOf={(o) => ({ none: "Nothing", game: "Game words", names: "Names", both: "Game words and names" })[o]}
+						label="Leave out"
+					/>
+				</div>
+			{/if}
+			{#if checks.on && controls && player === ALL}
+				<!-- a check: see `college` above -->
+				<div class="field">
+					<span class="field-label">College coverage</span>
+					<LogoSelect
+						options={["with", "without"]}
+						bind:value={college}
+						nameOf={(o) => (o === "with" ? "With college" : "Without college")}
+						label="College coverage"
 					/>
 				</div>
 			{/if}
@@ -664,7 +730,7 @@
 		<p class="sample">
 			{#if player === ALL}
 				{sample.fox.toLocaleString()} Fox {bodyMode ? "articles" : "headlines"} against
-				{sample.other.toLocaleString()} from {against}, April 2023 on.
+				{sample.other.toLocaleString()} from {against}, April 2023 on{noCollege ? ", college coverage left out" : ""}.
 			{:else}
 				{sample.fox.toLocaleString()} Fox headlines name {player}, against
 				{sample.other.toLocaleString()} from {against}.
@@ -686,6 +752,7 @@
 			{topName}
 			highlight={[...HIGHLIGHT]}
 			top={mobile ? 10 : 14}
+			more={50}
 			example={barExample}
 			onhover={() => {
 				if (!source) ensureExamples();
@@ -999,6 +1066,49 @@
 	}
 	/* the controls in the headline table's style: labelled fields, a
 	   heavy-edged white dropdown with its own caret, the same search box */
+	/* # words: one rounded box split into numbers, the active one filled */
+	.ngram-pick {
+		display: flex;
+		/* only as wide as its buttons, where the field runs the full row (on
+		   phones) */
+		align-self: flex-start;
+		width: max-content;
+		height: 38px;
+		box-sizing: border-box;
+		border: 2px solid var(--color-ink-dark);
+		border-radius: 8px;
+		overflow: hidden;
+		/* ink behind the buttons: where the rounded edge blends, it blends into
+		   the border, not a white sliver above the dark button */
+		background: var(--color-ink-dark);
+	}
+	.ngram-pick button {
+		appearance: none;
+		width: 36px;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		border-radius: 0;
+		background: #fff;
+		color: var(--color-ink-dark);
+		font-family: var(--font-sans);
+		font-size: 15px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+	.ngram-pick button + button {
+		border-left: 2px solid var(--color-ink-dark);
+	}
+	.ngram-pick button.active {
+		background: var(--color-ink-dark);
+		color: #fff;
+	}
+	/* no ring after a click; a keyboard user still sees which one has focus */
+	.ngram-pick button:focus-visible {
+		outline: none;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
 	.controls.filterbar {
 		display: flex;
 		flex-wrap: wrap;
@@ -1044,7 +1154,7 @@
 		font-size: 14.5px;
 	}
 	.search-box input[type="search"]:focus {
-		outline: 2px solid var(--color-fox);
+		outline: none;
 		outline-offset: 1px;
 	}
 	/* on a phone the controls shrink to the bars' scale: shorter fields,
@@ -1074,6 +1184,15 @@
 		}
 		.field :global(.logo-select .current::after) {
 			right: 10px;
+		}
+		/* the number buttons at the dropdowns' phone height */
+		.ngram-pick {
+			height: 32px;
+			border-radius: 6px;
+		}
+		.ngram-pick button {
+			width: 32px;
+			font-size: 13.5px;
 		}
 		.field :global(.logo-select .menu li) {
 			min-height: 30px;

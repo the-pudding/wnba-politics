@@ -20,6 +20,7 @@ and what went, and why, in data/<outlet>_dropped.csv.
     python3 notebooks/outlet_corpus_filter.py --report   # list, change nothing
 """
 import csv, shutil, sys, re
+from dedupe import dedupe
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -55,7 +56,25 @@ WNBA_SECTION = re.compile(r"(?<![a-z0-9])wnba(?![a-z0-9])", re.I)
 NOT_ARTICLE = re.compile(r"/(crosswords|puzzles|podcasts|videos?|slideshow|gallery|interactive|learning|audio|newsletters)/", re.I)
 
 
+# the print edition's multi-sport briefs pages (ProQuest): a WNBA brief among
+# hockey, golf and soccer items, under a section label ("PRO BASKETBALL") or the
+# first item's headline. Their WNBA items are mostly wire recaps the web corpus
+# already has (2026-10-01)
+SECTION = re.compile(r"(?<![A-Za-z])(PRO BASKETBALL|PRO FOOTBALL|HOCKEY|GOLF|SOCCER|TENNIS|BASEBALL|COLLEGES|"
+                     r"COLLEGE BASKETBALL|COLLEGE FOOTBALL|COLLEGE BASEBALL|AUTO RACING|TRACK AND FIELD|BOXING|"
+                     r"OLYMPICS|HORSE RACING|CYCLING|SWIMMING|THE DAY IN SPORTS)(?![A-Za-z])")
+
+
+def print_digest(row):
+    if "proquest.com" not in (row.get("url") or ""):
+        return False
+    return bool(re.fullmatch(r"[A-Z &,.'-]{4,}", (row.get("headline") or "").strip())) \
+        or len(set(SECTION.findall(row.get("body") or ""))) >= 2
+
+
 def why_drop(row):
+    if print_digest(row):
+        return "a print sports digest with a WNBA brief in it"
     if (row.get("url") or "").strip() in DROP_URLS or (row.get("headline") or "").strip() in DROP_HEADLINES:
         return "about another sport, with a passing WNBA mention"
     if NOT_ARTICLE.search(row.get("url") or ""):
@@ -81,7 +100,11 @@ def run(stem, report_only):
     for row in rows:
         why = why_drop(row)
         (drop if why else keep).append((row, why))
-    print(f"{stem}: {len(rows):,} articles → keep {len(keep):,}, drop {len(drop)}")
+    # one copy of each article (dedupe.py, 2026-09-30)
+    kept, copies = dedupe([row for row, _ in keep])
+    keep = [(row, None) for row in kept]
+    drop += copies
+    print(f"{stem}: {len(rows):,} articles → keep {len(keep):,}, drop {len(drop)} ({len(copies)} duplicate copies)")
     for row, why in drop[:8]:
         print(f"    - {row['date']} | {row['headline'][:70]} | {why}")
     if len(drop) > 8:

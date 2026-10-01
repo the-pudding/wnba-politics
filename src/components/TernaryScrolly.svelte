@@ -358,7 +358,7 @@
 		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px 15px;
 		border-radius: 3px;
-		font-size: 15.5px;
+		font-size: var(--step-text);
 		line-height: 1.5;
 		color: var(--color-ink);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
@@ -386,7 +386,7 @@
 		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px 15px;
 		border-radius: 3px;
-		font-size: 15.5px;
+		font-size: var(--step-text);
 		line-height: 1.5;
 		color: var(--color-ink);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
@@ -503,7 +503,7 @@
 		color: var(--color-ink);
 	}
 	.control input[type="search"]:focus {
-		outline: 2px solid var(--color-fox);
+		outline: none;
 		outline-offset: 1px;
 	}
 	.search-box {

@@ -8,6 +8,7 @@
 	import castData from "$data/cast_gap.json";
 	import roster from "$data/people.json";
 	import HeadlineClip from "$components/HeadlineClip.svelte";
+	import { checks } from "$utils/checks.svelte.js";
 	const faceFiles = Object.fromEntries(
 		Object.values(roster)
 			.filter((p) => p.face)
@@ -81,9 +82,24 @@
 		// a wider axis on desktop, for the scrolly with no clipping beside it
 		wide = false
 	} = $props();
-	const data =
+	const fullData =
 		source === "pairs" ? pairData : source === "cast" ? castData : gapData;
-	const PERIOD = `${monthYear(data.window.from)} – ${monthYear(data.window.to)}`;
+	// A check, shown only with ?checks in the address (utils/checks.svelte.js):
+	// with or without college coverage. The no-college numbers come from a rerun
+	// of notebook 05, cast_gap.py and pair_gap.py with college articles dropped
+	// (static/data/nocollege/src/, 2026-09-30).
+	let college = $state("with");
+	let ncData = $state(null);
+	$effect(() => {
+		if (college !== "without" || ncData) return;
+		const file = source === "pairs" ? "pair_gap" : source === "cast" ? "cast_gap" : "outlet_gap";
+		fetch(`${base}/data/nocollege/src/${file}.json`)
+			.then((r) => r.json())
+			.then((v) => (ncData = v))
+			.catch(() => {});
+	});
+	let data = $derived(college === "without" && ncData ? ncData : fullData);
+	let PERIOD = $derived(`${monthYear(data.window.from)} – ${monthYear(data.window.to)}`);
 	const pairs = source === "pairs";
 	const RATIO_CAP = reach + 1.6; // past the end of the axis, everyone sits at the edge
 	// a pair's short name: the two surnames
@@ -466,6 +482,13 @@
 				>
 			{/each}
 		</div>
+		{#if checks.on}
+			<!-- a check: see `college` above -->
+			<div class="picker college-pick">
+				<button class="all" class:active={college === "with"} onclick={() => (college = "with")}>With college</button>
+				<button class="all" class:active={college === "without"} onclick={() => (college = "without")}>Without college</button>
+			</div>
+		{/if}
 	</div>
 
 	{#if clipSlotWanted}
@@ -797,6 +820,9 @@
 		vertical-align: -1px;
 	}
 
+	.college-pick {
+		margin-top: 6px;
+	}
 	.picker {
 		display: flex;
 		justify-content: center;

@@ -15,7 +15,7 @@
 		CNN: "var(--color-cnn)",
 		MSNBC: "var(--color-msnbc)"
 	};
-	import { LOGO, SHORT as SHORT_NAMES } from "$utils/outlets.js";
+	import { LOGO, SHORT as SHORT_NAMES, outletName } from "$utils/outlets.js";
 	const LOGOS = Object.fromEntries(Object.entries(LOGO).map(([o, f]) => [o, { file: f, h: f.endsWith(".png") ? 22 : o === "Fox News" ? 22 : 14 }]));
 	// the outlets with a bare icon get their name beside it
 	const SHORT = SHORT_NAMES;
@@ -59,28 +59,47 @@
 		tip = { row, x: event.clientX - box.left, y: Math.min(Math.max(40, event.clientY - box.top), box.height - 40), flip: event.clientX - box.left > box.width - 260 };
 	}
 	let unit = $derived(source === "cable" ? "segments" : "articles");
+	let showCounts = $state(true); // counts first, shares a click away
 </script>
 
 <!-- dense: a dozen or more bars, so each count wears its "of N" on a second line
      and the chart takes the full column width -->
 <div class="simple-bars" class:dense={rows.length >= 10} class:horizontal={HORIZONTAL} style="--n: {rows.length}" bind:this={rootEl}>
 	{#if HORIZONTAL}
-	<div class="rows">
-		{#each rows as row (row.name)}
-			<div class="hrow">
-				<div class="hwho">
-					{#if LOGOS[row.name]}
-						<img src="{base}/logos/{LOGOS[row.name].file}" alt={row.name} style:height="{Math.min(LOGOS[row.name].h, 18)}px" />
-					{:else}<span>{SHORT[row.name] ?? row.name}</span>{/if}
+	<!-- a table of bars (2026-09-30): the outlet's name, its share on a track
+	     that runs to 100%, and its WNBA articles that year. Fox first, the
+	     others by share. Counts alone (no "of") fill to the most -->
+	{@const hasOf = rows.some((r) => r.of)}
+	{@const share = hasOf && !showCounts}
+	{@const ordered = hasOf
+		? [...rows].sort((a, b) => (b.name === "Fox News") - (a.name === "Fox News") || (share ? shareOf(b) - shareOf(a) : b.value - a.value))
+		: rows}
+	<div class="table" role="table">
+		<div class="thead" role="row">
+			{#if hasOf}
+				<!-- % or #: the share of each outlet's articles, or the articles
+				     themselves, in the header row over the names (2026-10-01) -->
+				<div class="measure-pick" role="group" aria-label="Show shares or counts">
+					<button type="button" class:active={showCounts} aria-pressed={showCounts} title="Number of articles" onclick={() => (showCounts = true)}>#</button>
+					<button type="button" class:active={!showCounts} aria-pressed={!showCounts} title="Share of each outlet's WNBA articles" onclick={() => (showCounts = false)}>%</button>
 				</div>
-				<div class="htrack" class:whole={SHARE} onpointermove={(e) => showTip(e, row)} onpointerleave={() => (tip = null)}>
-					{#if SHARE}<div class="hall"></div>{/if}
-					<div class="hbar" style="width:{SHARE ? shareOf(row) : (100 * row.value) / most}%; background:{row.color}"></div>
-					<!-- the number alone; the "of N" and the share wait in the tooltip -->
-					<span class="hvalue" style="left:calc({SHARE ? shareOf(row) : (100 * row.value) / most}% + 6px)"
-						>{SHARE ? pct(row) : row.value.toLocaleString()}</span
+			{:else}<span></span>{/if}
+			<span class="th">{share ? "Share of WNBA articles mentioning trans issues" : hasOf ? "WNBA articles mentioning trans issues" : unit}</span>
+			{#if hasOf}<span class="th total"><span class="full">Total articles</span><span class="brief">Total</span></span>{/if}
+		</div>
+		{#each ordered as row, i (row.name)}
+			{@const w = share ? shareOf(row) : (100 * row.value) / most}
+			{@const label = share ? `${Math.round(shareOf(row))}%` : row.value.toLocaleString()}
+			<div class="trow" role="row">
+				<span class="tname"><span class="full">{outletName(row.name)}</span><span class="brief">{SHORT[row.name] ?? row.name}</span></span>
+				<div class="ttrack" class:filled={share} onpointermove={(e) => showTip(e, row)} onpointerleave={() => (tip = null)}>
+					<div class="tbar" style="width:{w}%; background:{row.color}"></div>
+					<!-- the value inside the bar's end, or just past it on a short bar -->
+					<span class="tvalue" class:outside={w < 12} style={w < 12 ? `left:calc(${w}% + 7px)` : `right:calc(${100 - w}% + 8px)`}
+						>{label}</span
 					>
 				</div>
+				{#if hasOf}<span class="ttotal">{row.of.toLocaleString()}</span>{/if}
 			</div>
 		{/each}
 	</div>
@@ -90,7 +109,7 @@
 			<div class="col">
 				{#if SHARE}
 					<!-- the whole bar is every WNBA article the outlet ran that year;
-					     the filled part is those that mention trans athletes -->
+					     the filled part is those that mention trans issues -->
 					<div class="stem whole">
 						<span class="value" style="bottom:calc(100% + 5px)"
 							>{pct(row)}<span class="of">&nbsp;{row.value.toLocaleString()} of {row.of.toLocaleString()}</span></span
@@ -129,7 +148,7 @@
 			<strong>{SHORT[tip.row.name] ?? tip.row.name} · {year}</strong>
 			<p class="line">
 				{#if tip.row.of}
-					{tip.row.value.toLocaleString()} of its {tip.row.of.toLocaleString()} WNBA {unit} that year — {pct(tip.row)} — mention trans athletes.
+					{tip.row.value.toLocaleString()} of its {tip.row.of.toLocaleString()} WNBA {unit} that year — {pct(tip.row)} — mention trans issues.
 				{:else}
 					{tip.row.value.toLocaleString()} WNBA {unit}.
 				{/if}
@@ -141,8 +160,8 @@
 		{#if String(note).trim()}{@html note}{:else}{source === "cable"
 			? `WNBA segments on each network's chyrons in ${year}, through ${segments.through}.`
 			: SHARE
-				? `Each bar is all of an outlet's WNBA articles in ${year}; the filled part are those that mention trans athletes.`
-				: `Articles about the WNBA that mention trans athletes in ${year}, of each outlet's WNBA articles that year.`}{/if}
+				? `Each bar is all of an outlet's WNBA articles in ${year}; the filled part are those that mention trans issues.`
+				: `Articles about the WNBA that mention trans issues in ${year}, of each outlet's WNBA articles that year.`}{/if}
 	</p>
 	{/if}
 </div>
@@ -179,70 +198,135 @@
 		font: var(--tip-body);
 		color: var(--tip-ink);
 	}
-	/* the horizontal layout: a row per outlet, its wordmark on the left */
-	.rows {
+	/* % / #: set like the column titles beside it, the active one dark and underlined */
+	.measure-pick {
 		display: flex;
-		flex-direction: column;
-		gap: 7px;
-		padding: 4px 0;
-	}
-	.hrow {
-		display: grid;
-		grid-template-columns: 96px 1fr;
-		align-items: center;
 		gap: 10px;
+		align-self: end;
 	}
-	.hwho {
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-		font-size: 12px;
-		font-weight: 700;
+	.measure-pick button {
+		appearance: none;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		background: none;
+		font-family: var(--font-chart);
+		font-size: 13px;
+		line-height: inherit;
+		letter-spacing: 0.04em;
+		color: rgba(42, 21, 3, 0.45);
+		cursor: pointer;
+	}
+	.measure-pick button.active {
+		color: var(--color-ink-dark);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	/* the horizontal layout: a table of bars, name | bar on a track | total */
+	.table {
+		--name-w: 150px;
+		--total-w: 116px;
+		font-family: var(--font-chart);
 		color: var(--color-ink);
 	}
-	.hwho img {
-		max-width: 92px;
-		object-fit: contain;
+	.thead,
+	.trow {
+		display: grid;
+		/* the bars' column gives way before the totals do */
+		grid-template-columns: var(--name-w) minmax(0, 1fr) var(--total-w);
+		align-items: center;
+		column-gap: 14px;
 	}
-	.htrack {
+	.thead {
+		margin-bottom: 8px;
+		align-items: end;
+	}
+	.th {
+		white-space: nowrap;
+		font-size: 12px;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: rgba(42, 21, 3, 0.75);
+	}
+	.th.total,
+	.ttotal {
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+	}
+	.trow {
+		padding: 5px 0;
+	}
+	.tname {
+		font-size: 16px;
+		line-height: 1.2;
+	}
+	.tname .brief,
+	.th .brief {
+		display: none;
+	}
+	.ttotal {
+		font-size: 16px;
+	}
+	.ttrack {
 		position: relative;
-		height: 18px;
-		border-left: 1.5px solid var(--color-ink);
+		height: 36px;
 	}
-	.htrack .hall {
-		position: absolute;
-		inset: 0;
-		background: rgba(42, 21, 3, 0.1);
+	.ttrack.filled {
+		background: rgba(42, 21, 3, 0.09);
 	}
-	.hbar {
+	.tbar {
 		position: absolute;
 		left: 0;
 		top: 0;
 		height: 100%;
-		border-radius: 0 3px 3px 0;
 	}
-	.hvalue {
+	.tvalue {
 		position: absolute;
 		top: 50%;
 		transform: translateY(-50%);
+		font-size: 16px;
+		font-variant-numeric: tabular-nums;
+		color: #fff;
 		white-space: nowrap;
-		font-size: 12px;
-		font-weight: 800;
+	}
+	.tvalue.outside {
 		color: var(--color-ink);
 	}
-	.hvalue .of {
-		font-weight: 400;
-		opacity: 0.7;
-	}
 	.horizontal .note {
-		margin-top: 10px;
+		margin-top: 12px;
 	}
 	@media (max-width: 640px) {
-		.hrow {
-			grid-template-columns: 70px 1fr;
+		.table {
+			--name-w: 92px;
+			--total-w: 56px;
 		}
-		.hwho img {
-			max-width: 66px;
+		.thead,
+		.trow {
+			column-gap: 8px;
+		}
+		/* on a phone the header may take two lines rather than push the
+		   totals off the page */
+		.th {
+			font-size: 10.5px;
+			white-space: normal;
+			line-height: 1.25;
+		}
+		.tname,
+		.ttotal,
+		.tvalue {
+			font-size: 13.5px;
+		}
+		.ttrack {
+			height: 28px;
+		}
+		/* short names on a phone, one line each */
+		.tname .full,
+		.th .full {
+			display: none;
+		}
+		.tname .brief,
+		.th .brief {
+			display: inline;
 		}
 	}
 	/* one column per bar, the bars standing on a shared baseline */

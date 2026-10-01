@@ -85,12 +85,11 @@ export const faces = (html, base = "") =>
 		}
 	);
 
-export const hl = (html, color = "var(--color-race)") =>
-	tidy(html).replace(
-		/==(.+?)==/g,
-		(_, w) =>
-			`<mark style="background:${color}2e; box-shadow: inset 0 -2px 0 ${color}66">${w}</mark>`
-	);
+// ==word== anywhere (Doc text, clip titles, network headlines): the yellow
+// marker pen the foul reel uses, one highlighter across the piece
+// (2026-10-01; styled by mark.pen in app.css). `color` is no longer used.
+export const hl = (html, color = null) =>
+	tidy(html).replace(/==(.+?)==/g, (_, w) => `<mark class="pen">${w}</mark>`);
 
 export function parseClip(v) {
 	// a ((Name|face)) token carries a pipe of its own: shield it from the split

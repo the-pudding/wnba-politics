@@ -40,3 +40,6 @@ data/*.csv
 !data/*_dropped.csv
 !data/chyron_words.csv
 !data/fox_people_mentions.csv
+
+# no-college check data (?checks): local only, 120 MB with its parse caches
+static/data/nocollege/
