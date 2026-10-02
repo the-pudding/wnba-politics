@@ -740,8 +740,13 @@
 		}
 	}
 
-	/* look: plain — the threads named in plain words on a rule, on a white
-	   sheet (2026-10-02) */
+	/* look: plain — the threads named in plain words on a rule, the whole
+	   section (title too) one white sheet the width of the text (2026-10-02) */
+	.subsections.plain {
+		padding: 26px 28px 24px;
+		background: #fff;
+		border-radius: 4px;
+	}
 	.plain-title {
 		margin: 0 0 10px;
 		font-family: var(--font-graphic);
@@ -751,9 +756,7 @@
 		text-transform: uppercase;
 	}
 	.plain-sheet {
-		padding: 0 32px 22px;
 		background: #fff;
-		border-radius: 4px;
 	}
 	.plain-switch {
 		position: sticky;
@@ -837,8 +840,8 @@
 		outline: none;
 	}
 	@media (max-width: 640px) {
-		.plain-sheet {
-			padding: 0 14px 14px;
+		.subsections.plain {
+			padding: 20px 14px 16px;
 		}
 		.plain-switch {
 			gap: 18px;

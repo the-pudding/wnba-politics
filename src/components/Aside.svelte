@@ -112,6 +112,7 @@
 		class="card"
 		bind:this={card}
 		class:open
+		class:remote={isTv}
 		aria-expanded={open}
 		aria-controls={id}
 		onclick={(e) => (open ? close(e) : (asides.open = true))}
@@ -180,6 +181,10 @@
 	.card:hover {
 		box-shadow: 0 4px 0 var(--color-ink-dark);
 	}
+	/* a TV aside's card in a remote's grey plastic */
+	.card.remote {
+		background: linear-gradient(180deg, #e2dfdb, #cdc9c4);
+	}
 	.card:focus-visible {
 		outline: none;
 		outline-offset: 2px;
@@ -232,6 +237,13 @@
 		align-items: center;
 		justify-content: center;
 		color: inherit;
+	}
+	/* the TV button turns white once the TV is on, at once like a switch (a
+	   fade took the label through the button's own grey, a flash) */
+	.card.open .cta.tv {
+		background: #fff;
+		color: var(--color-ink-dark);
+		box-shadow: inset 0 0 0 2px var(--color-ink-dark);
 	}
 	.cta-words {
 		display: inline-grid;
