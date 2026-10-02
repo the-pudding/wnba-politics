@@ -7,7 +7,7 @@
 	import { flip } from "svelte/animate";
 	import { fade } from "svelte/transition";
 	// the vocabulary behind each topic, straight from the notebooks' term list
-	import termRows from "../../data/topic_terms.csv";
+	import { wordGroupsFor } from "$utils/topicWords.js";
 
 
 	let {
@@ -15,9 +15,10 @@
 		method = "body",
 		dots = null,
 		second = null,
-		// every outlet the same size, Fox first, in rows of three (two on phones),
-		// a short last row centred. Other arrangements tried along the way are in
+		// every outlet the same size, Fox first, in rows of `across` (three by
+		// default; two on phones whatever it says), a short last row centred. Other arrangements tried along the way are in
 		// archive/components/OutletTopicCompare.full.svelte.
+		across = 3,
 		// from / to: the first and last period shown (a year, or YYYY-MM by month)
 		from = "",
 		to = "",
@@ -72,8 +73,11 @@
 	const COLOR_OF = {
 		lgbtq: "var(--color-lgbtq)",
 		polrace: "var(--color-politics)",
-		fouls: "var(--color-brown)",        // as on the word chart: the foul words in brown,
-		protect: "color-mix(in srgb, var(--color-fox-navy) 72%, white)"    // "protect" in a lighter navy
+		// the word chart's brown and navy, each a step lighter here, where the
+		// two lines cross month after month near zero and the darker pair
+		// muddied into one (2026-10-02)
+		fouls: "color-mix(in srgb, var(--color-brown) 78%, #e09a3e)",   // the foul words in brown
+		protect: "color-mix(in srgb, var(--color-fox-navy) 52%, white)" // "protect" in a lighter navy
 	};
 	const PHRASE_OF = {
 		lgbtq: "LGBTQ+ topics",
@@ -131,73 +135,8 @@
 	const MIN_N = monthly ? 8 : 20;   // a period with fewer articles than this is not drawn: a share of 6 articles is noise
 	const AVG = "var(--color-ink-dark)"; // the average rule, apart from either topic colour
 
-	// --- the words counted, for the "see words included" drop-down ------------
-	// the same unions as notebooks/topics.py
-	// each entry is one list in the drop-down: a label and the term groups it pools
-	const TOPIC_GROUPS = {
-		polrace: [["Race", ["race / racism"]]],
-		lgbtq: [["LGBTQ+", ["LGBTQ / sexuality", "transgender / trans"]]],
-		fouls: [["Foul words", ["fouls"]]],
-		protect: [["“Protect”", ["protect"]]]
-	};
-	// the fouls topic is pinned in notebooks/topics.py (the sheet's rows are
-	// not used), so its drop-down lists those words directly
-	const PINNED_WORDS = { fouls: ["hip-check", "poke / poked", "punch / punched", "throat"], protect: ["protect / protects"] };
-	// a few terms are regular expressions; these read better spelled out
-	const PRETTY = {
-		racis: "racism / racist",
-		"hip-?check": "hip-check",
-		"\\bpunch": "punch / punched",
-		"\\bthroat\\b": "throat",
-		"\\bpoke[ds]?\\b": "poke / poked",
-		"\\beye\\b": "eye",
-		"\\bflagrant\\b": "flagrant",
-		"\\bfouls?\\b": "foul / fouls",
-		"lgbt?\\b": "LGBT",
-		"lgbtq?\\b": "LGBTQ",
-		"\\bblm\\b": "BLM",
-		"non-?binary": "nonbinary",
-		"trans wom[ae]n": "trans woman / women",
-		"gender eligib": "gender eligibility",
-		"biological (?:male|man|men|wom[ae]n|female)":
-			"“biological” male / female / woman",
-		"\\b(?:black|white) (?:wom[ae]n|player|players|athlete|athletes|star|stars|community)\\b":
-			"“Black” or “white” + women / players / athletes / stars / community"
-	};
-	const readable = (term) =>
-		PRETTY[term] ??
-		term
-			// lookarounds like (?!- ) only guard a match; they are not words
-			.replace(/\(\?<?[=!][^)]*\)/g, "")
-			.replace(/\\b/g, "")
-			.replace(/\(\?:([^)]+)\)/g, (_, alts) => alts.split("|").join(" / "))
-			.replace(/\[ae\]/g, "a")
-			.replace(/\\/g, "");
-	// the list as a reader wants it: a phrase that only adds to a word already
-	// listed goes ("openly gay" under "gay", "trans women" under "trans"), and
-	// "trans" sits beside "transgender"
-	function tidyWords(words) {
-		const single = new Set(words.filter((w) => !/\s/.test(w)).map((w) => w.toLowerCase()));
-		let out = words.filter(
-			(w) => !/\s/.test(w) || !w.toLowerCase().split(/\s+/).some((part) => single.has(part))
-		);
-		const t = out.indexOf("trans"), tg = out.indexOf("transgender");
-		if (t > -1 && tg > -1 && t !== tg + 1) {
-			out.splice(t, 1);
-			out.splice(out.indexOf("transgender") + 1, 0, "trans");
-		}
-		return out;
-	}
-	const wordGroups = [
-		...(TOPIC_GROUPS[topic] ?? []),
-		...(second ? (TOPIC_GROUPS[second] ?? []) : [])
-	].map(([label, groups]) => ({
-		label,
-		// a term listed in more than one of the pooled groups shows once
-		words: groups.length === 1 && PINNED_WORDS[groups[0]]
-			? PINNED_WORDS[groups[0]]
-			: tidyWords([...new Set(termRows.filter((r) => groups.includes(r.topic)).map((r) => readable(r.term)))])
-	}));
+	// the words counted, listed under the panels (utils/topicWords.js)
+	const wordGroups = wordGroupsFor(topic, second);
 
 	// the outlets with panels (shown most-to-least by their all-years average)
 	// (Fox's NBA coverage is in the data but not in the panels)
@@ -347,11 +286,12 @@
 	let mobile = $derived(viewportWidth < 640);
 	// the comparison panes in grid order, and the grid's column count
 	let others = $derived(outlets.filter((o) => o !== FOX));
-	let cols = $derived(mobile ? 2 : 3);
+	let cols = $derived(mobile ? 2 : Math.max(1, parseInt(across) || 3));
 
-	// Where every pane sits: rows of three on desktop, the last row centred
-	// when it is short; two columns on phones. Every pane carries both axes'
-	// labels.
+	// Where every pane sits: rows of `cols`, the last row centred when it is
+	// short (on phones, two to a row and the last on the left). The grid has
+	// twice as many tracks as panes to a row, so a centred pane can sit half a
+	// pane in. Every pane carries both axes' labels.
 	let cells = $derived.by(() => {
 		const out = [];
 		const list = [...shown];
@@ -360,25 +300,28 @@
 		} else {
 			let i = 0, row = 0;
 			while (i < list.length) {
-				const take = Math.min(3, list.length - i);
-				const start = (3 - take) * 5;
+				const take = Math.min(cols, list.length - i);
+				const start = cols - take;
 				for (let k = 0; k < take; k++)
-					out.push({ outlet: list[i + k], row, start: start + 10 * k, span: 10 });
+					out.push({ outlet: list[i + k], row, start: start + 2 * k, span: 2 });
 				i += take;
 				row += 1;
 			}
 		}
-		return out.map((c) => ({ ...c, showY: true, showX: true }));
+		// every pane shares the scale, so only the first pane in each row
+		// carries the y values and label; the rest keep the gridlines
+		return out.map((c, k) => ({ ...c, showY: k === 0 || out[k - 1].row !== c.row, showX: true }));
 	});
 
 	const W = 220,
 		H = 150;
-	// right: room for the last year label, centred on the last point; left:
-	// the tick labels and the axis label turned up beside them
-	const M = { left: 46, right: 16, top: 10, bottom: monthly ? 32 : 22 };
+	// left: the tick values and the axis label turned up beside them; top:
+	// the outlet's average, written inside the plot; right: room for the last
+	// year label, centred on the last point
+	const M = { left: 46, right: 16, top: 16, bottom: monthly ? 32 : 22 };
 	// month mode: "Jan" / "Jul" on one row, the year on a row beneath at each
 	// January (and under the first column when the span starts mid-year)
-	const monthLabel = (period, index) => (period.endsWith("-01") ? "Jan" : period.endsWith("-07") ? "Jul" : "");
+	const monthLabel = (period) => (period.endsWith("-01") ? "Jan" : period.endsWith("-07") ? "Jul" : "");
 	const yearLabel = (period, index, all) => {
 		if (period.endsWith("-01")) return period.slice(0, 4);
 		if (index === 0) {
@@ -429,7 +372,7 @@
 
 <svelte:window bind:innerWidth={viewportWidth} />
 
-<div class="otc" class:mobile bind:this={root}>
+<div class="otc" class:mobile class:monthly bind:this={root}>
 	<!-- the chart's key as one line over the panes: the measure switch,
 	     then what is counted, its colours named in the sentence -->
 	<p class="top">
@@ -445,7 +388,7 @@
 			by {monthly ? "month" : "year"}
 		</span>
 	</p>
-	<div class="grid">
+	<div class="grid" style="--tracks: {cols * 2}">
 		{#each cells as cell, index (cell.outlet)}
 			{@const outlet = cell.outlet}
 			{@const pts = lineFor(outlet)}
@@ -463,7 +406,8 @@
 				animate:flip={{ duration: 800 }}
 				in:fade={{ duration: 500 }}
 			>
-				<div class="pane-hed">
+				<!-- the outlet, over its plot, at the plot's left edge -->
+				<div class="pane-hed" style:padding-left="{(M.left / W) * 100}%">
 					<img
 						src="{base}/logos/{LOGOS[outlet].file}"
 						alt={SHORT_NAME[outlet] ?? outlet}
@@ -473,19 +417,6 @@
 					{#if LEAGUE_TAG[outlet]}
 						<span class="league-tag">{LEAGUE_TAG[outlet]}</span>
 					{/if}
-					<!-- the pane's numbers in plain ink, each under its topic's shorthand -->
-					{#if showChips && avg}
-						<span class="avg-chip">
-							<small>{second ? SHORTHAND[topic] ?? topic : "avg"}</small>
-							{measure === "share" ? pct(avg.share) : totalHits(pts).toLocaleString()}
-						</span>
-					{/if}
-					{#if showChips && second && avg2}
-						<span class="avg-chip">
-							<small>{SHORTHAND[second] ?? second}</small>
-							{measure === "share" ? pct(avg2.share) : totalHits(pts2).toLocaleString()}
-						</span>
-					{/if}
 				</div>
 				<svg
 					viewBox="0 0 {W} {H}"
@@ -493,19 +424,10 @@
 					aria-label="{measure === 'share' ? 'Share' : 'Number'} of {outlet} WNBA articles that {TOPIC_PHRASE}, by {monthly ? 'month' : 'year'}"
 				>
 					{#each yTicks as pct}
-						<line
-							class="grid-line"
-							x1={M.left}
-							x2={W - M.right}
-							y1={pctY(pct)}
-							y2={pctY(pct)}
-						/>
+						<line class="grid-line" x1={M.left} x2={W - M.right} y1={pctY(pct)} y2={pctY(pct)} />
 						{#if showY}
-							<text
-								class="tick"
-								x={M.left - 5}
-								y={pctY(pct) + 4}
-								text-anchor="end">{measure === "share" ? Math.round(pct * 100) + "%" : pct.toLocaleString()}</text
+							<text class="tick" x={M.left - 5} y={pctY(pct) + 4} text-anchor="end"
+								>{measure === "share" ? Math.round(pct * 100) + "%" : pct.toLocaleString()}</text
 							>
 						{/if}
 					{/each}
@@ -513,6 +435,19 @@
 						<text class="y-label" transform="rotate(-90)" x={-(M.top + plotH / 2)} y="9" text-anchor="middle"
 							>{measure === "share" ? "% articles" : "# articles"}</text
 						>
+					{/if}
+					<!-- the outlet's average (its total, counting articles), written in
+					     the plot's top corner, clear of the dated note on Fox's pane -->
+					{#if showChips && avg}
+						{@const left = MARK_NOTE && MARK && outlet === FOX}
+						<text class="avg-note" x={left ? M.left + 4 : W - M.right} y={M.top - 4} text-anchor={left ? "start" : "end"}>
+							<tspan class="avg-word">{second ? SHORTHAND[topic] ?? topic : measure === "share" ? "avg" : "total"}</tspan>
+							<tspan class="avg-value" dx="3">{measure === "share" ? pct(avg.share) : totalHits(pts).toLocaleString()}</tspan>
+							{#if second && avg2}
+								<tspan class="avg-word" dx="8">{SHORTHAND[second] ?? second}</tspan>
+								<tspan class="avg-value" dx="3">{measure === "share" ? pct(avg2.share) : totalHits(pts2).toLocaleString()}</tspan>
+							{/if}
+						</text>
 					{/if}
 					{#each yMinor as pct}
 						<line
@@ -530,7 +465,8 @@
 						y1={M.top + plotH}
 						y2={M.top + plotH}
 					/>
-					<!-- a tick for every year, in every pane; the labels only where shown -->
+					<!-- a tick for every period; a label every other year (by month,
+					     January and July with the year under each January) -->
 					{#each years as year, index}
 						<line
 							class="axis-tick"
@@ -544,8 +480,8 @@
 						{#if showX && !monthly && +year % 2 === 0}
 							<text class="tick year" x={xMid(index)} y={H - 6} text-anchor="middle">{year}</text>
 						{:else if showX && monthly}
-							{#if monthLabel(year, index)}
-								<text class="tick month" x={xMid(index)} y={H - 17} text-anchor="middle">{monthLabel(year, index)}</text>
+							{#if monthLabel(year)}
+								<text class="tick month" x={xMid(index)} y={H - 17} text-anchor="middle">{monthLabel(year)}</text>
 							{/if}
 							{#if yearLabel(year, index, years)}
 								<text class="tick year" x={xMid(index)} y={H - 5} text-anchor="middle">{yearLabel(year, index, years)}</text>
@@ -577,14 +513,6 @@
 						{#if second && pts2.length && !stacked}
 							{#if showArea}<path class="topic-area" d={areaFor(pts2)} fill={SECOND} />{/if}
 							<path class="topic-line" d={pathFor(pts2)} stroke={SECOND} />
-							{#each pts2 as p (p.year)}
-								<circle
-									cx={xMid(p.index)}
-									cy={pctY(p.y)}
-									r={monthly ? 2 : 3}
-									fill={SECOND}
-								/>
-							{/each}
 						{/if}
 						{#if showArea}<path class="topic-area" class:solid={stacked} d={areaFor(pts)} fill={MAIN} />{/if}
 						<path class="topic-line" d={pathFor(pts)} stroke={MAIN} />
@@ -596,11 +524,6 @@
 								<!-- the articles with both, a blended band between the two -->
 								<path class="topic-area solid" d={bandFor(bothBand(outlet))} fill={BOTH} />
 							{/if}
-						{/if}
-						{#if !stacked}
-							{#each pts as p (p.year)}
-								<circle cx={xMid(p.index)} cy={pctY(p.y)} r={monthly ? 2 : 3} fill={MAIN} />
-							{/each}
 						{/if}
 					</g>
 					{#if MARK && years.includes(MARK)}
@@ -707,13 +630,13 @@
 		max-width: 880px;
 		margin: 6px auto 4px;
 	}
-	/* thirty narrow columns, so a short last row can sit centred; the space
-	   between panes is each pane's own padding, not a column gap (thirty
-	   gaps of 22px outgrew a narrow box and squeezed every column to
+	/* two tracks per pane, so a short last row can sit centred; the space
+	   between panes is each pane's own padding, not a column gap (a gap on
+	   every narrow track outgrew a narrow box and squeezed every column to
 	   nothing, 2026-10-01) */
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(30, minmax(0, 1fr));
+		grid-template-columns: repeat(var(--tracks, 4), minmax(0, 1fr));
 		gap: 16px 0;
 	}
 	.grid > .pane {
@@ -741,7 +664,7 @@
 	.pane-hed {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
 		gap: 6px;
 		height: 26px;
 		margin-bottom: 2px;
@@ -761,35 +684,68 @@
 		stroke: rgba(42, 21, 3, 0.055);
 	}
 	.axis {
-		stroke: var(--color-ink);
-		stroke-width: 1.2;
+		stroke: rgba(42, 21, 3, 0.35);
+		stroke-width: 1;
 	}
 	.axis-tick {
 		stroke: var(--color-ink);
 		stroke-width: 1;
-		opacity: 0.7;
-	}
-	.tick {
-		font-size: 11px;
-		fill: rgba(42, 21, 3, 0.75);
-	}
-	.mobile .tick {
-		font-size: 12px;
+		opacity: 0.5;
 	}
 	.y-label {
 		font-family: var(--font-sans);
 		font-size: 10.5px;
 		fill: rgba(42, 21, 3, 0.75);
 	}
+	/* the outlet's average in the plot's corner: the word quiet, the figure
+	   in ink */
+	.avg-note {
+		font-family: var(--font-chart);
+		font-size: 11.5px;
+	}
+	.avg-word {
+		fill: rgba(42, 21, 3, 0.6);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		font-size: 9px;
+		font-weight: 600;
+	}
+	.avg-value {
+		fill: var(--color-ink-dark);
+		font-weight: 800;
+	}
+	/* a phone's panes are drawn smaller, so their labels are set larger */
+	.mobile .avg-note {
+		font-size: 15px;
+	}
+	.mobile .avg-word {
+		font-size: 12px;
+	}
+	/* the axis numbers in the chart's font, like everything else in it */
+	.tick {
+		font-family: var(--font-chart);
+		font-size: 11px;
+		fill: rgba(42, 21, 3, 0.75);
+	}
+	.mobile .tick {
+		font-size: 12px;
+	}
+	/* the line the same weight however small the pane is drawn */
 	.topic-line {
 		fill: none;
-		stroke-width: 2.4;
+		stroke-width: 2.5px;
+		vector-effect: non-scaling-stroke;
 		stroke-linejoin: round;
 		stroke-linecap: round;
 	}
 	/* the area under the line, a tint of its colour */
+	/* by month the lines have four times the points, often two of them
+	   crossing near zero: a finer pen keeps them from knotting */
+	.monthly .topic-line {
+		stroke-width: 1.5px;
+	}
 	.topic-area {
-		opacity: 0.22;
+		opacity: 0.14;
 	}
 	.avg-line {
 		stroke-width: 2.4;
@@ -824,26 +780,6 @@
 	.measure-toggle button.active {
 		background: var(--color-ink);
 		color: #fff;
-	}
-	.avg-chip {
-		display: inline-flex;
-		flex-direction: column;
-		align-items: center;
-		line-height: 1.05;
-		font-family: var(--font-chart);
-		font-size: 11px;
-		font-weight: 800;
-		letter-spacing: 0.02em;
-		margin-left: 6px;
-		color: var(--color-ink);
-		font-variant-numeric: tabular-nums;
-	}
-	.avg-chip small {
-		font-size: 8.5px;
-		font-weight: 600;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-		opacity: 0.65;
 	}
 	/* the key line: the switch sits in the sentence at its size */
 	.top {

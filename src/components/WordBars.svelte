@@ -11,6 +11,8 @@
 		// with Previous / Next under the bars, the frame the same height
 		// (2026-10-01; it scrolled before)
 		more = 0,
+		// pager: show Previous / Next (a scrolly keeps it for its explore step)
+		pager = true,
 		example = null,
 		// labels: "on" (the word on its bar), "beside" (a column of words down
 		// the middle, the bars growing outward from it), "outside" (the bars
@@ -34,10 +36,21 @@
 		topName = "Fox",
 		// note: the line under the chart — left out for the stock one, written
 		// for your own (HTML allowed), present but blank for none
-		note = undefined
+		note = undefined,
+		// noteKind: "source" sets the note as a source line (small, left, over
+		// a thin rule), as the main chart's caption is (2026-10-02)
+		noteKind = "",
+		// focus: a line (HTML) about a searched-for word, shown over the note
+		focus = null,
+		// the Doc's words for the pager and the hover counts (fill.js slots)
+		previous = "",
+		next = "",
+		range = "",
+		hoverCounts = ""
 	} = $props();
 	const noteMode = $derived(note === undefined || note === null ? "stock" : String(note).trim() ? "custom" : "none");
 
+	import { fill as fillIn, or } from "$utils/fill.js";
 	const FOX = "var(--color-fox-navy)";
 	const OTHERS = "var(--color-outlets)";
 	const INK = "var(--color-ink)";
@@ -100,8 +113,8 @@
 		(source?.points ?? [])
 			.filter((p) => Math.sign(p.z) === sign)
 			.sort((a, b) => Math.abs(b.z) - Math.abs(a.z));
-	let fox = $derived(pick(side(1)));
-	let others = $derived(pick(side(-1)));
+	let fox = $derived(pick(side(1), 1));
+	let others = $derived(pick(side(-1), -1));
 	// with room to spare the chart shows more words rather than taller bars:
 	// as many rows as fit at a comfortable height, up to a ceiling
 	const ROW_COMFY = 32,
@@ -116,8 +129,37 @@
 	// the words ranked on each side, up to `more`, and how many pages they fill
 	let ranked = $derived(Math.min(more, Math.max(side(1).length, side(-1).length)));
 	let pages = $derived(paged ? Math.max(1, Math.ceil(ranked / topN)) : 1);
-	function pick(list) {
-		if (paged) return list.slice(0, more).slice(page * topN, (page + 1) * topN);
+	// a highlighted word that isn't on the page showing: it stays at its real
+	// rank, but the page gives up its last rows for a "⋯" and a row for it
+	// ("#38"), so the reader sees it without the order being changed
+	// (2026-10-02). The page keeps its height.
+	let pins = $derived.by(() => {
+		const none = { 1: [], [-1]: [], rows: 0, keep: topN };
+		if (!paged || !anyLit) return none;
+		const ranked = { 1: side(1).map((p, i) => ({ ...p, rank: i + 1 })), [-1]: side(-1).map((p, i) => ({ ...p, rank: i + 1 })) };
+		let keep = topN, out = none;
+		// the rows given up can uncover more highlighted words: settle it
+		for (let pass = 0; pass < 4; pass++) {
+			const res = { rows: 0, keep };
+			for (const s of [1, -1]) {
+				const shown = new Set(ranked[s].slice(page * topN, page * topN + keep).map((p) => p.word.toLowerCase()));
+				res[s] = ranked[s].filter((p) => lit.has(p.word.toLowerCase()) && !shown.has(p.word.toLowerCase())).map((p) => ({ ...p, pin: true }));
+			}
+			res.rows = Math.max(res[1].length, res[-1].length);
+			const next = res.rows ? Math.max(1, topN - res.rows - 1) : topN;
+			out = res;
+			if (next === keep) break;
+			keep = next;
+		}
+		out.keep = keep;
+		return out;
+	});
+	function pick(list, sign = 0) {
+		if (paged)
+			return [
+				...list.slice(0, more).slice(page * topN, page * topN + pins.keep),
+				...(sign ? pins[sign] : [])
+			];
 		const kept = list.slice(0, topN);
 		for (const p of list.slice(topN))
 			if (lit.has(p.word.toLowerCase())) kept.push(p);
@@ -245,12 +287,17 @@
 	const fmt = (z) => Math.abs(z).toFixed(1);
 	// the width the bars reach, both sides (the longest bar and its word), so
 	// the note under the chart wraps to the drawing rather than the frame
-	let plotWidth = $derived.by(() => {
+	// how far the bars (and their words) reach from the middle, either side,
+	// over every page, so the heads and the caption hold still as the reader
+	// pages through (the longest bar is on the first page)
+	let barsReach = $derived.by(() => {
 		let reach = 0;
-		for (const p of [...fox, ...others]) reach = Math.max(reach, LABEL + Math.max(len(p.z), textWidth(wordCase(p.word)) + 14));
-		// and no wider than 520px, so it reads as a caption, not a banner
-		return Math.round(Math.min(WIDTH, 520, 2 * (GAP + reach)));
+		const all = paged ? [...side(1).slice(0, more), ...side(-1).slice(0, more)] : [...fox, ...others];
+		for (const p of all) reach = Math.max(reach, LABEL + Math.max(len(p.z), textWidth(wordCase(p.word)) + 14));
+		return Math.min(WIDTH / 2, GAP + reach);
 	});
+	// and no wider than 520px, so it reads as a caption, not a banner
+	let plotWidth = $derived(Math.round(Math.min(WIDTH, 520, 2 * barsReach)));
 
 	// the example on hover, as on the scatter: the word's sentence with the
 	// form it took marked
@@ -358,7 +405,24 @@
 	{#if source}
 		<!-- the column heads -->
 		<svg width={WIDTH} height={TOP - 6} viewBox="0 0 {WIDTH} {TOP - 6}" role="presentation">
-			{#if source.bottomLogo}
+			{#if source.topHead}
+				<!-- heads at the bars' outer edges, saying what each side means:
+				     "← Other outlets use more" · "Fox News uses more →" (2026-10-02) -->
+				{@const oneLine = textWidth(source.bottomHead) + textWidth(source.topHead) + 60 < 2 * barsReach}
+				{#if oneLine}
+					<text class="head edge others" x={mid - barsReach} y="16" text-anchor="start">← {source.bottomHead}</text>
+					<text class="head edge fox" x={mid + barsReach} y="16" text-anchor="end">{source.topHead} →</text>
+				{:else}
+					<!-- too narrow for both on one line: each breaks before "use(s) more" -->
+					{@const split = (t) => { const i = t.search(/ uses? more$/); return i > 0 ? [t.slice(0, i), t.slice(i + 1)] : [t, ""]; }}
+					<text class="head edge narrow others" x={mid - barsReach} y="11" text-anchor="start"
+						><tspan x={mid - barsReach}>← {split(source.bottomHead)[0]}</tspan><tspan x={mid - barsReach} dy="13">{split(source.bottomHead)[1]}</tspan></text
+					>
+					<text class="head edge narrow fox" x={mid + barsReach} y="11" text-anchor="end"
+						><tspan x={mid + barsReach}>{split(source.topHead)[0]} →</tspan><tspan x={mid + barsReach} dy="13">{split(source.topHead)[1]}</tspan></text
+					>
+				{/if}
+			{:else if source.bottomLogo}
 				<!-- mirrored: "← [logo] in ESPN", the wordmark on the outer side -->
 				{@const w = logoWidth(source.bottomLogo)}
 				<text class="head others" x={mid - GAP} y="16" text-anchor="end" bind:this={bottomIn}
@@ -378,7 +442,9 @@
 					>← {source.bottomShort ?? "everyone else"}</text
 				>
 			{/if}
-			{#if source.topLogo}
+			{#if source.topHead}
+				<!-- drawn above, with the other side's -->
+			{:else if source.topLogo}
 				{@const w = logoWidth(source.topLogo)}
 				<text class="head fox" x={mid + GAP} y="16" text-anchor="start" bind:this={topIn}>{source.topShort}</text>
 				<image
@@ -406,8 +472,12 @@
 			<line class="axis" x1={mid} x2={mid} y1={TOP - 6} y2={height - BOTTOM} />
 
 			{#each [[fox, 1], [others, -1]] as [list, sign]}
+				{#if pins.rows && pins[sign].length}
+					<!-- the gap between the page and the pinned words -->
+					<text class="pin-gap" x={mid + sign * (GAP + LABEL + 10)} y={yOf(pins.keep) + 4} text-anchor={sign > 0 ? "start" : "end"}>⋯</text>
+				{/if}
 				{#each list as p, i (p.word)}
-					{@const y = yOf(i)}
+					{@const y = yOf(p.pin ? i + 1 : i)}
 					{@const w = len(p.z)}
 					{@const on = !anyLit || lit.has(p.word.toLowerCase())}
 					{@const weak = Math.abs(p.z) < WEAK_Z}
@@ -462,6 +532,9 @@
 							style:--halo={color}
 							font-size={fs}>{wordCase(p.word)}</text
 						>
+						{#if p.pin && (sign > 0 ? WIDTH - reach - 6 : reach - 6) >= String(p.rank).length * 7.5 + 10}
+							<text class="pin-rank" x={reach + sign * 6} y={y + 4} text-anchor={sign > 0 ? "start" : "end"}>#{p.rank}</text>
+						{/if}
 						{#if capped(p.z)}
 							<!-- a break mark: the bar runs past the frame's scale -->
 							<path
@@ -483,11 +556,13 @@
 				{/each}
 			{/each}
 		</svg>
-		{#if paged && pages > 1}
+		{#if paged && pages > 1 && pager}
 			<div class="pager" bind:this={pagerEl}>
-				<button type="button" disabled={page === 0} onclick={() => (page -= 1)}>← Previous</button>
-				<span class="pager-range">{page * topN + 1}–{Math.min(ranked, (page + 1) * topN)} of {ranked}</span>
-				<button type="button" disabled={page >= pages - 1} onclick={() => (page += 1)}>Next →</button>
+				<button type="button" disabled={page === 0} onclick={() => (page -= 1)}>{or(previous, "← Previous")}</button>
+				<span class="pager-range"
+					>{fillIn(or(range, "{from}–{to} of {total}"), { from: page * topN + 1, to: Math.min(ranked, (page + 1) * topN), total: ranked })}</span
+				>
+				<button type="button" disabled={page >= pages - 1} onclick={() => (page += 1)}>{or(next, "Next →")}</button>
 			</div>
 		{/if}
 
@@ -503,7 +578,13 @@
 				<!-- the side's colour in a swatch and on the quote's rule; the words in ink -->
 				<span class="tip-head"><i class="swatch" style="background:{color}"></i>{properCase(tip.p.word)}</span>
 				<span class="tip-count"
-					>{topName} {tip.p.nf} · {otherName} {tip.p.no} · score {fmt(tip.p.z)}</span
+					>{fillIn(or(hoverCounts, "{top} {topCount} · {bottom} {bottomCount} · score {score}"), {
+						top: topName,
+						bottom: otherName,
+						topCount: tip.p.nf,
+						bottomCount: tip.p.no,
+						score: fmt(tip.p.z)
+					})}{#if tip.p.pin} · #{tip.p.rank}{/if}</span
 				>
 				{#if tip.eg}
 					<p style="border-left-color:{color}">{@html markWord(tip.eg.s, tip.p.word, tip.eg.w, color)}</p>
@@ -512,14 +593,21 @@
 			</div>
 		{/if}
 
-		{#if noteMode === "custom"}
-			<p class="note" bind:this={belowEl} style:max-width="{plotWidth}px">{@html note}</p>
-		{:else if noteMode === "stock"}
-			<p class="note" bind:this={belowEl} style:max-width="{plotWidth}px">
-				Bars are each word's fightin'-words score. Faded bars score under {WEAK_Z},
-				within noise. Hover a bar for an example.
-			</p>
-		{/if}
+		<!-- what sits under the bars, measured as one, so the bars leave it room -->
+		<div class="below" bind:this={belowEl}>
+			{#if focus}
+				<p class="focus" style:max-width="{Math.round(2 * barsReach)}px">{@html focus}</p>
+			{/if}
+			{#if noteMode === "custom"}
+				<!-- a source line spans the bars, edge to edge with the heads above -->
+				<p class="note" class:source={noteKind === "source"} style:max-width="{noteKind === "source" ? Math.round(2 * barsReach) : plotWidth}px">{@html note}</p>
+			{:else if noteMode === "stock"}
+				<p class="note" style:max-width="{plotWidth}px">
+					Bars are each word's fightin'-words score. Faded bars score under {WEAK_Z},
+					within noise. Hover a bar for an example.
+				</p>
+			{/if}
+		</div>
 	{/if}
 </div>
 
@@ -573,8 +661,29 @@
 	.head.fox {
 		fill: var(--color-fox-navy);
 	}
+	/* the edge heads: sentence case, a little larger */
+	.head.edge {
+		font-size: 13.5px;
+		font-weight: 700;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+	.head.edge.narrow {
+		font-size: 12px;
+	}
 	.head.others {
 		fill: var(--color-outlets);
+	}
+	.pin-gap {
+		font-size: 16px;
+		font-weight: 700;
+		fill: rgba(42, 21, 3, 0.5);
+	}
+	.pin-rank {
+		font-family: var(--font-sans);
+		font-size: 12px;
+		font-weight: 700;
+		fill: rgba(42, 21, 3, 0.6);
 	}
 	.axis {
 		stroke: rgba(42, 21, 3, 0.45);
@@ -706,5 +815,41 @@
 		font-size: 12px;
 		color: rgba(42, 21, 3, 0.6);
 		text-align: center;
+	}
+	.focus {
+		margin: 10px auto 0;
+		font-family: var(--font-sans);
+		font-size: 14px;
+		line-height: 1.45;
+		color: var(--color-ink);
+		text-align: center;
+	}
+	.focus :global(.focus-line) {
+		display: block;
+	}
+	.focus :global(.focus-ex) {
+		display: block;
+		margin-top: 6px;
+		padding: 8px 12px;
+		background: rgba(255, 255, 255, 0.55);
+		border-radius: 4px;
+		font-family: var(--font-serif);
+		font-size: 14.5px;
+		text-align: left;
+	}
+	.focus :global(.focus-src) {
+		display: block;
+		margin-top: 4px;
+		font-family: var(--font-sans);
+		font-size: 12px;
+		color: rgba(42, 21, 3, 0.6);
+	}
+	.note.source {
+		font-family: var(--font-sans);
+		margin-top: 12px;
+		padding-top: 8px;
+		border-top: 1px solid rgba(42, 21, 3, 0.2);
+		text-align: left;
+		line-height: 1.5;
 	}
 </style>

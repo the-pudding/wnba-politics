@@ -4,8 +4,10 @@
 	import CMS from "$components/helpers/CMS.svelte";
 	import Toc from "$components/Toc.svelte";
 	import SimpleBars from "$components/SimpleBars.svelte";
+	import ShareBars from "$components/ShareBars.svelte";
 	import ScrollToc from "$components/ScrollToc.svelte";
 	import OutletTopicCompare from "$components/OutletTopicCompare.svelte";
+	import FoxVsField from "$components/FoxVsField.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
 	import TernaryScrolly from "$components/TernaryScrolly.svelte";
 	import FightinWordsScrolly from "$components/FightinWordsScrolly.svelte";
@@ -34,7 +36,9 @@
 	const components = {
 		Toc,
 		SimpleBars,
+		ShareBars,
 		OutletTopicCompare,
+		FoxVsField,
 		TernaryStatic,
 		TernaryScrolly,
 		FightinWordsScrolly,

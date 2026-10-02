@@ -39,6 +39,11 @@
 	// these draw their own title and caption
 	const SELF_CAPTIONED = new Set([
 		"Subsections",
+		"FoxVsField",
+		"ShareBars",
+		// the Fightin' Words charts fill in their own caption's {slots}
+		"FightinWordsBarsScrolly",
+		"FightinWordsBars",
 		"Aside",
 		"BoxScore",
 		"SimpleBars",

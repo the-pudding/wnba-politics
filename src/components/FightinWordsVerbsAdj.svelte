@@ -4,7 +4,6 @@
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import FightinWords from "$components/FightinWords.svelte";
 	import WordBars from "$components/WordBars.svelte";
-	import FacePicker from "$components/helpers/FacePicker.svelte";
 	import {
 		playerWordsSource,
 		playerWordsPeople,
@@ -25,18 +24,38 @@
 
 	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
 	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false,
-		note = undefined
+		note = undefined,
+		// the Doc's words, each optional, {slots} filled in (utils/fill.js):
+		// {player} the player's name, {outlet} a single outlet, {unit} the
+		// Words / Phrases tab's name, {fox} {others} the word counts
+		headDescribe = "",
+		headPlay = "",
+		headSubject = "",
+		headObject = "",
+		headAll = "",
+		comparedWith = "",
+		allOutlets = "",
+		tabDescribe = "",
+		tabPlay = "",
+		tabSubject = "",
+		tabObject = "",
+		tabAll = "",
+		tabWords = "",
+		tabPhrases = "",
+		morePlayers = "",
+		tooFew = "",
+		tooFewOutlet = "",
+		foxHead = "",
+		othersHead = "",
+		caption: captionText = "",
+		outletCaption = "",
+		previous = "",
+		next = "",
+		range = "",
+		hoverCounts = "",
+		...unused
 	} = $props();
-	// on a phone the three pickers share one row, so "All other outlets"
-	// shortens to "All"
-	let narrow = $state(false);
-	$effect(() => {
-		const mq = window.matchMedia("(max-width: 640px)");
-		const sync = () => (narrow = mq.matches);
-		sync();
-		mq.addEventListener("change", sync);
-		return () => mq.removeEventListener("change", sync);
-	});
+	import { fill, or } from "$utils/fill.js";
 
 	const list = (value) =>
 		(value ?? "")
@@ -70,13 +89,22 @@
 	let current = $derived(STEPS[last] ?? STEPS[0]);
 
 	
-	const RELATIONS = [
-		["describe", "how she's described"],
-		["play", "how she plays"],
-		["subject", "what she does"],
-		["object", "what's done to her"],
-		["all", "every word"]
-	];
+	// the relations as tabs (2026-10-02), each with the plain-language heading
+	// it gives the chart
+	const RELATIONS = $derived([
+		["describe", or(tabDescribe, "Described as")],
+		["play", or(tabPlay, "Her play")],
+		["subject", or(tabSubject, "What she does")],
+		["object", or(tabObject, "Done to her")],
+		["all", or(tabAll, "Every word")]
+	]);
+	const HEADING = $derived({
+		describe: (n) => fill(or(headDescribe, "How Fox News describes {player}"), { player: n }),
+		play: (n) => fill(or(headPlay, "How Fox News describes {player}’s play"), { player: n }),
+		subject: (n) => fill(or(headSubject, "What Fox News says {player} does"), { player: n }),
+		object: (n) => fill(or(headObject, "What Fox News says is done to {player}"), { player: n }),
+		all: (n) => fill(or(headAll, "Every word Fox News ties to {player}"), { player: n })
+	});
 	// players with a Fox-versus-the-other-outlets comparison stored, listed
 	// by surname in the picker
 	const PEOPLE = playerWordsPeople();
@@ -87,7 +115,35 @@
 			.replace(/^-|-$/g, "");
 	const bySurname = (a, b) =>
 		a.split(" ").pop().localeCompare(b.split(" ").pop()) || a.localeCompare(b);
-	const PICKABLE = [...PEOPLE].sort(bySurname);
+	// the row: the players Fox writes about most first, as many as fit, then
+	// a button for the rest (2026-10-02)
+	const foxWords = (name) => data.players?.[name]?.vsCounts?.all?.clark ?? 0;
+	const PICKABLE = [...PEOPLE].sort((a, b) => foxWords(b) - foxWords(a) || bySurname(a, b));
+	let rowW = $state(760);
+	const SLOT = $derived(rowW < 560 ? 62 : 76);
+	let fits = $derived(Math.max(3, Math.floor((rowW + 4) / SLOT)));
+	let inRow = $derived.by(() => {
+		if (PICKABLE.length <= fits) return PICKABLE;
+		const row = PICKABLE.slice(0, fits - 1);
+		// a player picked from the list takes the row's last place
+		if (pickedWho && !row.includes(pickedWho)) row[row.length - 1] = pickedWho;
+		return row;
+	});
+	let rest = $derived(PICKABLE.filter((n) => !inRow.includes(n)));
+	let moreOpen = $state(false);
+	let moreEl = $state(null);
+	$effect(() => {
+		if (!moreOpen) return;
+		const close = (e) => {
+			if (e.type === "keydown" ? e.key === "Escape" : !moreEl?.contains(e.target)) moreOpen = false;
+		};
+		document.addEventListener("pointerdown", close);
+		document.addEventListener("keydown", close);
+		return () => {
+			document.removeEventListener("pointerdown", close);
+			document.removeEventListener("keydown", close);
+		};
+	});
 	const faceUrl = (name) => {
 		const slug = slugOf(name);
 		return faceFiles[slug] ? `${base}/net/${slug}${faceFiles[slug]}` : null;
@@ -219,101 +275,140 @@
 	let lastSource = null;
 	let source = $derived.by(() => {
 		if (fresh) lastSource = fresh;
-		return fresh ?? (waiting ? lastSource : null);
+		const src = fresh ?? (waiting ? lastSource : null);
+		// against the outlets, heads at the bars' edges saying who uses a word
+		// more, as on the main chart (2026-10-02)
+		if (!src || shown.vs !== "outlets") return src;
+		return {
+			...src,
+			topHead: or(foxHead, "Fox News uses more"),
+			bottomHead: outlet ? outlet + (/s$/.test(outlet) ? " use more" : " uses more") : or(othersHead, "Other outlets use more")
+		};
 	});
-	let faces = $derived(
-		(shown.vs === "pair" && shown.pair
-			? shown.pair.split(" vs ")
-			: [shown.who]
-		).map((name) => ({
-			name,
-			file: faceFiles[slugOf(name.trim())],
-			slug: slugOf(name.trim())
-		}))
-	);
+	// the line under the bars, in the main chart's source-line style
+	let caption = $derived.by(() => {
+		if (shown.vs !== "outlets") return note;
+		const counts = src_?.players?.[shown.who]?.vsCounts?.[suffix(shown.rel)];
+		const n = (v) => Number(v ?? 0).toLocaleString();
+		const vars = { unit: phrases ? or(tabPhrases, "Phrases") : or(tabWords, "Words"), player: shown.who, outlet, fox: n(counts?.clark), others: n(counts?.others) };
+		const given = outlet ? outletCaption : captionText;
+		if (String(given).trim()) return fill(given, vars);
+		return `${phrases ? "Two-word phrases" : "Words"} grammatically tied to ${shown.who} in WNBA articles (a dependency parse, with coreference so “she” counts)` +
+			(counts && !outlet ? `: Fox News ${n(counts.clark)}, the other outlets ${n(counts.others)}` : "") +
+			`. Ranked by weighted log-odds with an informative prior (Monroe et al. 2008); bar length is the square root of the z-score. Faded bars are within noise (|z| under 1.96). Hover a bar for an example.`;
+	});
 </script>
 
-<section class="words-scrolly" class:bars={chart === "bars"} class:open={index >= STEPS.length}>
+<section class="words-scrolly" class:bars={chart === "bars"} class:open={index >= STEPS.length} class:menu-open={moreOpen}>
 	<div class="sticky">
 		{#if source}
-			<div class="who">
-				{#each faces as face}
-					{#if face.file}
-						<img src="{base}/net/{face.slug}{face.file}" alt={face.name} />
-					{/if}
+			<!-- the players as faces in a row, one tap each (2026-10-02) -->
+			<div class="players" role="radiogroup" aria-label="Player" bind:clientWidth={rowW}>
+				{#each inRow as name (name)}
+					{@const face = faceUrl(name)}
+					<button
+						type="button"
+						role="radio"
+						class="player"
+						class:on={pickedWho === name}
+						aria-checked={pickedWho === name}
+						onclick={() => (pickedWho = name)}
+					>
+						{#if face}<img src={face} alt="" />{:else}<span class="blank"></span>{/if}
+						<span class="player-name">{name.split(" ")[0]}<br />{name.split(" ").slice(1).join(" ")}</span>
+					</button>
 				{/each}
-				<p class="heading">
-					{#if shown.title}
-						{@html shown.title}
-					{:else}
+				{#if rest.length}
+					<div class="more" bind:this={moreEl}>
+						<button
+							type="button"
+							class="player more-btn"
+							class:open={moreOpen}
+							aria-haspopup="listbox"
+							aria-expanded={moreOpen}
+							onclick={() => (moreOpen = !moreOpen)}
+						>
+							<span class="blank more-count">+{rest.length}</span>
+							<span class="player-name">{@html or(morePlayers, "More players").replace(/ /, "<br />")}</span>
+						</button>
+						{#if moreOpen}
+							<ul class="more-list" role="listbox" aria-label={or(morePlayers, "More players")}>
+								{#each rest as name (name)}
+									{@const face = faceUrl(name)}
+									<li role="option" aria-selected="false">
+										<button type="button" onclick={() => ((pickedWho = name), (moreOpen = false))}>
+											{#if face}<img src={face} alt="" />{:else}<span class="blank"></span>{/if}
+											{name}
+										</button>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				{/if}
+			</div>
+			<!-- the heading, in plain words that follow the tab; a step's own
+			     title, or a pair's, as before -->
+			<div class="head">
+				{#if shown.title}
+					<p class="heading">{@html shown.title}</p>
+				{:else if shown.vs === "outlets"}
+					<p class="heading">{HEADING[shown.rel]?.(shown.who) ?? source.relation}</p>
+					<!-- a div, not a p: the menu inside renders block elements -->
+					<div class="subheading">
+						<span>{or(comparedWith, "compared with")}</span>
+						<LogoSelect
+							options={OUTLET_OPTIONS}
+							bind:value={pickedOutlet}
+							logoOf={(o) => (o === "all" ? null : LOGO[o] ?? null)}
+							nameOf={(o) => (o === "all" ? or(allOutlets, "six other outlets") : o)}
+							isDisabled={(o) =>
+								o !== "all" && !outletsHere.has(o)
+									? fill(or(tooFewOutlet, "Too few words about {player} in {outlet}"), { player: pickedWho, outlet: o })
+									: false}
+							label="Compared with"
+						/>
+					</div>
+				{:else}
+					<p class="heading">
 						<b>{source.relation}</b><br />
 						{source.topLabel} <span class="vs">vs.</span>
 						{source.bottomLabel}
-					{/if}
-				</p>
-			</div>
-			<!-- the picker, live at every step: the Doc sets it, the reader can change it -->
-			<div class="pick">
-				<!-- the player and the outlet side by side, labelled fields like the
-				     main chart's; the kind of word underneath -->
-				<div class="pick-fields">
-					<FacePicker names={PICKABLE} bind:value={pickedWho} faceOf={faceUrl} />
-					{#if shown.vs === "outlets"}
-						<div class="outlet-pick">
-							<span class="field-label">Compared with</span>
-							<LogoSelect
-								options={OUTLET_OPTIONS}
-								bind:value={pickedOutlet}
-								logoOf={(o) => (o === "all" ? null : LOGO[o] ?? null)}
-								nameOf={(o) => (o === "all" ? (narrow ? "All" : "All other outlets") : o)}
-								isDisabled={(o) =>
-									o !== "all" && !outletsHere.has(o) ? `Too few words about ${pickedWho} in ${o}` : false}
-								label="Compared with"
-							/>
-						</div>
-					{/if}
-					<div class="outlet-pick words-pick">
-						<span class="field-label"># Words</span>
-						<div class="ngram-pick" role="group" aria-label="Words at a time">
-							{#each ["words", "phrases"] as u, i (u)}
-								<button
-									type="button"
-									class:active={unit === u}
-									aria-pressed={unit === u}
-									title={u === "words" ? "Single words" : "Two-word phrases"}
-									onclick={() => (unit = u)}>{i + 1}</button
-								>
-							{/each}
-						</div>
-					</div>
-					{#if checks.on}
+					</p>
+				{/if}
+				{#if checks.on}
 					<!-- a check: see `college` above -->
-					<div class="outlet-pick">
-						<span class="field-label">College coverage</span>
-						<LogoSelect
-							options={["with", "without"]}
-							bind:value={college}
-							nameOf={(o) => (o === "with" ? "With college" : "Without college")}
-							label="College coverage"
-						/>
-					</div>
-					{/if}
-				</div>
-				<div class="toggle-group" role="group" aria-label="Kind of word">
+					<LogoSelect
+						options={["with", "without"]}
+						bind:value={college}
+						nameOf={(o) => (o === "with" ? "With college" : "Without college")}
+						label="College coverage"
+					/>
+				{/if}
+			</div>
+			<!-- the relations as tabs on a rule; words or phrases a quiet switch
+			     at its right end -->
+			<div class="tabrow">
+				<div class="rel-tabs" role="tablist" aria-label="Kind of word">
 					{#each RELATIONS as [rel, label] (rel)}
 						<button
-							class:active={pickedRel === rel}
+							type="button"
+							role="tab"
+							class:on={pickedRel === rel}
+							aria-selected={pickedRel === rel}
 							disabled={!available.has(rel)}
-							title={available.has(rel)
-								? ""
-								: `Too few ${label.replace("she's", "she is")} words for ${pickedWho}`}
+							title={available.has(rel) ? "" : fill(or(tooFew, "Too few words of this kind for {player}"), { player: pickedWho })}
 							onclick={() => (pickedRel = rel)}>{label}</button
 						>
 					{/each}
 				</div>
+				<div class="unit-switch" role="group" aria-label="Words or phrases">
+					<button type="button" class:on={unit === "words"} aria-pressed={unit === "words"} onclick={() => (unit = "words")}>{or(tabWords, "Words")}</button>
+					<button type="button" class:on={unit === "phrases"} aria-pressed={unit === "phrases"} onclick={() => (unit = "phrases")}>{or(tabPhrases, "Phrases")}</button>
+				</div>
 			</div>
 			{#if chart === "bars"}
-				<WordBars {source} {labels} {scale} {caps} {scores} highlight={shown.words} top={12} fill {note} />
+				<WordBars {source} {labels} {scale} {caps} {scores} highlight={shown.words} top={12} fill note={caption} noteKind={shown.vs === "outlets" ? "source" : ""} {previous} {next} {range} {hoverCounts} />
 			{:else}
 				<FightinWords {source} highlight={shown.words} bare controls={false} />
 			{/if}
@@ -368,237 +463,298 @@
 	.sticky :global(.word-bars) {
 		width: min(900px, 96vw);
 	}
-	.who {
+	/* the players: faces in a row that scrolls sideways */
+	.players {
+		position: relative;
 		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 12px;
-		margin-bottom: 4px;
+		gap: 4px;
+		width: 100%;
+		max-width: 760px;
+		padding: 4px 2px 8px;
+		margin: 0 0 6px;
 	}
-	.who img {
-		width: 52px;
-		height: 52px;
-		border-radius: 50%;
-		object-fit: cover;
-		border: 2px solid rgba(255, 253, 248, 0.9);
-		box-shadow: 0 2px 8px rgba(42, 21, 3, 0.18);
-	}
-	/* two lines held for the heading, so a one-line step title and the
-	   two-line generated heading leave the chart in the same place */
-	.heading {
-		min-height: 2.7em;
-		font-size: 14.5px;
-		color: var(--color-ink);
-		text-align: left;
-		margin: 0;
-		max-width: 460px;
-		line-height: 1.35;
-	}
-	.heading .vs {
-		color: inherit;
-	}
-
-	/* the explore step's picker, live above the chart */
-	.pick {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 12px;
-		flex-wrap: wrap;
-		margin: 4px 0 8px;
-		pointer-events: auto;
-	}
-	.pick label {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		font-size: 13px;
-		color: var(--color-ink);
-	}
-	/* the kinds of word as tabs, like the thread tabs (2026-09-29): sans
-	   labels on a heavy ink rule, the open one white and edged in ink */
-	/* the rule runs only as wide as the tabs; the row breaks onto its own
-	   line under the pickers, which take the full width */
-	.toggle-group {
-		display: flex;
-		flex: 0 0 auto;
-		width: fit-content;
-		margin: 0 auto;
-		justify-content: center;
-		/* every tab the row's height, its label centred in it */
-		align-items: stretch;
-		gap: 2px;
-		border-bottom: 2px solid var(--color-ink-dark);
-	}
-	.toggle-group button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		text-align: center;
-		flex: 0 1 auto;
-		/* the tabs stand on the black rule under the row, which shows under each */
-		margin-bottom: 0;
-		padding: 8px 14px 7px;
-		border: 2px solid var(--color-ink-dark);
-		border-bottom: 0;
-		border-radius: 8px 8px 0 0;
-		background: #fff;
-		color: var(--color-ink-dark);
-		font-family: var(--font-sans);
-		font-size: 13.5px;
-		font-weight: 700;
-		cursor: pointer;
-		transition: background 150ms ease;
-	}
-	.toggle-group button:hover:not(.active):not(:disabled) {
-		background: #f2f2f2;
-	}
-	.toggle-group button.active {
-		opacity: 1;
-		margin-bottom: 0;
-		background: var(--color-ink-dark);
-		border-color: var(--color-ink-dark);
-		color: #fff;
-	}
-	/* no ring after a click; a keyboard user still sees which one has focus */
-	.toggle-group button:focus-visible {
-		outline: none;
-		text-decoration: underline;
-		text-underline-offset: 3px;
-	}
-	.toggle-group button:disabled {
-		opacity: 0.3;
-		cursor: not-allowed;
-	}
-	/* the outlet dropdown sits beside the player and relation pickers, its
-	   label in the face picker's small capitals */
-	/* # words: one rounded box split into numbers, the active one filled */
-	.ngram-pick {
-		display: flex;
-		/* only as wide as its buttons, where the field runs the full row (on
-		   phones) */
-		align-self: flex-start;
-		width: max-content;
-		height: 38px;
-		box-sizing: border-box;
-		border: 2px solid var(--color-ink-dark);
-		border-radius: 8px;
-		overflow: hidden;
-		/* ink behind the buttons: where the rounded edge blends, it blends into
-		   the border, not a white sliver above the dark button */
-		background: var(--color-ink-dark);
-	}
-	.ngram-pick button {
+	.player {
 		appearance: none;
-		width: 36px;
-		margin: 0;
+		flex: 0 0 auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+		width: 72px;
 		padding: 0;
 		border: 0;
 		border-radius: 0;
-		background: #fff;
+		background: none;
+		font: inherit;
 		color: var(--color-ink-dark);
-		font-family: var(--font-sans);
-		font-size: 15px;
-		font-weight: 600;
 		cursor: pointer;
 	}
-	.ngram-pick button + button {
-		border-left: 2px solid var(--color-ink-dark);
+	.player img,
+	.player .blank {
+		width: 46px;
+		height: 46px;
+		border-radius: 50%;
+		object-fit: cover;
+		background: #f6e7d6;
+		transition: transform 120ms ease;
 	}
-	.ngram-pick button.active {
-		background: var(--color-ink-dark);
-		color: #fff;
-	}
-	/* no ring after a click; a keyboard user still sees which one has focus */
-	.ngram-pick button:focus-visible {
-		outline: none;
-		text-decoration: underline;
-		text-underline-offset: 3px;
-	}
-	.pick-fields {
-		display: flex;
-		flex-basis: 100%;
-		justify-content: center;
-		align-items: flex-end;
-		flex-wrap: wrap;
-		gap: 12px 14px;
-	}
-	.outlet-pick {
-		display: inline-flex;
-		flex-direction: column;
-		gap: 5px;
-	}
-	.field-label {
+	.player-name {
 		font-family: var(--font-sans);
-		font-size: 13px;
-		font-weight: 600;
+		font-size: 11px;
+		font-weight: 700;
+		line-height: 1.15;
+		text-align: center;
+		color: rgba(42, 21, 3, 0.7);
+	}
+	.player:hover img {
+		transform: translateY(-2px);
+	}
+	.player.on img,
+	.player.on .blank {
+		box-shadow: 0 0 0 2px var(--color-page-orange), 0 0 0 4px var(--color-ink-dark);
+	}
+	.player.on .player-name {
 		color: var(--color-ink-dark);
 	}
-	/* on a phone the pickers shrink to the bars' scale, as on the main chart */
+	.player:focus-visible {
+		outline: none;
+	}
+	.player:focus-visible .player-name {
+		text-decoration: underline;
+	}
+	/* the open list sits over the step cards */
+	.words-scrolly.menu-open .sticky {
+		z-index: 2;
+	}
+	/* the players past the row, in a list under the +N button */
+	.more {
+		position: relative;
+		margin-left: auto;
+	}
+	.more-count {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		border: 1.5px dashed rgba(42, 21, 3, 0.45);
+		background: transparent !important;
+		font-family: var(--font-sans);
+		font-size: 13px;
+		font-weight: 700;
+		color: var(--color-ink-dark);
+	}
+	.more-btn.open .more-count {
+		border-style: solid;
+		border-color: var(--color-ink-dark);
+	}
+	.more-list {
+		position: absolute;
+		z-index: 20;
+		top: calc(100% + 4px);
+		right: 0;
+		width: 240px;
+		max-height: 340px;
+		overflow-y: auto;
+		margin: 0;
+		padding: 6px;
+		list-style: none;
+		background: #fff;
+		border-radius: 4px;
+		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.18);
+	}
+	.more-list button {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		width: 100%;
+		padding: 5px 6px;
+		border: 0;
+		border-radius: 3px;
+		background: none;
+		font-family: var(--font-sans);
+		font-size: 14px;
+		font-weight: 600;
+		text-align: left;
+		color: var(--color-ink-dark);
+		cursor: pointer;
+	}
+	.more-list button:hover,
+	.more-list button:focus-visible {
+		background: #f6efe6;
+		outline: none;
+	}
+	.more-list img,
+	.more-list .blank {
+		flex: 0 0 auto;
+		width: 30px;
+		height: 30px;
+		border-radius: 50%;
+		object-fit: cover;
+		background: #f6e7d6;
+	}
+	/* the heading in plain words, and what it is compared with */
+	.head {
+		width: 100%;
+		max-width: 760px;
+		margin: 0 0 10px;
+	}
+	.heading {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 22px;
+		font-weight: 700;
+		line-height: 1.25;
+		text-align: left;
+	}
+	.heading .vs {
+		font-weight: 400;
+		opacity: 0.7;
+	}
+	.subheading {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		margin: 2px 0 0;
+		font-family: var(--font-serif);
+		font-size: 17px;
+		color: rgba(42, 21, 3, 0.75);
+	}
+	.subheading > span {
+		flex: 0 0 auto;
+		white-space: nowrap;
+	}
+	.subheading :global(.logo-select) {
+		flex: 0 1 auto;
+		width: auto;
+		min-width: 0;
+	}
+	/* the compare-with menu sits in the line as a quiet underlined word */
+	.subheading :global(.logo-select .current) {
+		height: auto;
+		padding: 0 18px 0 0;
+		border: 0;
+		border-bottom: 1.5px solid currentColor;
+		border-radius: 0;
+		background: transparent;
+		font-family: var(--font-serif);
+		font-size: 17px;
+		color: var(--color-ink-dark);
+	}
+	.subheading :global(.logo-select .current::after) {
+		right: 0;
+	}
+	/* the relations as tabs on a rule; words / phrases at its right end */
+	.tabrow {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 4px 20px;
+		width: 100%;
+		max-width: 760px;
+		margin: 0 0 10px;
+		border-bottom: 1px solid var(--color-ink-dark);
+	}
+	.rel-tabs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px 16px;
+	}
+	.rel-tabs button,
+	.unit-switch button {
+		appearance: none;
+		margin: 0 0 -1px;
+		padding: 0 0 8px;
+		border: 0;
+		border-radius: 0;
+		border-bottom: 3px solid transparent;
+		background: none;
+		font-family: var(--font-sans);
+		font-size: 14px;
+		font-weight: 700;
+		color: rgba(42, 21, 3, 0.6);
+		cursor: pointer;
+	}
+	.rel-tabs button.on {
+		color: var(--color-ink-dark);
+		border-bottom-color: var(--color-ink-dark);
+	}
+	.rel-tabs button:hover:not(:disabled),
+	.unit-switch button:hover {
+		color: var(--color-ink-dark);
+	}
+	.rel-tabs button:disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
+	}
+	.rel-tabs button:focus-visible,
+	.unit-switch button:focus-visible {
+		outline: none;
+		text-decoration: underline;
+	}
+	.unit-switch {
+		display: flex;
+		gap: 12px;
+		margin-left: auto;
+	}
+	.unit-switch button {
+		font-size: 13px;
+		border-bottom: 0;
+		padding-bottom: 9px;
+	}
+	.unit-switch button.on {
+		color: var(--color-ink-dark);
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 4px;
+	}
 	@media (max-width: 640px) {
-		.pick-fields {
+		.player {
+			width: 58px;
+		}
+		.player img,
+		.player .blank {
+			width: 38px;
+			height: 38px;
+		}
+		.player-name {
+			font-size: 10px;
+		}
+		.heading {
+			font-size: 18px;
+		}
+		.subheading,
+		.subheading :global(.logo-select .current) {
+			font-size: 15px;
+		}
+		/* one line: the relations scroll sideways, words / phrases stay put */
+		.tabrow {
+			flex-wrap: nowrap;
+			gap: 12px;
+		}
+		.rel-tabs {
+			flex: 1 1 auto;
+			min-width: 0;
+			flex-wrap: nowrap;
+			gap: 12px;
+			overflow-x: auto;
+			scrollbar-width: none;
+			mask-image: linear-gradient(to right, #000 85%, transparent);
+		}
+		.rel-tabs button {
+			flex: 0 0 auto;
+			font-size: 12.5px;
+			padding-bottom: 6px;
+			white-space: nowrap;
+		}
+		.unit-switch {
+			flex: 0 0 auto;
 			gap: 8px;
 		}
-		/* player, outlet and number of words on one row: the two pickers
-		   share what the buttons leave */
-		.pick-fields {
-			flex-wrap: nowrap;
-		}
-		.pick-fields > :global(*) {
-			flex: 1 1 0;
-			min-width: 0;
-		}
-		.pick-fields > .words-pick {
-			flex: 0 0 auto;
-		}
-		/* a player's name needs more room than an outlet's */
-		.pick-fields > :global(.face-picker) {
-			flex-grow: 1.45;
-		}
-		.field-label,
-		.pick-fields :global(.pick-label) {
-			font-size: 11.5px;
-		}
-		/* the number buttons at the dropdowns' phone height */
-		.ngram-pick {
-			height: 32px;
-			border-radius: 6px;
-		}
-		.ngram-pick button {
-			width: 32px;
-			font-size: 13.5px;
-		}
-		.pick-fields :global(.face-picker .current),
-		.pick-fields :global(.logo-select .current) {
-			width: 100%;
-			min-width: 0;
-			height: 32px;
-			border-radius: 6px;
-			font-size: 13px;
-		}
-		.pick-fields :global(.logo-select),
-		.pick-fields :global(.face-picker) {
-			width: 100%;
-		}
-		.pick-fields :global(.face-picker img),
-		.pick-fields :global(.face-picker .blank) {
-			width: 22px;
-			height: 22px;
-		}
-		/* the kinds of word: the full width, smaller type, two lines at most */
-		.toggle-group {
-			display: flex;
-			width: 100%;
-		}
-		.toggle-group button {
-			flex: 1 1 0;
-			min-width: 0;
-			padding: 6px 3px 5px;
-			font-size: 11.5px;
-			line-height: 1.15;
+		.unit-switch button {
+			font-size: 12px;
+			padding-bottom: 7px;
 		}
 	}
-	/* the bars size their own rows to the viewport; the scatter is capped */
 	.words-scrolly:not(.bars) .sticky :global(svg) {
 		max-height: 74vh;
 	}

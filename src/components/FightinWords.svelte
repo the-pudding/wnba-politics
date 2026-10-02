@@ -75,7 +75,7 @@
 	// the dropdown's name for an outlet or a pool
 	const outletOption = (outlet) =>
 		outlet === ALL_OUTLETS
-			? "All other outlets"
+			? or(allOutlets, "All other outlets")
 			: (PILL_NAME[outlet] ?? outlet).replace(/^./, (c) => c.toUpperCase());
 	const pooledIn = (group, outlet) => (GROUPS[group] ?? []).includes(outlet);
 
@@ -84,6 +84,9 @@
 		highlight = null,
 		bare = false,
 		controls = true,
+		// pager: Previous / Next under the bars (a scrolly holds it back until
+		// its last card, 2026-10-02)
+		pager: showPager = true,
 		mode = null,
 		source = null,
 		// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
@@ -98,8 +101,39 @@
 		// fill: stretch the bar rows down the viewport (the scrolly sets it)
 		fill = false,
 		// note: the line under the bars (see WordBars)
-		note = undefined
+		note = undefined,
+		// the Doc's words, each optional, {slots} filled in (utils/fill.js):
+		//   heading: {unit} in WNBA articles      subheading: Fox News vs. {them}
+		//   compareLabel, allOutlets, tabWords, tabTwo, tabThree, search,
+		//   rankFox: Fox #{rank}   rankOthers: Others #{rank}   rankEven: Even
+		//   foxHead, othersHead, caption ({fox} {others} {them}),
+		//   focusFox, focusOthers ({outlets} {use} {them}), focusEven
+		//   ({fox} {others} {unit}), all with {times} {rank};
+		//   previous, next, range, hoverCounts (see WordBars)
+		heading: headingText = "",
+		subheading = "",
+		compareLabel = "",
+		allOutlets = "",
+		tabWords = "",
+		tabTwo = "",
+		tabThree = "",
+		search = "",
+		rankFox = "",
+		rankOthers = "",
+		rankEven = "",
+		foxHead = "",
+		othersHead = "",
+		caption: captionText = "",
+		focusFox = "",
+		focusOthers = "",
+		focusEven = "",
+		previous = "",
+		next = "",
+		range = "",
+		hoverCounts = "",
+		...rest
 	} = $props();
+	import { fill as fillIn, or } from "$utils/fill.js";
 	// words, two-word or three-word phrases: the Doc's `ngrams` sets it, the
 	// Show dropdown flips it (three-word phrases added 2026-09-30)
 	let gram = $state(1);
@@ -224,13 +258,31 @@
 				: data.playerN?.[player]?.[against]) ?? null
 	);
 	let floor = $derived(player === ALL ? 5 : 3);
+	// the line under the bars, in the topic graphics' source-line style
+	// (2026-10-02): what was compared, then how it was scored
+	let caption = $derived.by(() => {
+		if (!sample) return note;
+		const them = against === ALL_OUTLETS ? "the other outlets" : outletName(against);
+		const what = bodyMode ? "WNBA articles" : player === ALL ? "WNBA headlines" : `headlines naming ${player}`;
+		const sqrt = String(scale).toLowerCase() === "sqrt" || mobile;
+		const vars = { fox: sample.fox.toLocaleString(), others: sample.other.toLocaleString(), them };
+		if (String(captionText).trim()) return fillIn(captionText, vars);
+		return `Fox News: ${sample.fox.toLocaleString()} ${what}; ${them}: ${sample.other.toLocaleString()}, April 2023 on${noCollege ? ", college coverage left out" : ""}. ` +
+			`Words ranked by weighted log-odds with an informative prior (Monroe et al. 2008); ` +
+			`bar length is ${sqrt ? "the square root of the z-score, so one runaway word doesn’t flatten the rest" : "the z-score"}. ` +
+			`Faded bars are within noise (|z| under 1.96). Hover a bar for an example.`;
+	});
+
+	// the unit tabs' names, which the heading borrows
+	const unitName = (n) => (n === 3 ? or(tabThree, "Three-word phrases") : n === 2 ? or(tabTwo, "Two-word phrases") : or(tabWords, "Words"));
 
 	// --- the explore step's search box (as on the ternary) -----------------
-	// typing lights the words containing the text (an exact match on its
-	// own); Enter or a click keeps a word as a chip
-	const MAX_LIT = 30;
+	// the search, as in the redesign demo (2026-10-02): typing only suggests,
+	// each suggestion tagged with its side and rank; picking one lights it (a
+	// word off the page is pinned under it at its rank) and a line under the
+	// chart says how the two sides use it, with an example
 	let query = $state("");
-	let picked = $state([]);
+	let found = $state(null);
 	let q = $derived(query.trim().toLowerCase());
 	let vocabulary = $derived(
 		[...points]
@@ -238,9 +290,16 @@
 			.sort((a, b) => b.n - a.n)
 	);
 	let exact = $derived(q ? (vocabulary.find((t) => t.term === q) ?? null) : null);
-	let partial = $derived(
-		q && !exact ? vocabulary.filter((t) => t.term.includes(q)) : []
-	);
+	// each word's rank on its own side, by the strength of its score
+	let rankOf = $derived.by(() => {
+		const m = new Map();
+		for (const sign of [1, -1])
+			points
+				.filter((pt) => Math.sign(pt.z) === sign)
+				.sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
+				.forEach((pt, i) => m.set(pt.word.toLowerCase(), i + 1));
+		return m;
+	});
 	let suggestions = $derived.by(() => {
 		if (!q) return [];
 		const starts = vocabulary.filter((t) => t.term.startsWith(q));
@@ -249,18 +308,60 @@
 		);
 		return [...starts, ...inside].slice(0, 8);
 	});
-	let searchLit = $derived([
-		...picked,
-		...(exact ? [exact.term] : partial.slice(0, MAX_LIT).map((t) => t.term))
-	]);
+	let searchLit = $derived(found ? [found] : []);
 	let open = $state(false);
 	let cursor = $state(-1);
 	const choose = (word) => {
-		if (!picked.includes(word)) picked = [...picked, word];
-		query = "";
+		found = word;
+		query = properCase(word);
+		open = false;
 		cursor = -1;
+		if (!source) ensureExamples();
 	};
-	const unpick = (word) => (picked = picked.filter((w) => w !== word));
+	// clearing the box lets the word go
+	$effect(() => {
+		if (!q) found = null;
+	});
+	// what the picked word does, in a line under the chart, with an example
+	const ordinal = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
+	let focus = $derived.by(() => {
+		if (!found || !sample) return null;
+		const p = points.find((pt) => pt.word.toLowerCase() === found);
+		if (!p) return null;
+		const unit = bodyMode ? "articles" : "headlines";
+		const f = ((p.nf ?? 0) / sample.fox) * 100, o = ((p.no ?? 0) / sample.other) * 100;
+		const per = (v) => (v >= 10 ? Math.round(v) : v.toFixed(1));
+		const fox = p.z > 0, color = fox ? "#003366" : "#6b4bb0";
+		const q2 = fox ? (f + 0.05) / (o + 0.05) : (o + 0.05) / (f + 0.05);
+		const times = (q2 >= 10 ? Math.round(q2) : q2.toFixed(1)) + "×";
+		const them = against === ALL_OUTLETS ? "other outlets" : outletName(against);
+		const vars = {
+			times,
+			rank: ordinal(rankOf.get(found) ?? 0),
+			fox: per(f),
+			others: per(o),
+			unit,
+			outlets: them.charAt(0).toUpperCase() + them.slice(1),
+			use: /s$/.test(them) ? "use" : "uses",
+			them: against === ALL_OUTLETS ? "the others" : them
+		};
+		// the Doc's sentence; its first clause, up to " · ", in the side's colour
+		const said = fillIn(
+			Math.abs(p.z) < SIGNIFICANT
+				? or(focusEven, "used about as often by both: {fox} per 100 Fox {unit}, {others} per 100 elsewhere")
+				: fox
+					? or(focusFox, "Fox News uses it {times} as often · {rank} most distinctive for Fox")
+					: or(focusOthers, "{outlets} {use} it {times} as often · {rank} most distinctive for {them}"),
+			vars
+		);
+		const [lead, ...after] = said.split(" · ");
+		const line = Math.abs(p.z) < SIGNIFICANT
+			? `<b>${properCase(p.word)}</b> · ${said}`
+			: `<b>${properCase(p.word)}</b> · <span style="color:${color}">${lead}</span>${after.length ? " · " + after.join(" · ") : ""}`;
+		const hit = exampleFor(bodyMode ? bodyKey : "headlines", p.word, p.z);
+		const ex = hit?.[0] ? `<span class="focus-ex">${markWord(hit[0], p.word, color, hit[1])}${hit[2] ? `<span class="focus-src">${hit[2]}</span>` : ""}</span>` : "";
+		return `<span class="focus-line">${line}</span>${ex}`;
+	});
 	function onKey(e) {
 		if (e.key === "ArrowDown") {
 			cursor = Math.min(cursor + 1, suggestions.length - 1);
@@ -269,7 +370,7 @@
 			cursor = Math.max(cursor - 1, -1);
 			e.preventDefault();
 		} else if (e.key === "Enter") {
-			const word = cursor >= 0 ? suggestions[cursor]?.term : exact?.term;
+			const word = cursor >= 0 ? suggestions[cursor]?.term : (exact?.term ?? suggestions[0]?.term);
 			if (word) choose(word);
 			e.preventDefault();
 		} else if (e.key === "Escape") {
@@ -535,7 +636,16 @@
 			bottomShort:
 				against === ALL_OUTLETS ? "in the other outlets" : AGGREGATES.includes(against) ? `in the ${against}` : inOutlet(against),
 			// only Fox's head carries its wordmark; the other side is named in words
-			topLogo: PILL_LOGO["Fox News"] ?? "fox-news.svg"
+			topLogo: PILL_LOGO["Fox News"] ?? "fox-news.svg",
+			// the heads at the bars' outer edges, saying what each side means
+			topHead: or(foxHead, "Fox News uses more"),
+			bottomHead:
+				against === ALL_OUTLETS
+					? or(othersHead, "Other outlets use more")
+					: (() => {
+							const n = AGGREGATES.includes(against) ? `the ${against}` : outletName(against);
+							return n.charAt(0).toUpperCase() + n.slice(1) + (/s$/.test(n) && !/news$/i.test(n) ? " use more" : " uses more");
+						})()
 		}
 	);
 	// a bar's example on hover, from the same stores as the scatter's card
@@ -625,11 +735,16 @@
 		<div class="chart-head">
 			<span class="head-mark"><img src="{base}/logos/{PILL_LOGO['Fox News'] ?? 'fox-news.svg'}" alt="" /></span>
 			<p class="heading">
-				<b>{bodyMode && gram === 3 ? "Three-word phrases" : bodyMode && gram === 2 ? "Phrases" : "Words"} in {player === ALL
-						? `WNBA ${bodyMode ? "articles" : "headlines"}`
-						: `headlines naming ${player}`}</b><br />
-				Fox News <span class="vs">vs.</span>
-				{against === ALL_OUTLETS ? "other outlets" : outletName(against)}
+				<b
+					>{#if bodyMode && player === ALL}{fillIn(or(headingText, "{unit} in WNBA articles"), { unit: unitName(gram) })}{:else}{gram === 3
+							? "Three-word phrases"
+							: gram === 2
+								? "Phrases"
+								: "Words"} in {player === ALL ? `WNBA ${bodyMode ? "articles" : "headlines"}` : `headlines naming ${player}`}{/if}</b
+				><br />
+				{@html fillIn(or(subheading, "Fox News vs. {them}"), {
+					them: against === ALL_OUTLETS ? "other outlets" : outletName(against)
+				}).replace(/\bvs\. /, '<span class="vs">vs.</span> ')}
 			</p>
 		</div>
 	{/if}
@@ -638,7 +753,7 @@
 		     then the search box (2026-09-29) -->
 		<div class="controls filterbar">
 			<div class="field">
-				<span class="field-label">Fox News compared with</span>
+				<span class="field-label">{or(compareLabel, "Fox News compared with")}</span>
 				<LogoSelect
 					options={outletsHere}
 					bind:value={against}
@@ -647,23 +762,6 @@
 					label="Fox News compared with"
 				/>
 			</div>
-			{#if controls && bodyMode}
-				<!-- words at a time: 1, 2 or 3 (2026-10-01) -->
-				<div class="field">
-					<span class="field-label"># Words</span>
-					<div class="ngram-pick" role="group" aria-label="Words at a time">
-						{#each [1, 2, 3] as n (n)}
-							<button
-								type="button"
-								class:active={gram === n}
-								aria-pressed={gram === n}
-								title={n === 1 ? "Single words" : n === 2 ? "Two-word phrases" : "Three-word phrases"}
-								onclick={() => (gram = n)}>{n}</button
-							>
-						{/each}
-					</div>
-				</div>
-			{/if}
 			{#if checks.on && controls}
 				<div class="field">
 					<span class="field-label">Leave out</span>
@@ -687,56 +785,62 @@
 					/>
 				</div>
 			{/if}
-			{#if controls}
-			<div class="field search-field">
-			<span class="field-label">Search</span>
-			<div class="search-box">
-				<input
-					type="search"
-					placeholder="Search"
-					aria-label="Find a word"
-					bind:value={query}
-					autocomplete="off"
-					spellcheck="false"
-					onfocus={() => (open = true)}
-					onblur={() => (open = false)}
-					oninput={() => ((open = true), (cursor = -1))}
-					onkeydown={onKey}
-				/>
-				{#if open && q && suggestions.length}
-					<ul class="suggest" role="listbox">
-						{#each suggestions as t, i (t.term)}
-							<li
-								role="option"
-								aria-selected={i === cursor}
-								class:on={i === cursor}
-								onpointerdown={(e) => (e.preventDefault(), choose(t.term))}
-							>
-								<span class="term">{properCase(t.term)}</span>
-								<span class="uses" style="color:{t.z > 0 ? FOX : OTHER}"
-									>{t.z > 0 ? topName : bottomName} · {t.n.toLocaleString()}</span
-								>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</div>
-			</div>
-			{/if}
 		</div>
+		{#if controls}
+			<!-- the unit as tabs on a rule, the search at the rule's right end
+			     (2026-10-02) -->
+			<div class="unit-row">
+				{#if bodyMode}
+					<div class="unit-tabs" role="tablist" aria-label="Words at a time">
+						{#each [1, 2, 3].map((n) => [n, unitName(n)]) as [n, label] (n)}
+							<button type="button" role="tab" class:on={gram === n} aria-selected={gram === n} onclick={() => (gram = n)}
+								>{label}</button
+							>
+						{/each}
+					</div>
+				{/if}
+				<div class="find">
+					<input
+						type="search"
+						placeholder={or(search, "Find a word…")}
+						aria-label="Find a word"
+						bind:value={query}
+						autocomplete="off"
+						spellcheck="false"
+						onfocus={() => (open = true)}
+						onblur={() => (open = false)}
+						oninput={() => ((open = true), (cursor = -1))}
+						onkeydown={onKey}
+					/>
+					{#if open && q && suggestions.length}
+						<ul class="suggest" role="listbox">
+							{#each suggestions as t, i (t.term)}
+								<li
+									role="option"
+									aria-selected={i === cursor}
+									class:on={i === cursor}
+									onpointerdown={(e) => (e.preventDefault(), choose(t.term))}
+								>
+									<span class="term">{properCase(t.term)}</span>
+									{#if Math.abs(t.z) < SIGNIFICANT}
+										<span class="uses even">{or(rankEven, "Even")}</span>
+									{:else}
+										<span class="uses" style="color:{t.z > 0 ? FOX : OTHER}"
+											>{fillIn(t.z > 0 ? or(rankFox, "Fox #{rank}") : or(rankOthers, against === ALL_OUTLETS ? "Others #{rank}" : `${bottomName} #{rank}`), {
+												rank: rankOf.get(t.term)
+											})}</span
+										>
+									{/if}
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				</div>
+			</div>
+		{/if}
 	{/if}
 
-	{#if sample && !source}
-		<p class="sample">
-			{#if player === ALL}
-				{sample.fox.toLocaleString()} Fox {bodyMode ? "articles" : "headlines"} against
-				{sample.other.toLocaleString()} from {against}, April 2023 on{noCollege ? ", college coverage left out" : ""}.
-			{:else}
-				{sample.fox.toLocaleString()} Fox headlines name {player}, against
-				{sample.other.toLocaleString()} from {against}.
-			{/if}
-		</p>
-	{/if}
+	<!-- the counts that sat over the chart are in its caption now (2026-10-02) -->
 
 	{#if chart === "bars"}
 		<!-- the same words as mirrored bars: the strongest on each side -->
@@ -747,12 +851,19 @@
 			{scores}
 			source={barSource}
 			{fill}
-			{note}
+			note={source ? note : caption}
+			noteKind={source ? "" : "source"}
+			focus={source ? null : focus}
 			otherName={against === ALL_OUTLETS ? "others" : against}
 			{topName}
 			highlight={[...HIGHLIGHT]}
 			top={mobile ? 10 : 14}
 			more={50}
+			pager={!source && controls && showPager}
+			{previous}
+			{next}
+			{range}
+			{hoverCounts}
 			example={barExample}
 			onhover={() => {
 				if (!source) ensureExamples();
@@ -1022,9 +1133,6 @@
 		color: var(--tip-ink);
 	}
 	.fightin-words.bare .note,
-	.fightin-words.bare .sample {
-		display: none;
-	}
 	.fightin-words .controls[hidden] {
 		display: none;
 	}
@@ -1061,53 +1169,101 @@
 		max-width: 460px;
 		line-height: 1.35;
 	}
-	.heading .vs {
+	.heading :global(.vs) {
 		color: inherit;
 	}
 	/* the controls in the headline table's style: labelled fields, a
 	   heavy-edged white dropdown with its own caret, the same search box */
 	/* # words: one rounded box split into numbers, the active one filled */
-	.ngram-pick {
+	/* the unit tabs on a rule, the search at its right end */
+	.unit-row {
 		display: flex;
-		/* only as wide as its buttons, where the field runs the full row (on
-		   phones) */
-		align-self: flex-start;
-		width: max-content;
-		height: 38px;
-		box-sizing: border-box;
-		border: 2px solid var(--color-ink-dark);
-		border-radius: 8px;
-		overflow: hidden;
-		/* ink behind the buttons: where the rounded edge blends, it blends into
-		   the border, not a white sliver above the dark button */
-		background: var(--color-ink-dark);
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 8px 22px;
+		max-width: 720px;
+		margin: 4px auto 14px;
+		border-bottom: 1px solid var(--color-ink-dark);
 	}
-	.ngram-pick button {
+	.unit-tabs {
+		display: flex;
+		gap: 18px;
+	}
+	.unit-tabs button {
 		appearance: none;
-		width: 36px;
-		margin: 0;
-		padding: 0;
+		margin: 0 0 -1px;
+		padding: 0 0 8px;
 		border: 0;
 		border-radius: 0;
-		background: #fff;
-		color: var(--color-ink-dark);
+		border-bottom: 3px solid transparent;
+		background: none;
+		color: rgba(42, 21, 3, 0.62);
 		font-family: var(--font-sans);
-		font-size: 15px;
-		font-weight: 600;
+		font-size: 14px;
+		font-weight: 700;
 		cursor: pointer;
 	}
-	.ngram-pick button + button {
-		border-left: 2px solid var(--color-ink-dark);
+	.unit-tabs button:hover {
+		color: var(--color-ink-dark);
 	}
-	.ngram-pick button.active {
-		background: var(--color-ink-dark);
-		color: #fff;
+	.unit-tabs button.on {
+		color: var(--color-ink-dark);
+		border-bottom-color: var(--color-ink-dark);
 	}
-	/* no ring after a click; a keyboard user still sees which one has focus */
-	.ngram-pick button:focus-visible {
+	.unit-tabs button:focus-visible {
 		outline: none;
 		text-decoration: underline;
-		text-underline-offset: 3px;
+	}
+	/* the search: a rounded field with a magnifier */
+	.find {
+		position: relative;
+		margin-left: auto;
+		padding-bottom: 6px;
+	}
+	.find input {
+		width: 200px;
+		height: 30px;
+		padding: 0 10px 0 28px;
+		border: 1px solid rgba(42, 21, 3, 0.25);
+		border-radius: 15px;
+		background: #fff
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23727272' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E")
+			no-repeat 10px 50%;
+		font-family: var(--font-sans);
+		font-size: 14px;
+		color: var(--color-ink-dark);
+	}
+	.find input:focus {
+		outline: none;
+		border-color: var(--color-ink-dark);
+	}
+	.uses.even {
+		color: rgba(42, 21, 3, 0.55);
+	}
+	.find .suggest {
+		left: auto;
+		right: 0;
+		width: 260px;
+	}
+	@media (max-width: 640px) {
+		.unit-tabs {
+			gap: 14px;
+		}
+		.unit-tabs button {
+			font-size: 13px;
+		}
+		.find {
+			order: -1;
+			flex: 1 0 100%;
+			margin-left: 0;
+		}
+		.find input {
+			width: 100%;
+		}
+		.find .suggest {
+			left: 0;
+			width: 100%;
+		}
 	}
 	.controls.filterbar {
 		display: flex;
@@ -1128,34 +1284,6 @@
 		font-size: 13px;
 		font-weight: 600;
 		color: var(--color-ink-dark);
-	}
-	.search-field {
-		flex: 1 1 200px;
-		max-width: 300px;
-	}
-	.search-box {
-		position: relative;
-		width: 100%;
-	}
-	.search-box input[type="search"] {
-		/* no browser search styling (Safari's inset edge made it look lighter) */
-		appearance: none;
-		-webkit-appearance: none;
-		box-shadow: none;
-		width: 100%;
-		height: 38px;
-		box-sizing: border-box;
-		padding: 0 12px;
-		border: 2px solid var(--color-ink-dark);
-		border-radius: 8px;
-		background: #fff;
-		color: var(--color-ink-dark);
-		font-family: var(--font-sans);
-		font-size: 14.5px;
-	}
-	.search-box input[type="search"]:focus {
-		outline: none;
-		outline-offset: 1px;
 	}
 	/* on a phone the controls shrink to the bars' scale: shorter fields,
 	   smaller type, and no "Search" label over a box that says Search */
@@ -1185,30 +1313,8 @@
 		.field :global(.logo-select .current::after) {
 			right: 10px;
 		}
-		/* the number buttons at the dropdowns' phone height */
-		.ngram-pick {
-			height: 32px;
-			border-radius: 6px;
-		}
-		.ngram-pick button {
-			width: 32px;
-			font-size: 13.5px;
-		}
 		.field :global(.logo-select .menu li) {
 			min-height: 30px;
-			font-size: 13px;
-		}
-		.search-field {
-			flex: 1 0 100%;
-			max-width: none;
-		}
-		.search-field .field-label {
-			display: none;
-		}
-		.search-box input[type="search"] {
-			height: 32px;
-			padding: 0 10px;
-			border-radius: 6px;
 			font-size: 13px;
 		}
 	}
@@ -1400,13 +1506,6 @@
 		pointer-events: none;
 	}
 
-	.sample {
-		font-size: 12.5px;
-		color: rgba(42, 21, 3, 0.72);
-		text-align: center;
-		max-width: 620px;
-		margin: 2px auto 6px;
-	}
 
 	.note {
 		font-size: 12px;

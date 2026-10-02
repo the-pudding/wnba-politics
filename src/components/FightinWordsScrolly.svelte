@@ -4,7 +4,8 @@
 	import FightinWords from "$components/FightinWords.svelte";
 
 	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
-	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false, ngrams = 1, note = undefined } = $props();
+	// the rest: the Doc's words for the chart (see FightinWords)
+	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false, ngrams = 1, note = undefined, ...words } = $props();
 
 	const STEPS = $derived(
 		(steps ?? [])
@@ -33,7 +34,7 @@
 	<div class="sticky">
 		<!-- articles, not headlines: headline counts are too sparse for these words -->
 		<FightinWords
-			highlight={current.words}
+			highlight={index >= STEPS.length ? [] : current.words}
 			bare
 			controls={current.explore}
 			mode="articles"
@@ -45,6 +46,8 @@
 			ngrams={current.ngrams ?? ngrams}
 			fill={chart === "bars"}
 			{note}
+			pager={index >= STEPS.length}
+			{...words}
 		/>
 	</div>
 

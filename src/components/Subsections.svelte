@@ -14,12 +14,16 @@
 		// nameplate (the title), the threads' index tabs on its top-right
 		// corner (2026-10-01); left out, the folder tabs
 		look = "",
+		// the words over the next and previous threads' names at the bottom
+		previous: previousLabel = "",
+		next: nextLabel = "",
 		// the CMS hands this down so the tabs can hold any chart in the piece
 		components = {}
 	} = $props();
 
 	const newspaper = $derived(String(look).trim().toLowerCase() === "newspaper");
 	const paper = $derived(String(look).trim().toLowerCase() === "paper");
+	const plain = $derived(String(look).trim().toLowerCase() === "plain");
 	const letter = (i) => String.fromCharCode(65 + i);
 
 	// the page change: the open page slides off to the left as the next
@@ -145,7 +149,7 @@
 			<button class="page prev" onclick={() => go(at - 1, where)}>
 				<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
 				<span class="page-text">
-					<span class="page-label">{paper ? `Back to Section ${letter(at - 1)}` : "Previous"}</span>
+					<span class="page-label">{paper ? `Back to Section ${letter(at - 1)}` : String(previousLabel).trim() || "Previous"}</span>
 					<span class="page-title">{items[at - 1].title ?? `Part ${at}`}</span>
 				</span>
 			</button>
@@ -153,7 +157,7 @@
 		{#if at < items.length - 1}
 			<button class="page next" onclick={() => go(at + 1, where)}>
 				<span class="page-text">
-					<span class="page-label">{paper ? `Continued in Section ${letter(at + 1)}` : "Next"}</span>
+					<span class="page-label">{paper ? `Continued in Section ${letter(at + 1)}` : String(nextLabel).trim() || "Next"}</span>
 					<span class="page-title">{items[at + 1].title ?? `Part ${at + 2}`}</span>
 				</span>
 				<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
@@ -162,7 +166,33 @@
 	</nav>
 {/snippet}
 
-{#if paper}
+{#if plain}
+	<!-- look: plain (2026-10-02): the threads named in plain words on a rule,
+	     which stays in view while the open one is read, all on a white sheet -->
+	<div class="subsections plain" role="region" aria-label={title || "Threads"} bind:this={root} ontouchstart={onTouchStart} ontouchend={onTouchEnd}>
+		{#if title}<h3 class="plain-title">{@html hl(title)}</h3>{/if}
+		{#if intro}<p class="intro">{@html intro}</p>{/if}
+		<div class="plain-sheet">
+			<div class="plain-switch" role="tablist" aria-label={title || "Threads"} onkeydown={onKey}>
+				{#each items as tab, i (i)}
+					<button
+						role="tab"
+						class:on={i === shown}
+						aria-selected={i === shown}
+						tabindex={i === shown ? 0 : -1}
+						onclick={() => go(i)}>{tab.title ?? `Part ${i + 1}`}</button
+					>
+				{/each}
+			</div>
+			{#key shown}
+				<div class="panel plain-panel" role="tabpanel" aria-label={items[shown]?.title ?? ""}>
+					<CMS body={bodyOf(items[shown], shown)} {components} />
+				</div>
+			{/key}
+			{@render pager("bottom", shown)}
+		</div>
+	</div>
+{:else if paper}
 	<div class="subsections paper" role="region" aria-label={title || "Threads"} bind:this={root} ontouchstart={onTouchStart} ontouchend={onTouchEnd}>
 		{#if intro}<p class="intro">{@html intro}</p>{/if}
 		<div class="stack">
@@ -707,6 +737,111 @@
 		}
 		.index-name {
 			font-size: 13px;
+		}
+	}
+
+	/* look: plain — the threads named in plain words on a rule, on a white
+	   sheet (2026-10-02) */
+	.plain-title {
+		margin: 0 0 10px;
+		font-family: var(--font-graphic);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+	.plain-sheet {
+		padding: 0 32px 22px;
+		background: #fff;
+		border-radius: 4px;
+	}
+	.plain-switch {
+		position: sticky;
+		top: 0;
+		z-index: 5;
+		display: flex;
+		gap: 24px;
+		margin: 0 0 26px;
+		padding-top: 16px;
+		background: #fff;
+		border-bottom: 1px solid var(--color-ink-dark);
+	}
+	.plain-switch button {
+		appearance: none;
+		margin: 0 0 -1px;
+		padding: 0 0 9px;
+		border: 0;
+		/* square corners: the site's buttons are rounded, which bent the
+		   underline into a curve */
+		border-radius: 0;
+		border-bottom: 3px solid transparent;
+		background: none;
+		color: #727272;
+		font-family: var(--font-graphic);
+		font-size: 16px;
+		font-weight: 700;
+		letter-spacing: -0.005em;
+		cursor: pointer;
+	}
+	.plain-switch button:hover {
+		color: var(--color-ink-dark);
+	}
+	.plain-switch button.on {
+		color: var(--color-ink-dark);
+		border-bottom-color: var(--color-ink-dark);
+	}
+	.plain-switch button:focus-visible {
+		outline: none;
+		text-decoration: underline;
+	}
+	.plain-panel {
+		animation: plain-in 220ms ease-out;
+		padding-top: 0;
+	}
+	@keyframes plain-in {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.plain-panel {
+			animation: none;
+		}
+	}
+	/* the next and previous threads at the foot, as plain links */
+	.plain .pager {
+		margin: 30px 0 0;
+		padding: 12px 0 0;
+		background: none;
+		border-top: 1px solid #e2e2e2;
+		border-radius: 0;
+	}
+	.plain .page {
+		color: var(--color-ink-dark);
+	}
+	.plain .page-label {
+		font-family: var(--font-graphic);
+		font-size: 13px;
+		color: #727272;
+	}
+	.plain .page-title {
+		font-family: var(--font-graphic);
+		font-size: 17px;
+	}
+	.plain .page:focus-visible {
+		outline: none;
+	}
+	@media (max-width: 640px) {
+		.plain-sheet {
+			padding: 0 14px 14px;
+		}
+		.plain-switch {
+			gap: 18px;
 		}
 	}
 </style>
