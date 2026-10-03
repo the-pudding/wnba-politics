@@ -12,9 +12,9 @@
 	//   teaser: One line on what is inside (optional)
 	//   time: 3 min         (optional)
 	//   openLabel: …        (optional words on the card's button; a TV aside says
-	//                        "TV analysis", then "Power off" once open)
-	//   closeLabel: …       (optional; a TV aside says "Turn off TV analysis")
-	//   [+content]
+	//                        "Power on", then "Power off" once open)
+	//   closeLabel: …       (optional; the close button at the end of a non-TV aside)
+	//   [.+content]
 	//   text: …
 	//   {.TvSet} … {}
 	//   []
@@ -76,25 +76,49 @@
 		await tick();
 		if (!card || typeof window === "undefined") return;
 		// charts elsewhere re-measure for a moment after the page shrinks; hold
-		// the card in place, frame by frame, until the layout settles
+		// the card in place, frame by frame, until the layout settles. Phones
+		// anchor the scroll themselves as the page shrinks, and the two
+		// corrections fought (the card jumped about): the browser's anchoring
+		// is off while the card is held, and a touch lets go at once
+		const doc = document.documentElement;
+		const anchoring = doc.style.overflowAnchor;
+		doc.style.overflowAnchor = "none";
 		const hold = () => {
 			const now = card.getBoundingClientRect();
 			const target = fromEnd ? clickedY - now.height : cardY;
 			if (target !== undefined && Math.abs(now.top - Math.max(16, target)) > 1)
-				window.scrollBy({ top: now.top - Math.max(16, target), behavior: "instant" });
+				window.scrollTo(0, window.scrollY + now.top - Math.max(16, target));
 		};
-		const until = performance.now() + 600;
+		let done = false;
+		let lastHeight = doc.scrollHeight;
+		let still = 0;
+		const release = () => {
+			if (done) return;
+			done = true;
+			doc.style.overflowAnchor = anchoring;
+			window.removeEventListener("touchstart", release);
+			window.removeEventListener("wheel", release);
+		};
+		window.addEventListener("touchstart", release, { passive: true });
+		window.addEventListener("wheel", release, { passive: true });
+		const until = performance.now() + 1500;
 		const step = () => {
+			if (done) return;
 			hold();
-			if (performance.now() < until) requestAnimationFrame(step);
+			// settled: the page's height unchanged for ten frames running
+			const h = doc.scrollHeight;
+			still = h === lastHeight ? still + 1 : 0;
+			lastHeight = h;
+			if (performance.now() < until && still < 10) requestAnimationFrame(step);
+			else release();
 		};
 		step();
 	}
-	// a TV aside's button: a power symbol and "TV analysis", "Power off" once
-	// open; the close button at the end says "Turn off TV analysis"
+	// a TV aside's button is a remote's: a power symbol and "Power on", then
+	// "Power off" once open; it has no close button at the end
 	const isTv = $derived(["tv", "tv-clips"].includes(String(icon).trim().toLowerCase()));
-	const onWords = $derived(String(openLabel).trim() || (isTv ? "TV analysis" : "Open"));
-	const offWords = $derived(String(closeLabel).trim() || (isTv ? "Turn off TV analysis" : "Close"));
+	const onWords = $derived(String(openLabel).trim() || (isTv ? "Power on" : "Open"));
+	const offWords = $derived(String(closeLabel).trim() || (isTv ? "Power off" : "Close"));
 	let narrowTv = $state(false);
 	$effect(() => {
 		const mq = window.matchMedia("(max-width: 640px)");
@@ -143,15 +167,14 @@
 	{#if open}
 		<div class="inside" {id}>
 			<CMS {body} {components} />
-			<button type="button" class="close-bar" onclick={(e) => close(e)}>
-				{#if isTv}
-					<span class="power"><Power size={13} strokeWidth={3} aria-hidden="true" /></span>
-					{offWords}
-				{:else}
+			<!-- a TV aside closes from its remote (the card's own button) only;
+			     other asides keep a close button at the end -->
+			{#if !isTv}
+				<button type="button" class="close-bar" onclick={(e) => close(e)}>
 					{String(closeLabel).trim() || "Close this section"}
 					<svg class="caret up" viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-				{/if}
-			</button>
+				</button>
+			{/if}
 		</div>
 	{/if}
 </div>

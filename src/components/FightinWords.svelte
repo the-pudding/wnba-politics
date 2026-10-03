@@ -12,7 +12,11 @@
 	// are fetched from static/data when first shown (notebooks/site_data.py).
 	// The single-outlet pills are an evaluation tool: the dev server only.
 	const DEV = import.meta.env.DEV;
-	const slug = (label) => label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+	const slug = (label) =>
+		label
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-|-$/g, "");
 	let articleWords = $state(null);
 	let articleBigrams = $state(null);
 	let articleTrigrams = $state(null);
@@ -63,7 +67,17 @@
 	import { isGameTerm } from "$utils/gameWords.js";
 	import { isNameTerm } from "$utils/nameWords.js";
 	import { checks } from "$utils/checks.svelte.js";
-	import { COMPARISON, SPORTS, NEWS, GROUPS, AGGREGATES, LOGO as PILL_LOGO, LOGO_WIDTH, inOutlet, outletName } from "$utils/outlets.js";
+	import {
+		COMPARISON,
+		SPORTS,
+		NEWS,
+		GROUPS,
+		AGGREGATES,
+		LOGO as PILL_LOGO,
+		LOGO_WIDTH,
+		inOutlet,
+		outletName
+	} from "$utils/outlets.js";
 	// the wordmarks drawn under the chart for whatever Fox is set against: an
 	// outlet's own, or a group's members (all 13 would not fit: none for "all")
 	const LOGOS = {
@@ -75,7 +89,7 @@
 	// the dropdown's name for an outlet or a pool
 	const outletOption = (outlet) =>
 		outlet === ALL_OUTLETS
-			? or(allOutlets, "All other outlets")
+			? or(allOutlets, "six other outlets")
 			: (PILL_NAME[outlet] ?? outlet).replace(/^./, (c) => c.toUpperCase());
 	const pooledIn = (group, outlet) => (GROUPS[group] ?? []).includes(outlet);
 
@@ -103,16 +117,16 @@
 		// note: the line under the bars (see WordBars)
 		note = undefined,
 		// the Doc's words, each optional, {slots} filled in (utils/fill.js):
-		//   heading: {unit} in WNBA articles      subheading: Fox News vs. {them}
-		//   compareLabel, allOutlets, tabWords, tabTwo, tabThree, search,
+		//   heading: How Fox News writes about the WNBA ({unit} works too)
+		//   comparedWith: compared with    allOutlets: six other outlets
+		//   tabWords, tabTwo, tabThree, search,
 		//   rankFox: Fox #{rank}   rankOthers: Others #{rank}   rankEven: Even
 		//   foxHead, othersHead, caption ({fox} {others} {them}),
 		//   focusFox, focusOthers ({outlets} {use} {them}), focusEven
 		//   ({fox} {others} {unit}), all with {times} {rank};
 		//   previous, next, range, hoverCounts (see WordBars)
 		heading: headingText = "",
-		subheading = "",
-		compareLabel = "",
+		comparedWith = "",
 		allOutlets = "",
 		tabWords = "",
 		tabTwo = "",
@@ -142,7 +156,9 @@
 		gram = n === "3" ? 3 : n === "2" ? 2 : 1;
 	});
 	// the article mode's key in the data and the example stores
-	let bodyKey = $derived(gram === 3 ? "trigrams" : gram === 2 ? "bigrams" : "articles");
+	let bodyKey = $derived(
+		gram === 3 ? "trigrams" : gram === 2 ? "bigrams" : "articles"
+	);
 
 	// the outlet pills, as on the dot plot: "all", then one logo per outlet
 	const ALL_OUTLETS = "all outlets";
@@ -150,10 +166,7 @@
 	// the words lit on the chart: a step's list, plus whatever the explore
 	// step's search box finds or keeps
 	let HIGHLIGHT = $derived(
-		new Set([
-			...(highlight ?? []).map((w) => w.toLowerCase()),
-			...searchLit
-		])
+		new Set([...(highlight ?? []).map((w) => w.toLowerCase()), ...searchLit])
 	);
 	let beating = $derived(HIGHLIGHT.size > 0);
 
@@ -164,7 +177,9 @@
 	const topName = "Fox";
 	const bottomName = "others";
 
-	let bodyMode = $derived(text === "articles" && player === ALL && !!data.hasArticles);
+	let bodyMode = $derived(
+		text === "articles" && player === ALL && !!data.hasArticles
+	);
 	// while a file is still loading, keep showing what is on screen rather than
 	// flashing an empty chart (the words/phrases switch used to blank it)
 	let lastWords = [];
@@ -174,13 +189,38 @@
 	// articles dropped from every outlet (static/data/nocollege/, 2026-09-30).
 	let college = $state("with");
 	let noCollege = $derived(college === "without" && player === ALL);
-	let nc = $state({ head: null, articles: null, bigrams: null, trigrams: null });
+	let nc = $state({
+		head: null,
+		articles: null,
+		bigrams: null,
+		trigrams: null
+	});
 	$effect(() => {
 		if (!noCollege) return;
-		if (!nc.head) ensureFile("nc-head", `${base}/data/nocollege/fw_headlines.json`, (v) => (nc = { ...nc, head: v }));
-		if (!nc.articles) ensureFile("nc-articles", `${base}/data/nocollege/fw_articles.json`, (v) => (nc = { ...nc, articles: v }));
-		if (!nc.bigrams) ensureFile("nc-bigrams", `${base}/data/nocollege/fw_bigrams.json`, (v) => (nc = { ...nc, bigrams: v }));
-		if (!nc.trigrams) ensureFile("nc-trigrams", `${base}/data/nocollege/fw_trigrams.json`, (v) => (nc = { ...nc, trigrams: v }));
+		if (!nc.head)
+			ensureFile(
+				"nc-head",
+				`${base}/data/nocollege/fw_headlines.json`,
+				(v) => (nc = { ...nc, head: v })
+			);
+		if (!nc.articles)
+			ensureFile(
+				"nc-articles",
+				`${base}/data/nocollege/fw_articles.json`,
+				(v) => (nc = { ...nc, articles: v })
+			);
+		if (!nc.bigrams)
+			ensureFile(
+				"nc-bigrams",
+				`${base}/data/nocollege/fw_bigrams.json`,
+				(v) => (nc = { ...nc, bigrams: v })
+			);
+		if (!nc.trigrams)
+			ensureFile(
+				"nc-trigrams",
+				`${base}/data/nocollege/fw_trigrams.json`,
+				(v) => (nc = { ...nc, trigrams: v })
+			);
 	});
 	// A check, shown only with ?checks: "Leave out" game words (the box score, results, teams and cities), so
 	// what is left is how the coverage talks about the league rather than the
@@ -195,14 +235,14 @@
 				? nc[bodyKey]
 				: nc.head?.words
 			: bodyMode
-			? gram === 3
-				? articleTrigrams
-				: gram === 2
-					? articleBigrams
-					: articleWords
-			: player === ALL
-				? data.words
-				: (data.byPlayer?.[player] ?? []);
+				? gram === 3
+					? articleTrigrams
+					: gram === 2
+						? articleBigrams
+						: articleWords
+				: player === ALL
+					? data.words
+					: (data.byPlayer?.[player] ?? []);
 		if (next) lastWords = next;
 		return next ?? lastWords;
 	});
@@ -210,9 +250,24 @@
 	// words/phrases switch has nothing left to fetch
 	$effect(() => {
 		if (!bodyMode) return;
-		if (!articleWords) ensureFile("articles", `${base}/data/fw_articles.json`, (v) => (articleWords = v));
-		if (!articleBigrams) ensureFile("bigrams", `${base}/data/fw_bigrams.json`, (v) => (articleBigrams = v));
-		if (!articleTrigrams) ensureFile("trigrams", `${base}/data/fw_trigrams.json`, (v) => (articleTrigrams = v));
+		if (!articleWords)
+			ensureFile(
+				"articles",
+				`${base}/data/fw_articles.json`,
+				(v) => (articleWords = v)
+			);
+		if (!articleBigrams)
+			ensureFile(
+				"bigrams",
+				`${base}/data/fw_bigrams.json`,
+				(v) => (articleBigrams = v)
+			);
+		if (!articleTrigrams)
+			ensureFile(
+				"trigrams",
+				`${base}/data/fw_trigrams.json`,
+				(v) => (articleTrigrams = v)
+			);
 	});
 	// a single outlet's numbers, one file per outlet, fetched on its pill
 	// the pools, the pair and the comparison outlets ship in the bundle; other pills are dev-only
@@ -220,7 +275,11 @@
 	let single = $derived(!POOLED.includes(against));
 	$effect(() => {
 		if (single && !outletStats[against])
-			ensureFile(against, `${base}/data/fw_outlet/${slug(against)}.json`, (v) => (outletStats = { ...outletStats, [against]: v }));
+			ensureFile(
+				against,
+				`${base}/data/fw_outlet/${slug(against)}.json`,
+				(v) => (outletStats = { ...outletStats, [against]: v })
+			);
 	});
 	// the stats of a word in the current comparison: [z, n, fox, other]
 	let modeKey = $derived(bodyMode ? bodyKey : "headlines");
@@ -228,7 +287,9 @@
 		if (!single) return entry.s?.[against];
 		const table = outletStats[against];
 		if (!table) return undefined;
-		return player === ALL ? table[modeKey]?.[entry.word] : table.players?.[player]?.[entry.word];
+		return player === ALL
+			? table[modeKey]?.[entry.word]
+			: table.players?.[player]?.[entry.word];
 	}
 	// over articles, "all outlets" is literally the same corpus as "Yahoo + ESPN" — dedupe
 	let articleOutlets = $derived.by(() => {
@@ -236,7 +297,8 @@
 		for (const name of data.articleOutlets ?? []) {
 			const key = JSON.stringify(data.articleOutletN?.[name] ?? {});
 			// a later duplicate replaces "all outlets" only
-			if (!seen.has(key) || seen.get(key) === "all outlets") seen.set(key, name);
+			if (!seen.has(key) || seen.get(key) === "all outlets")
+				seen.set(key, name);
 		}
 		return [...seen.values()];
 	});
@@ -252,29 +314,45 @@
 		(noCollege
 			? (bodyMode ? nc.head?.articleOutletN : nc.head?.outletN)?.[against]
 			: bodyMode
-			? data.articleOutletN?.[against]
-			: player === ALL
-				? data.outletN?.[against]
-				: data.playerN?.[player]?.[against]) ?? null
+				? data.articleOutletN?.[against]
+				: player === ALL
+					? data.outletN?.[against]
+					: data.playerN?.[player]?.[against]) ?? null
 	);
 	let floor = $derived(player === ALL ? 5 : 3);
 	// the line under the bars, in the topic graphics' source-line style
 	// (2026-10-02): what was compared, then how it was scored
 	let caption = $derived.by(() => {
 		if (!sample) return note;
-		const them = against === ALL_OUTLETS ? "the other outlets" : outletName(against);
-		const what = bodyMode ? "WNBA articles" : player === ALL ? "WNBA headlines" : `headlines naming ${player}`;
+		const them =
+			against === ALL_OUTLETS ? "the other outlets" : outletName(against);
+		const what = bodyMode
+			? "WNBA articles"
+			: player === ALL
+				? "WNBA headlines"
+				: `headlines naming ${player}`;
 		const sqrt = String(scale).toLowerCase() === "sqrt" || mobile;
-		const vars = { fox: sample.fox.toLocaleString(), others: sample.other.toLocaleString(), them };
+		const vars = {
+			fox: sample.fox.toLocaleString(),
+			others: sample.other.toLocaleString(),
+			them
+		};
 		if (String(captionText).trim()) return fillIn(captionText, vars);
-		return `Fox News: ${sample.fox.toLocaleString()} ${what}; ${them}: ${sample.other.toLocaleString()}, April 2023 on${noCollege ? ", college coverage left out" : ""}. ` +
+		return (
+			`Fox News: ${sample.fox.toLocaleString()} ${what}; ${them}: ${sample.other.toLocaleString()}, April 2023 on${noCollege ? ", college coverage left out" : ""}. ` +
 			`Words ranked by weighted log-odds with an informative prior (Monroe et al. 2008); ` +
 			`bar length is ${sqrt ? "the square root of the z-score, so one runaway word doesn’t flatten the rest" : "the z-score"}. ` +
-			`Faded bars are within noise (|z| under 1.96). Hover a bar for an example.`;
+			`Faded bars are within noise (|z| under 1.96). Hover a bar for an example.`
+		);
 	});
 
 	// the unit tabs' names, which the heading borrows
-	const unitName = (n) => (n === 3 ? or(tabThree, "Three-word phrases") : n === 2 ? or(tabTwo, "Two-word phrases") : or(tabWords, "Words"));
+	const unitName = (n) =>
+		n === 3
+			? or(tabThree, "Three-word phrases")
+			: n === 2
+				? or(tabTwo, "Two-word phrases")
+				: or(tabWords, "Words");
 
 	// --- the explore step's search box (as on the ternary) -----------------
 	// the search, as in the redesign demo (2026-10-02): typing only suggests,
@@ -289,7 +367,9 @@
 			.map((pt) => ({ term: pt.word.toLowerCase(), n: pt.n, z: pt.z }))
 			.sort((a, b) => b.n - a.n)
 	);
-	let exact = $derived(q ? (vocabulary.find((t) => t.term === q) ?? null) : null);
+	let exact = $derived(
+		q ? (vocabulary.find((t) => t.term === q) ?? null) : null
+	);
 	// each word's rank on its own side, by the strength of its score
 	let rankOf = $derived.by(() => {
 		const m = new Map();
@@ -323,18 +403,25 @@
 		if (!q) found = null;
 	});
 	// what the picked word does, in a line under the chart, with an example
-	const ordinal = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
+	const ordinal = (n) =>
+		n +
+		(n % 100 >= 11 && n % 100 <= 13
+			? "th"
+			: ["th", "st", "nd", "rd"][n % 10] || "th");
 	let focus = $derived.by(() => {
 		if (!found || !sample) return null;
 		const p = points.find((pt) => pt.word.toLowerCase() === found);
 		if (!p) return null;
 		const unit = bodyMode ? "articles" : "headlines";
-		const f = ((p.nf ?? 0) / sample.fox) * 100, o = ((p.no ?? 0) / sample.other) * 100;
+		const f = ((p.nf ?? 0) / sample.fox) * 100,
+			o = ((p.no ?? 0) / sample.other) * 100;
 		const per = (v) => (v >= 10 ? Math.round(v) : v.toFixed(1));
-		const fox = p.z > 0, color = fox ? "#003366" : "#6b4bb0";
+		const fox = p.z > 0,
+			color = fox ? "#003366" : "#6b4bb0";
 		const q2 = fox ? (f + 0.05) / (o + 0.05) : (o + 0.05) / (f + 0.05);
 		const times = (q2 >= 10 ? Math.round(q2) : q2.toFixed(1)) + "×";
-		const them = against === ALL_OUTLETS ? "other outlets" : outletName(against);
+		const them =
+			against === ALL_OUTLETS ? "other outlets" : outletName(against);
 		const vars = {
 			times,
 			rank: ordinal(rankOf.get(found) ?? 0),
@@ -348,18 +435,30 @@
 		// the Doc's sentence; its first clause, up to " · ", in the side's colour
 		const said = fillIn(
 			Math.abs(p.z) < SIGNIFICANT
-				? or(focusEven, "used about as often by both: {fox} per 100 Fox {unit}, {others} per 100 elsewhere")
+				? or(
+						focusEven,
+						"used about as often by both: {fox} per 100 Fox {unit}, {others} per 100 elsewhere"
+					)
 				: fox
-					? or(focusFox, "Fox News uses it {times} as often · {rank} most distinctive for Fox")
-					: or(focusOthers, "{outlets} {use} it {times} as often · {rank} most distinctive for {them}"),
+					? or(
+							focusFox,
+							"Fox News uses it {times} as often · {rank} most distinctive for Fox"
+						)
+					: or(
+							focusOthers,
+							"{outlets} {use} it {times} as often · {rank} most distinctive for {them}"
+						),
 			vars
 		);
 		const [lead, ...after] = said.split(" · ");
-		const line = Math.abs(p.z) < SIGNIFICANT
-			? `<b>${properCase(p.word)}</b> · ${said}`
-			: `<b>${properCase(p.word)}</b> · <span style="color:${color}">${lead}</span>${after.length ? " · " + after.join(" · ") : ""}`;
+		const line =
+			Math.abs(p.z) < SIGNIFICANT
+				? `<b>${properCase(p.word)}</b> · ${said}`
+				: `<b>${properCase(p.word)}</b> · <span style="color:${color}">${lead}</span>${after.length ? " · " + after.join(" · ") : ""}`;
 		const hit = exampleFor(bodyMode ? bodyKey : "headlines", p.word, p.z);
-		const ex = hit?.[0] ? `<span class="focus-ex">${markWord(hit[0], p.word, color, hit[1])}${hit[2] ? `<span class="focus-src">${hit[2]}</span>` : ""}</span>` : "";
+		const ex = hit?.[0]
+			? `<span class="focus-ex">${markWord(hit[0], p.word, color, hit[1])}${hit[2] ? `<span class="focus-src">${hit[2]}</span>` : ""}</span>`
+			: "";
 		return `<span class="focus-line">${line}</span>${ex}`;
 	});
 	function onKey(e) {
@@ -370,7 +469,10 @@
 			cursor = Math.max(cursor - 1, -1);
 			e.preventDefault();
 		} else if (e.key === "Enter") {
-			const word = cursor >= 0 ? suggestions[cursor]?.term : (exact?.term ?? suggestions[0]?.term);
+			const word =
+				cursor >= 0
+					? suggestions[cursor]?.term
+					: (exact?.term ?? suggestions[0]?.term);
 			if (word) choose(word);
 			e.preventDefault();
 		} else if (e.key === "Escape") {
@@ -383,7 +485,11 @@
 		source
 			? source.points
 			: words
-					.filter((entry) => !(hideGame && isGameTerm(entry.word)) && !(hideNames && isNameTerm(entry.word)))
+					.filter(
+						(entry) =>
+							!(hideGame && isGameTerm(entry.word)) &&
+							!(hideNames && isNameTerm(entry.word))
+					)
 					.map((entry) => [entry, statOf(entry)])
 					.filter(([, s]) => s && s[1] >= floor)
 					.map(([entry, s]) => ({
@@ -461,7 +567,9 @@
 		// the more words a step names, the smaller their labels: a dozen at
 		// full size, forty at about two thirds
 		const litSize = (full) =>
-			Math.round(full * Math.max(0.68, 1 - Math.max(0, HIGHLIGHT.size - 12) * 0.011) * 2) / 2;
+			Math.round(
+				full * Math.max(0.68, 1 - Math.max(0, HIGHLIGHT.size - 12) * 0.011) * 2
+			) / 2;
 		// a label's box, for the clash test
 		const boxFor = (point, px, py, side, size, weight, rowH) => {
 			// plus the paint-order halo on each side
@@ -601,7 +709,9 @@
 		if (outletExamples || outletExamplesLoading) return;
 		outletExamplesLoading = true;
 		try {
-			outletExamples = await (await fetch(`${base}/data/fw_examples_by_outlet.json`)).json();
+			outletExamples = await (
+				await fetch(`${base}/data/fw_examples_by_outlet.json`)
+			).json();
 		} catch {
 			outletExamples = {};
 		} finally {
@@ -618,7 +728,9 @@
 	// found the card shows none. Fox's side and "all outlets" use the shared store.
 	function exampleFor(mode, word, z) {
 		if (z < 0 && against !== ALL_OUTLETS) {
-			const members = AGGREGATES.includes(against) ? (GROUPS[against] ?? []) : [against];
+			const members = AGGREGATES.includes(against)
+				? (GROUPS[against] ?? [])
+				: [against];
 			for (const outlet of members) {
 				const own = outletExamples?.[outlet]?.[mode]?.[word];
 				if (own) return own;
@@ -634,7 +746,11 @@
 			points,
 			topShort: "in Fox News",
 			bottomShort:
-				against === ALL_OUTLETS ? "in the other outlets" : AGGREGATES.includes(against) ? `in the ${against}` : inOutlet(against),
+				against === ALL_OUTLETS
+					? "in the other outlets"
+					: AGGREGATES.includes(against)
+						? `in the ${against}`
+						: inOutlet(against),
 			// only Fox's head carries its wordmark; the other side is named in words
 			topLogo: PILL_LOGO["Fox News"] ?? "fox-news.svg",
 			// the heads at the bars' outer edges, saying what each side means
@@ -643,8 +759,14 @@
 				against === ALL_OUTLETS
 					? or(othersHead, "Other outlets use more")
 					: (() => {
-							const n = AGGREGATES.includes(against) ? `the ${against}` : outletName(against);
-							return n.charAt(0).toUpperCase() + n.slice(1) + (/s$/.test(n) && !/news$/i.test(n) ? " use more" : " uses more");
+							const n = AGGREGATES.includes(against)
+								? `the ${against}`
+								: outletName(against);
+							return (
+								n.charAt(0).toUpperCase() +
+								n.slice(1) +
+								(/s$/.test(n) && !/news$/i.test(n) ? " use more" : " uses more")
+							);
 						})()
 		}
 	);
@@ -657,7 +779,8 @@
 
 	let cardEx = $derived.by(() => {
 		if (!tip) return null;
-		if (source) return tip.eg ? { s: tip.eg, w: tip.egw, o: tip.ego ?? null } : null;
+		if (source)
+			return tip.eg ? { s: tip.eg, w: tip.egw, o: tip.ego ?? null } : null;
 		const mode = bodyMode ? bodyKey : "headlines";
 		const hit = exampleFor(mode, tip.word, tip.z ?? 0);
 		return { s: hit?.[0] ?? null, w: hit?.[1] ?? null, o: hit?.[2] ?? null };
@@ -685,10 +808,18 @@
 	// the occurrence nearest the middle of the stored passage is the one meant
 	// (the passage is the example sentence with a neighbour on either side)
 	function nearestMatch(text, rx) {
-		const g = new RegExp(rx.source, rx.flags.includes("g") ? rx.flags : rx.flags + "g");
+		const g = new RegExp(
+			rx.source,
+			rx.flags.includes("g") ? rx.flags : rx.flags + "g"
+		);
 		let best = null;
 		for (const m of text.matchAll(g)) {
-			if (!best || Math.abs(m.index - text.length / 2) < Math.abs(best.index - text.length / 2)) best = m;
+			if (
+				!best ||
+				Math.abs(m.index - text.length / 2) <
+					Math.abs(best.index - text.length / 2)
+			)
+				best = m;
 		}
 		return best;
 	}
@@ -713,9 +844,12 @@
 			form && wordRx(word, form).test(safe) ? wordRx(word, form) : wordRx(word);
 		const m = nearestMatch(safe, rx);
 		if (!m) return safe;
-		return safe.slice(0, m.index) +
+		return (
+			safe.slice(0, m.index) +
 			`<mark style="background:${color}2e;box-shadow:inset 0 -2px 0 ${color}66;` +
-			`color:inherit;padding:0 1px;">${m[0]}</mark>` + safe.slice(m.index + m[0].length);
+			`color:inherit;padding:0 1px;">${m[0]}</mark>` +
+			safe.slice(m.index + m[0].length)
+		);
 	}
 	const tickValues = [10, 100, 1000, 10000];
 </script>
@@ -730,71 +864,79 @@
 	bind:this={rootEl}
 >
 	{#if !source}
-		<!-- a small title like the player chart's: the Fox wordmark where her
-		     face would be, what the words are, and who Fox is set against -->
-		<div class="chart-head">
-			<span class="head-mark"><img src="{base}/logos/{PILL_LOGO['Fox News'] ?? 'fox-news.svg'}" alt="" /></span>
+		<!-- the title, and who Fox is compared with, as on the player chart -->
+		<div class="head">
 			<p class="heading">
-				<b
-					>{#if bodyMode && player === ALL}{fillIn(or(headingText, "{unit} in WNBA articles"), { unit: unitName(gram) })}{:else}{gram === 3
-							? "Three-word phrases"
-							: gram === 2
-								? "Phrases"
-								: "Words"} in {player === ALL ? `WNBA ${bodyMode ? "articles" : "headlines"}` : `headlines naming ${player}`}{/if}</b
-				><br />
-				{@html fillIn(or(subheading, "Fox News vs. {them}"), {
-					them: against === ALL_OUTLETS ? "other outlets" : outletName(against)
-				}).replace(/\bvs\. /, '<span class="vs">vs.</span> ')}
+				{#if bodyMode && player === ALL}{fillIn(
+						or(headingText, "How Fox News writes about the WNBA"),
+						{ unit: unitName(gram) }
+					)}{:else}{gram === 3
+						? "Three-word phrases"
+						: gram === 2
+							? "Phrases"
+							: "Words"} in {player === ALL
+						? `WNBA ${bodyMode ? "articles" : "headlines"}`
+						: `headlines naming ${player}`}{/if}
 			</p>
-		</div>
-	{/if}
-	{#if !source}
-		<!-- labelled fields in the headline table's style: a dropdown per choice,
-		     then the search box (2026-09-29) -->
-		<div class="controls filterbar">
-			<div class="field">
-				<span class="field-label">{or(compareLabel, "Fox News compared with")}</span>
+			<!-- a div, not a p: the menu inside renders block elements -->
+			<div class="subheading">
+				<span>{or(comparedWith, "compared with")}</span>
 				<LogoSelect
 					options={outletsHere}
 					bind:value={against}
 					logoOf={(o) => PILL_LOGO[o] ?? null}
 					nameOf={outletOption}
-					label="Fox News compared with"
+					label="Compared with"
 				/>
 			</div>
-			{#if checks.on && controls}
+		</div>
+	{/if}
+	{#if !source}
+		<!-- the checks, when they're on -->
+		{#if checks.on && controls}
+			<div class="controls filterbar">
 				<div class="field">
 					<span class="field-label">Leave out</span>
 					<LogoSelect
 						options={["none", "game", "names", "both"]}
 						bind:value={leaveOut}
-						nameOf={(o) => ({ none: "Nothing", game: "Game words", names: "Names", both: "Game words and names" })[o]}
+						nameOf={(o) =>
+							({
+								none: "Nothing",
+								game: "Game words",
+								names: "Names",
+								both: "Game words and names"
+							})[o]}
 						label="Leave out"
 					/>
 				</div>
-			{/if}
-			{#if checks.on && controls && player === ALL}
-				<!-- a check: see `college` above -->
-				<div class="field">
-					<span class="field-label">College coverage</span>
-					<LogoSelect
-						options={["with", "without"]}
-						bind:value={college}
-						nameOf={(o) => (o === "with" ? "With college" : "Without college")}
-						label="College coverage"
-					/>
-				</div>
-			{/if}
-		</div>
+				{#if player === ALL}
+					<!-- a check: see `college` above -->
+					<div class="field">
+						<span class="field-label">College coverage</span>
+						<LogoSelect
+							options={["with", "without"]}
+							bind:value={college}
+							nameOf={(o) =>
+								o === "with" ? "With college" : "Without college"}
+							label="College coverage"
+						/>
+					</div>
+				{/if}
+			</div>
+		{/if}
 		{#if controls}
-			<!-- the unit as tabs on a rule, the search at the rule's right end
-			     (2026-10-02) -->
+			<!-- the unit as tabs on a rule, the search at the rule's right end -->
 			<div class="unit-row">
 				{#if bodyMode}
 					<div class="unit-tabs" role="tablist" aria-label="Words at a time">
 						{#each [1, 2, 3].map((n) => [n, unitName(n)]) as [n, label] (n)}
-							<button type="button" role="tab" class:on={gram === n} aria-selected={gram === n} onclick={() => (gram = n)}
-								>{label}</button
+							<button
+								type="button"
+								role="tab"
+								class:on={gram === n}
+								aria-selected={gram === n}
+								onclick={() => (gram = n)}>{label}</button
 							>
 						{/each}
 					</div>
@@ -826,9 +968,19 @@
 										<span class="uses even">{or(rankEven, "Even")}</span>
 									{:else}
 										<span class="uses" style="color:{t.z > 0 ? FOX : OTHER}"
-											>{fillIn(t.z > 0 ? or(rankFox, "Fox #{rank}") : or(rankOthers, against === ALL_OUTLETS ? "Others #{rank}" : `${bottomName} #{rank}`), {
-												rank: rankOf.get(t.term)
-											})}</span
+											>{fillIn(
+												t.z > 0
+													? or(rankFox, "Fox #{rank}")
+													: or(
+															rankOthers,
+															against === ALL_OUTLETS
+																? "Others #{rank}"
+																: `${bottomName} #{rank}`
+														),
+												{
+													rank: rankOf.get(t.term)
+												}
+											)}</span
 										>
 									{/if}
 								</li>
@@ -1036,13 +1188,23 @@
 				)}px"
 			>
 				<!-- the side's colour in a swatch and on the quote's rule; the words in ink -->
-				<span class="tip-head"><i class="swatch" style="background:{side}"></i>{properCase(tip.word)}</span>
+				<span class="tip-head"
+					><i class="swatch" style="background:{side}"></i>{properCase(
+						tip.word
+					)}</span
+				>
 				<!-- the split behind the dot: uses on each side, and the score -->
 				<span class="tip-count"
-					>{topName} {tip.nf.toLocaleString()} · {bottomName} {tip.no.toLocaleString()} · z {tip.z > 0 ? "+" : ""}{tip.z.toFixed(1)}</span
+					>{topName}
+					{tip.nf.toLocaleString()} · {bottomName}
+					{tip.no.toLocaleString()} · z {tip.z > 0 ? "+" : ""}{tip.z.toFixed(
+						1
+					)}</span
 				>
 				{#if cardEx?.s}
-					<p style="border-left-color:{side}">{@html markWord(cardEx.s, tip.word, side, cardEx.w)}</p>
+					<p style="border-left-color:{side}">
+						{@html markWord(cardEx.s, tip.word, side, cardEx.w)}
+					</p>
 					{#if cardEx.o}<span class="tip-source">{cardEx.o}</span>{/if}
 				{/if}
 			</div>
@@ -1137,40 +1299,62 @@
 		display: none;
 	}
 
-	/* the chart's title, as on the player chart */
-	.chart-head {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 12px;
+	/* the title in plain words, and what Fox is compared with (as on the
+	   player chart) */
+	.head {
+		max-width: 720px;
 		margin: 0 auto 10px;
 	}
-	.head-mark {
-		flex: none;
+	.heading {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 22px;
+		font-weight: 700;
+		line-height: 1.25;
+		text-align: left;
+		color: var(--color-ink-dark);
+	}
+	.subheading {
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		width: 52px;
-		height: 52px;
-		border-radius: 50%;
-		background: #fff;
-		border: 2px solid rgba(255, 253, 248, 0.9);
-		box-shadow: 0 2px 8px rgba(42, 21, 3, 0.18);
+		gap: 6px;
+		margin: 2px 0 0;
+		font-family: var(--font-serif);
+		font-size: 17px;
+		color: rgba(42, 21, 3, 0.75);
 	}
-	.head-mark img {
-		width: 30px;
-		height: 30px;
+	.subheading > span {
+		flex: 0 0 auto;
+		white-space: nowrap;
 	}
-	.heading {
-		font-size: 14.5px;
-		color: var(--color-ink);
-		text-align: left;
-		margin: 0;
-		max-width: 460px;
-		line-height: 1.35;
+	.subheading :global(.logo-select) {
+		flex: 0 1 auto;
+		width: auto;
+		min-width: 0;
 	}
-	.heading :global(.vs) {
-		color: inherit;
+	/* the menu sits in the line as a quiet underlined word */
+	.subheading :global(.logo-select .current) {
+		height: auto;
+		padding: 0 18px 0 0;
+		border: 0;
+		border-bottom: 1.5px solid currentColor;
+		border-radius: 0;
+		background: transparent;
+		font-family: var(--font-serif);
+		font-size: 17px;
+		color: var(--color-ink-dark);
+	}
+	.subheading :global(.logo-select .current::after) {
+		right: 0;
+	}
+	@media (max-width: 640px) {
+		.heading {
+			font-size: 18px;
+		}
+		.subheading,
+		.subheading :global(.logo-select .current) {
+			font-size: 15px;
+		}
 	}
 	/* the controls in the headline table's style: labelled fields, a
 	   heavy-edged white dropdown with its own caret, the same search box */
@@ -1505,7 +1689,6 @@
 		opacity: 0.4;
 		pointer-events: none;
 	}
-
 
 	.note {
 		font-size: 12px;

@@ -19,6 +19,8 @@
 	// scrollytelling charts take the full viewport width
 	const FULL_BLEED = new Set([
 		"NetworkScrolly",
+		"NetworkMap",
+		"NetworkScrollyOld",
 		"FightinWordsScrolly",
 		"FightinWordsBarsScrolly",
 		"TernaryScrolly",
@@ -35,7 +37,7 @@
 		"TvSet"
 	]);
 	// these render Doc copy of their own and need the component map for it
-	const NESTING = new Set(["Subsections", "Aside"]);
+	const NESTING = new Set(["Subsections", "Aside", "TvBeside"]);
 	// these draw their own title and caption
 	const SELF_CAPTIONED = new Set([
 		"Subsections",
@@ -53,6 +55,7 @@
 		"Gallery",
 		"HeadlineGallery",
 		"TvSet",
+		"TvBeside",
 		"WordCompare",
 		"WordNeighbors",
 	]);

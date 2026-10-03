@@ -43,3 +43,9 @@ data/*.csv
 
 # no-college check data (?checks): local only, 120 MB with its parse caches
 static/data/nocollege/
+
+# notes for Claude Code, kept local
+CLAUDE.md
+
+# Storm TV sources and build script (downloads clips)
+notebooks/storm_tv/

@@ -10,7 +10,9 @@
 			const heading = (section.content ?? []).find((b) => b.type === "h2");
 			return {
 				id: section.section,
-				label: heading ? heading.value.replace(/<[^>]+>/g, "") : titleCase(section.section)
+				label: heading
+					? heading.value.replace(/<[^>]+>/g, "")
+					: titleCase(section.section)
 			};
 		})
 		.filter(Boolean);
@@ -40,7 +42,9 @@
 	});
 	const go = (id) => (event) => {
 		event.preventDefault();
-		document.getElementById(id)?.scrollIntoView({ behavior: "instant", block: "start" });
+		document
+			.getElementById(id)
+			?.scrollIntoView({ behavior: "instant", block: "start" });
 		history.replaceState(null, "", `#${id}`);
 	};
 </script>
@@ -67,6 +71,12 @@
 		top: 50%;
 		transform: translateY(-50%);
 		z-index: 30;
+		transition: opacity 250ms ease;
+	}
+	/* out of the way while the Storm TV is in the margin */
+	:global(body.tv-beside-on) .scroll-toc {
+		opacity: 0;
+		pointer-events: none;
 	}
 	/* only where there is room beside the text column */
 	@media (max-width: 1180px) {

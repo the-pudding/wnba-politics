@@ -1,40 +1,78 @@
 <script>
-	// Fox News against the field, after the Times's way with such charts
-	// (2026-10-02): one chart that makes the comparison, Fox in its topic's
-	// colour over every other outlet in grey, the lines labelled where they
-	// are and a few dated notes; then each outlet on its own, small, on one
-	// scale; then the words counted.
+	// Fox News vs. the other outlets on one topic: Fox's line in colour, the
+	// others in grey, a few dated notes, then each outlet small, then the words counted.
 	//
+	// In the Doc (every line but topic is optional):
 	//   {.FoxVsField}
-	//   topic: polrace        (polrace, lgbtq or fouls)
-	//   second: protect       (optional: a second Fox line, as fouls has)
-	//   by: month             (year, the default, or month)
-	//   from: 2024-05         to: 2026-09   (optional span)
-	//   title: The finding, as a headline
-	//   subtitle: …           (optional: replaces the line saying what is counted)
+	//   topic: polrace          polrace, lgbtq or fouls
+	//   second: protect         a second Fox line
+	//   by: month               year (default) or month
+	//   from: 2024-05           to: 2026-09
+	//   title: …                kicker: …
+	//   subtitle: …             {swatch}, {swatch2} and {grey} put in the colour chips
 	//   notes: 2020 | Players’ BLM protests; 2024 | Caitlin Clark’s rookie season
-	//                         (optional: replaces the topic's default notes)
-	//   mark: 2026-07-07      markNote: Republicans’ letter to the WNBA
-	//   markShort: …          (the note on a phone)
-	//   lineLabel: …  line2Label: …   (the names on Fox's lines)
-	//   fieldLabel: Other outlets     (the grey lines' name)
-	//   unit: of articles             (after the top gridline's number)
-	//   peakNote: Clark’s rookie summer: {n} Fox articles   (fouls; "none" hides it)
-	//   peakNoteShort: …
-	//   listLabel: …  list2Label: …   (the word lists' names under the chart)
-	//   sourceNote: An article counts once, however often it uses them.
+	//   mark: 2026-07-07        markNote: …   markShort: … (phones)
+	//   peakNote: … {n} …       peakNoteShort: …   ("none" hides it)
+	//   lineLabel: …            line2Label: …   fieldLabel: …   unit: …
+	//   listLabel: …            list2Label: …   sourceNote: …
+	//   field: false            hide the grey lines
 	//   {}
-	// the subtitle can place the key's colours: {swatch} (Fox's line),
-	// {swatch2} (the second line), {grey} (the other outlets)
 	import { scaleLinear, scalePoint } from "d3-scale";
 	import { line as d3line, area as d3area } from "d3-shape";
 	import rows from "$data/outlet_topics.csv";
 	import monthRows from "$data/outlet_topics_monthly.csv";
-	// each foul word's Fox articles by month (notebooks/outlet_topics_monthly.py)
-	import termRows from "$data/foul_terms_monthly.csv";
+	import termRows from "$data/foul_terms_monthly.csv"; // each foul word, Fox, by month
 	import { COMPARISON, SHORT } from "$utils/outlets.js";
 	import { wordGroupsFor } from "$utils/topicWords.js";
 	import { fill, or } from "$utils/fill.js";
+
+	// ---------------------------------------------------------------------
+	// Settings for each topic
+	// ---------------------------------------------------------------------
+	//   color   Fox's line (fouls and protect: picked to stay apart for colour-blind readers)
+	//   kicker  small label over the headline
+	//   name    how the text names it (fouls by its words, not "foul words")
+	//   notes   default dated notes: [period, text]
+	//   fieldAt where "Other outlets" is written (fieldAtPhone on phones)
+	const TOPICS = {
+		polrace: {
+			color: "var(--color-politics)",
+			kicker: "Race",
+			name: "race",
+			notes: [
+				["2020", "Players’ BLM protests"],
+				["2024", "Caitlin Clark’s rookie season"]
+			],
+			fieldAt: "2021",
+			fieldAtPhone: "2022"
+		},
+		lgbtq: {
+			color: "var(--color-lgbtq)",
+			kicker: "LGBTQ+",
+			name: "LGBTQ+ topics",
+			notes: [],
+			fieldAt: "2022"
+		},
+		fouls: {
+			color: "#9a5b13",
+			kicker: "Fouls",
+			name: "hip-check, poke, punch or throat",
+			notes: [],
+			fieldAt: "2025-01"
+		},
+		protect: {
+			color: "#2f5d9e",
+			kicker: "Protect",
+			name: "“protect”",
+			notes: []
+		}
+	};
+	// fouls only: Fox's busiest month gets this note
+	const PEAK_NOTE = {
+		fouls: ["Clark’s rookie summer: {n} Fox articles", "Clark’s rookie summer"]
+	};
+	const MARK_NOTE = ["Republicans’ letter to the WNBA", "Republicans’ letter"]; // default for `mark`
+	const MIN_N = 20; // years with fewer articles than this aren't drawn
 
 	let {
 		topic = "polrace",
@@ -43,15 +81,12 @@
 		from = "",
 		to = "",
 		title = "",
-		// the small coloured label over the headline; the topic's name unless
-		// the Doc gives one
 		kicker = "",
 		subtitle = "",
 		notes = null,
 		mark = "",
 		markNote = "",
-		// the older blocks' name for markNote
-		markLabel = "",
+		markLabel = "", // older name for markNote
 		markShort = "",
 		lineLabel = "",
 		line2Label = "",
@@ -62,29 +97,45 @@
 		listLabel = "",
 		list2Label = "",
 		sourceNote = "",
-		// the other outlets in grey behind Fox; left out where Fox has two
-		// lines (fouls), which the small panels below compare instead
 		field: showField = null,
-		// accepted from the Doc's older chart blocks and not used here
-		...rest
+		...rest // old options still in the Doc
 	} = $props();
 
 	const FOX = "Fox News";
+	const T = TOPICS[topic];
+	const COLOR = Object.fromEntries(
+		Object.entries(TOPICS).map(([k, v]) => [k, v.color])
+	);
+	const NAME = Object.fromEntries(
+		Object.entries(TOPICS).map(([k, v]) => [k, v.name])
+	);
 	const monthly = String(by).trim().toLowerCase() === "month";
-	const MIN_N = 20; // a year with fewer articles than this is not drawn
-	// shares for the yearly topics; for the months, articles (a month's share
-	// of a small outlet's handful is noise)
+	// by year: share of articles; by month: counts (a month's share is too noisy)
 	const counts = monthly;
 
-	// --- the data: {outlet: {period: {n, hit}}} for each topic -----------------
+	// ---------------------------------------------------------------------
+	// Data: table[topic][outlet][period] = { n, hit }
+	// ---------------------------------------------------------------------
+
 	const table = {};
 	for (const r of monthly ? monthRows : rows) {
 		if (r.method !== "body") continue;
-		((table[r.topic] ??= {})[r.outlet] ??= {})[monthly ? r.period : r.year] = { n: +r.articles, hit: +r.hits };
+		((table[r.topic] ??= {})[r.outlet] ??= {})[monthly ? r.period : r.year] = {
+			n: +r.articles,
+			hit: +r.hits
+		};
 	}
-	const key = (v) => (!v ? "" : monthly ? String(v).trim().slice(0, 7) : String(v).trim().slice(0, 4));
-	const FROM = key(from), TO = key(to);
-	const periods = [...new Set(Object.values(table[topic] ?? {}).flatMap((o) => Object.keys(o)))]
+	const key = (v) =>
+		!v
+			? ""
+			: monthly
+				? String(v).trim().slice(0, 7)
+				: String(v).trim().slice(0, 4);
+	const FROM = key(from),
+		TO = key(to);
+	const periods = [
+		...new Set(Object.values(table[topic] ?? {}).flatMap((o) => Object.keys(o)))
+	]
 		.filter((p) => (!FROM || p >= FROM) && (!TO || p <= TO))
 		.sort();
 	const others = COMPARISON.filter((o) => table[topic]?.[o]);
@@ -96,89 +147,130 @@
 		if (counts) return c.hit;
 		return c.n >= MIN_N ? c.hit / c.n : null;
 	};
-	const series = (t, o) => periods.map((p) => ({ p, v: valueOf(t, o, p) })).filter((d) => d.v != null);
-	// the whole span at once: an outlet's pooled share, or its total articles
+	const series = (t, o) =>
+		periods.map((p) => ({ p, v: valueOf(t, o, p) })).filter((d) => d.v != null);
+	// one number for the whole span (the small panels' totals)
 	const overall = (t, o) => {
 		const cells = periods.map((p) => table[t]?.[o]?.[p]).filter(Boolean);
-		const hit = cells.reduce((s, c) => s + c.hit, 0), n = cells.reduce((s, c) => s + c.n, 0);
+		const hit = cells.reduce((s, c) => s + c.hit, 0),
+			n = cells.reduce((s, c) => s + c.n, 0);
 		return counts ? hit : n ? hit / n : 0;
 	};
 
-	// --- colours: the topic's for Fox, grey for the field ----------------------
-	const COLOR = {
-		polrace: "var(--color-politics)",
-		lgbtq: "var(--color-lgbtq)",
-		// the brown and navy of the word chart, set so the two stay apart for
-		// colour-blind readers (checked with the dataviz palette validator)
-		fouls: "#9a5b13",
-		protect: "#2f5d9e"
-	};
-	const KICKER = { polrace: "Race", lgbtq: "LGBTQ+", fouls: "Fouls" };
-	// the fouls topic by its words, never "foul words": the four the
-	// Republicans' letter cited are the point
-	const NAME = { polrace: "race", lgbtq: "LGBTQ+ topics", fouls: "hip-check, poke, punch or throat", protect: "“protect”" };
-	// a long line name over two lines, broken at the comma nearest its middle
+	// ---------------------------------------------------------------------
+	// Lines
+	// ---------------------------------------------------------------------
+
+	// long names go on two lines, split at the comma nearest the middle
 	const nameLines = (name) => {
 		if (name.length <= 20) return [name];
 		const cuts = [...name.matchAll(/, /g)].map((m) => m.index);
 		if (!cuts.length) return [name];
-		const at = cuts.reduce((a, b) => (Math.abs(b - name.length / 2) < Math.abs(a - name.length / 2) ? b : a));
+		const at = cuts.reduce((a, b) =>
+			Math.abs(b - name.length / 2) < Math.abs(a - name.length / 2) ? b : a
+		);
 		return [name.slice(0, at + 1), name.slice(at + 2)];
 	};
 	const cap = (t) => t.replace(/^(“?)(\w)/, (_, q, c) => q + c.toUpperCase());
+	// Fox's line(s): with two, each is named by its words
 	const heroes = [topic, ...(second ? [second] : [])].map((t) => ({
 		t,
 		color: COLOR[t],
-		// with only Fox drawn, each line is named by its words alone
-		name: or(t === topic ? lineLabel : line2Label, second ? cap(NAME[t]) : "Fox News"),
+		name: or(
+			t === topic ? lineLabel : line2Label,
+			second ? cap(NAME[t]) : "Fox News"
+		),
 		pts: series(t, FOX)
 	}));
-	const withField = showField == null ? !second : String(showField).toLowerCase() !== "false";
-	const field = withField ? others.map((o) => ({ o, pts: series(topic, o) })) : [];
+	// the grey lines; off by default when Fox has two lines (the small panels compare instead)
+	const withField =
+		showField == null ? !second : String(showField).toLowerCase() !== "false";
+	const field = withField
+		? others.map((o) => ({ o, pts: series(topic, o) }))
+		: [];
 
-	// --- the scale ------------------------------------------------------------
-	const peak = Math.max(...heroes.flatMap((h) => h.pts.map((d) => d.v)), ...field.flatMap((f) => f.pts.map((d) => d.v)), 0);
-	const step = counts ? (peak > 60 ? 20 : 10) : peak > 0.3 ? 0.1 : 0.1;
+	const peak = Math.max(
+		...heroes.flatMap((h) => h.pts.map((d) => d.v)),
+		...field.flatMap((f) => f.pts.map((d) => d.v)),
+		0
+	);
+	const step = counts ? (peak > 60 ? 20 : 10) : 0.1;
 	const yMax = Math.ceil((peak * 1.04) / step) * step;
-	const yTicks = Array.from({ length: Math.round(yMax / step) + 1 }, (_, i) => +(i * step).toFixed(4));
-	const fmt = (v) => (counts ? String(Math.round(v)) : `${Math.round(v * 100)}%`);
-	const MONTHS = ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."];
-	const edge = (p) => (monthly ? `${MONTHS[+p.slice(5, 7) - 1].replace(".", "")} ’${p.slice(2, 4)}` : p);
-	const periodName = (p) => (monthly ? `${MONTHS[+p.slice(5, 7) - 1]} ${p.slice(0, 4)}` : p);
+	const yTicks = Array.from(
+		{ length: Math.round(yMax / step) + 1 },
+		(_, i) => +(i * step).toFixed(4)
+	);
+	const fmt = (v) =>
+		counts ? String(Math.round(v)) : `${Math.round(v * 100)}%`;
+	const MONTHS = [
+		"Jan.",
+		"Feb.",
+		"March",
+		"April",
+		"May",
+		"June",
+		"July",
+		"Aug.",
+		"Sept.",
+		"Oct.",
+		"Nov.",
+		"Dec."
+	];
+	const edge = (p) =>
+		monthly
+			? `${MONTHS[+p.slice(5, 7) - 1].replace(".", "")} ’${p.slice(2, 4)}`
+			: p;
+	const periodName = (p) =>
+		monthly ? `${MONTHS[+p.slice(5, 7) - 1]} ${p.slice(0, 4)}` : p;
 
-	// --- the dated notes --------------------------------------------------------
-	// "2020 | Players’ BLM protests; 2024 | …": a period, then the note
-	const DEFAULT_NOTES = {
-		polrace: [["2020", "Players’ BLM protests"], ["2024", "Caitlin Clark’s rookie season"]],
-		lgbtq: [],
-		fouls: []
-	};
+	// ---------------------------------------------------------------------
+	// Dated notes: the Doc's, or the topic's; fouls' peak; the `mark` date
+	// ---------------------------------------------------------------------
+
 	const markKey = key(mark);
-	const peakOf = (pts) => pts.reduce((a, b) => (b.v > a.v ? b : a), pts[0] ?? { v: 0 });
+	const peakOf = (pts) =>
+		pts.reduce((a, b) => (b.v > a.v ? b : a), pts[0] ?? { v: 0 });
 	const noteList = (() => {
-		const given = notes != null && String(notes).trim()
-			? String(notes).split(";").map((s) => s.split("|").map((x) => x.trim())).filter((n) => n[0] && n[1])
-			: DEFAULT_NOTES[topic] ?? [];
+		const given =
+			notes != null && String(notes).trim()
+				? String(notes)
+						.split(";")
+						.map((s) => s.split("|").map((x) => x.trim()))
+						.filter((n) => n[0] && n[1])
+				: T.notes;
 		const out = given.map(([p, text]) => ({ p: key(p), head: p, text }));
-		// fouls: Fox's highest month, named; the dated letter, from `mark`
-		const peakText = or(peakNote, topic === "fouls" && notes == null ? "Clark’s rookie summer: {n} Fox articles" : "");
+		const [peakDefault, peakShortDefault] =
+			notes == null ? (PEAK_NOTE[topic] ?? ["", ""]) : ["", ""];
+		const peakText = or(peakNote, peakDefault);
 		if (peakText && peakText.toLowerCase() !== "none" && heroes[0].pts.length) {
 			const top = peakOf(heroes[0].pts);
-			const short = or(peakNoteShort, topic === "fouls" && !String(peakNote).trim() ? "Clark’s rookie summer" : "");
-			out.push({ p: top.p, head: periodName(top.p), text: fill(peakText, { n: fmt(top.v) }), short: fill(short, { n: fmt(top.v) }) });
+			const short = or(
+				peakNoteShort,
+				String(peakNote).trim() ? "" : peakShortDefault
+			);
+			out.push({
+				p: top.p,
+				head: periodName(top.p),
+				text: fill(peakText, { n: fmt(top.v) }),
+				short: fill(short, { n: fmt(top.v) })
+			});
 		}
 		const markText = or(markNote, or(markLabel, ""));
 		if (markKey && periods.includes(markKey))
 			out.push({
 				p: markKey,
-				head: new Date(mark + "T12:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-				text: markText || "Republicans’ letter to the WNBA",
-				short: or(markShort, markText ? "" : "Republicans’ letter"),
+				head: new Date(mark + "T12:00").toLocaleDateString("en-US", {
+					month: "long",
+					day: "numeric",
+					year: "numeric"
+				}),
+				text: markText || MARK_NOTE[0],
+				short: or(markShort, markText ? "" : MARK_NOTE[1]),
 				left: true
 			});
 		return out.filter((n) => periods.includes(n.p));
 	})();
-	// a note's words on up to three short lines
+	// a note on up to three short lines
 	const wrap = (text, width = 22) => {
 		const lines = [""];
 		for (const w of text.split(/\s+/)) {
@@ -189,19 +281,19 @@
 		return lines;
 	};
 
-	// --- the fouls words, each named on the line at its busiest month ----------
-	// ("hip-check" on the June 2024 spike, "poke" on June 2025's, …), words
-	// that peak in the same month listed together, busiest first
+	// fouls: each word written on the line at its busiest month
 	const wordPeaks = (() => {
 		if (topic !== "fouls") return [];
 		const best = {};
 		for (const r of termRows) {
 			if (r.outlet !== FOX || !periods.includes(r.period)) continue;
 			const k = +r.hits;
-			if (!best[r.term] || k > best[r.term].k) best[r.term] = { p: r.period, k };
+			if (!best[r.term] || k > best[r.term].k)
+				best[r.term] = { p: r.period, k };
 		}
 		const byMonth = {};
-		for (const [term, b] of Object.entries(best)) (byMonth[b.p] ??= []).push({ term, k: b.k });
+		for (const [term, b] of Object.entries(best))
+			(byMonth[b.p] ??= []).push({ term, k: b.k });
 		return Object.entries(byMonth).map(([p, words]) => ({
 			p,
 			v: valueOf(topic, FOX, p),
@@ -209,111 +301,176 @@
 		}));
 	})();
 
-	// --- layout -----------------------------------------------------------------
+	// ---------------------------------------------------------------------
+	// Layout
+	// ---------------------------------------------------------------------
+
 	let width = $state(640);
 	const narrow = $derived(width < 520);
 	const H = $derived(narrow ? 300 : 340);
-	const M = $derived({ top: 28, right: narrow ? 72 : 100, bottom: 30, left: 4 });
-	const x = $derived(scalePoint().domain(periods).range([M.left + 30, width - M.right]));
-	const y = $derived(scaleLinear().domain([0, yMax]).range([H - M.bottom, M.top]));
-	const path = $derived(d3line().x((d) => x(d.p)).y((d) => y(d.v)));
+	const M = $derived({
+		top: 28,
+		right: narrow ? 72 : 100,
+		bottom: 30,
+		left: 4
+	});
+	const x = $derived(
+		scalePoint()
+			.domain(periods)
+			.range([M.left + 30, width - M.right])
+	);
+	const y = $derived(
+		scaleLinear()
+			.domain([0, yMax])
+			.range([H - M.bottom, M.top])
+	);
+	const path = $derived(
+		d3line()
+			.x((d) => x(d.p))
+			.y((d) => y(d.v))
+	);
 	const xLabel = (p, i) => {
-		// on a phone, the even years alone, shortened
-		if (!monthly) return !narrow ? p : +p % 2 ? "" : "’" + p.slice(2);
+		if (!monthly) return !narrow ? p : +p % 2 ? "" : "’" + p.slice(2); // phones: even years only
 		if (i === 0) return `${MONTHS[+p.slice(5, 7) - 1]} ${p.slice(0, 4)}`;
 		if (p.endsWith("-01")) return p.slice(0, 4);
-		return !narrow && p.endsWith("-07") && i > 3 ? `July ’${p.slice(2, 4)}` : "";
+		return !narrow && p.endsWith("-07") && i > 3
+			? `July ’${p.slice(2, 4)}`
+			: "";
 	};
-	// where each Fox line is named: a single line at its end; two lines at
-	// their highest points, clear of the notes whose words run the same way
-	// (rightward) and of each other
+
+	// Labels on Fox's lines: one line is named at its end; two lines at
+	// their highest points, kept clear of the notes and of each other
 	const heroLabels = $derived.by(() => {
 		const placed = [];
 		return heroes.map((h, k) => {
 			if (k === 0 && wordPeaks.length) return null;
-			// a label that would run past the right edge sits to the left of
-			// its point instead
 			const place = (d, value, dy) => {
-				const w = Math.max(...nameLines(h.name).map((l) => l.length), value.length) * 7.2;
-				const right = x(d.p) + 8 + w <= width;
-				return { x: right ? x(d.p) + 8 : x(d.p) - 8, y: y(d.v) + dy, value, anchor: right ? "start" : "end" };
+				const w =
+					Math.max(...nameLines(h.name).map((l) => l.length), value.length) *
+					7.2;
+				const right = x(d.p) + 8 + w <= width; // flip left if it would run off the edge
+				return {
+					x: right ? x(d.p) + 8 : x(d.p) - 8,
+					y: y(d.v) + dy,
+					value,
+					anchor: right ? "start" : "end"
+				};
 			};
 			if (!second) {
 				const last = h.pts[h.pts.length - 1];
 				return last && place(last, fmt(last.v), 4);
 			}
-			// the first line keeps clear of every note; the next only of those
-			// whose words run rightward, as its label does
-			const rightNotes = noteList.filter((n) => k === 0 || !n.left).map((n) => periods.indexOf(n.p));
+			const rightNotes = noteList
+				.filter((n) => k === 0 || !n.left)
+				.map((n) => periods.indexOf(n.p));
 			const clear = (d) => {
-				const lx = x(d.p) + 8, ly = y(d.v) - 4;
+				const lx = x(d.p) + 8,
+					ly = y(d.v) - 4;
 				return (
 					rightNotes.every((i) => Math.abs(periods.indexOf(d.p) - i) > 2) &&
-					placed.every((q) => Math.abs(q.x - lx) > 120 || Math.abs(q.y - ly) > 34)
+					placed.every(
+						(q) => Math.abs(q.x - lx) > 120 || Math.abs(q.y - ly) > 34
+					)
 				);
 			};
-			const best = [...h.pts].sort((a, b) => b.v - a.v).find(clear) ?? peakOf(h.pts);
+			const best =
+				[...h.pts].sort((a, b) => b.v - a.v).find(clear) ?? peakOf(h.pts);
 			const extra = (nameLines(h.name).length - 1) * 15;
-			const at = place(best, narrow ? `${fmt(best.v)}, ${edge(best.p)}` : `${fmt(best.v)} in ${periodName(best.p)}`, -4 - extra);
+			const at = place(
+				best,
+				narrow
+					? `${fmt(best.v)}, ${edge(best.p)}`
+					: `${fmt(best.v)} in ${periodName(best.p)}`,
+				-4 - extra
+			);
 			placed.push(at);
 			return at;
 		});
 	});
-	// the field named once, above everything drawn around a spot chosen for
-	// each topic (clear of the notes and Fox's labels)
-	// (on a phone the 2020 note's wrapped words reach 2021, so race moves on a year)
-	const FIELD_AT = { polrace: "2021", lgbtq: "2022", fouls: "2025-01" };
-	const FIELD_AT_NARROW = { polrace: "2022" };
+
+	// "Other outlets", written once above the grey lines at the topic's fieldAt
 	const fieldLabel = $derived.by(() => {
-		const want = (narrow && FIELD_AT_NARROW[topic]) || FIELD_AT[topic];
-		const p = periods.includes(want) ? want : periods[Math.floor(periods.length / 3)];
-		// everything drawn under the label's width (narrower type on a phone)
-		const near = periods.filter((q) => Math.abs(x(q) - x(p)) < (narrow ? 40 : 75));
-		const top = Math.max(
-			...near.flatMap((q) => [...field, ...heroes].map((s) => s.pts.find((d) => d.p === q)?.v ?? 0))
+		const want = (narrow && T.fieldAtPhone) || T.fieldAt;
+		const p = periods.includes(want)
+			? want
+			: periods[Math.floor(periods.length / 3)];
+		const near = periods.filter(
+			(q) => Math.abs(x(q) - x(p)) < (narrow ? 40 : 75)
 		);
-		// and never up among the notes' words
-		const notesFoot = noteList.length ? M.top + 16 + 14 * 3 + 16 : 0;
+		const top = Math.max(
+			...near.flatMap((q) =>
+				[...field, ...heroes].map((s) => s.pts.find((d) => d.p === q)?.v ?? 0)
+			)
+		);
+		const notesFoot = noteList.length ? M.top + 16 + 14 * 3 + 16 : 0; // stay below the notes
 		return { p, v: top, y: Math.max(y(top) - 8, notesFoot) };
 	});
 
-	// --- hover ----------------------------------------------------------------
+	// ---------------------------------------------------------------------
+	// Hover
+	// ---------------------------------------------------------------------
+
 	let hover = $state(null);
 	function onMove(e) {
 		const box = e.currentTarget.getBoundingClientRect();
 		const px = e.clientX - box.left;
-		let i = 0, d = Infinity;
+		let i = 0,
+			d = Infinity;
 		periods.forEach((p, k) => {
 			const dist = Math.abs(x(p) - px);
-			if (dist < d) (d = dist), (i = k);
+			if (dist < d) ((d = dist), (i = k));
 		});
 		const p = periods[i];
 		const rows = [
-			...heroes.map((h) => ({ name: second ? h.name : FOX, v: valueOf(h.t, FOX, p), hi: true })),
-			...(withField ? others : []).map((o) => ({ name: SHORT[o] ?? o, v: valueOf(topic, o, p) }))
+			...heroes.map((h) => ({
+				name: second ? h.name : FOX,
+				v: valueOf(h.t, FOX, p),
+				hi: true
+			})),
+			...(withField ? others : []).map((o) => ({
+				name: SHORT[o] ?? o,
+				v: valueOf(topic, o, p)
+			}))
 		].filter((r) => r.v != null);
 		rows.sort((a, b) => (b.hi === true) - (a.hi === true) || b.v - a.v);
 		hover = { p, px: x(p), rows };
 	}
 
-	// --- each outlet, small ----------------------------------------------------
-	const SW = 200, SH = 70, SM = { t: 4, r: 4, b: 14, l: 4 };
-	const sx = scalePoint().domain(periods).range([SM.l, SW - SM.r]);
-	const sy = scaleLinear().domain([0, yMax]).range([SH - SM.b, SM.t]);
-	const spath = d3line().x((d) => sx(d.p)).y((d) => sy(d.v));
-	const sarea = d3area().x((d) => sx(d.p)).y0(sy(0)).y1((d) => sy(d.v));
+	// ---------------------------------------------------------------------
+	// Small panels, text
+	// ---------------------------------------------------------------------
+
+	const SW = 200,
+		SH = 70,
+		SM = { t: 4, r: 4, b: 14, l: 4 };
+	const sx = scalePoint()
+		.domain(periods)
+		.range([SM.l, SW - SM.r]);
+	const sy = scaleLinear()
+		.domain([0, yMax])
+		.range([SH - SM.b, SM.t]);
+	const spath = d3line()
+		.x((d) => sx(d.p))
+		.y((d) => sy(d.v));
+	const sarea = d3area()
+		.x((d) => sx(d.p))
+		.y0(sy(0))
+		.y1((d) => sy(d.v));
 
 	const what = monthly
 		? "articles each month"
 		: "share of each outlet’s WNBA articles";
-	const words = wordGroupsFor(topic, second).map((g, i) => ({ ...g, label: or(i ? list2Label : listLabel, g.label) }));
-	// the line under the headline, as a Doc template: {swatch}, {swatch2} and
-	// {grey} are the key's colour chips
+	const words = wordGroupsFor(topic, second).map((g, i) => ({
+		...g,
+		label: or(i ? list2Label : listLabel, g.label)
+	}));
 	const swatch = (c) => `<span class="sw" style="background:${c}"></span>`;
 	const dekDefault = second
 		? `Fox News WNBA articles each month that use {swatch}<b>${NAME[topic]}</b>${NAME[topic].includes(" or ") ? ", or" : " or"} {swatch2}<b>${NAME[second]}</b>.` +
-			(withField ? ` In grey, each other outlet’s articles with ${NAME[topic]}.` : "")
-		: `Share of each outlet’s WNBA articles that mention ${NAME[topic]}, by ${monthly ? "month" : "year"}. {swatch}<b>Fox News</b> and {grey}${others.length === 6 ? "six" : others.length} other outlets.`;
+			(withField
+				? ` In grey, each other outlet’s articles with ${NAME[topic]}.`
+				: "")
+		: `Share of each outlet’s WNBA articles that mention ${NAME[topic]}, by ${monthly ? "month" : "year"}.<br />{swatch}<b>Fox News</b> and {grey}${others.length === 6 ? "six" : others.length} other outlets.`;
 	const dek = fill(or(subtitle, dekDefault), {
 		swatch: swatch(COLOR[topic]),
 		swatch2: second ? swatch(COLOR[second]) : "",
@@ -322,25 +479,49 @@
 </script>
 
 <figure class="fvf" bind:clientWidth={width}>
-	<p class="kicker" style:color={COLOR[topic]}>{kicker || KICKER[topic] || ""}</p>
+	<p class="kicker" style:color={COLOR[topic]}>{kicker || T.kicker || ""}</p>
 	{#if title}<h4 class="hed">{@html title}</h4>{/if}
 	<p class="dek">
 		{@html dek}
 	</p>
 
 	<div class="main">
-		<svg {width} height={H} role="img" aria-label="{title || what}, Fox News against {others.length} other outlets">
-			<!-- gridlines, the top one carrying the unit -->
+		<svg
+			{width}
+			height={H}
+			role="img"
+			aria-label="{title ||
+				what}, Fox News against {others.length} other outlets"
+		>
+			<!-- gridlines; the top one says the unit -->
 			{#each yTicks as t, i (t)}
 				{#if t > 0}
-					<line class="grid" x1={M.left} x2={width - M.right + 10} y1={y(t)} y2={y(t)} />
-					<text class="gtext" x={M.left} y={y(t) - 5}>{fmt(t)}{i === yTicks.length - 1 ? " " + or(unit, counts ? "articles" : "of articles") : ""}</text>
+					<line
+						class="grid"
+						x1={M.left}
+						x2={width - M.right + 10}
+						y1={y(t)}
+						y2={y(t)}
+					/>
+					<text class="gtext" x={M.left} y={y(t) - 5}
+						>{fmt(t)}{i === yTicks.length - 1
+							? " " + or(unit, counts ? "articles" : "of articles")
+							: ""}</text
+					>
 				{/if}
 			{/each}
-			<line class="base" x1={M.left} x2={width - M.right + 10} y1={y(0)} y2={y(0)} />
+			<line
+				class="base"
+				x1={M.left}
+				x2={width - M.right + 10}
+				y1={y(0)}
+				y2={y(0)}
+			/>
 			{#each periods as p, i (p)}
 				{@const lab = xLabel(p, i)}
-				{#if lab}<text class="xtext" x={x(p)} y={H - 8} text-anchor="middle">{lab}</text>{/if}
+				{#if lab}<text class="xtext" x={x(p)} y={H - 8} text-anchor="middle"
+						>{lab}</text
+					>{/if}
 			{/each}
 
 			<!-- the dated notes -->
@@ -348,50 +529,97 @@
 				{@const nx = x(n.p)}
 				{@const tx = nx + (n.left ? -6 : 6)}
 				<line class="note-line" x1={nx} x2={nx} y1={M.top - 4} y2={y(0)} />
-				<text class="note" x={tx} y={M.top + 16} text-anchor={n.left ? "end" : "start"}>
+				<text
+					class="note"
+					x={tx}
+					y={M.top + 16}
+					text-anchor={n.left ? "end" : "start"}
+				>
 					<tspan class="note-head" x={tx}>{n.head}</tspan>
-					{#each wrap(narrow && n.short ? n.short : n.text, narrow ? 13 : 22) as l, k (k)}<tspan x={tx} dy="14">{l}</tspan>{/each}
+					{#each wrap(narrow && n.short ? n.short : n.text, narrow ? 13 : 22) as l, k (k)}<tspan
+							x={tx}
+							dy="14">{l}</tspan
+						>{/each}
 				</text>
 			{/each}
 
-			<!-- the field, grey, named once -->
+			<!-- the other outlets, grey -->
 			{#each field as f (f.o)}
 				<path class="field" d={path(f.pts)} />
 			{/each}
-			<!-- on a phone the two-line chart is too tight for labels on the lines:
-			     the line under the headline names them, with their colours -->
+			<!-- no line labels on phones for two-line charts; the subtitle names them -->
 			{#if withField && fieldLabel && !(narrow && second)}
-				<text class="field-label" x={x(fieldLabel.p)} y={fieldLabel.y} text-anchor="middle">{or(fieldName, `Other outlets${second ? `’ ${NAME[topic]}` : ""}`)}</text>
+				<text
+					class="field-label"
+					x={x(fieldLabel.p)}
+					y={fieldLabel.y}
+					text-anchor="middle"
+					>{or(
+						fieldName,
+						`Other outlets${second ? `’ ${NAME[topic]}` : ""}`
+					)}</text
+				>
 			{/if}
 
-			<!-- Fox, in colour, named where its line is -->
+			<!-- Fox -->
 			{#each heroes as h, k (h.t)}
 				<path class="hero" d={path(h.pts)} stroke={h.color} />
 				{#if !monthly}
 					{#each h.pts as d (d.p)}
-						<circle class="hero-dot" cx={x(d.p)} cy={y(d.v)} r="4" fill={h.color} />
+						<circle
+							class="hero-dot"
+							cx={x(d.p)}
+							cy={y(d.v)}
+							r="4"
+							fill={h.color}
+						/>
 					{/each}
 				{/if}
 				{#if heroLabels[k] && !(narrow && second)}
-					<text class="hero-label" x={heroLabels[k].x} y={heroLabels[k].y} fill={h.color} text-anchor={heroLabels[k].anchor}>
-						{#each nameLines(h.name) as l, j (j)}<tspan x={heroLabels[k].x} dy={j ? 15 : 0}>{l}</tspan>{/each}
-						<tspan class="hero-value" x={heroLabels[k].x} dy="15">{heroLabels[k].value}</tspan>
+					<text
+						class="hero-label"
+						x={heroLabels[k].x}
+						y={heroLabels[k].y}
+						fill={h.color}
+						text-anchor={heroLabels[k].anchor}
+					>
+						{#each nameLines(h.name) as l, j (j)}<tspan
+								x={heroLabels[k].x}
+								dy={j ? 15 : 0}>{l}</tspan
+							>{/each}
+						<tspan class="hero-value" x={heroLabels[k].x} dy="15"
+							>{heroLabels[k].value}</tspan
+						>
 					</text>
 				{/if}
 			{/each}
 
-			<!-- the fouls words where each was used most, in the line's colour -->
+			<!-- fouls: each word at its busiest month -->
 			{#each wordPeaks as w (w.p)}
 				{@const px = x(w.p)}
 				{@const left = px > width * 0.72}
 				{@const lx = px + (left ? -9 : 9)}
-				<text class="word-label" x={lx} y={y(w.v) - (w.words.length - 1) * 7.5 + 4} fill={COLOR[topic]} text-anchor={left ? "end" : "start"}>
-					{#each w.words as t, j (t.term)}<tspan x={lx} dy={j ? 15 : 0}><tspan class="word-term">{t.term}</tspan> {t.k}</tspan>{/each}
+				<text
+					class="word-label"
+					x={lx}
+					y={y(w.v) - (w.words.length - 1) * 7.5 + 4}
+					fill={COLOR[topic]}
+					text-anchor={left ? "end" : "start"}
+				>
+					{#each w.words as t, j (t.term)}<tspan x={lx} dy={j ? 15 : 0}
+							><tspan class="word-term">{t.term}</tspan> {t.k}</tspan
+						>{/each}
 				</text>
 			{/each}
 
 			{#if hover}
-				<line class="cross" x1={hover.px} x2={hover.px} y1={M.top - 4} y2={y(0)} />
+				<line
+					class="cross"
+					x1={hover.px}
+					x2={hover.px}
+					y1={M.top - 4}
+					y2={y(0)}
+				/>
 			{/if}
 			<rect
 				x={M.left}
@@ -405,35 +633,59 @@
 			/>
 		</svg>
 		{#if hover}
-			<div class="tip" style:left="{Math.min(width - 190, Math.max(0, hover.px + (hover.px > width / 2 ? -190 : 14)))}px" style:top="{M.top}px">
+			<div
+				class="tip"
+				style:left="{Math.min(
+					width - 190,
+					Math.max(0, hover.px + (hover.px > width / 2 ? -190 : 14))
+				)}px"
+				style:top="{M.top}px"
+			>
 				<p class="tip-t">{periodName(hover.p)}</p>
 				{#each hover.rows as r (r.name)}
-					<p class="tip-row" class:hi={r.hi}><span>{r.name}</span><span>{fmt(r.v)}</span></p>
+					<p class="tip-row" class:hi={r.hi}>
+						<span>{r.name}</span><span>{fmt(r.v)}</span>
+					</p>
 				{/each}
 			</div>
 		{/if}
 	</div>
 
-	<!-- each outlet on its own, small, on the same scale -->
+	<!-- each outlet on its own, same scale -->
 	<div class="strip">
 		{#each outlets as o (o)}
 			{@const fox = o === FOX}
 			<div class="sm">
 				<p class="sm-name">
 					<span>{o}</span>
-					<!-- the share across all years; no totals where the panels count
-					     articles (fouls), as the lines show them -->
+					<!-- share across all years (no totals for counts) -->
 					{#if !counts}<span>{fmt(overall(topic, o))}</span>{/if}
 				</p>
 				<svg viewBox="0 0 {SW} {SH}" role="img" aria-label="{o}: {what}">
-					<line class="sm-base" x1={SM.l} x2={SW - SM.r} y1={sy(0)} y2={sy(0)} />
+					<line
+						class="sm-base"
+						x1={SM.l}
+						x2={SW - SM.r}
+						y1={sy(0)}
+						y2={sy(0)}
+					/>
 					{#each [topic, ...(second ? [second] : [])] as t, k (t)}
 						{@const pts = series(t, o)}
-						{#if !second}<path class="sm-area" d={sarea(pts)} fill={fox ? COLOR[t] : "#8d877e"} />{/if}
-						<path class="sm-line" d={spath(pts)} stroke={fox ? COLOR[t] : k ? "#c9c3ba" : "#a39a8d"} />
+						{#if !second}<path
+								class="sm-area"
+								d={sarea(pts)}
+								fill={fox ? COLOR[t] : "#8d877e"}
+							/>{/if}
+						<path
+							class="sm-line"
+							d={spath(pts)}
+							stroke={fox ? COLOR[t] : k ? "#c9c3ba" : "#a39a8d"}
+						/>
 					{/each}
 					<text class="sm-tick" x={SM.l} y={SH - 2}>{edge(periods[0])}</text>
-					<text class="sm-tick" x={SW - SM.r} y={SH - 2} text-anchor="end">{edge(periods[periods.length - 1])}</text>
+					<text class="sm-tick" x={SW - SM.r} y={SH - 2} text-anchor="end"
+						>{edge(periods[periods.length - 1])}</text
+					>
 				</svg>
 			</div>
 		{/each}
@@ -444,7 +696,12 @@
 		{#each words as g (g.label)}
 			<p><b>{g.label}:</b> {g.words.join(", ")}</p>
 		{/each}
-		<p>{@html or(sourceNote, "An article counts once, however often it uses them.")}</p>
+		<p>
+			{@html or(
+				sourceNote,
+				"An article counts once, however often it uses them."
+			)}
+		</p>
 	</div>
 </figure>
 

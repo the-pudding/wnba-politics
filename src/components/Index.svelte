@@ -16,6 +16,7 @@
 	import FightinWordsVerbsAdj from "$components/FightinWordsVerbsAdj.svelte";
 	import FightinWordsBars from "$components/FightinWordsBars.svelte";
 	import NetworkScrolly from "$components/NetworkScrolly.svelte";
+	import NetworkMap from "$components/NetworkMap.svelte";
 	import FramingTabs from "$components/FramingTabs.svelte";
 	import WordTimeline from "$components/WordTimeline.svelte";
 	import WordCompare from "$components/WordCompare.svelte";
@@ -25,6 +26,7 @@
 	import BoxScore from "$components/BoxScore.svelte";
 	import HeadlineGallery from "$components/HeadlineGallery.svelte";
 	import TvSet from "$components/TvSet.svelte";
+	import TvBeside from "$components/TvBeside.svelte";
 	import Subsections from "$components/Subsections.svelte";
 	import Aside from "$components/Aside.svelte";
 
@@ -46,7 +48,11 @@
 		OutletGapScrolly,
 		FightinWordsVerbsAdj,
 		FightinWordsBars,
-		NetworkScrolly,
+		// the Doc's network block draws the redesigned map (2026-10-02); the
+		// old network is still there by name
+		NetworkScrolly: NetworkMap,
+		NetworkMap,
+		NetworkScrollyOld: NetworkScrolly,
 		FramingTabs,
 		WordTimeline,
 		WordCompare,
@@ -57,6 +63,7 @@
 		HeadlineGallery,
 		Gallery: HeadlineGallery,
 		TvSet,
+		TvBeside,
 		Subsections,
 		Aside,
 		// legacy Doc ids — delete once the Doc carries component names
@@ -68,7 +75,7 @@
 		"word-quadrant-scrolly": FightinWordsScrolly,
 		"outlet-gap-scrolly": OutletGapScrolly,
 		"player-words-scrolly": FightinWordsVerbsAdj,
-		"network-story": NetworkScrolly,
+		"network-story": NetworkMap,
 		"framing-tabs": FramingTabs,
 		"headline-table": HeadlineTable
 	};
