@@ -15,8 +15,9 @@
 	//   {}
 	//
 	// The clip names (dancers, arike, …) are the ids in notebooks/storm_tv/build.py.
-	// On narrower screens the TV is pinned at the top while you read, and leaves
-	// with the last line, so it never covers what comes after.
+	// On narrower screens the TV sits small in the bottom corner while you read
+	// (with a button to close it) and stops below the last line, so it never
+	// covers what comes after.
 	import CMS from "$components/helpers/CMS.svelte";
 	import TvSet from "$components/TvSet.svelte";
 
@@ -56,6 +57,8 @@
 	let tv = $state(null);
 	let clip = $state("");
 	let inView = $state(false);
+	// phones: closed with its × button; tapping a sentence opens it again
+	let closed = $state(false);
 	const lines = () => [...(root?.querySelectorAll(".tv-line") ?? [])];
 
 	// the sentence for the clip that's on stays highlighted
@@ -74,7 +77,7 @@
 			if (el.getBoundingClientRect().top < line) pick = el.dataset.clip;
 		if (pick !== scrolled) {
 			scrolled = pick;
-			if (pick) tv?.jump(pick);
+			if (pick && !closed) tv?.jump(pick);
 		}
 	}
 	$effect(() => {
@@ -110,7 +113,9 @@
 	const lineOf = (e) => e.target.closest?.(".tv-line");
 	function pick(e) {
 		const el = lineOf(e);
-		if (el && !e.target.closest("a")) tv?.jump(el.dataset.clip);
+		if (!el || e.target.closest("a")) return;
+		if (e.type === "click") closed = false;
+		if (!closed) tv?.jump(el.dataset.clip);
 	}
 </script>
 
@@ -128,8 +133,14 @@
 	<div class="text">
 		<CMS {body} {components} />
 	</div>
-	<aside class="side">
+	<aside class="side" class:closed>
 		<div class="stick">
+			<button
+				type="button"
+				class="close"
+				aria-label="Close the TV"
+				onclick={() => (closed = true)}>×</button
+			>
 			<TvSet
 				bind:this={tv}
 				bind:clip
@@ -187,40 +198,46 @@
 		top: calc(50vh - 170px);
 	}
 
-	/* narrower screens: pinned at the top in a band of the page colour, the
-	   text scrolling up beneath it; it leaves with the last line */
+	/* the close button only shows on narrower screens */
+	.close {
+		display: none;
+	}
+
+	/* narrower screens: small in the bottom corner while you read; at the end
+	   it stops below the last line and scrolls away with it */
 	@media (max-width: 1240px) {
-		.tv-beside {
-			display: flex;
-			flex-direction: column;
-		}
 		.side {
-			order: -1;
 			position: sticky;
-			top: 0;
-			bottom: auto;
+			top: auto;
+			bottom: 10px;
 			left: auto;
 			z-index: 20;
-			width: auto;
-			margin: 0 -16px 12px;
-			padding: 8px 16px 10px;
-			background: var(--color-page-orange);
+			width: min(42vw, 210px);
+			margin: 14px 0 0 auto;
 		}
-		/* a soft edge where the text slides under */
-		.side::after {
-			content: "";
-			position: absolute;
-			left: 0;
-			right: 0;
-			top: 100%;
-			height: 14px;
-			background: linear-gradient(var(--color-page-orange), transparent);
-			pointer-events: none;
+		.side.closed {
+			display: none;
 		}
 		.stick {
-			position: static;
-			width: min(46vw, 230px);
-			margin: 0 auto;
+			position: relative;
+		}
+		.close {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: absolute;
+			z-index: 3;
+			top: -6px;
+			left: -6px;
+			width: 24px;
+			height: 24px;
+			padding: 0;
+			border: 1.5px solid #fff;
+			border-radius: 50%;
+			background: rgba(26, 26, 26, 0.85);
+			color: #fff;
+			font: 700 16px/1 var(--font-sans);
+			cursor: pointer;
 		}
 		.side :global(.now) {
 			display: none;

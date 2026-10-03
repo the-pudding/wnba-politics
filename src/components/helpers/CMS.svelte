@@ -57,7 +57,7 @@
 		"TvSet",
 		"TvBeside",
 		"WordCompare",
-		"WordNeighbors",
+		"WordNeighbors"
 	]);
 
 	// one-liner: `chart: name | key: value | …`
@@ -125,7 +125,10 @@
 			} else if (isList) {
 				// "ul:" in the Doc opens a list; the <li> lines that follow are
 				// its items (the parser hands each line over as its own text)
-				out.push({ type: it.type.toLowerCase(), value: String(it.value ?? "").trim() });
+				out.push({
+					type: it.type.toLowerCase(),
+					value: String(it.value ?? "").trim()
+				});
 			} else if (it.type === "text" && /^\s*<li[\s>]/i.test(it.value)) {
 				const last = out[out.length - 1];
 				if (last && /^(ul|ol)$/.test(last.type)) last.value += it.value.trim();
@@ -135,115 +138,211 @@
 		return out;
 	}
 
+	// a section with `collapsible: true` in the Doc (under its `section:` line)
+	// shows only its heading until clicked; a link to it (#methods) opens it
+	const foldable = (section) =>
+		String(section.collapsible ?? "").trim() === "true";
+	const splitHeading = (section) => {
+		const content = section.content ?? [];
+		const i = content.findIndex((b) => b.type === "h2");
+		if (i < 0) return [section.section, content];
+		return [content[i].value, content.filter((_, k) => k !== i)];
+	};
+	let opened = $state({});
+	$effect(() => {
+		const openFromLink = () => {
+			const id = decodeURIComponent(location.hash.slice(1));
+			if (body.some((s) => s.section === id && foldable(s))) opened[id] = true;
+		};
+		openFromLink();
+		addEventListener("hashchange", openFromLink);
+		return () => removeEventListener("hashchange", openFromLink);
+	});
+
 	const ROTS = [-1.8, 1.4, -1.1, 1.7, -1.5, 1.2];
 	const youtubeId = (url) =>
 		(url.match(/(?:shorts\/|watch\?v=|youtu\.be\/|embed\/)([\w-]{6,})/) ??
 			[])[1];
 </script>
 
-{#each body as section, i (section.section ?? i)}
-	<section class="act" id={section.section}>
-		{#each blocks(section.content) as b}
-			{#if b.type === "text"}
-				<p>{@html hl(clipPops(faces(b.value, base), base))}</p>
-			{:else if b.type === "chart" || components[b.type]}
-				{@const { name, props } =
-					b.type === "chart"
-						? parseChart(b.value)
-						: { name: b.type, props: chartProps(b.value) }}
-				{@const C = components[name]}
-				<div class="chart" class:full-bleed={FULL_BLEED.has(name)}>
-					{#if props.title && !SELF_CAPTIONED.has(name)}
-						<h4 class="chart-title">{@html hl(props.title)}</h4>
-					{/if}
-					<!-- subtitle: a plain line under the title, in the ink colour -->
-					{#if props.subtitle && !SELF_CAPTIONED.has(name)}
-						<p class="chart-subtitle">{@html props.subtitle}</p>
-					{/if}
-					{#if C}<C {name} {...props} {...(NESTING.has(name) ? { components } : {})} />{:else}<p class="missing">
-							Unknown chart: “{name}”
-						</p>{/if}
-					{#if props.caption && !SELF_CAPTIONED.has(name)}
-						<p class="chart-caption">{@html props.caption}</p>
-					{/if}
-				</div>
-			{:else if b.type === "faces"}
-				{@const [names, flag = ""] = b.value.split("|").map((s) => s.trim())}
-				<FaceRow {names} plain={/^plain$/i.test(flag)} />
-			{:else if b.type === "clips"}
-				<div class="clips">
-					{#each b.clips as c, j}
-						<div class="clip" style="--rot: {ROTS[j % ROTS.length]}deg">
-							<FoxBadge />
-							{#if c.date}<span class="clip-date">{c.date}</span>{/if}
-							<p class="clip-title">
-								{@html hl(faces(c.title, base), CLIP_BLUE)}
+<!-- the blocks of a section, in order -->
+{#snippet blockList(content)}
+	{#each blocks(content) as b}
+		{#if b.type === "text"}
+			<p>{@html hl(clipPops(faces(b.value, base), base))}</p>
+		{:else if b.type === "chart" || components[b.type]}
+			{@const { name, props } =
+				b.type === "chart"
+					? parseChart(b.value)
+					: { name: b.type, props: chartProps(b.value) }}
+			{@const C = components[name]}
+			<div class="chart" class:full-bleed={FULL_BLEED.has(name)}>
+				{#if props.title && !SELF_CAPTIONED.has(name)}
+					<h4 class="chart-title">{@html hl(props.title)}</h4>
+				{/if}
+				<!-- subtitle: a plain line under the title, in the ink colour -->
+				{#if props.subtitle && !SELF_CAPTIONED.has(name)}
+					<p class="chart-subtitle">{@html props.subtitle}</p>
+				{/if}
+				{#if C}<C
+						{name}
+						{...props}
+						{...NESTING.has(name) ? { components } : {}}
+					/>{:else}<p class="missing">
+						Unknown chart: “{name}”
+					</p>{/if}
+				{#if props.caption && !SELF_CAPTIONED.has(name)}
+					<p class="chart-caption">{@html props.caption}</p>
+				{/if}
+			</div>
+		{:else if b.type === "faces"}
+			{@const [names, flag = ""] = b.value.split("|").map((s) => s.trim())}
+			<FaceRow {names} plain={/^plain$/i.test(flag)} />
+		{:else if b.type === "clips"}
+			<div class="clips">
+				{#each b.clips as c, j}
+					<div class="clip" style="--rot: {ROTS[j % ROTS.length]}deg">
+						<FoxBadge />
+						{#if c.date}<span class="clip-date">{c.date}</span>{/if}
+						<p class="clip-title">
+							{@html hl(faces(c.title, base), CLIP_BLUE)}
+						</p>
+					</div>
+				{/each}
+			</div>
+		{:else if b.type === "img"}
+			<!-- file | alt | caption | size (optional: small, medium, or a width
+			     in px) -->
+			{@const [src, alt = "", caption = "", size = ""] = b.value
+				.split("|")
+				.map((s) => s.trim())}
+			{@const maxW =
+				{ small: 380, medium: 500 }[size.toLowerCase()] ??
+				(parseInt(size) || null)}
+			{#if /\.pdf$/i.test(src)}
+				<!-- a PDF in the same block: letter.pdf | title | caption -->
+				<figure class="photo pdf">
+					<div class="page">
+						<object
+							data="{base}/images/{src}"
+							type="application/pdf"
+							title={alt || src}
+						>
+							<p class="fallback">
+								<a href="{base}/images/{src}" target="_blank" rel="noopener"
+									>Open {alt || src}</a
+								>
 							</p>
-						</div>
-					{/each}
-				</div>
-			{:else if b.type === "img"}
-				<!-- file | alt | caption | size (optional: small, medium, or a width
-				     in px) -->
-				{@const [src, alt = "", caption = "", size = ""] = b.value
-					.split("|")
-					.map((s) => s.trim())}
-				{@const maxW = { small: 380, medium: 500 }[size.toLowerCase()] ?? (parseInt(size) || null)}
-				{#if /\.pdf$/i.test(src)}
-					<!-- a PDF in the same block: letter.pdf | title | caption -->
-					<figure class="photo pdf">
-						<div class="page">
-							<object data="{base}/images/{src}" type="application/pdf" title={alt || src}>
-								<p class="fallback"><a href="{base}/images/{src}" target="_blank" rel="noopener">Open {alt || src}</a></p>
-							</object>
-						</div>
-						{#if caption}<figcaption>{@html caption}</figcaption>{/if}
-					</figure>
-				{:else}
-					<figure class="photo" style:max-width={maxW ? `${maxW}px` : null}>
-						<img src="{base}/images/{src}" {alt} loading="lazy" />
-						{#if caption}<figcaption>{@html caption}</figcaption>{/if}
-					</figure>
-				{/if}
-			{:else if /^(quote|blockquote|pullquote)$/i.test(b.type)}
-				<!-- quote: the words | who said it, where -->
-				{@const [words, who = ""] = String(b.value)
-					.split(/\s\|\s/)
-					.map((s) => s.trim())}
-				<blockquote class="quote">
-					<p>{@html hl(clipPops(faces(words, base), base))}</p>
-					{#if who}<cite>{@html who}</cite>{/if}
-				</blockquote>
-			{:else if /^embed$/i.test(b.type)}
-				{@const [url, caption = ""] = b.value.split("|").map((s) => s.trim())}
-				{@const id = youtubeId(url)}
-				{#if id}
-					<figure class="embed" class:portrait={/\/shorts\//.test(url)}>
-						<div class="frame">
-							<iframe
-								src="https://www.youtube-nocookie.com/embed/{id}"
-								title={caption || "Embedded video"}
-								loading="lazy"
-								allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-								referrerpolicy="strict-origin-when-cross-origin"
-								allowfullscreen
-							></iframe>
-						</div>
-						{#if caption}<figcaption>{@html caption}</figcaption>{/if}
-					</figure>
-				{/if}
+						</object>
+					</div>
+					{#if caption}<figcaption>{@html caption}</figcaption>{/if}
+				</figure>
 			{:else}
-				<svelte:element this={b.type}
-					>{@html hl(clipPops(faces(b.value, base), base))}</svelte:element
-				>
+				<figure class="photo" style:max-width={maxW ? `${maxW}px` : null}>
+					<img src="{base}/images/{src}" {alt} loading="lazy" />
+					{#if caption}<figcaption>{@html caption}</figcaption>{/if}
+				</figure>
 			{/if}
-		{/each}
+		{:else if /^(quote|blockquote|pullquote)$/i.test(b.type)}
+			<!-- quote: the words | who said it, where -->
+			{@const [words, who = ""] = String(b.value)
+				.split(/\s\|\s/)
+				.map((s) => s.trim())}
+			<blockquote class="quote">
+				<p>{@html hl(clipPops(faces(words, base), base))}</p>
+				{#if who}<cite>{@html who}</cite>{/if}
+			</blockquote>
+		{:else if /^embed$/i.test(b.type)}
+			{@const [url, caption = ""] = b.value.split("|").map((s) => s.trim())}
+			{@const id = youtubeId(url)}
+			{#if id}
+				<figure class="embed" class:portrait={/\/shorts\//.test(url)}>
+					<div class="frame">
+						<iframe
+							src="https://www.youtube-nocookie.com/embed/{id}"
+							title={caption || "Embedded video"}
+							loading="lazy"
+							allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+							referrerpolicy="strict-origin-when-cross-origin"
+							allowfullscreen
+						></iframe>
+					</div>
+					{#if caption}<figcaption>{@html caption}</figcaption>{/if}
+				</figure>
+			{/if}
+		{:else}
+			<svelte:element this={b.type}
+				>{@html hl(clipPops(faces(b.value, base), base))}</svelte:element
+			>
+		{/if}
+	{/each}
+{/snippet}
+
+{#each body as section, i (section.section ?? i)}
+	<section class="act" class:fold={foldable(section)} id={section.section}>
+		{#if foldable(section)}
+			<!-- a collapsible section: its heading opens and closes the rest -->
+			{@const [heading, rest] = splitHeading(section)}
+			<h2 class="fold-head">
+				<button
+					type="button"
+					aria-expanded={!!opened[section.section]}
+					onclick={() => (opened[section.section] = !opened[section.section])}
+					>{@html heading}<span class="chev" aria-hidden="true"></span></button
+				>
+			</h2>
+			{#if opened[section.section]}{@render blockList(rest)}{/if}
+		{:else}
+			{@render blockList(section.content)}
+		{/if}
 	</section>
 {/each}
 
 <style>
 	.act {
 		margin: 56px 0;
+	}
+	/* a collapsible section: the heading is the button, with a chevron */
+	.fold {
+		margin: 28px 0;
+		border-top: 1px solid rgba(42, 21, 3, 0.25);
+	}
+	.fold + .fold {
+		margin-top: -28px;
+	}
+	.fold-head {
+		margin: 0;
+	}
+	.fold-head button {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		width: 100%;
+		padding: 18px 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		color: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+	.chev {
+		flex: none;
+		width: 12px;
+		height: 12px;
+		margin-right: 4px;
+		border-right: 2.5px solid currentColor;
+		border-bottom: 2.5px solid currentColor;
+		transform: translateY(-3px) rotate(45deg);
+		transition: transform 200ms ease;
+	}
+	.fold-head button[aria-expanded="true"] .chev {
+		transform: translateY(3px) rotate(-135deg);
+	}
+	.fold-head button:focus-visible {
+		outline: 2px solid var(--color-ink);
+		outline-offset: 4px;
 	}
 	p {
 		font-size: 17px;

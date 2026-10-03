@@ -56,6 +56,11 @@
 		start(i);
 	}
 	function start(i) {
+		// before the video has loaded, a jump would be lost: wait for it
+		if (video.readyState < 1) {
+			video.addEventListener("loadedmetadata", () => start(i), { once: true });
+			return;
+		}
 		video.currentTime = cueList[i].from + 0.05;
 		video.play().catch(() => {});
 		at = i;
