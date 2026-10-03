@@ -9,6 +9,7 @@
 	//   poster: video/storm-tv.jpg
 	//   cues: video/storm-tv.json
 	//   credit: From {source}   (optional: the line under the TV)
+	//   noReplay: watters        (optional: clips the TV won't offer to replay)
 	//   [.+content]
 	//   text: … ((The dancers were teenaged girls…|tv: dancers)) …
 	//   []
@@ -26,12 +27,14 @@
 		poster = "video/storm-tv.jpg",
 		cues = "video/storm-tv.json",
 		credit = "",
+		// clips a tap shouldn't replay: the Fox intro
+		noReplay = "watters",
 		content = [],
 		components = {}
 	} = $props();
 
 	// how far down the screen a sentence has to come to switch the clip
-	const READING_LINE = 0.55;
+	const READING_LINE = 0.4;
 	// the contents list steps aside while the text covers the middle of the
 	// screen (this is the share cut off top and bottom)
 	const SHOWN_WHILE = "-40% 0px -40% 0px";
@@ -59,6 +62,29 @@
 	let inView = $state(false);
 	// phones: closed with its × button; tapping a sentence opens it again
 	let closed = $state(false);
+	// phones: where the small TV is. "waiting" before the text reaches the
+	// screen, "pinned" in the corner while you read, "gone" once the last line
+	// has scrolled up past it
+	let place = $state("waiting");
+	const PHONE = "(max-width: 1240px)"; // same as the @media rule below
+	const ARRIVES = 0.6; // shows once the text's top is this far up the screen
+	// pinned from the top of what's visible: "bottom: 10px" can land under a
+	// phone's toolbar, where the browser measures from a taller screen
+	let pinTop = $state(0);
+	let sideEl = $state(null);
+	function placeTv() {
+		if (!matchMedia(PHONE).matches) return;
+		const seen = visualViewport?.height ?? innerHeight;
+		const box = root.getBoundingClientRect();
+		const tvHeight = sideEl?.offsetHeight ?? 0;
+		pinTop = seen - tvHeight - 10;
+		place =
+			box.top > seen * ARRIVES
+				? "waiting"
+				: box.bottom <= pinTop - 10
+					? "gone"
+					: "pinned";
+	}
 	const lines = () => [...(root?.querySelectorAll(".tv-line") ?? [])];
 
 	// the sentence for the clip that's on stays highlighted
@@ -88,10 +114,14 @@
 			ticking = true;
 			requestAnimationFrame(() => {
 				onScroll();
+				placeTv();
 				ticking = false;
 			});
 		};
+		placeTv();
 		addEventListener("scroll", handler, { passive: true });
+		addEventListener("resize", handler);
+		visualViewport?.addEventListener("resize", handler);
 		const io = new IntersectionObserver(
 			(entries) => (inView = entries[0].isIntersecting),
 			{ rootMargin: SHOWN_WHILE }
@@ -99,6 +129,8 @@
 		io.observe(root);
 		return () => {
 			removeEventListener("scroll", handler);
+			removeEventListener("resize", handler);
+			visualViewport?.removeEventListener("resize", handler);
 			io.disconnect();
 		};
 	});
@@ -133,7 +165,12 @@
 	<div class="text">
 		<CMS {body} {components} />
 	</div>
-	<aside class="side" class:closed>
+	<aside
+		class="side {place}"
+		class:closed
+		bind:this={sideEl}
+		style:--pin-top="{pinTop}px"
+	>
 		<div class="stick">
 			<button
 				type="button"
@@ -148,6 +185,7 @@
 				{poster}
 				{cues}
 				{credit}
+				{noReplay}
 				small
 				once
 			/>
@@ -203,23 +241,34 @@
 		display: none;
 	}
 
-	/* narrower screens: small in the bottom corner while you read; at the end
-	   it stops below the last line and scrolls away with it */
+	/* narrower screens: small in the bottom corner while you read, gone once
+	   the text has gone by (the script above says which) */
 	@media (max-width: 1240px) {
 		.side {
-			position: sticky;
-			top: auto;
-			bottom: 10px;
+			position: fixed;
+			top: var(--pin-top);
+			right: 10px;
+			bottom: auto;
 			left: auto;
 			z-index: 20;
 			width: min(42vw, 210px);
-			margin: 14px 0 0 auto;
+			margin: 0;
+			transition:
+				opacity 250ms ease,
+				transform 250ms ease;
+		}
+		.side.waiting,
+		.side.gone {
+			opacity: 0;
+			transform: translateY(24px);
+			pointer-events: none;
 		}
 		.side.closed {
 			display: none;
 		}
 		.stick {
 			position: relative;
+			top: auto;
 		}
 		.close {
 			display: flex;
@@ -241,9 +290,6 @@
 		}
 		.side :global(.now) {
 			display: none;
-		}
-		.side :global(.credit) {
-			display: block;
 		}
 	}
 </style>

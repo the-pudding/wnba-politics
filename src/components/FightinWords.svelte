@@ -1307,10 +1307,11 @@
 	}
 	.heading {
 		margin: 0;
-		font-family: var(--font-serif);
-		font-size: 22px;
+		font-family: var(--font-graphic);
+		font-size: 24px;
 		font-weight: 700;
-		line-height: 1.25;
+		line-height: 1.22;
+		letter-spacing: -0.01em;
 		text-align: left;
 		color: var(--color-ink-dark);
 	}
@@ -1319,8 +1320,8 @@
 		align-items: center;
 		gap: 6px;
 		margin: 2px 0 0;
-		font-family: var(--font-serif);
-		font-size: 17px;
+		font-family: var(--font-graphic);
+		font-size: 15px;
 		color: rgba(42, 21, 3, 0.75);
 	}
 	.subheading > span {
@@ -1340,8 +1341,8 @@
 		border-bottom: 1.5px solid currentColor;
 		border-radius: 0;
 		background: transparent;
-		font-family: var(--font-serif);
-		font-size: 17px;
+		font-family: var(--font-graphic);
+		font-size: 15px;
 		color: var(--color-ink-dark);
 	}
 	.subheading :global(.logo-select .current::after) {
@@ -1349,11 +1350,11 @@
 	}
 	@media (max-width: 640px) {
 		.heading {
-			font-size: 18px;
+			font-size: 20px;
 		}
 		.subheading,
 		.subheading :global(.logo-select .current) {
-			font-size: 15px;
+			font-size: 14px;
 		}
 	}
 	/* the controls in the headline table's style: labelled fields, a

@@ -23,7 +23,13 @@
 	);
 
 	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
-	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false,
+	let {
+		steps = null,
+		chart = "scatter",
+		labels = "on",
+		scale = "linear",
+		caps = false,
+		scores = false,
 		note = undefined,
 		// the Doc's words, each optional, {slots} filled in (utils/fill.js):
 		// {player} the player's name, {outlet} a single outlet, {unit} the
@@ -34,6 +40,13 @@
 		headObject = "",
 		headAll = "",
 		comparedWith = "",
+		// phones: "vs." in place of "compared with", and short tab names
+		phoneVs = "",
+		shortDescribe = "",
+		shortPlay = "",
+		shortSubject = "",
+		shortObject = "",
+		shortAll = "",
 		allOutlets = "",
 		tabDescribe = "",
 		tabPlay = "",
@@ -88,7 +101,6 @@
 	});
 	let current = $derived(STEPS[last] ?? STEPS[0]);
 
-	
 	// the relations as tabs (2026-10-02), each with the plain-language heading
 	// it gives the chart
 	const RELATIONS = $derived([
@@ -98,12 +110,39 @@
 		["object", or(tabObject, "Done to her")],
 		["all", or(tabAll, "Every word")]
 	]);
+	// phones: the heading stays "How Fox News describes …" with the name on its
+	// own line (always two lines, so nothing below moves), "vs. [outlets]" and
+	// words / phrases share a line, and the tabs take their short names
+	let narrow = $state(false);
+	$effect(() => {
+		const mq = matchMedia("(max-width: 640px)");
+		const sync = () => (narrow = mq.matches);
+		sync();
+		mq.addEventListener("change", sync);
+		return () => mq.removeEventListener("change", sync);
+	});
+	const SHORT = $derived({
+		describe: or(shortDescribe, "Described"),
+		play: or(shortPlay, "Play"),
+		subject: or(shortSubject, "Does"),
+		object: or(shortObject, "Done to"),
+		all: or(shortAll, "All")
+	});
 	const HEADING = $derived({
-		describe: (n) => fill(or(headDescribe, "How Fox News describes {player}"), { player: n }),
-		play: (n) => fill(or(headPlay, "How Fox News describes {player}’s play"), { player: n }),
-		subject: (n) => fill(or(headSubject, "What Fox News says {player} does"), { player: n }),
-		object: (n) => fill(or(headObject, "What Fox News says is done to {player}"), { player: n }),
-		all: (n) => fill(or(headAll, "Every word Fox News ties to {player}"), { player: n })
+		describe: (n) =>
+			fill(or(headDescribe, "How Fox News describes {player}"), { player: n }),
+		play: (n) =>
+			fill(or(headPlay, "How Fox News describes {player}’s play"), {
+				player: n
+			}),
+		subject: (n) =>
+			fill(or(headSubject, "What Fox News says {player} does"), { player: n }),
+		object: (n) =>
+			fill(or(headObject, "What Fox News says is done to {player}"), {
+				player: n
+			}),
+		all: (n) =>
+			fill(or(headAll, "Every word Fox News ties to {player}"), { player: n })
 	});
 	// players with a Fox-versus-the-other-outlets comparison stored, listed
 	// by surname in the picker
@@ -118,7 +157,9 @@
 	// the row: the players Fox writes about most first, as many as fit, then
 	// a button for the rest (2026-10-02)
 	const foxWords = (name) => data.players?.[name]?.vsCounts?.all?.clark ?? 0;
-	const PICKABLE = [...PEOPLE].sort((a, b) => foxWords(b) - foxWords(a) || bySurname(a, b));
+	const PICKABLE = [...PEOPLE].sort(
+		(a, b) => foxWords(b) - foxWords(a) || bySurname(a, b)
+	);
 	let rowW = $state(760);
 	const SLOT = $derived(rowW < 560 ? 62 : 76);
 	let fits = $derived(Math.max(3, Math.floor((rowW + 4) / SLOT)));
@@ -135,7 +176,10 @@
 	$effect(() => {
 		if (!moreOpen) return;
 		const close = (e) => {
-			if (e.type === "keydown" ? e.key === "Escape" : !moreEl?.contains(e.target)) moreOpen = false;
+			if (
+				e.type === "keydown" ? e.key === "Escape" : !moreEl?.contains(e.target)
+			)
+				moreOpen = false;
 		};
 		document.addEventListener("pointerdown", close);
 		document.addEventListener("keydown", close);
@@ -198,15 +242,26 @@
 		const base_ = data.players?.[pickedWho];
 		if (!phrases || !f || !base_) return null;
 		const merged = { ...base_ };
-		for (const part of ["relations", "counts", "vsOutlets", "vsCounts", "vsByOutlet"])
+		for (const part of [
+			"relations",
+			"counts",
+			"vsOutlets",
+			"vsCounts",
+			"vsByOutlet"
+		])
 			merged[part] = { ...(base_[part] ?? {}), ...(f[part] ?? {}) };
 		return { ...data, players: { ...data.players, [pickedWho]: merged } };
 	});
-	let alt = $derived(phrases ? phraseAlt : college === "without" ? ncWords : null);
+	let alt = $derived(
+		phrases ? phraseAlt : college === "without" ? ncWords : null
+	);
 	let src_ = $derived(alt ?? data);
-	let outletsHere = $derived(new Set(playerWordsOutlets(pickedWho, suffix(pickedRel), alt)));
+	let outletsHere = $derived(
+		new Set(playerWordsOutlets(pickedWho, suffix(pickedRel), alt))
+	);
 	$effect(() => {
-		if (pickedOutlet !== "all" && !outletsHere.has(pickedOutlet)) pickedOutlet = "all";
+		if (pickedOutlet !== "all" && !outletsHere.has(pickedOutlet))
+			pickedOutlet = "all";
 	});
 	let outlet = $derived(pickedOutlet === "all" ? null : pickedOutlet);
 	// a single outlet's comparisons live in one file per player
@@ -219,7 +274,9 @@
 		const k = nc ? `nc:${who}` : who;
 		if (!outlet || !who || byOutlet[k] || fetching.has(k)) return;
 		fetching.add(k);
-		fetch(`${base}/data/${nc ? "nocollege/static/" : ""}${playerOutletFile(who)}`)
+		fetch(
+			`${base}/data/${nc ? "nocollege/static/" : ""}${playerOutletFile(who)}`
+		)
 			.then((r) => (r.ok ? r.json() : {}))
 			.catch(() => ({}))
 			.then((block) => (byOutlet = { ...byOutlet, [k]: block }));
@@ -259,7 +316,10 @@
 		const src = playerWordsSource({
 			...shown,
 			rel: suffix(shown.rel),
-			byOutlet: byOutlet[college === "without" && !phrases ? `nc:${shown.who}` : shown.who] ?? null,
+			byOutlet:
+				byOutlet[
+					college === "without" && !phrases ? `nc:${shown.who}` : shown.who
+				] ?? null,
 			alt
 		});
 		if (!src || shown.vs !== "outlets") return src;
@@ -269,7 +329,10 @@
 	// outlet), the chart keeps showing what it had instead of blinking out
 	let waiting = $derived(
 		(phrases && !phraseFiles[pickedWho]) ||
-			(!!outlet && !byOutlet[college === "without" && !phrases ? `nc:${pickedWho}` : pickedWho] &&
+			(!!outlet &&
+				!byOutlet[
+					college === "without" && !phrases ? `nc:${pickedWho}` : pickedWho
+				] &&
 				!data.players?.[pickedWho]?.vsByOutlet?.[suffix(pickedRel)]?.[outlet])
 	);
 	let lastSource = null;
@@ -282,7 +345,9 @@
 		return {
 			...src,
 			topHead: or(foxHead, "Fox News uses more"),
-			bottomHead: outlet ? outlet + (/s$/.test(outlet) ? " use more" : " uses more") : or(othersHead, "Other outlets use more")
+			bottomHead: outlet
+				? outlet + (/s$/.test(outlet) ? " use more" : " uses more")
+				: or(othersHead, "Other outlets use more")
 		};
 	});
 	// the line under the bars, in the main chart's source-line style
@@ -290,20 +355,40 @@
 		if (shown.vs !== "outlets") return note;
 		const counts = src_?.players?.[shown.who]?.vsCounts?.[suffix(shown.rel)];
 		const n = (v) => Number(v ?? 0).toLocaleString();
-		const vars = { unit: phrases ? or(tabPhrases, "Phrases") : or(tabWords, "Words"), player: shown.who, outlet, fox: n(counts?.clark), others: n(counts?.others) };
+		const vars = {
+			unit: phrases ? or(tabPhrases, "Phrases") : or(tabWords, "Words"),
+			player: shown.who,
+			outlet,
+			fox: n(counts?.clark),
+			others: n(counts?.others)
+		};
 		const given = outlet ? outletCaption : captionText;
 		if (String(given).trim()) return fill(given, vars);
-		return `${phrases ? "Two-word phrases" : "Words"} grammatically tied to ${shown.who} in WNBA articles (a dependency parse, with coreference so “she” counts)` +
-			(counts && !outlet ? `: Fox News ${n(counts.clark)}, the other outlets ${n(counts.others)}` : "") +
-			`. Ranked by weighted log-odds with an informative prior (Monroe et al. 2008); bar length is the square root of the z-score. Faded bars are within noise (|z| under 1.96). Hover a bar for an example.`;
+		return (
+			`${phrases ? "Two-word phrases" : "Words"} grammatically tied to ${shown.who} in WNBA articles (a dependency parse, with coreference so “she” counts)` +
+			(counts && !outlet
+				? `: Fox News ${n(counts.clark)}, the other outlets ${n(counts.others)}`
+				: "") +
+			`. Ranked by weighted log-odds with an informative prior (Monroe et al. 2008); bar length is the square root of the z-score. Faded bars are within noise (|z| under 1.96). Hover a bar for an example.`
+		);
 	});
 </script>
 
-<section class="words-scrolly" class:bars={chart === "bars"} class:open={index >= STEPS.length} class:menu-open={moreOpen}>
+<section
+	class="words-scrolly"
+	class:bars={chart === "bars"}
+	class:open={index >= STEPS.length}
+	class:menu-open={moreOpen}
+>
 	<div class="sticky">
 		{#if source}
 			<!-- the players as faces in a row, one tap each (2026-10-02) -->
-			<div class="players" role="radiogroup" aria-label="Player" bind:clientWidth={rowW}>
+			<div
+				class="players"
+				role="radiogroup"
+				aria-label="Player"
+				bind:clientWidth={rowW}
+			>
 				{#each inRow as name (name)}
 					{@const face = faceUrl(name)}
 					<button
@@ -314,8 +399,14 @@
 						aria-checked={pickedWho === name}
 						onclick={() => (pickedWho = name)}
 					>
-						{#if face}<img src={face} alt="" />{:else}<span class="blank"></span>{/if}
-						<span class="player-name">{name.split(" ")[0]}<br />{name.split(" ").slice(1).join(" ")}</span>
+						{#if face}<img src={face} alt="" />{:else}<span class="blank"
+							></span>{/if}
+						<span class="player-name"
+							>{name.split(" ")[0]}<br />{name
+								.split(" ")
+								.slice(1)
+								.join(" ")}</span
+						>
 					</button>
 				{/each}
 				{#if rest.length}
@@ -329,15 +420,29 @@
 							onclick={() => (moreOpen = !moreOpen)}
 						>
 							<span class="blank more-count">+{rest.length}</span>
-							<span class="player-name">{@html or(morePlayers, "More players").replace(/ /, "<br />")}</span>
+							<span class="player-name"
+								>{@html or(morePlayers, "More players").replace(
+									/ /,
+									"<br />"
+								)}</span
+							>
 						</button>
 						{#if moreOpen}
-							<ul class="more-list" role="listbox" aria-label={or(morePlayers, "More players")}>
+							<ul
+								class="more-list"
+								role="listbox"
+								aria-label={or(morePlayers, "More players")}
+							>
 								{#each rest as name (name)}
 									{@const face = faceUrl(name)}
 									<li role="option" aria-selected="false">
-										<button type="button" onclick={() => ((pickedWho = name), (moreOpen = false))}>
-											{#if face}<img src={face} alt="" />{:else}<span class="blank"></span>{/if}
+										<button
+											type="button"
+											onclick={() => ((pickedWho = name), (moreOpen = false))}
+										>
+											{#if face}<img src={face} alt="" />{:else}<span
+													class="blank"
+												></span>{/if}
 											{name}
 										</button>
 									</li>
@@ -350,26 +455,49 @@
 			<!-- the heading, in plain words that follow the tab; a step's own
 			     title, or a pair's, as before -->
 			<div class="head">
-				{#if shown.title}
+				{#if narrow && shown.vs === "outlets"}
+					<!-- the name on a line of its own, so the heading is always two lines -->
+					<p class="heading phone-head">
+						{@html fill(or(headDescribe, "How Fox News describes {player}"), {
+							player: `<br />${pickedWho.replace(/</g, "&lt;")}`
+						})}
+					</p>
+				{:else if shown.title}
 					<p class="heading">{@html shown.title}</p>
 				{:else if shown.vs === "outlets"}
-					<p class="heading">{HEADING[shown.rel]?.(shown.who) ?? source.relation}</p>
+					<p class="heading">
+						{HEADING[shown.rel]?.(shown.who) ?? source.relation}
+					</p>
+				{/if}
+				{#if shown.vs === "outlets" && (narrow || !shown.title)}
 					<!-- a div, not a p: the menu inside renders block elements -->
 					<div class="subheading">
-						<span>{or(comparedWith, "compared with")}</span>
+						<span
+							>{narrow
+								? or(phoneVs, "vs.")
+								: or(comparedWith, "compared with")}</span
+						>
 						<LogoSelect
 							options={OUTLET_OPTIONS}
 							bind:value={pickedOutlet}
-							logoOf={(o) => (o === "all" ? null : LOGO[o] ?? null)}
-							nameOf={(o) => (o === "all" ? or(allOutlets, "six other outlets") : o)}
+							logoOf={(o) => (o === "all" ? null : (LOGO[o] ?? null))}
+							nameOf={(o) =>
+								o === "all" ? or(allOutlets, "six other outlets") : o}
 							isDisabled={(o) =>
 								o !== "all" && !outletsHere.has(o)
-									? fill(or(tooFewOutlet, "Too few words about {player} in {outlet}"), { player: pickedWho, outlet: o })
+									? fill(
+											or(
+												tooFewOutlet,
+												"Too few words about {player} in {outlet}"
+											),
+											{ player: pickedWho, outlet: o }
+										)
 									: false}
 							label="Compared with"
 						/>
+						{#if narrow}{@render unitSwitch()}{/if}
 					</div>
-				{:else}
+				{:else if shown.vs !== "outlets" && !shown.title}
 					<p class="heading">
 						<b>{source.relation}</b><br />
 						{source.topLabel} <span class="vs">vs.</span>
@@ -388,6 +516,23 @@
 			</div>
 			<!-- the relations as tabs on a rule; words or phrases a quiet switch
 			     at its right end -->
+			{#snippet unitSwitch()}
+				<div class="unit-switch" role="group" aria-label="Words or phrases">
+					<button
+						type="button"
+						class:on={unit === "words"}
+						aria-pressed={unit === "words"}
+						onclick={() => (unit = "words")}>{or(tabWords, "Words")}</button
+					>
+					<button
+						type="button"
+						class:on={unit === "phrases"}
+						aria-pressed={unit === "phrases"}
+						onclick={() => (unit = "phrases")}
+						>{or(tabPhrases, "Phrases")}</button
+					>
+				</div>
+			{/snippet}
 			<div class="tabrow">
 				<div class="rel-tabs" role="tablist" aria-label="Kind of word">
 					{#each RELATIONS as [rel, label] (rel)}
@@ -397,18 +542,35 @@
 							class:on={pickedRel === rel}
 							aria-selected={pickedRel === rel}
 							disabled={!available.has(rel)}
-							title={available.has(rel) ? "" : fill(or(tooFew, "Too few words of this kind for {player}"), { player: pickedWho })}
-							onclick={() => (pickedRel = rel)}>{label}</button
+							title={available.has(rel)
+								? ""
+								: fill(or(tooFew, "Too few words of this kind for {player}"), {
+										player: pickedWho
+									})}
+							onclick={() => (pickedRel = rel)}
+							>{narrow ? SHORT[rel] : label}</button
 						>
 					{/each}
 				</div>
-				<div class="unit-switch" role="group" aria-label="Words or phrases">
-					<button type="button" class:on={unit === "words"} aria-pressed={unit === "words"} onclick={() => (unit = "words")}>{or(tabWords, "Words")}</button>
-					<button type="button" class:on={unit === "phrases"} aria-pressed={unit === "phrases"} onclick={() => (unit = "phrases")}>{or(tabPhrases, "Phrases")}</button>
-				</div>
+				{#if !narrow}{@render unitSwitch()}{/if}
 			</div>
 			{#if chart === "bars"}
-				<WordBars {source} {labels} {scale} {caps} {scores} highlight={shown.words} top={12} fill note={caption} noteKind={shown.vs === "outlets" ? "source" : ""} {previous} {next} {range} {hoverCounts} />
+				<WordBars
+					{source}
+					{labels}
+					{scale}
+					{caps}
+					{scores}
+					highlight={shown.words}
+					top={12}
+					fill
+					note={caption}
+					noteKind={shown.vs === "outlets" ? "source" : ""}
+					{previous}
+					{next}
+					{range}
+					{hoverCounts}
+				/>
 			{:else}
 				<FightinWords {source} highlight={shown.words} bare controls={false} />
 			{/if}
@@ -461,7 +623,7 @@
 	}
 	.sticky :global(.fightin-words),
 	.sticky :global(.word-bars) {
-		width: min(900px, 96vw);
+		width: min(900px, 100%);
 	}
 	/* the players: faces in a row that scrolls sideways */
 	.players {
@@ -511,7 +673,9 @@
 	}
 	.player.on img,
 	.player.on .blank {
-		box-shadow: 0 0 0 2px var(--color-page-orange), 0 0 0 4px var(--color-ink-dark);
+		box-shadow:
+			0 0 0 2px var(--color-page-orange),
+			0 0 0 4px var(--color-ink-dark);
 	}
 	.player.on .player-name {
 		color: var(--color-ink-dark);
@@ -600,10 +764,11 @@
 	}
 	.heading {
 		margin: 0;
-		font-family: var(--font-serif);
-		font-size: 22px;
+		font-family: var(--font-graphic);
+		font-size: 24px;
 		font-weight: 700;
-		line-height: 1.25;
+		line-height: 1.22;
+		letter-spacing: -0.01em;
 		text-align: left;
 	}
 	.heading .vs {
@@ -612,11 +777,12 @@
 	}
 	.subheading {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
-		gap: 6px;
+		gap: 4px 6px;
 		margin: 2px 0 0;
-		font-family: var(--font-serif);
-		font-size: 17px;
+		font-family: var(--font-graphic);
+		font-size: 15px;
 		color: rgba(42, 21, 3, 0.75);
 	}
 	.subheading > span {
@@ -631,17 +797,27 @@
 	/* the compare-with menu sits in the line as a quiet underlined word */
 	.subheading :global(.logo-select .current) {
 		height: auto;
+		min-width: 0;
 		padding: 0 18px 0 0;
 		border: 0;
 		border-bottom: 1.5px solid currentColor;
 		border-radius: 0;
 		background: transparent;
-		font-family: var(--font-serif);
-		font-size: 17px;
+		font-family: var(--font-graphic);
+		font-size: 15px;
 		color: var(--color-ink-dark);
 	}
 	.subheading :global(.logo-select .current::after) {
 		right: 0;
+	}
+	/* phones: the two-line heading centred over the chart */
+	.phone-head {
+		text-align: center;
+	}
+	/* phones: words / phrases at the right end of the "vs." line */
+	.subheading .unit-switch {
+		margin-left: auto;
+		padding-left: 10px;
 	}
 	/* the relations as tabs on a rule; words / phrases at its right end */
 	.tabrow {
@@ -720,29 +896,22 @@
 			font-size: 10px;
 		}
 		.heading {
-			font-size: 18px;
+			font-size: 20px;
 		}
 		.subheading,
 		.subheading :global(.logo-select .current) {
-			font-size: 15px;
+			font-size: 14px;
 		}
-		/* one line: the relations scroll sideways, words / phrases stay put */
-		.tabrow {
-			flex-wrap: nowrap;
-			gap: 12px;
-		}
+		/* the five short tabs spread across the row, all in view */
 		.rel-tabs {
 			flex: 1 1 auto;
-			min-width: 0;
 			flex-wrap: nowrap;
-			gap: 12px;
-			overflow-x: auto;
-			scrollbar-width: none;
-			mask-image: linear-gradient(to right, #000 85%, transparent);
+			justify-content: space-between;
+			gap: 8px;
 		}
 		.rel-tabs button {
 			flex: 0 0 auto;
-			font-size: 12.5px;
+			font-size: 13.5px;
 			padding-bottom: 6px;
 			white-space: nowrap;
 		}

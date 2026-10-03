@@ -21,6 +21,8 @@
 		"NetworkScrolly",
 		"NetworkMap",
 		"NetworkScrollyOld",
+		"FramingTabs",
+		"FramingSwarm",
 		"FightinWordsScrolly",
 		"FightinWordsBarsScrolly",
 		"TernaryScrolly",

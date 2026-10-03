@@ -10,14 +10,17 @@
 	import FoxVsField from "$components/FoxVsField.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
 	import TernaryScrolly from "$components/TernaryScrolly.svelte";
+	import ChyronTriangle from "$components/ChyronTriangle.svelte";
 	import FightinWordsScrolly from "$components/FightinWordsScrolly.svelte";
 	import FightinWordsBarsScrolly from "$components/FightinWordsBarsScrolly.svelte";
 	import OutletGapScrolly from "$components/OutletGapScrolly.svelte";
+	import OutletGapFaces from "$components/OutletGapFaces.svelte";
 	import FightinWordsVerbsAdj from "$components/FightinWordsVerbsAdj.svelte";
 	import FightinWordsBars from "$components/FightinWordsBars.svelte";
 	import NetworkScrolly from "$components/NetworkScrolly.svelte";
 	import NetworkMap from "$components/NetworkMap.svelte";
 	import FramingTabs from "$components/FramingTabs.svelte";
+	import FramingSwarm from "$components/FramingSwarm.svelte";
 	import WordTimeline from "$components/WordTimeline.svelte";
 	import WordCompare from "$components/WordCompare.svelte";
 	import WordNeighbors from "$components/WordNeighbors.svelte";
@@ -41,11 +44,16 @@
 		ShareBars,
 		OutletTopicCompare,
 		FoxVsField,
-		TernaryStatic,
-		TernaryScrolly,
+		// the cable news triangle; the earlier versions stay as …Old
+		TernaryStatic: ChyronTriangle,
+		TernaryScrolly: ChyronTriangle,
+		TernaryStaticOld: TernaryStatic,
+		TernaryScrollyOld: TernaryScrolly,
 		FightinWordsScrolly,
 		FightinWordsBarsScrolly,
 		OutletGapScrolly,
+		// a narrower try at the dot plot, kept for its heading and menu
+		OutletGapFaces,
 		FightinWordsVerbsAdj,
 		FightinWordsBars,
 		// the Doc's network block draws the redesigned map (2026-10-02); the
@@ -53,7 +61,10 @@
 		NetworkScrolly: NetworkMap,
 		NetworkMap,
 		NetworkScrollyOld: NetworkScrolly,
-		FramingTabs,
+		// the explore beeswarm; the earlier version stays as FramingTabsOld
+		FramingTabs: FramingSwarm,
+		FramingSwarm,
+		FramingTabsOld: FramingTabs,
 		WordTimeline,
 		WordCompare,
 		WordNeighbors,
@@ -69,18 +80,17 @@
 		// legacy Doc ids — delete once the Doc carries component names
 		toc: Toc,
 		"outlet-topics": OutletTopicCompare,
-		"ternary-static": TernaryStatic,
-		"ternary-scrolly": TernaryScrolly,
+		"ternary-static": ChyronTriangle,
+		"ternary-scrolly": ChyronTriangle,
 		"fightin-words-scrolly": FightinWordsScrolly,
 		"word-quadrant-scrolly": FightinWordsScrolly,
 		"outlet-gap-scrolly": OutletGapScrolly,
 		"player-words-scrolly": FightinWordsVerbsAdj,
 		"network-story": NetworkMap,
-		"framing-tabs": FramingTabs,
+		"framing-tabs": FramingSwarm,
 		"headline-table": HeadlineTable
 	};
 </script>
-
 
 <svelte:boundary
 	onerror={(e) => {

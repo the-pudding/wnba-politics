@@ -815,12 +815,6 @@
 					? `; <b>${fmt(n.total)}</b> by ${monthName(MONTHS[M - 1])}`
 					: "") +
 				`</div>` +
-				(partners.length
-					? `<div class="f">Shared most with ${partners
-							.slice(0, 3)
-							.map((p) => `${esc(p.who)} (<b>${p.n}</b>)`)
-							.join(", ")}</div>`
-					: `<div class="f">No shared headlines yet</div>`) +
 				(example
 					? `<div class="q"><span>${monthName(example[0].slice(0, 7))}</span>${esc(example[1])}</div>`
 					: "");
@@ -837,8 +831,17 @@
 				if (y + th > H) y = n.y - r - 10 - th;
 			}
 			y = Math.max(-40, Math.min(H - th + 40, y));
-			tipEl.style.left = x + "px";
-			tipEl.style.top = y + "px";
+			tipAt = { x, y };
+			placeTip();
+		}
+		// the tooltip lives outside the map panel (so on phones it can sit over
+		// the cards): placed against the whole chart, and kept by its face on scroll
+		let tipAt = { x: 0, y: 0 };
+		function placeTip() {
+			const box = netbox.getBoundingClientRect(),
+				whole = root.getBoundingClientRect();
+			tipEl.style.left = box.left - whole.left + tipAt.x + "px";
+			tipEl.style.top = box.top - whole.top + tipAt.y + "px";
 		}
 
 		// -----------------------------------------------------------------
@@ -1064,12 +1067,18 @@
 			ticking = true;
 			requestAnimationFrame(() => {
 				ticking = false;
+				// the page may have gone in the meantime
+				if (!root) return;
+				if (tipEl.style.display === "block") placeTip();
 				const line = innerHeight * (innerWidth <= PHONE_SCREEN ? 0.8 : 0.6);
 				let idx = 0;
 				stepEls.forEach((s, i) => {
 					if (s.getBoundingClientRect().top < line) idx = i;
 				});
-				const ex = exploreEl.getBoundingClientRect().top < line;
+				// (phones have no explore: the story steps only)
+				const ex =
+					innerWidth > PHONE_SCREEN &&
+					exploreEl.getBoundingClientRect().top < line;
 				if (idx === stepIndex && ex === exploring) return;
 				stepIndex = idx;
 				if (ex !== exploring) {
@@ -1145,7 +1154,6 @@
 					<g data-id="g-nodes"></g>
 					<g data-id="g-labels"></g>
 				</svg>
-				<div class="tip" data-id="tip"></div>
 			</div>
 			<div class="timeline">
 				<div class="tl-row">
@@ -1164,6 +1172,7 @@
 		</div>
 		<div class="steps" data-id="steps"></div>
 	</div>
+	<div class="tip" data-id="tip"></div>
 	<p class="source" data-id="source"></p>
 </section>
 
@@ -1176,6 +1185,7 @@
 		--ink-3: #727272;
 		--rule: #e2e2e2;
 		--edge: #b3ab9e;
+		position: relative;
 		max-width: 1000px; /* same as the other scrollies, clear of the side menu */
 		margin: 0 auto;
 		color: var(--ink);
@@ -1416,17 +1426,29 @@
 		-webkit-box-decoration-break: clone;
 	}
 
-	/* explore: the list pins level with the map and leaves with it */
+	/* explore: a panel the map's height, pinned level with it, so the two stay
+	   put together and leave together */
 	.netmap :global(.explore) {
 		min-height: 175vh;
 		padding-top: 10vh;
 	}
 	.netmap :global(.explore .xp) {
 		position: sticky;
-		top: 64px;
+		top: 3vh;
+		box-sizing: border-box;
+		height: 94vh;
+		display: flex;
+		flex-direction: column;
 		padding: 16px 18px;
 		border-radius: 4px;
 		background: #fff;
+		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.12);
+	}
+	/* a person's headlines fill the rest of the panel and scroll inside it */
+	.netmap :global(.explore .heads) {
+		flex: 1 1 auto;
+		min-height: 0;
+		max-height: none;
 	}
 	.netmap :global(.xh) {
 		margin: 0 0 4px;
@@ -1509,8 +1531,12 @@
 		font: 11.5px var(--font-sans);
 		color: var(--ink-3);
 	}
+	/* back to everyone: top left of the list */
 	.netmap :global(.back) {
-		margin: 0 0 8px;
+		display: block;
+		align-self: flex-start;
+		margin: 0 auto 8px 0;
+		text-align: left;
 		padding: 0;
 		border: 0;
 		background: none;
@@ -1580,31 +1606,43 @@
 		color: rgba(42, 21, 3, 0.7);
 	}
 
-	/* phones: the map pinned across the top, the cards scrolling under it */
+	/* phones: the map fills the screen, the cards scroll up over it */
 	@media (max-width: 860px) {
 		.netmap :global(.scrolly) {
 			display: block;
 		}
+		/* the map fills the screen; the cards scroll up over it, and taps
+		   between them still reach the map */
 		.netmap :global(.graphic) {
-			z-index: 3;
+			z-index: 0;
 			top: 0;
-			height: 66svh;
+			height: 100svh;
 			padding: 8px 12px;
-			border-radius: 0 0 4px 4px;
-			box-shadow: 0 6px 14px -6px rgba(42, 21, 3, 0.25);
+			border-radius: 0;
+			box-shadow: none;
 		}
 		.netmap :global(.steps) {
 			position: relative;
-			z-index: 1;
-			padding-top: 30vh;
+			z-index: 2;
+			margin-top: -100svh;
+			padding-top: 70svh;
+			/* room after the last card (with its 75svh below), so it scrolls all
+			   the way up over the map before the map leaves */
+			padding-bottom: 25svh;
+			pointer-events: none;
 		}
 		.netmap :global(.step) {
-			margin-bottom: 48svh;
+			margin-bottom: 75svh;
 			padding: 14px 16px;
 			opacity: 1;
+			pointer-events: auto;
 		}
 		.netmap :global(.step p) {
 			font-size: 16px;
+		}
+		/* no example headlines in the cards on phones: too big over the map */
+		.netmap :global(.step .clip) {
+			display: none;
 		}
 		.netmap :global(.when) {
 			font-size: 13px;
@@ -1620,22 +1658,15 @@
 		.netmap :global(.key) {
 			font-size: 11px;
 		}
+		/* no explore on phones: too much to fit around the map */
 		.netmap :global(.explore) {
-			min-height: 0;
-			padding: 0 0 30vh;
-		}
-
-		/* the pinned map covers the top of the screen, so land the list below it */
-		.netmap :global(.explore .xp) {
-			position: static;
-			padding: 14px 16px;
-			scroll-margin-top: calc(66svh + 8px);
+			display: none;
 		}
 		.netmap :global(.heads) {
 			max-height: none;
 		}
 		.netmap :global(.source) {
-			margin-top: 0;
+			margin-top: 12px;
 		}
 		.netmap :global(.tip) {
 			width: 230px;

@@ -1,12 +1,20 @@
 <script>
 	import { base } from "$app/paths";
-	// Head-to-head dot plot walked through
+	// Head-to-head dot plot walked through. Doc options on the block:
+	//   heading: How often Fox News names each player in WNBA headlines
+	//   comparedWith: compared with    allOutlets: six other outlets combined
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import OutletGapDotPlot from "$components/OutletGapDotPlot.svelte";
 	import { stageSteps } from "$utils/gapSteps.js";
 	import { faces, clipPops } from "$utils/clips.js";
 
-	let { steps = null, speed = 1000 } = $props();
+	let {
+		steps = null,
+		speed = 1000,
+		heading = "",
+		comparedWith = "",
+		allOutlets = ""
+	} = $props();
 
 	const STEPS = $derived(stageSteps(steps));
 
@@ -17,7 +25,6 @@
 		if (index !== undefined && index !== null) last = index;
 	});
 	let current = $derived(STEPS[last] ?? STEPS[0]);
-
 </script>
 
 <section class="gap-scrolly">
@@ -30,6 +37,9 @@
 			{speed}
 			centerLine
 			wide
+			{heading}
+			{comparedWith}
+			{allOutlets}
 		/>
 	</div>
 
@@ -68,7 +78,6 @@
 	/* the frame is a column: title, pills and clipping on top, and the drawing
 	   takes exactly the height that is left, so nothing is ever cut off */
 	.sticky :global(.outlet-gap) {
-
 		width: min(1040px, 97vw);
 		height: 96vh;
 		display: flex;
@@ -116,10 +125,9 @@
 	}
 	.card {
 		margin: 0;
-		background: rgba(255, 253, 248, 0.94);
-		border-left: 3px solid var(--color-fox);
-		padding: 14px 16px;
-		border-radius: 3px;
+		background: #fff;
+		padding: 14px 18px;
+		border-radius: 4px;
 		font-size: var(--step-text);
 		line-height: 1.5;
 		color: var(--color-ink);

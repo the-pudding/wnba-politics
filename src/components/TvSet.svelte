@@ -23,7 +23,9 @@
 		// in the margin rather than across the column
 		small = false,
 		// each clip plays once and holds its last frame, dimmed, rather than looping
-		once = false
+		once = false,
+		// clips (ids, comma-separated) a tap shouldn't replay once they've ended
+		noReplay = ""
 	} = $props();
 
 	// what's on: [{ from, to, title, by, site, link }] from notebooks/storm_tv/build.py
@@ -73,6 +75,15 @@
 	let live = $state(false);
 	// ended (or not started yet): the screen rests on a dimmed frame
 	const resting = $derived(once && !live);
+	// resting on a clip a tap can play again (not before any has played)
+	const replayable = $derived(
+		resting &&
+			at >= 0 &&
+			!String(noReplay)
+				.split(",")
+				.map((x) => x.trim())
+				.includes(cueList[at]?.id)
+	);
 	// (checked every frame for a clean cut, and on the video's own time
 	// updates in case frames aren't running)
 	function atEnd() {
@@ -130,15 +141,15 @@
 	});
 	function toggleSound() {
 		if (!video) return;
-		// resting: the tap plays the last clip again, with sound
-		if (resting && cueList.length) {
+		// resting on a replayable clip: the tap plays it again, with sound
+		if (replayable) {
 			muted = video.muted = false;
-			start(Math.max(at, 0));
+			start(at);
 			return;
 		}
 		muted = !muted;
 		video.muted = muted;
-		if (video.paused) video.play().catch(() => {});
+		if (video.paused && !resting) video.play().catch(() => {});
 	}
 </script>
 
@@ -151,7 +162,7 @@
 		onkeydown={(e) => (e.key === "Enter" || e.key === " ") && toggleSound()}
 		role="button"
 		tabindex="0"
-		aria-label={resting
+		aria-label={replayable
 			? "Play the clip again, with sound"
 			: muted
 				? "Turn the sound on"
@@ -176,31 +187,19 @@
 		<!-- the sound toggle: an emoji in the screen's top-right corner -->
 		<div
 			class="sound"
-			class:off={muted || resting}
+			class:off={muted || replayable}
 			style="left:{screen.left + screen.width - 2}%; top:{screen.top + 2}%"
 			aria-hidden="true"
 		>
-			<span class="icon">{resting ? "↻" : muted ? "🔇" : "🔊"}</span>
+			<span class="icon">{replayable ? "↻" : muted ? "🔇" : "🔊"}</span>
 			<span class="hint"
-				>{resting
+				>{replayable
 					? "tap to replay"
 					: muted
 						? "tap for sound"
 						: "sound on"}</span
 			>
 		</div>
-		<!-- who the clip is from, on the screen itself (shown where the line
-		     under the set is hidden: see TvBeside) -->
-		{#if small && now}
-			<a
-				class="credit"
-				href={now.link}
-				target="_blank"
-				rel="noopener"
-				style="left:{screen.left + 2.5}%; top:{screen.top + screen.height - 3}%"
-				onclick={(e) => e.stopPropagation()}>{now.by}</a
-			>
-		{/if}
 	</div>
 	{#if now}
 		<figcaption class="now">
@@ -240,25 +239,6 @@
 	}
 	video.resting {
 		filter: brightness(0.45) saturate(0.5);
-	}
-	.credit {
-		display: none;
-		position: absolute;
-		z-index: 2;
-		transform: translateY(-100%);
-		max-width: 60%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		padding: 2px 6px;
-		border-radius: 3px;
-		background: rgba(0, 0, 0, 0.55);
-		color: #fff;
-		font-family: var(--font-chart);
-		font-size: 9px;
-		font-weight: 700;
-		letter-spacing: 0.04em;
-		text-decoration: none;
 	}
 	.shell {
 		position: absolute;

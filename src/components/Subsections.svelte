@@ -12,7 +12,8 @@
 		// Race") over a thick-thin rule, a bar sliding under the open one
 		// (2026-10-01); look: "paper" — each thread a newspaper page under a
 		// nameplate (the title), the threads' index tabs on its top-right
-		// corner (2026-10-01); left out, the folder tabs
+		// corner (2026-10-01); look: "plain" — a white sheet, wider than the
+		// text on desktop; left out, the folder tabs
 		look = "",
 		// the words over the next and previous threads' names at the bottom
 		previous: previousLabel = "",
@@ -30,7 +31,9 @@
 	// slides in from the right; going back runs
 	// the other way
 	const TURN = 450;
-	const still = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+	const still = () =>
+		typeof window !== "undefined" &&
+		window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 	const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 	function slide(node, { going }) {
 		if (still()) return { duration: 0 };
@@ -56,8 +59,12 @@
 		window.addEventListener("resize", place);
 		return () => window.removeEventListener("resize", place);
 	});
-	const items = $derived((tabs ?? []).filter((t) => t && (t.title || t.content)));
-	let current = $state(collapsed === true || String(collapsed).toLowerCase() === "true" ? -1 : 0);
+	const items = $derived(
+		(tabs ?? []).filter((t) => t && (t.title || t.content))
+	);
+	let current = $state(
+		collapsed === true || String(collapsed).toLowerCase() === "true" ? -1 : 0
+	);
 	// the paper always has a page open
 	const shown = $derived(Math.max(current, 0));
 	// which way the panel slides in, for the transition
@@ -77,8 +84,15 @@
 			window.scrollTo({ top, behavior: still() ? "instant" : "smooth" });
 		}
 	}
-	const next = (from) => go(current < 0 ? 0 : (current + 1) % items.length, from);
-	const prev = (from) => go(current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length, from);
+	const next = (from) =>
+		go(current < 0 ? 0 : (current + 1) % items.length, from);
+	const prev = (from) =>
+		go(
+			current < 0
+				? items.length - 1
+				: (current - 1 + items.length) % items.length,
+			from
+		);
 
 	// a swipe on a phone: a mostly horizontal drag of 50px or more
 	let touch = null;
@@ -88,10 +102,20 @@
 	function ownsSwipe(el) {
 		for (let n = el; n && n !== root; n = n.parentElement) {
 			const tag = n.tagName?.toLowerCase();
-			if (tag === "swiper-container" || tag === "swiper-slide" || n.classList?.contains("swiper")) return true;
-			if (tag === "input" || tag === "select" || tag === "textarea") return true;
+			if (
+				tag === "swiper-container" ||
+				tag === "swiper-slide" ||
+				n.classList?.contains("swiper")
+			)
+				return true;
+			if (tag === "input" || tag === "select" || tag === "textarea")
+				return true;
 			const ox = getComputedStyle(n).overflowX;
-			if ((ox === "auto" || ox === "scroll") && n.scrollWidth > n.clientWidth + 2) return true;
+			if (
+				(ox === "auto" || ox === "scroll") &&
+				n.scrollWidth > n.clientWidth + 2
+			)
+				return true;
 			if (n.dataset?.swipe !== undefined) return true;
 		}
 		return false;
@@ -107,21 +131,35 @@
 	function onTouchEnd(e) {
 		if (!touch) return;
 		const t = e.changedTouches[0];
-		const dx = t.clientX - touch.x, dy = t.clientY - touch.y;
+		const dx = t.clientX - touch.x,
+			dy = t.clientY - touch.y;
 		touch = null;
 		if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
 		dx < 0 ? next() : prev();
 	}
 	function onKey(e) {
-		if (e.key === "ArrowRight") { next(); e.preventDefault(); }
-		else if (e.key === "ArrowLeft") { prev(); e.preventDefault(); }
+		if (e.key === "ArrowRight") {
+			next();
+			e.preventDefault();
+		} else if (e.key === "ArrowLeft") {
+			prev();
+			e.preventDefault();
+		}
 	}
 	// the panel is a one-section body for the CMS
-	const bodyOf = (tab, i) => [{ section: `thread-${i}`, content: tab.content ?? [] }];
+	const bodyOf = (tab, i) => [
+		{ section: `thread-${i}`, content: tab.content ?? [] }
+	];
 </script>
 
 {#snippet tabRow(where)}
-	<div class="tabs" class:bottom={where === "bottom"} role="tablist" aria-label={title || "Threads"} onkeydown={onKey}>
+	<div
+		class="tabs"
+		class:bottom={where === "bottom"}
+		role="tablist"
+		aria-label={title || "Threads"}
+		onkeydown={onKey}
+	>
 		{#each items as tab, i (i)}
 			<button
 				bind:this={tabEls[i]}
@@ -132,13 +170,20 @@
 				tabindex={i === current || (current < 0 && i === 0) ? 0 : -1}
 				onclick={() => go(i === current && collapsed ? -1 : i, where)}
 			>
-				{#if newspaper}<span class="section">Section {String.fromCharCode(65 + i)}</span>{/if}
+				{#if newspaper}<span class="section"
+						>Section {String.fromCharCode(65 + i)}</span
+					>{/if}
 				<span class="name">{tab.title ?? `Part ${i + 1}`}</span>
-				{#if tab.kicker && !newspaper}<span class="kicker">{tab.kicker}</span>{/if}
+				{#if tab.kicker && !newspaper}<span class="kicker">{tab.kicker}</span
+					>{/if}
 			</button>
 		{/each}
 		{#if newspaper && bar}
-			<span class="bar" style="left:{bar.left}px; width:{bar.width}px" aria-hidden="true"></span>
+			<span
+				class="bar"
+				style="left:{bar.left}px; width:{bar.width}px"
+				aria-hidden="true"
+			></span>
 		{/if}
 	</div>
 {/snippet}
@@ -147,9 +192,22 @@
 	<nav class="pager" aria-label="More threads">
 		{#if at > 0}
 			<button class="page prev" onclick={() => go(at - 1, where)}>
-				<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+				<svg viewBox="0 0 24 24" aria-hidden="true"
+					><path
+						d="M15 5l-7 7 7 7"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2.4"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/></svg
+				>
 				<span class="page-text">
-					<span class="page-label">{paper ? `Back to Section ${letter(at - 1)}` : String(previousLabel).trim() || "Previous"}</span>
+					<span class="page-label"
+						>{paper
+							? `Back to Section ${letter(at - 1)}`
+							: String(previousLabel).trim() || "Previous"}</span
+					>
 					<span class="page-title">{items[at - 1].title ?? `Part ${at}`}</span>
 				</span>
 			</button>
@@ -157,10 +215,25 @@
 		{#if at < items.length - 1}
 			<button class="page next" onclick={() => go(at + 1, where)}>
 				<span class="page-text">
-					<span class="page-label">{paper ? `Continued in Section ${letter(at + 1)}` : String(nextLabel).trim() || "Next"}</span>
-					<span class="page-title">{items[at + 1].title ?? `Part ${at + 2}`}</span>
+					<span class="page-label"
+						>{paper
+							? `Continued in Section ${letter(at + 1)}`
+							: String(nextLabel).trim() || "Next"}</span
+					>
+					<span class="page-title"
+						>{items[at + 1].title ?? `Part ${at + 2}`}</span
+					>
 				</span>
-				<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+				<svg viewBox="0 0 24 24" aria-hidden="true"
+					><path
+						d="M9 5l7 7-7 7"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2.4"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/></svg
+				>
 			</button>
 		{/if}
 	</nav>
@@ -169,11 +242,23 @@
 {#if plain}
 	<!-- look: plain (2026-10-02): the threads named in plain words on a rule,
 	     which stays in view while the open one is read, all on a white sheet -->
-	<div class="subsections plain" role="region" aria-label={title || "Threads"} bind:this={root} ontouchstart={onTouchStart} ontouchend={onTouchEnd}>
+	<div
+		class="subsections plain"
+		role="region"
+		aria-label={title || "Threads"}
+		bind:this={root}
+		ontouchstart={onTouchStart}
+		ontouchend={onTouchEnd}
+	>
 		{#if title}<h3 class="plain-title">{@html hl(title)}</h3>{/if}
 		{#if intro}<p class="intro">{@html intro}</p>{/if}
 		<div class="plain-sheet">
-			<div class="plain-switch" role="tablist" aria-label={title || "Threads"} onkeydown={onKey}>
+			<div
+				class="plain-switch"
+				role="tablist"
+				aria-label={title || "Threads"}
+				onkeydown={onKey}
+			>
 				{#each items as tab, i (i)}
 					<button
 						role="tab"
@@ -185,7 +270,11 @@
 				{/each}
 			</div>
 			{#key shown}
-				<div class="panel plain-panel" role="tabpanel" aria-label={items[shown]?.title ?? ""}>
+				<div
+					class="panel plain-panel"
+					role="tabpanel"
+					aria-label={items[shown]?.title ?? ""}
+				>
 					<CMS body={bodyOf(items[shown], shown)} {components} />
 				</div>
 			{/key}
@@ -193,11 +282,23 @@
 		</div>
 	</div>
 {:else if paper}
-	<div class="subsections paper" role="region" aria-label={title || "Threads"} bind:this={root} ontouchstart={onTouchStart} ontouchend={onTouchEnd}>
+	<div
+		class="subsections paper"
+		role="region"
+		aria-label={title || "Threads"}
+		bind:this={root}
+		ontouchstart={onTouchStart}
+		ontouchend={onTouchEnd}
+	>
 		{#if intro}<p class="intro">{@html intro}</p>{/if}
 		<div class="stack">
 			<!-- the index tabs, standing on the page's top edge at its right corner -->
-			<div class="index" role="tablist" aria-label={title || "Threads"} onkeydown={onKey}>
+			<div
+				class="index"
+				role="tablist"
+				aria-label={title || "Threads"}
+				onkeydown={onKey}
+			>
 				{#each items as tab, i (i)}
 					<button
 						role="tab"
@@ -216,10 +317,17 @@
 				<!-- one page at a time; a page keeps its own number while it turns -->
 				{#each [shown] as at (at)}
 					{@const tab = items[at]}
-					<article class="newspage" role="tabpanel" aria-label="Section {letter(at)}: {tab.title ?? ''}" in:slide={{ going: false }} out:slide={{ going: true }}>
+					<article
+						class="newspage"
+						role="tabpanel"
+						aria-label="Section {letter(at)}: {tab.title ?? ''}"
+						in:slide={{ going: false }}
+						out:slide={{ going: true }}
+					>
 						<header class="masthead">
 							<!-- the paper's name: the section's title, or the thread's -->
-							<span class="nameplate">{@html hl(title || tab.title || "")}</span>
+							<span class="nameplate">{@html hl(title || tab.title || "")}</span
+							>
 							<!-- the tabs name the section, so the folio line keeps only the page -->
 							<div class="folio">
 								<span>Page {at + 1} of {items.length}</span>
@@ -235,30 +343,37 @@
 		</div>
 	</div>
 {:else}
-<div class="subsections" class:newspaper role="region" aria-label={title || "Threads"} bind:this={root} ontouchstart={onTouchStart} ontouchend={onTouchEnd}>
-	{#if title}<h3 class="title">{@html hl(title)}</h3>{/if}
-	{#if intro}<p class="intro">{@html intro}</p>{/if}
+	<div
+		class="subsections"
+		class:newspaper
+		role="region"
+		aria-label={title || "Threads"}
+		bind:this={root}
+		ontouchstart={onTouchStart}
+		ontouchend={onTouchEnd}
+	>
+		{#if title}<h3 class="title">{@html hl(title)}</h3>{/if}
+		{#if intro}<p class="intro">{@html intro}</p>{/if}
 
-	{@render tabRow("top")}
+		{@render tabRow("top")}
 
-	{#if current >= 0 && items[current]}
-		<!-- the thread and its pager on one white sheet under the tabs -->
-		<div class="sheet">
-		{#key current}
-			<div class="panel" role="tabpanel" style="--from: {dir * 24}px">
-				<CMS body={bodyOf(items[current], current)} {components} />
-			</div>
-		{/key}
-		<!-- under the thread, for the reader who has just finished it: the
+		{#if current >= 0 && items[current]}
+			<!-- the thread and its pager on one white sheet under the tabs -->
+			<div class="sheet">
+				{#key current}
+					<div class="panel" role="tabpanel" style="--from: {dir * 24}px">
+						<CMS body={bodyOf(items[current], current)} {components} />
+					</div>
+				{/key}
+				<!-- under the thread, for the reader who has just finished it: the
 		     neighbouring threads by name, no "previous" before the first and
 		     no "next" after the last -->
-		{@render pager("bottom")}
-		</div>
-
-	{:else}
-		<p class="hint">Pick a thread above to read it.</p>
-	{/if}
-</div>
+				{@render pager("bottom")}
+			</div>
+		{:else}
+			<p class="hint">Pick a thread above to read it.</p>
+		{/if}
+	</div>
 {/if}
 
 <style>
@@ -383,7 +498,9 @@
 		font-family: var(--font-sans);
 		color: var(--color-ink-dark);
 		cursor: pointer;
-		transition: opacity 150ms ease, background 150ms ease;
+		transition:
+			opacity 150ms ease,
+			background 150ms ease;
 	}
 	.tab:hover:not(.active) {
 		background: #f2f2f2;
@@ -626,7 +743,9 @@
 		font: inherit;
 		line-height: 29px;
 		cursor: pointer;
-		transition: height 150ms ease, background 150ms ease;
+		transition:
+			height 150ms ease,
+			background 150ms ease;
 	}
 	.index-tab:hover:not(.active) {
 		height: 32px;
@@ -741,11 +860,20 @@
 	}
 
 	/* look: plain — the threads named in plain words on a rule, the whole
-	   section (title too) one white sheet the width of the text (2026-10-02) */
+	   section (title too) one white sheet, wider than the text on desktop.
+	   Prose inside stays the width of the text; the charts take the room */
 	.subsections.plain {
+		--sheet-w: min(900px, calc(100vw - 32px));
+		width: var(--sheet-w);
+		margin-left: calc((100% - var(--sheet-w)) / 2);
 		padding: 26px 28px 24px;
 		background: #fff;
 		border-radius: 4px;
+	}
+	.plain-panel :global(.act > :not(.chart)) {
+		max-width: 668px;
+		margin-left: auto;
+		margin-right: auto;
 	}
 	.plain-title {
 		margin: 0 0 10px;

@@ -9,13 +9,15 @@
 	import roster from "$data/people.json";
 	import HeadlineClip from "$components/HeadlineClip.svelte";
 	import { checks } from "$utils/checks.svelte.js";
+	import { or } from "$utils/fill.js";
+	import LogoSelect from "$components/helpers/LogoSelect.svelte";
 	const faceFiles = Object.fromEntries(
 		Object.values(roster)
 			.filter((p) => p.face)
 			.map((p) => [p.slug, p.face.slice(p.slug.length)])
 	);
 
-	import { COMPARISON, GROUPS, AGGREGATES, SHORT as SHORT_NAMES } from "$utils/outlets.js";
+	import { COMPARISON, GROUPS, AGGREGATES, LOGO, SHORT as SHORT_NAMES } from "$utils/outlets.js";
 	// every outlet the picker offers on its own
 	const OUTLETS = [...COMPARISON];
 	// the pooled baselines the picker offers before the outlets themselves
@@ -25,7 +27,6 @@
 	const POOLED = [...AGGREGATES];
 	const POOL_LABEL = { "sports outlets": "the sports press", "all outlets": "the other outlets", "news outlets": "the news outlets" };
 	const POOL_SHORT = { "sports outlets": "sports", "all outlets": "all", "news outlets": "news" };
-	const POOL_TITLE = { "sports outlets": "Sports Outlets", "all outlets": "Other Outlets", "news outlets": "News Outlets" };
 	const MEMBERS = (group) => GROUPS[group];
 	const monthYear = (iso) =>
 		new Date(iso + "T12:00:00").toLocaleDateString("en-US", {
@@ -80,8 +81,17 @@
 		// parked-faces column would leave the screen
 		centerLine = false,
 		// a wider axis on desktop, for the scrolly with no clipping beside it
-		wide = false
+		wide = false,
+		// the title and the line under it (the Doc can set these on the scrolly)
+		heading = "",
+		comparedWith = "",
+		allOutlets = ""
 	} = $props();
+	// the title spans the axis; the menu names what Fox is compared with
+	const HEADING = "How often Fox News names each player in WNBA headlines";
+	const POOL_NAME = { "all outlets": "six other outlets combined", "sports outlets": "the sports outlets combined", "news outlets": "the news outlets combined" };
+	const againstName = (o) =>
+		o === "all outlets" && allOutlets ? allOutlets : (POOL_NAME[o] ?? o);
 	const fullData =
 		source === "pairs" ? pairData : source === "cast" ? castData : gapData;
 	// A check, shown only with ?checks in the address (utils/checks.svelte.js):
@@ -344,6 +354,10 @@
 	let svgEl = $state(null);
 	let equalLeft = $state(null);
 	let shift = $state(0);
+	// the axis ends as shares of the frame, so the title can span them (shares,
+	// not measured pixels: the title's height feeds back into the frame)
+	let axisLeft = $derived(((NAMES + 24) / WIDTH) * 100);
+	let axisWidth = $derived(((PLOT - 24) / WIDTH) * 100);
 	$effect(() => {
 		if (!svgEl) return;
 		// read these here so the effect re-runs when the layout flips (the
@@ -352,7 +366,7 @@
 		const measure = () => {
 			const box = svgEl.closest(".outlet-gap");
 			if (!box) return;
-			const head = box.querySelector(".head");
+			const head = box.querySelector(".titles");
 			const slot = box.querySelector(".clip-slot");
 			const w = Math.round(box.clientWidth);
 			const h = Math.round(
@@ -455,32 +469,23 @@
 	style:--slide="{SLIDE_MS}ms"
 >
 	<!-- on screen and live for the whole scrolly, so the reader can switch at any step -->
-	<!-- the matchup as a title, centred on the equal line; the pills below switch it -->
+	<!-- the title over the axis, end to end; the menu switches who Fox is compared with -->
 	<div
-		class="head"
-		style="--equal: {equalLeft === null
-			? `${(x(0) / WIDTH) * 100}%`
-			: `${equalLeft}px`}"
+		class="titles"
+		style:--axis-left={narrow ? null : `${axisLeft}%`}
+		style:--axis-width={narrow ? null : `${axisWidth}%`}
 	>
-		<h4 class="vs">Fox News vs. {POOL_TITLE[against] ?? against}</h4>
-		<p class="sub">Mentions in headlines (2020–2026)</p>
-		<div class="picker">
-			{#each AGGREGATES as group (group)}
-				<button
-					class="all"
-					class:active={against === group}
-					onclick={() => (against = group)}>{POOL_SHORT[group] ?? group}</button
-				>
-			{/each}
-			{#each outlets as outlet}
-				<button
-					class:active={against === outlet}
-					class:pooled={(GROUPS[against] ?? []).includes(outlet)}
-					title={outlet}
-					aria-label={outlet}
-					onclick={() => (against = outlet)}>{SHORT_NAMES[outlet] ?? outlet}</button
-				>
-			{/each}
+		<p class="heading">{or(heading, HEADING)}</p>
+		<!-- a div, not a p: the menu inside renders block elements -->
+		<div class="subheading">
+			<span>{or(comparedWith, "compared with")}</span>
+			<LogoSelect
+				options={[...AGGREGATES, ...outlets]}
+				bind:value={against}
+				logoOf={(o) => LOGO[o] ?? null}
+				nameOf={againstName}
+				label="Compared with"
+			/>
 		</div>
 		{#if checks.on}
 			<!-- a check: see `college` above -->
@@ -766,8 +771,10 @@
 </div>
 
 <style>
+	/* the chart in the graphics sans, like the other charts */
 	.outlet-gap {
 		position: relative;
+		font-family: var(--font-graphic);
 		max-width: 1040px;
 		margin: 0 auto;
 	}
@@ -834,43 +841,66 @@
 		row-gap: 5px;
 		max-width: 760px;
 	}
-	/* title and pills sit centred over the equal line, not the whole box */
-	.head {
-		/* position: relative; */
+	/* the title, and who Fox is compared with, as on the words charts; on a
+	   desktop it spans the axis from end to end */
+	.titles {
+		margin: 0 0 14px var(--axis-left, 0px);
+		width: var(--axis-width, auto);
+		max-width: 100%;
 	}
-	/* the title, subtitle and pills centered on the whole frame
-	/* desktop: the title, subtitle and pills centred over the equal line;
-	   a phone centres them on the frame instead (see the media query) */
-	.head > * {
-		position: relative;
-		left: var(--equal, 50%);
-		transform: translateX(-50%);
-		width: max-content;
-		/* no wider than fits centred on the line: twice the nearer margin */
-		max-width: min(
-			calc(2 * (100% - var(--equal, 50%))),
-			calc(2 * var(--equal, 50%))
-		);
-	}
-	.vs {
-		text-align: center;
-		font-size: 32px;
-		font-weight: 800;
-		line-height: 1.05;
-		margin: 0 0 6px;
+	.heading {
+		margin: 0;
+		font-family: var(--font-graphic);
+		font-size: 24px;
+		font-weight: 700;
+		line-height: 1.22;
+		letter-spacing: -0.01em;
+		text-wrap: pretty;
 		color: var(--color-ink);
 	}
-	.sub {
-		text-align: center;
-		font-size: 20px;
-		font-weight: 400;
-		line-height: 1.3;
+	.subheading {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		margin: 4px 0 0;
+		font-family: var(--font-graphic);
+		font-size: 15px;
+		color: rgba(42, 21, 3, 0.75);
+	}
+	.subheading > span {
+		flex: 0 0 auto;
+		white-space: nowrap;
+	}
+	.subheading :global(.logo-select) {
+		flex: 0 1 auto;
+		width: auto;
+		min-width: 0;
+	}
+	/* the menu sits in the line as a quiet underlined word */
+	.subheading :global(.logo-select .current) {
+		height: auto;
+		padding: 0 18px 0 0;
+		border: 0;
+		border-bottom: 1.5px solid currentColor;
+		border-radius: 0;
+		background: transparent;
+		font-family: var(--font-graphic);
+		font-size: 15px;
 		color: var(--color-ink);
-		margin: 0 0 16px;
+	}
+	.subheading :global(.logo-select .current::after) {
+		right: 0;
 	}
 	@media (max-width: 640px) {
-		.vs {
-			font-size: 24px;
+		.titles {
+			padding: 0 12px;
+		}
+		.heading {
+			font-size: 20px;
+		}
+		.subheading,
+		.subheading :global(.logo-select .current) {
+			font-size: 14px;
 		}
 	}
 	.picker button {
@@ -912,15 +942,6 @@
 	/* a phone: the header centres on the box (the equal line sits too far right
 	   for the title and pills to fit), and the pills shrink and may wrap */
 	@media (max-width: 640px) {
-		.head > * {
-			left: 50%;
-			max-width: 100%;
-		}
-		.head > .vs,
-		.head > .sub {
-			width: 100%;
-			text-align: center;
-		}
 		.picker {
 			gap: 3px;
 			flex-wrap: wrap;
@@ -1000,8 +1021,8 @@
 	}
 
 	.head {
-		font-size: 14px;
-		font-weight: 800;
+		font-size: 13px;
+		font-weight: 700;
 	}
 	.grid {
 		stroke: rgba(42, 21, 3, 0.2);
@@ -1022,13 +1043,13 @@
 		stroke-dasharray: 3 4;
 	}
 	.tick {
-		font-size: 15px;
+		font-size: 13px;
 		font-weight: 600;
 		fill: rgba(42, 21, 3, 0.72);
 	}
 	.ratio {
 		font-size: 13px;
-		font-weight: 800;
+		font-weight: 700;
 		paint-order: stroke;
 		stroke: var(--color-page-orange, var(--color-page-orange));
 		stroke-width: 4px;
@@ -1044,11 +1065,11 @@
 	}
 
 	.name {
-		font-size: 17px;
+		font-size: 15px;
 		fill: rgba(42, 21, 3, 0.85);
 	}
 	.name.short {
-		font-size: 15px;
+		font-size: 13.5px;
 	}
 	/* a phone's axis is short: the direction labels shrink to fit beside each other */
 	.narrow .head {
