@@ -55,6 +55,9 @@
 	const CHYRON_BUG = "LIVE";
 	const CHYRON_OPEN = "Click to tune in";
 	const CHYRON_CLOSE = "Click to turn off";
+	// opening or closing holds the card in place this long (ms) while the page settles
+	const HOLD_MIN = 1200;
+	const HOLD_MAX = 3000;
 	let {
 		title = "",
 		teaser = "",
@@ -102,18 +105,30 @@
 		const cardY = card?.getBoundingClientRect().top;
 		asides.open = false;
 		await tick();
+		holdCard((now) => (fromEnd ? clickedY - now.height : cardY));
+	}
+	// opening keeps the card where it was tapped too: every aside opens
+	// together, so one higher up grows above it, and phones (Safari) don't
+	// keep your place on their own
+	async function openHere() {
+		const cardY = card?.getBoundingClientRect().top;
+		asides.open = true;
+		await tick();
+		holdCard(() => cardY);
+	}
+	// charts elsewhere re-measure for a moment after the page changes size;
+	// hold the card at its target, frame by frame, until the layout settles.
+	// Phones anchor the scroll themselves, and the two corrections fought (the
+	// card jumped about): the browser's anchoring is off while the card is
+	// held, and a touch lets go at once
+	function holdCard(targetOf) {
 		if (!card || typeof window === "undefined") return;
-		// charts elsewhere re-measure for a moment after the page shrinks; hold
-		// the card in place, frame by frame, until the layout settles. Phones
-		// anchor the scroll themselves as the page shrinks, and the two
-		// corrections fought (the card jumped about): the browser's anchoring
-		// is off while the card is held, and a touch lets go at once
 		const doc = document.documentElement;
 		const anchoring = doc.style.overflowAnchor;
 		doc.style.overflowAnchor = "none";
 		const hold = () => {
 			const now = card.getBoundingClientRect();
-			const target = fromEnd ? clickedY - now.height : cardY;
+			const target = targetOf(now);
 			if (target !== undefined && Math.abs(now.top - Math.max(16, target)) > 1)
 				window.scrollTo(0, window.scrollY + now.top - Math.max(16, target));
 		};
@@ -129,15 +144,18 @@
 		};
 		window.addEventListener("touchstart", release, { passive: true });
 		window.addEventListener("wheel", release, { passive: true });
-		const until = performance.now() + 1500;
+		// at least HOLD_MIN, since charts that load their data grow late; then
+		// until the page's height is unchanged for twenty frames, or HOLD_MAX
+		const t0 = performance.now();
 		const step = () => {
 			if (done) return;
 			hold();
-			// settled: the page's height unchanged for ten frames running
 			const h = doc.scrollHeight;
 			still = h === lastHeight ? still + 1 : 0;
 			lastHeight = h;
-			if (performance.now() < until && still < 10) requestAnimationFrame(step);
+			const t = performance.now() - t0;
+			if (t < HOLD_MAX && (t < HOLD_MIN || still < 20))
+				requestAnimationFrame(step);
 			else release();
 		};
 		step();
@@ -191,7 +209,7 @@
 			class:open
 			aria-expanded={open}
 			aria-controls={id}
-			onclick={(e) => (open ? close(e) : (asides.open = true))}
+			onclick={(e) => (open ? close(e) : openHere())}
 		>
 			<span class="bug"><i></i>{String(bug).trim() || CHYRON_BUG}</span>
 			<span class="bar">{@html hl(title)}</span>
@@ -227,7 +245,7 @@
 			class:remote={isTv}
 			aria-expanded={open}
 			aria-controls={id}
-			onclick={(e) => (open ? close(e) : (asides.open = true))}
+			onclick={(e) => (open ? close(e) : openHere())}
 		>
 			{#if String(icon).trim().toLowerCase() === "tv-clips"}
 				<span class="tv-icon"><MiniTv width={narrowTv ? 56 : 72} /></span>

@@ -16,6 +16,7 @@
 	import VolumeX from "@lucide/svelte/icons/volume-x";
 	import Volume2 from "@lucide/svelte/icons/volume-2";
 	import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
+	import Play from "@lucide/svelte/icons/play";
 
 	let {
 		set = "big", // kept for the Doc; only the big set remains
@@ -95,21 +96,23 @@
 		start(i);
 	}
 	function start(i) {
-		// before the video has loaded, a jump would be lost: wait for it
+		// before the video has loaded, a jump would be lost: wait for it. Phones
+		// don't load a video until it's asked to play, so ask
 		if (video.readyState < 1) {
 			video.addEventListener("loadedmetadata", () => start(i), { once: true });
+			play();
 			return;
 		}
 		video.currentTime = cueList[i].from + 0.05;
 		// a play cut short (the page still loading the video, say) tries again
 		// once the video is ready, from the clip's start
-		video.play().catch(() =>
+		play().catch(() =>
 			video.addEventListener(
 				"canplay",
 				() => {
 					if (at !== i || !live) return;
 					video.currentTime = cueList[i].from + 0.05;
-					video.play().catch(() => {});
+					play().catch(() => {});
 				},
 				{ once: true }
 			)
@@ -174,13 +177,23 @@
 	let muted = $state(true);
 	let playing = $state(false);
 	let root = $state(null);
+	// the phone said no to playing on its own (an iPhone in Low Power Mode,
+	// say): the corner button turns to play, for a tap to start it
+	let blocked = $state(false);
+	function play() {
+		const p = video.play();
+		p.then(() => (blocked = false)).catch((e) => {
+			if (e?.name === "NotAllowedError") blocked = true;
+		});
+		return p;
+	}
 	// on screen: play (muted, so the browser allows it); off screen: pause
 	$effect(() => {
 		if (!root || !video) return;
 		const io = new IntersectionObserver(
 			(entries) => {
 				const on = entries.some((e) => e.isIntersecting);
-				if (on && !resting) video.play().catch(() => {});
+				if (on && !resting) play().catch(() => {});
 				else if (!on) video.pause();
 			},
 			{ threshold: 0.4 }
@@ -190,6 +203,13 @@
 	});
 	function toggleSound() {
 		if (!video) return;
+		// autoplay refused: the tap plays it (still muted, as it would have)
+		if (blocked) {
+			blocked = false;
+			if (at >= 0) start(at);
+			else play().catch(() => {});
+			return;
+		}
 		// resting on a replayable clip: the tap plays it again, with sound
 		if (replayable) {
 			muted = video.muted = false;
@@ -198,7 +218,7 @@
 		}
 		muted = !muted;
 		video.muted = muted;
-		if (video.paused && !resting) video.play().catch(() => {});
+		if (video.paused && !resting) play().catch(() => {});
 	}
 </script>
 
@@ -217,11 +237,13 @@
 		onkeydown={(e) => (e.key === "Enter" || e.key === " ") && toggleSound()}
 		role="button"
 		tabindex="0"
-		aria-label={replayable
-			? "Play the clip again, with sound"
-			: muted
-				? "Turn the sound on"
-				: "Turn the sound off"}
+		aria-label={blocked
+			? "Play the clip"
+			: replayable
+				? "Play the clip again, with sound"
+				: muted
+					? "Turn the sound on"
+					: "Turn the sound off"}
 	>
 		<!-- svelte-ignore a11y_media_has_caption -->
 		<video
@@ -256,7 +278,8 @@
 				: `left:${screen.left + screen.width - 2}%; top:${screen.top + screen.height - 2}%; right: auto; bottom: auto; transform: translate(-100%, -100%)`}
 			aria-hidden="true"
 		>
-			{#if replayable}<RotateCcw size={16} strokeWidth={2.4} />
+			{#if blocked}<Play size={16} strokeWidth={2.4} />
+			{:else if replayable}<RotateCcw size={16} strokeWidth={2.4} />
 			{:else if muted}<VolumeX size={16} strokeWidth={2.4} />
 			{:else}<Volume2 size={16} strokeWidth={2.4} />{/if}
 		</div>
