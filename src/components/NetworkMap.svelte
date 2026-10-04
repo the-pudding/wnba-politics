@@ -73,6 +73,11 @@
 	const NAMES_SHOWN = { step: 3, explore: 5, explorePhone: 3 }; // names when no one is picked
 	const GROW_MS = 650; // faces growing / fading
 	const PLAY_MS = 160; // per month when playing the timeline
+	const SIZE_WINDOW = 12; // months: a face's size is its headlines in the year up to the month shown
+	// true: sizes compare people within each moment, so the most named person
+	// that year is always the biggest face; false: one scale for every year
+	const RELATIVE = true;
+	const FACE_BOOST = 1.5; // faces this much bigger than the size that just fills the map
 
 	// the words around the map, unless the Doc gives its own
 	const WHEN = "Fox News headlines from {from} through {to}";
@@ -84,7 +89,9 @@
 	const SOURCE =
 		"Source: {headlines} WNBA headlines from Fox News and its sports site OutKick ({outkick} of them), " +
 		"April 2019 to September 2026. Each face is one of the {people} people this story tracks, sized by how " +
-		"many headlines had named them by the month shown; a line joins two people named in the same headline. " +
+		"many headlines named them in the 12 months up to the month shown" +
+		(RELATIVE ? ", next to the most named person then" : "") +
+		"; a line joins two people named in the same headline. " +
 		"A headline names someone if it uses the full name or, for most, the surname. Groups are ours: former " +
 		"players now on TV count with the league; Paul Whelan and Viktor Bout, of the Griner prisoner swap, with politics.";
 
@@ -141,17 +148,35 @@
 		for (const [m, k] of Object.entries(n.monthly))
 			if (MI.has(m)) monthly[MI.get(m)] += k;
 		const cum = runningTotal(monthly);
+		// headlines in the SIZE_WINDOW months up to each month, and the most in any
+		const win = cum.map(
+			(c, mi) => c - (mi >= SIZE_WINDOW ? cum[mi - SIZE_WINDOW] : 0)
+		);
 		const surname = n.name.split(" ").slice(-1)[0];
 		return {
 			...n,
 			i,
 			cum,
+			win,
 			total: cum[M - 1],
 			surname,
 			key: n.name.toLowerCase().replace(/[^a-z]/g, "")
 		};
 	});
 	const byName = new Map(nodes.map((n) => [n.name, n]));
+
+	// what a face's size stands for in a month: its past year's headlines (at
+	// least one, once named), or, RELATIVE, those as a share of the busiest
+	// person's; `most` is the biggest it ever gets, which its spot makes room for
+	const busiest = MONTHS.map((_, mi) =>
+		Math.max(...nodes.map((n) => n.win[mi]))
+	);
+	const amountAt = (n, mi) =>
+		Math.max(1, n.win[mi]) / (RELATIVE ? Math.max(1, busiest[mi]) : 1);
+	for (const n of nodes)
+		n.most = Math.max(
+			...MONTHS.map((_, mi) => (n.cum[mi] > 0 ? amountAt(n, mi) : 0))
+		);
 
 	const pairMap = new Map();
 	for (const [a, b, m, k] of DATA.edges) {
@@ -318,26 +343,31 @@
 			R = null,
 			narrow = false;
 
-		// Face size: area grows with headlines, on one scale for every month,
-		// fitted so the final cast fills about a fifth of the map
+		// Face size: area grows with the amount above, fitted so everyone at
+		// their biggest fills about a fifth of the map
 		function sizeScale() {
 			const rmin = narrow ? 10 : Math.max(12, Math.min(17, W * 0.021));
 			const target = W * H * (narrow ? 0.26 : 0.22);
+			// (a share needs a far bigger factor than a count of headlines)
 			let lo = 0,
-				hi = 4;
+				hi = W;
 			for (let k = 0; k < 40; k++) {
 				const mid = (lo + hi) / 2;
 				const area = d3.sum(
 					nodes,
-					(n) => Math.PI * (rmin + mid * Math.sqrt(n.total)) ** 2
+					(n) => Math.PI * (rmin + mid * Math.sqrt(n.most)) ** 2
 				);
 				if (area > target) hi = mid;
 				else lo = mid;
 			}
-			return (count) => (count > 0 ? rmin + lo * Math.sqrt(count) : 0);
+			const k = lo * FACE_BOOST;
+			return (count) => (count > 0 ? rmin + k * Math.sqrt(count) : 0);
 		}
 
-		// One fixed spot per person, worked out at full size so nobody moves later
+		// a face's radius in a month (none before they're first named)
+		const sizeAt = (n, mi) => (n.cum[mi] > 0 ? R(amountAt(n, mi)) : 0);
+
+		// One fixed spot per person, worked out at their biggest so nobody moves later
 		function layout() {
 			const A = POSITIONS[narrow ? "phone" : "desktop"];
 			const pad = narrow ? 2.5 : 4;
@@ -348,7 +378,7 @@
 					n,
 					x: ax * W + Math.cos(t) * 6 * Math.sqrt(i),
 					y: ay * H + Math.sin(t) * 6 * Math.sqrt(i),
-					r: R(n.total)
+					r: R(n.most)
 				};
 			});
 			const links = pairs.map((p) => ({
@@ -659,14 +689,14 @@
 					(n) => visible && presentSet.has(n.name) && !visible.has(n.name)
 				)
 				.classed("lit", (n) => lit.has(n.name))
-				.attr("aria-label", (n) => `${n.name}: ${n.cum[mi]} headlines`);
+				.attr(
+					"aria-label",
+					(n) => `${n.name}: ${n.win[mi]} headlines in the past year`
+				);
 			nodeSel
 				.select(".inner")
 				.transition(t)
-				.attr(
-					"transform",
-					(n) => `scale(${n.cum[mi] > 0 ? R(n.cum[mi]) / n.R : 0})`
-				);
+				.attr("transform", (n) => `scale(${sizeAt(n, mi) / n.R})`);
 			nodeSel.filter((n) => lit.has(n.name)).raise();
 
 			const lineWidth = (p) =>
@@ -753,7 +783,7 @@
 				b[1] < 0 ||
 				b[3] > H;
 			for (const n of list.slice().sort((a, b) => b.cum[mi] - a.cum[mi])) {
-				const r = R(n.cum[mi]),
+				const r = sizeAt(n, mi),
 					w = textW(n.name);
 				const toward = n.x < W / 2 ? 1 : -1;
 				const below = { x: n.x, y: n.y + r + 14, anchor: "middle" };
@@ -806,20 +836,19 @@
 			);
 			const example =
 				own.find(([, h]) => surnames.some((rx) => rx.test(h))) || own[0];
-			const count = n.cum[mi];
+			const count = n.cum[mi],
+				year = n.win[mi];
 			tipEl.innerHTML =
 				`<div class="r"><i style="background:${color(n.group)}"></i>${GROUPS[n.group].short}</div>` +
 				`<div class="nm">${esc(n.name)}</div>` +
-				`<div class="f"><b>${fmt(count)}</b> Fox News headline${count === 1 ? "" : "s"} through ${monthName(month)}` +
-				(count < n.total
-					? `; <b>${fmt(n.total)}</b> by ${monthName(MONTHS[M - 1])}`
-					: "") +
+				`<div class="f"><b>${fmt(year)}</b> Fox News headline${year === 1 ? "" : "s"} in the year to ${monthName(month)}` +
+				(count > year ? `; <b>${fmt(count)}</b> in all` : "") +
 				`</div>` +
 				(example
 					? `<div class="q"><span>${monthName(example[0].slice(0, 7))}</span>${esc(example[1])}</div>`
 					: "");
 			tipEl.style.display = "block";
-			const r = R(count),
+			const r = sizeAt(n, mi),
 				tw = tipEl.offsetWidth,
 				th = tipEl.offsetHeight;
 			let x = n.x + r + 12,
@@ -1646,6 +1675,10 @@
 		}
 		.netmap :global(.when) {
 			font-size: 13px;
+		}
+		/* room between the rule and the top group's label */
+		.netmap :global(.netbox) {
+			margin-top: 12px;
 		}
 		.netmap :global(.scrub) {
 			height: 62px;

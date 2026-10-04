@@ -7,9 +7,11 @@
 	//   {.TvBeside}
 	//   src: video/storm-tv.mp4
 	//   poster: video/storm-tv.jpg
-	//   cues: video/storm-tv.json
+	//   cues: video/storm-tv.json   (or `none`: one video that loops)
 	//   credit: From {source}   (optional: the line under the TV)
+	//   caption: …               (optional: a fixed line under the TV instead)
 	//   noReplay: watters        (optional: clips the TV won't offer to replay)
+	//   look: set                (optional: the video on a drawn retro TV)
 	//   [.+content]
 	//   text: … ((The dancers were teenaged girls…|tv: dancers)) …
 	//   []
@@ -29,12 +31,14 @@
 		credit = "",
 		// clips a tap shouldn't replay: the Fox intro
 		noReplay = "watters",
+		look = "",
+		caption = "",
 		content = [],
 		components = {}
 	} = $props();
 
 	// how far down the screen a sentence has to come to switch the clip
-	const READING_LINE = 0.4;
+	const READING_LINE = 0.65;
 	// the contents list steps aside while the text covers the middle of the
 	// screen (this is the share cut off top and bottom)
 	const SHOWN_WHILE = "-40% 0px -40% 0px";
@@ -186,6 +190,8 @@
 				{cues}
 				{credit}
 				{noReplay}
+				{look}
+				{caption}
 				small
 				once
 			/>
@@ -288,7 +294,8 @@
 			font: 700 16px/1 var(--font-sans);
 			cursor: pointer;
 		}
-		.side :global(.now) {
+		.side :global(.now),
+		.side :global(figcaption) {
 			display: none;
 		}
 	}

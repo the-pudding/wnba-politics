@@ -36,13 +36,22 @@
   "to": 42.06
  },
  {
+  "id": "mcbride",
+  "title": "Kayla McBride in “Loyalty-Made”",
+  "by": "WNBA",
+  "link": "https://www.youtube.com/watch?v=9-gY6iLKYxU&t=458s",
+  "site": "YouTube",
+  "from": 42.51,
+  "to": 50.48
+ },
+ {
   "id": "pride",
   "title": "Before the Storm: Pride Night",
   "by": "Payton Green",
   "link": "https://www.youtube.com/watch?v=uuqjM_sl6rY&t=690s",
   "site": "YouTube",
-  "from": 42.51,
-  "to": 50.48
+  "from": 50.93,
+  "to": 58.9
  },
  {
   "id": "dancers",
@@ -50,8 +59,8 @@
   "by": "KOMO News",
   "link": "https://www.youtube.com/watch?v=WHv1oiOyEUA&t=238s",
   "site": "YouTube",
-  "from": 50.93,
-  "to": 58.9
+  "from": 59.35,
+  "to": 67.32
  },
  {
   "id": "doppler",
@@ -59,8 +68,8 @@
   "by": "KOMO News",
   "link": "https://www.youtube.com/watch?v=WHv1oiOyEUA&t=265s",
   "site": "YouTube",
-  "from": 59.35,
-  "to": 66.82
+  "from": 67.77,
+  "to": 75.24
  },
  {
   "id": "kiss",
@@ -68,8 +77,8 @@
   "by": "HollywoodStylesScreen",
   "link": "https://www.youtube.com/watch?v=kTFdE-bOZsU&t=0s",
   "site": "YouTube",
-  "from": 67.27,
-  "to": 75.27
+  "from": 75.69,
+  "to": 83.69
  },
  {
   "id": "gabby",
@@ -77,8 +86,8 @@
   "by": "Gabby Williams",
   "link": "https://www.tiktok.com/@gabbywilliams214/video/7683566457636048160",
   "site": "TikTok",
-  "from": 75.72,
-  "to": 80.69
+  "from": 84.14,
+  "to": 89.11
  },
  {
   "id": "arike",
@@ -86,8 +95,8 @@
   "by": "Dallas Wings",
   "link": "https://www.youtube.com/watch?v=ecdNHZoyCBo&t=193s",
   "site": "YouTube",
-  "from": 81.14,
-  "to": 89.11
+  "from": 89.56,
+  "to": 97.53
  },
  {
   "id": "suebird",
@@ -95,8 +104,8 @@
   "by": "Andscape",
   "link": "https://www.youtube.com/watch?v=MdcCxNBxsAs&t=153s",
   "site": "YouTube",
-  "from": 89.56,
-  "to": 113.53
+  "from": 97.98,
+  "to": 121.95
  },
  {
   "id": "deal",
@@ -104,8 +113,8 @@
   "by": "CBS News",
   "link": "https://www.youtube.com/watch?v=Z-PKQMTjozc&t=46s",
   "site": "YouTube",
-  "from": 113.98,
-  "to": 120.95
+  "from": 122.4,
+  "to": 129.37
  },
  {
   "id": "skylar",
@@ -113,8 +122,8 @@
   "by": "Women’s Sports Heat",
   "link": "https://www.youtube.com/watch?v=F6kdgREC620&t=2s",
   "site": "YouTube",
-  "from": 121.4,
-  "to": 129.37
+  "from": 129.82,
+  "to": 137.79
  },
  {
   "id": "sayhername",
@@ -122,7 +131,7 @@
   "by": "Andscape",
   "link": "https://www.youtube.com/watch?v=MdcCxNBxsAs&t=134s",
   "site": "YouTube",
-  "from": 129.82,
-  "to": 138.29
+  "from": 138.24,
+  "to": 146.71
  }
 ]

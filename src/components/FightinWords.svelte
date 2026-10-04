@@ -122,8 +122,6 @@
 		//   tabWords, tabTwo, tabThree, search,
 		//   rankFox: Fox #{rank}   rankOthers: Others #{rank}   rankEven: Even
 		//   foxHead, othersHead, caption ({fox} {others} {them}),
-		//   focusFox, focusOthers ({outlets} {use} {them}), focusEven
-		//   ({fox} {others} {unit}), all with {times} {rank};
 		//   previous, next, range, hoverCounts (see WordBars)
 		heading: headingText = "",
 		comparedWith = "",
@@ -138,9 +136,6 @@
 		foxHead = "",
 		othersHead = "",
 		caption: captionText = "",
-		focusFox = "",
-		focusOthers = "",
-		focusEven = "",
 		previous = "",
 		next = "",
 		range = "",
@@ -401,65 +396,6 @@
 	// clearing the box lets the word go
 	$effect(() => {
 		if (!q) found = null;
-	});
-	// what the picked word does, in a line under the chart, with an example
-	const ordinal = (n) =>
-		n +
-		(n % 100 >= 11 && n % 100 <= 13
-			? "th"
-			: ["th", "st", "nd", "rd"][n % 10] || "th");
-	let focus = $derived.by(() => {
-		if (!found || !sample) return null;
-		const p = points.find((pt) => pt.word.toLowerCase() === found);
-		if (!p) return null;
-		const unit = bodyMode ? "articles" : "headlines";
-		const f = ((p.nf ?? 0) / sample.fox) * 100,
-			o = ((p.no ?? 0) / sample.other) * 100;
-		const per = (v) => (v >= 10 ? Math.round(v) : v.toFixed(1));
-		const fox = p.z > 0,
-			color = fox ? "#003366" : "#6b4bb0";
-		const q2 = fox ? (f + 0.05) / (o + 0.05) : (o + 0.05) / (f + 0.05);
-		const times = (q2 >= 10 ? Math.round(q2) : q2.toFixed(1)) + "×";
-		const them =
-			against === ALL_OUTLETS ? "other outlets" : outletName(against);
-		const vars = {
-			times,
-			rank: ordinal(rankOf.get(found) ?? 0),
-			fox: per(f),
-			others: per(o),
-			unit,
-			outlets: them.charAt(0).toUpperCase() + them.slice(1),
-			use: /s$/.test(them) ? "use" : "uses",
-			them: against === ALL_OUTLETS ? "the others" : them
-		};
-		// the Doc's sentence; its first clause, up to " · ", in the side's colour
-		const said = fillIn(
-			Math.abs(p.z) < SIGNIFICANT
-				? or(
-						focusEven,
-						"used about as often by both: {fox} per 100 Fox {unit}, {others} per 100 elsewhere"
-					)
-				: fox
-					? or(
-							focusFox,
-							"Fox News uses it {times} as often · {rank} most distinctive for Fox"
-						)
-					: or(
-							focusOthers,
-							"{outlets} {use} it {times} as often · {rank} most distinctive for {them}"
-						),
-			vars
-		);
-		const [lead, ...after] = said.split(" · ");
-		const line =
-			Math.abs(p.z) < SIGNIFICANT
-				? `<b>${properCase(p.word)}</b> · ${said}`
-				: `<b>${properCase(p.word)}</b> · <span style="color:${color}">${lead}</span>${after.length ? " · " + after.join(" · ") : ""}`;
-		const hit = exampleFor(bodyMode ? bodyKey : "headlines", p.word, p.z);
-		const ex = hit?.[0]
-			? `<span class="focus-ex">${markWord(hit[0], p.word, color, hit[1])}${hit[2] ? `<span class="focus-src">${hit[2]}</span>` : ""}</span>`
-			: "";
-		return `<span class="focus-line">${line}</span>${ex}`;
 	});
 	function onKey(e) {
 		if (e.key === "ArrowDown") {
@@ -1005,7 +941,6 @@
 			{fill}
 			note={source ? note : caption}
 			noteKind={source ? "" : "source"}
-			focus={source ? null : focus}
 			otherName={against === ALL_OUTLETS ? "others" : against}
 			{topName}
 			highlight={[...HIGHLIGHT]}
@@ -1503,43 +1438,44 @@
 			font-size: 13px;
 		}
 	}
+	/* the suggestions, as in the standalone demo: plain words in the chart's
+	   sans, a quiet grey on the one under the cursor, the rank in small bold */
 	.suggest {
 		position: absolute;
 		left: 0;
 		right: 0;
-		top: calc(100% + 4px);
+		top: calc(100% + 2px);
 		margin: 0;
-		padding: 0;
+		padding: 4px 0;
 		list-style: none;
 		background: #fff;
-		border: 1px solid rgba(42, 21, 3, 0.2);
-		border-radius: 3px;
-		box-shadow: 0 6px 18px rgba(42, 21, 3, 0.18);
+		border: 1px solid #e2e2e2;
+		border-radius: 6px;
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
 		z-index: 6;
 		overflow: hidden;
 		text-align: left;
+		font-family: var(--font-graphic);
 	}
 	.suggest li {
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
-		padding: 6px 10px;
+		gap: 10px;
+		padding: 6px 12px;
 		font-size: 14px;
+		color: var(--color-ink-dark);
 		cursor: pointer;
-	}
-	.suggest li + li {
-		border-top: 1px solid rgba(42, 21, 3, 0.08);
 	}
 	.suggest li:hover,
 	.suggest li.on {
-		background: rgba(42, 21, 3, 0.07);
-	}
-	.suggest .term {
-		font-weight: 700;
+		background: #f4f2ee;
 	}
 	.suggest .uses {
-		font-family: var(--font-chart);
-		font-size: 11px;
+		font-family: var(--font-graphic);
+		font-size: 12px;
+		font-weight: 700;
+		white-space: nowrap;
 	}
 	/* a kept word */
 	.kept {

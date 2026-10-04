@@ -40,8 +40,6 @@
 		// noteKind: "source" sets the note as a source line (small, left, over
 		// a thin rule), as the main chart's caption is (2026-10-02)
 		noteKind = "",
-		// focus: a line (HTML) about a searched-for word, shown over the note
-		focus = null,
 		// the Doc's words for the pager and the hover counts (fill.js slots)
 		previous = "",
 		next = "",
@@ -595,9 +593,6 @@
 
 		<!-- what sits under the bars, measured as one, so the bars leave it room -->
 		<div class="below" bind:this={belowEl}>
-			{#if focus}
-				<p class="focus" style:max-width="{Math.round(2 * barsReach)}px">{@html focus}</p>
-			{/if}
 			{#if noteMode === "custom"}
 				<!-- a source line spans the bars, edge to edge with the heads above -->
 				<p class="note" class:source={noteKind === "source"} style:max-width="{noteKind === "source" ? Math.round(2 * barsReach) : plotWidth}px">{@html note}</p>
@@ -815,34 +810,6 @@
 		font-size: 12px;
 		color: rgba(42, 21, 3, 0.6);
 		text-align: center;
-	}
-	.focus {
-		margin: 10px auto 0;
-		font-family: var(--font-sans);
-		font-size: 14px;
-		line-height: 1.45;
-		color: var(--color-ink);
-		text-align: center;
-	}
-	.focus :global(.focus-line) {
-		display: block;
-	}
-	.focus :global(.focus-ex) {
-		display: block;
-		margin-top: 6px;
-		padding: 8px 12px;
-		background: rgba(255, 255, 255, 0.55);
-		border-radius: 4px;
-		font-family: var(--font-serif);
-		font-size: 14.5px;
-		text-align: left;
-	}
-	.focus :global(.focus-src) {
-		display: block;
-		margin-top: 4px;
-		font-family: var(--font-sans);
-		font-size: 12px;
-		color: rgba(42, 21, 3, 0.6);
 	}
 	.note.source {
 		font-family: var(--font-sans);

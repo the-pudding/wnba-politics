@@ -1,24 +1,7 @@
 <script>
 	// The cable news triangle: each word in WNBA chyrons as a dot, placed by how
-	// much of its use was on Fox News, CNN or MSNBC. Two ways in the Doc:
+	// much of its use was on Fox News, CNN or MSNBC
 	//
-	//   {.TernaryScrolly}       the walk-through: step cards over a pinned triangle
-	//   firstWords: clark, hit, throat, ball   (optional: lit on the first step)
-	//   tryWords: throat, freedom, exchange, brennan, joy   (optional: explore's suggestions)
-	//   [.steps]
-	//   groups: caitlin, clark // sophie, cunningham   (words lit, a group per //)
-	//   text: …                ((Name| face)) puts a face in the text
-	//   img: clark-throat-fox.png   (optional, from static/images)
-	//   search: true           (the last step: explore)
-	//   []
-	//   {}
-	//
-	//   {.TernaryStatic}        one topic's words lit, the triangle alone
-	//   topic: polrace          (polrace, fouls or lgbtq)
-	//   {}
-	//
-	// The shared drawing is in utils/triangle.js; the data comes from
-	// notebooks/chyron_triangle.py.
 	import { onMount } from "svelte";
 	import { base } from "$app/paths";
 	import * as d3 from "d3";
@@ -399,7 +382,6 @@
 				})),
 				{ removable: true, labelW: 132 }
 			);
-			el("try").style.display = X.picked.length ? "none" : "";
 		}
 		function keep(w) {
 			if (!BY.get(w)) return;
@@ -804,6 +786,7 @@
 	.tri :global(.try button) {
 		appearance: none;
 		border: 0;
+		border-radius: 0;
 		background: none;
 		padding: 0;
 		margin: 0 2px;
@@ -828,6 +811,7 @@
 	.tri :global(.floor button) {
 		appearance: none;
 		border: 0;
+		border-radius: 0;
 		background: none;
 		padding: 0 0 2px;
 		font: 700 12.5px var(--font-sans);

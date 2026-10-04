@@ -423,7 +423,6 @@
 			const { W, H, narrow, scale, ticks, share } = L;
 			const [lo, hi] = ENDS[tab];
 			const tf = share ? pct : (v) => (v === 0 ? "0" : toneFmt(v));
-			const players = (n) => `${n} player${n > 1 ? "s" : ""}`;
 			if (!narrow) {
 				const baseY = H - L.bottom;
 				for (const t of ticks) {
@@ -486,13 +485,6 @@
 						.attr("y", 14)
 						.attr("text-anchor", "middle")
 						.text(NONE[tab]);
-					gAxis
-						.append("text")
-						.attr("class", "note")
-						.attr("x", L.binW / 2)
-						.attr("y", baseY + 17)
-						.attr("text-anchor", "middle")
-						.text(players(L.zn.length));
 				}
 			} else {
 				for (const t of ticks) {
@@ -545,7 +537,7 @@
 						.attr("class", "note b")
 						.attr("x", 0)
 						.attr("y", L.binTop + 15)
-						.text(`${NONE[tab]}: ${players(L.zn.length)}`);
+						.text(NONE[tab]);
 				}
 			}
 		}
@@ -793,7 +785,16 @@
 					showTip(p.name);
 				}
 			});
-		const away = (e) => !e.target.closest?.(".node") && hideTip();
+		// a click off the faces hides the tooltip, and lets go of the picked
+		// face too, unless it's in the tooltip, the tabs (to see her on another
+		// measure) or the table of her headlines
+		const keeps = () => [el("tip"), root.querySelector(".tabrow"), el("tbl")];
+		const away = (e) => {
+			const t = e.target;
+			if (t.closest?.(".node")) return;
+			hideTip();
+			if (picked && !keeps().some((k) => k?.contains(t))) setPicked(null);
+		};
 		const onScroll = () => tipFor && hideTip();
 		document.addEventListener("click", away);
 		addEventListener("scroll", onScroll, { passive: true });
@@ -1598,6 +1599,7 @@
 	.swarm :global(.hm .tg) {
 		appearance: none;
 		border: 0;
+		border-radius: 0;
 		background: none;
 		padding: 0;
 		margin-right: 9px;
@@ -1610,9 +1612,12 @@
 	.swarm :global(.hm .tg:hover) {
 		color: var(--ink);
 	}
+	/* the topic the table is filtered to: a plain underline */
 	.swarm :global(.hm .tg.on) {
 		color: var(--ink);
-		box-shadow: inset 0 -2px 0 var(--ink);
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 3px;
 	}
 	.swarm :global(.ht) {
 		display: flex;

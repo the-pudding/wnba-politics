@@ -110,9 +110,9 @@
 		["object", or(tabObject, "Done to her")],
 		["all", or(tabAll, "Every word")]
 	]);
-	// phones: the heading stays "How Fox News describes …" with the name on its
-	// own line (always two lines, so nothing below moves), "vs. [outlets]" and
-	// words / phrases share a line, and the tabs take their short names
+	// phones: the heading follows the tab as on a desktop, "vs.
+	// [outlets]" and words / phrases share a line, and the tabs take their
+	// short names
 	let narrow = $state(false);
 	$effect(() => {
 		const mq = matchMedia("(max-width: 640px)");
@@ -456,11 +456,8 @@
 			     title, or a pair's, as before -->
 			<div class="head">
 				{#if narrow && shown.vs === "outlets"}
-					<!-- the name on a line of its own, so the heading is always two lines -->
-					<p class="heading phone-head">
-						{@html fill(or(headDescribe, "How Fox News describes {player}"), {
-							player: `<br />${pickedWho.replace(/</g, "&lt;")}`
-						})}
+					<p class="heading">
+						{HEADING[shown.rel]?.(shown.who) ?? source.relation}
 					</p>
 				{:else if shown.title}
 					<p class="heading">{@html shown.title}</p>
@@ -809,10 +806,6 @@
 	}
 	.subheading :global(.logo-select .current::after) {
 		right: 0;
-	}
-	/* phones: the two-line heading centred over the chart */
-	.phone-head {
-		text-align: center;
 	}
 	/* phones: words / phrases at the right end of the "vs." line */
 	.subheading .unit-switch {
