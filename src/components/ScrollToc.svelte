@@ -1,5 +1,6 @@
 <script>
 	// Rail down the right of wide screens
+	import { tick } from "svelte";
 	import copy from "$data/copy.json";
 
 	// a section without a heading (the opening) is named after its id
@@ -40,12 +41,16 @@
 			window.removeEventListener("resize", update);
 		};
 	});
-	const go = (id) => (event) => {
+	const go = (id) => async (event) => {
 		event.preventDefault();
+		// a collapsed section opens first (replaceState is silent, so say so),
+		// or there's too little page below it to bring it to the top
+		history.replaceState(null, "", `#${id}`);
+		dispatchEvent(new HashChangeEvent("hashchange"));
+		await tick();
 		document
 			.getElementById(id)
 			?.scrollIntoView({ behavior: "instant", block: "start" });
-		history.replaceState(null, "", `#${id}`);
 	};
 </script>
 

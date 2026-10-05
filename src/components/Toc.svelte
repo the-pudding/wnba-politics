@@ -1,5 +1,6 @@
 <script>
 	// Contents list built from the section h2
+	import { tick } from "svelte";
 	import copy from "$data/copy.json";
 
 	const entries = (copy.body ?? [])
@@ -22,14 +23,18 @@
 				<li>
 					<a
 						href="#{entry.id}"
-						onclick={(e) => {
+						onclick={async (e) => {
 							// jump, don't glide: the sections are far apart and every
 							// scrolly in between would play on the way down
 							const target = document.getElementById(entry.id);
 							if (!target) return;
 							e.preventDefault();
-							target.scrollIntoView({ behavior: "instant", block: "start" });
+							// a collapsed section opens first (replaceState is silent,
+							// so say so)
 							history.replaceState(null, "", `#${entry.id}`);
+							dispatchEvent(new HashChangeEvent("hashchange"));
+							await tick();
+							target.scrollIntoView({ behavior: "instant", block: "start" });
 						}}><span class="n">{i + 1}</span>{@html entry.label}</a
 					>
 				</li>

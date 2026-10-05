@@ -5,8 +5,8 @@
 	//
 	//   {.Aside}
 	//   icon: remote        (the TV section's opener: a cable-news chyron with
-	//                        the title in the bar, the teaser under it and an
-	//                        arrow on its bottom edge;
+	//                        the title in the bar, "Click to tune in" under it
+	//                        and an arrow on its bottom edge (no teaser);
 	//                        tv-clips for the TV icon with the Fox clips playing; tv for the same TV still;
 	//                        or a Lucide name: tv-play, ternary, scatter, newspaper,
 	//                        mic; or a file in static/icons, e.g. retro-tv.svg;
@@ -214,7 +214,6 @@
 			<span class="bug"><i></i>{String(bug).trim() || CHYRON_BUG}</span>
 			<span class="bar">{@html hl(title)}</span>
 			<span class="strip">
-				{#if teaser}<span class="vs">{@html teaser}</span>{/if}
 				<span class="hint">{chyronWords}</span>
 			</span>
 			<span class="arrow" aria-hidden="true"
@@ -511,11 +510,7 @@
 		font-size: 14px;
 		box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
 	}
-	.vs {
-		flex: 1;
-	}
 	.hint {
-		margin-left: auto;
 		font-weight: 700;
 		text-decoration: underline;
 		text-underline-offset: 3px;
@@ -593,18 +588,8 @@
 		.title {
 			font-size: 17px;
 		}
-		/* phones: the hint under the teaser, centred above the arrow */
 		.bar {
 			font-size: 17px;
-		}
-		.strip {
-			flex-direction: column;
-			align-items: stretch;
-			gap: 4px;
-			padding-bottom: 32px;
-		}
-		.hint {
-			margin: 0 auto;
 		}
 	}
 </style>

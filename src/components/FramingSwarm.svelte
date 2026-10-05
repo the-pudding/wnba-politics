@@ -18,6 +18,7 @@
 	import { base } from "$app/paths";
 	import * as d3 from "d3";
 	import { fill, or } from "$utils/fill.js";
+	import { markNames } from "$utils/whoColors.js";
 
 	let {
 		kicker = "",
@@ -39,7 +40,7 @@
 	// Settings
 	// ---------------------------------------------------------------------
 
-	const PAGE = 25; // headlines shown at first, and per "Show more"
+	const PAGE = 25; // headlines drawn at first, and again each time the list is scrolled near its end
 	const RADIUS = { desktop: [14, 46], phone: [11, 33] }; // smallest and largest face
 	const PHONE_CHART = 560; // a chart narrower than this (px) stands upright
 	// always labelled for reference, when there's room
@@ -675,6 +676,18 @@
 					"neg",
 					(p) => tab === "tone" && on.has(p.name) && p[basis].tone < 0
 				)
+				// read out as her name and where she sits on this tab; faces off
+				// the chart are skipped, by screen readers and the tab key
+				.attr("aria-label", (p) =>
+					!on.has(p.name)
+						? p.name
+						: tab === "tone"
+							? `${p.name}: tone ${toneFmt(p[basis].tone)}`
+							: `${p.name}: ${TOPIC[tab].toLowerCase()} ${pct(p[basis][tab])} of ${unit()}`
+				)
+				.attr("aria-hidden", (p) => (on.has(p.name) ? null : "true"))
+				.attr("tabindex", (p) => (on.has(p.name) ? 0 : -1))
+				.attr("aria-pressed", (p) => String(p.name === picked))
 				.each(function (p) {
 					const d = L.byName.get(p.name);
 					if (!d) return;
@@ -899,10 +912,33 @@
 			return safe.replace(rx, (m) => `<mark>${m}</mark>`);
 		}
 		const rowsEl = el("rows"),
-			moreEl = el("more"),
 			sumEl = el("summary");
+		// the list scrolls in its own box; near its end, the next PAGE are drawn
+		let rowCount = 0;
+		// at the very end (or nothing to scroll), the fade goes
+		const markEnd = () =>
+			rowsEl.classList.toggle(
+				"at-end",
+				rowsEl.scrollTop + rowsEl.clientHeight >= rowsEl.scrollHeight - 2
+			);
+		rowsEl.addEventListener(
+			"scroll",
+			() => {
+				const nearEnd =
+					rowsEl.scrollTop + rowsEl.clientHeight > rowsEl.scrollHeight - 400;
+				if (nearEnd && T.shown < rowCount) {
+					T.shown += PAGE;
+					renderTable(false);
+				}
+				markEnd();
+			},
+			{ passive: true }
+		);
 		function renderTable(flash) {
 			let rows = filtered();
+			rowCount = rows.length;
+			// a new filter, sort or pick starts the list again at the top
+			if (T.shown === PAGE) rowsEl.scrollTop = 0;
 			if (T.sort === "date") {
 				rows.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
 				if (!T.asc) rows.reverse();
@@ -954,7 +990,7 @@
 			const show = rows.slice(0, T.shown);
 			rowsEl.innerHTML = show.length
 				? show
-						.map(([d, t, u, , cs, sc, lab]) => {
+						.map(([d, t, u, who, cs, sc, lab]) => {
 							const tagHtml = cs
 								.map(
 									([c, who]) =>
@@ -974,22 +1010,16 @@
 												: "#bdbdbd";
 								tone = `<span class="meter" title="${lab} (${toneFmt(sc)})"><i style="width:${w}px;background:${col};${sc < 0 ? "right:22px" : "left:22px"}"></i></span><span class="sc ${lab}">${toneFmt(sc)}</span>`;
 							}
-							return `<div class="hr"><div class="hd">${dateName(d)}</div><div class="hh">${u ? `<a href="${esc(u)}" target="_blank" rel="noreferrer">${mark(t)}</a>` : mark(t)}${meta}</div><div class="ht">${tone}</div></div>`;
+							// the people in it underlined in their group's colour
+							const said = markNames(
+								mark(t),
+								who.map((i) => D.names[i])
+							);
+							return `<div class="hr"><div class="hd">${dateName(d)}</div><div class="hh">${u ? `<a href="${esc(u)}" target="_blank" rel="noreferrer">${said}</a>` : said}${meta}</div><div class="ht">${tone}</div></div>`;
 						})
 						.join("")
 				: `<div class="empty">Nothing matches those filters. <button class="clearall" data-k="all">Clear them</button></div>`;
-			moreEl.innerHTML =
-				rows.length > T.shown
-					? `<span>Showing ${fmt(T.shown)} of ${fmt(rows.length)}</span><button data-id="morebtn">Show ${fmt(Math.min(PAGE, rows.length - T.shown))} more</button>`
-					: rows.length > PAGE
-						? `<span>All ${fmt(rows.length)} shown</span>`
-						: "";
-			const mb = el("morebtn");
-			if (mb)
-				mb.onclick = () => {
-					T.shown += PAGE;
-					renderTable(false);
-				};
+			markEnd();
 		}
 		function undo(k) {
 			if (k === "p" || k === "all") {
@@ -1062,9 +1092,10 @@
 	</div>
 
 	<div class="plot" data-id="plot">
+		<!-- a group, not an image: screen readers then reach the faces inside -->
 		<svg
 			data-id="svg"
-			role="img"
+			role="group"
 			aria-label="Players placed by how Fox News frames them"
 		>
 			<defs>
@@ -1111,8 +1142,7 @@
 			<span class="hcol">Headline</span>
 			<button data-s="tone" class="r">Tone</button>
 		</div>
-		<div data-id="rows"></div>
-		<div class="more" data-id="more"></div>
+		<div class="rows" data-id="rows"></div>
 	</div>
 
 	<p class="source" data-id="source"></p>
@@ -1296,7 +1326,8 @@
 		opacity: 0;
 		pointer-events: none;
 	}
-	.swarm :global(.dimmed .node:not(.picked)) {
+	/* a pick dims the others, but never brings back a face that's off the chart */
+	.swarm :global(.dimmed .node:not(.picked):not(.off)) {
 		opacity: 0.4;
 	}
 	.swarm :global(.dimmed .node:not(.picked):hover) {
@@ -1668,30 +1699,32 @@
 		font-size: 14px;
 		color: var(--ink-3);
 	}
-	.swarm :global(.more) {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		margin-top: 10px;
-		font-size: 13px;
-		color: var(--ink-3);
+	/* the headlines scroll inside their own box, under the column heads; a
+	   dark rule ends it, and a fade over the last row says there's more */
+	.swarm :global(.rows) {
+		max-height: 560px;
+		overflow-y: auto;
+		border-bottom: 1.5px solid var(--ink);
 	}
-	.swarm :global(.more button) {
-		appearance: none;
-		border: 1px solid var(--ink);
-		background: #fff;
-		border-radius: 15px;
-		padding: 5px 14px;
-		font: 700 13px var(--font-sans);
-		color: var(--ink);
-		cursor: pointer;
+	.swarm :global(.rows .hr:last-child) {
+		border-bottom: 0;
 	}
-	.swarm :global(.more button:hover) {
-		background: #f4f2ee;
+	.swarm :global(.rows::after) {
+		content: "";
+		position: sticky;
+		bottom: 0;
+		display: block;
+		height: 48px;
+		margin-top: -48px;
+		background: linear-gradient(rgba(255, 255, 255, 0), var(--sheet));
+		pointer-events: none;
+		transition: opacity 200ms ease;
+	}
+	.swarm :global(.rows.at-end::after) {
+		opacity: 0;
 	}
 	.swarm :global(.source) {
-		margin: 22px 0 0;
+		margin: 36px 0 0;
 		padding-top: 10px;
 		border-top: 1px solid var(--rule);
 		font-size: 12px;
@@ -1705,6 +1738,9 @@
 
 	/* phones: the swarm stands upright (see layout), the table rows stack */
 	@media (max-width: 640px) {
+		.swarm :global(.rows) {
+			max-height: 65vh;
+		}
 		.swarm {
 			padding: 22px 16px 18px;
 			border-radius: 0;

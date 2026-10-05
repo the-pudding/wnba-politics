@@ -34,7 +34,7 @@
 	// an outlet with almost nothing from the year (a corpus that ends early)
 	// would show a misleading zero: left out, and named in the note
 	const MIN_N = 20;
-	const WIDE = 880; // the figure's width on desktop (the text is 668)
+	const WIDE = 668; // the figure's width on desktop: the text's (880 ran wider)
 	const TITLE = "WNBA articles mentioning trans issues, {year}";
 	const NOTE =
 		"Note: The share of each outlet’s {year} WNBA articles that mention trans athletes or issues: transgender, gender eligibility, or “biological” male, female or woman. " +
@@ -166,7 +166,7 @@
 </figure>
 
 <style>
-	/* on the page, wider than the text and centred under it (full width on phones) */
+	/* on the page, the text's width (WIDE), centred under it; full width on phones */
 	.sharebars {
 		--fig-w: min(var(--wide), calc(100vw - 32px));
 		--ink: var(--color-ink-dark);

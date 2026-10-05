@@ -101,6 +101,12 @@ def words_under(tokens):
 
 from lookalikes import mask
 
+WATCH_TAG = re.compile(r"^\s*WATCH\s*:\s*|\s*[:|]\s*WATCH\s*$|\s*\(WATCH\)")
+
+
+def untag(text):
+    return WATCH_TAG.sub(" ", text)
+
 
 def attribute(nlp, headlines, groups, register, name_rx=None):
     """{player: [headline rows]} each qualifying headline is grammatically about.
@@ -122,7 +128,9 @@ def attribute(nlp, headlines, groups, register, name_rx=None):
     scrub = scrub_rx(register)
     # look-alikes' surnames blanked ("Ryan Clark" -> "Ryan Cxxxx", same length)
     # so the surname test below cannot hand his words to Caitlin (2026-09-29)
-    text_for = (lambda r: scrub.sub(" ", mask(r["t"]))) if scrub else (lambda r: mask(r["t"]))
+    # and a video tag ("WATCH:", ": WATCH") dropped: the parser takes it for
+    # the headline's main word and loses who the rest is about
+    text_for = (lambda r: scrub.sub(" ", untag(mask(r["t"])))) if scrub else (lambda r: untag(mask(r["t"])))
     attributed = defaultdict(list)
     for row, doc in zip(headlines, nlp.pipe([text_for(r) for r in headlines], batch_size=64)):
         # who is in the headline: each person's own pattern from people.json

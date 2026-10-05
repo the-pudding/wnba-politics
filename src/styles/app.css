@@ -252,6 +252,25 @@ span.other {
 	color: var(--color-outlets);
 	font-weight: 700;
 }
+/* the topics, in their trend charts' colours (FoxVsField):
+   <span class="race">16%</span>, <span class="lgbtq">34%</span>,
+   <span class="fouls">…</span>, <span class="protect">“protect”</span> */
+span.race {
+	color: var(--color-politics);
+	font-weight: 700;
+}
+span.lgbtq {
+	color: var(--color-lgbtq);
+	font-weight: 700;
+}
+span.fouls {
+	color: #9a5b13;
+	font-weight: 700;
+}
+span.protect {
+	color: #2f5d9e;
+	font-weight: 700;
+}
 
 /* the yellow marker pen behind ==highlighted== words, everywhere */
 mark.pen {
@@ -263,4 +282,13 @@ mark.pen {
 	border-radius: 2px;
 	box-shadow: none;
 	color: inherit;
+}
+
+/* a person's name in a headline list, underlined in their group's colour
+   (utils/whoColors.js) */
+.name-line {
+	text-decoration: underline;
+	text-decoration-color: var(--who);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
 }

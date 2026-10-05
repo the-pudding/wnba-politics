@@ -17,6 +17,7 @@
 	import Volume2 from "@lucide/svelte/icons/volume-2";
 	import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
 	import Play from "@lucide/svelte/icons/play";
+	import Pause from "@lucide/svelte/icons/pause";
 
 	let {
 		set = "big", // kept for the Doc; only the big set remains
@@ -104,13 +105,20 @@
 			return;
 		}
 		video.currentTime = cueList[i].from + 0.05;
+		// paused by the reader: the clip is cued, and waits for play
+		if (held) {
+			at = i;
+			clip = cueList[i].id ?? "";
+			live = false;
+			return;
+		}
 		// a play cut short (the page still loading the video, say) tries again
 		// once the video is ready, from the clip's start
 		play().catch(() =>
 			video.addEventListener(
 				"canplay",
 				() => {
-					if (at !== i || !live) return;
+					if (at !== i || !live || held) return;
 					video.currentTime = cueList[i].from + 0.05;
 					play().catch(() => {});
 				},
@@ -180,7 +188,33 @@
 	// the phone said no to playing on its own (an iPhone in Low Power Mode,
 	// say): the corner button turns to play, for a tap to start it
 	let blocked = $state(false);
+	// paused by the reader (or, asking for less motion, from the start):
+	// nothing plays again until they press play
+	let held = $state(false);
+	$effect(() => {
+		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+			held = true;
+	});
+	function togglePlay() {
+		if (!video) return;
+		blocked = false;
+		if (playing) {
+			held = true;
+			video.pause();
+			return;
+		}
+		held = false;
+		// an ended clip, or one cued while paused, starts from its beginning
+		if (
+			cueList.length &&
+			(resting || video.currentTime < (cueList[at]?.from ?? 0) + 0.1)
+		)
+			start(at >= 0 ? at : 0);
+		else play().catch(() => {});
+	}
 	function play() {
+		// paused by the reader: only their play button starts it again
+		if (held) return Promise.resolve();
 		const p = video.play();
 		p.then(() => (blocked = false)).catch((e) => {
 			if (e?.name === "NotAllowedError") blocked = true;
@@ -193,7 +227,7 @@
 		const io = new IntersectionObserver(
 			(entries) => {
 				const on = entries.some((e) => e.isIntersecting);
-				if (on && !resting) play().catch(() => {});
+				if (on && !resting && !held) play().catch(() => {});
 				else if (!on) video.pause();
 			},
 			{ threshold: 0.4 }
@@ -218,7 +252,7 @@
 		}
 		muted = !muted;
 		video.muted = muted;
-		if (video.paused && !resting) play().catch(() => {});
+		if (video.paused && !resting && !held) play().catch(() => {});
 	}
 </script>
 
@@ -228,22 +262,16 @@
 	class:plain
 	style="max-width: {plain && !small ? plainWidth : tv.width}px"
 >
+	<!-- a click on the picture is the sound button's, for the mouse; the
+	     keyboard and screen readers use the two buttons below -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="set"
 		class:plain
 		bind:this={root}
 		style="aspect-ratio: {plain ? '4 / 3' : tv.ratio}"
 		onclick={toggleSound}
-		onkeydown={(e) => (e.key === "Enter" || e.key === " ") && toggleSound()}
-		role="button"
-		tabindex="0"
-		aria-label={blocked
-			? "Play the clip"
-			: replayable
-				? "Play the clip again, with sound"
-				: muted
-					? "Turn the sound on"
-					: "Turn the sound off"}
 	>
 		<!-- svelte-ignore a11y_media_has_caption -->
 		<video
@@ -270,19 +298,43 @@
 				draggable="false"
 			/>
 		{/if}
-		<!-- the sound button in the corner, as on most embedded players -->
-		<div
-			class="sound"
+		<!-- play / pause and sound in the corners, as on most embedded players -->
+		<button
+			type="button"
+			class="ctl pause"
+			style={plain
+				? ""
+				: `left:${screen.left + 2}%; top:${screen.top + screen.height - 2}%; bottom: auto; transform: translate(0, -100%)`}
+			aria-label={playing ? "Pause" : "Play"}
+			onclick={(e) => (e.stopPropagation(), togglePlay())}
+		>
+			{#if playing}<Pause size={15} strokeWidth={2.6} aria-hidden="true" />
+			{:else}<Play size={15} strokeWidth={2.6} aria-hidden="true" />{/if}
+		</button>
+		<button
+			type="button"
+			class="ctl sound"
 			style={plain
 				? ""
 				: `left:${screen.left + screen.width - 2}%; top:${screen.top + screen.height - 2}%; right: auto; bottom: auto; transform: translate(-100%, -100%)`}
-			aria-hidden="true"
+			aria-label={blocked
+				? "Play the clip"
+				: replayable
+					? "Play the clip again, with sound"
+					: muted
+						? "Turn the sound on"
+						: "Turn the sound off"}
+			onclick={(e) => (e.stopPropagation(), toggleSound())}
 		>
-			{#if blocked}<Play size={16} strokeWidth={2.4} />
-			{:else if replayable}<RotateCcw size={16} strokeWidth={2.4} />
-			{:else if muted}<VolumeX size={16} strokeWidth={2.4} />
-			{:else}<Volume2 size={16} strokeWidth={2.4} />{/if}
-		</div>
+			{#if blocked}<Play size={16} strokeWidth={2.4} aria-hidden="true" />
+			{:else if replayable}<RotateCcw
+					size={16}
+					strokeWidth={2.4}
+					aria-hidden="true"
+				/>
+			{:else if muted}<VolumeX size={16} strokeWidth={2.4} aria-hidden="true" />
+			{:else}<Volume2 size={16} strokeWidth={2.4} aria-hidden="true" />{/if}
+		</button>
 	</div>
 	{#if now}
 		<!-- a cue can bring its own credit line; otherwise who it's by, and where -->
@@ -311,9 +363,6 @@
 		cursor: pointer;
 		outline: none;
 	}
-	.set:focus-visible .shell {
-		filter: none;
-	}
 	/* plain: the video alone, as an embedded player */
 	.set.plain {
 		overflow: hidden;
@@ -323,10 +372,6 @@
 	}
 	.small .set.plain {
 		border-radius: 6px;
-	}
-	.set.plain:focus-visible {
-		outline: 3px solid var(--color-ink-dark);
-		outline-offset: 3px;
 	}
 	/* the video behind, the set in front; the transparent screen shows it */
 	video {
@@ -349,24 +394,38 @@
 		user-select: none;
 	}
 	/* the sound button: a dark round button in the bottom-right corner */
-	.sound {
+	/* the two buttons: dark rounds in the bottom corners */
+	.ctl {
+		appearance: none;
 		position: absolute;
 		z-index: 2;
-		right: 10px;
 		bottom: 10px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		width: 32px;
 		height: 32px;
+		padding: 0;
+		border: 0;
 		border-radius: 50%;
 		background: rgba(0, 0, 0, 0.6);
 		color: #fff;
-		pointer-events: none;
+		cursor: pointer;
 		transition: background 150ms ease;
 	}
-	.set:hover .sound {
+	.sound {
+		right: 10px;
+	}
+	.pause {
+		left: 10px;
+	}
+	.set:hover .ctl,
+	.ctl:focus-visible {
 		background: rgba(0, 0, 0, 0.85);
+	}
+	.ctl:focus-visible {
+		outline: 2px solid #fff;
+		outline-offset: 2px;
 	}
 	figcaption {
 		font-size: 12.5px;
@@ -384,11 +443,16 @@
 	.now :global(a) {
 		color: inherit;
 	}
-	.small .sound {
-		right: 6px;
+	.small .ctl {
 		bottom: 6px;
 		width: 26px;
 		height: 26px;
+	}
+	.small .sound {
+		right: 6px;
+	}
+	.small .pause {
+		left: 6px;
 	}
 	.small .now {
 		margin: 4px 4px 0;

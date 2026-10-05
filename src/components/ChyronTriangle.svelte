@@ -33,7 +33,14 @@
 	// the first step's words: the ones in the chyron shown with it
 	// ("CLARK HIT IN THROAT DURING LOOSE-BALL SCRAMBLE")
 	const FIRST_WORDS = ["clark", "hit", "throat", "ball"];
-	const TRY_WORDS = ["throat", "freedom", "exchange", "brennan", "joy"];
+	const TRY_WORDS = [
+		"kanter",
+		"engelbert",
+		"shooting",
+		"vote",
+		"loeffler",
+		"throat"
+	];
 	const TOPIC_COLOR = {
 		polrace: "#1f9d6e",
 		fouls: "#7a4a00",
@@ -42,6 +49,7 @@
 	const TOPIC_LABELS = 7; // topic words labelled on a topic triangle (the most used)
 	const WIDE = 860; // wider than this: the cards beside the triangle, not over it
 	const CARD_COLUMN = 360; // room the cards take on the left, wide screens
+	const EXPLORE_GAP = 14; // px between the triangle and the explore card, narrow screens
 
 	// ---------------------------------------------------------------------
 
@@ -304,18 +312,32 @@
 			go(active);
 			holdExplore();
 		}
-		// the explore card is held mid-screen on wide screens; the room below it
-		// makes it let go exactly when the triangle beside it does
+		// the explore card is held mid-screen on wide screens, and just under the
+		// triangle on narrower ones; the room below it makes it let go exactly
+		// when the triangle does
 		function holdExplore() {
 			const step = stepsEl.querySelector(".step.explore"),
 				card = step?.querySelector(".step-card");
-			if (!card || !wide()) return root.style.removeProperty("--explore-room");
+			if (!card) return root.style.removeProperty("--explore-room");
 			const past =
 				step.getBoundingClientRect().bottom -
 				root.getBoundingClientRect().bottom;
+			if (wide())
+				return root.style.setProperty(
+					"--explore-room",
+					Math.max(0, past + innerHeight / 2 - card.offsetHeight) + "px"
+				);
+			const svg = root.querySelector(".tern svg"),
+				graphic = root.querySelector(".graphic");
+			if (!svg || !graphic) return;
+			const top =
+				svg.getBoundingClientRect().bottom -
+				graphic.getBoundingClientRect().top +
+				EXPLORE_GAP;
+			root.style.setProperty("--tern-bottom", top + "px");
 			root.style.setProperty(
 				"--explore-room",
-				Math.max(0, past + innerHeight / 2 - card.offsetHeight) + "px"
+				Math.max(0, past + innerHeight - top - card.offsetHeight) + "px"
 			);
 		}
 		// checked again on the next frame: a sticky card settles after the scroll event
@@ -986,16 +1008,17 @@
 			object-fit: cover;
 			object-position: 50% 100%;
 		}
+		/* explore: comes up from below and is held just under the triangle */
 		.tri :global(.step.explore) {
-			min-height: 110vh;
-			align-items: flex-end;
+			min-height: 200vh;
+			align-items: flex-start;
 		}
 		.tri :global(.step.explore .step-card) {
-			top: auto;
-			bottom: 10px;
-			margin-top: 0;
+			top: var(--tern-bottom, 50vh);
+			margin-top: 70vh;
 			transform: none;
 		}
+		/* suggestions open upward, clear of the phone keyboard */
 		.tri :global(.sugg) {
 			top: auto;
 			bottom: 37px;

@@ -7,11 +7,14 @@
 	//   key: Fox News WNBA headlines, per month
 	//   exploreHead: Explore
 	//   exploreText: Drag the timeline or press play. … The {n} most named through {month}:
+	//   exploreFind: Find anyone on the map…
 	//   source: Source: {headlines} WNBA headlines from Fox News … ({outkick} of them) … {people} people …
 	import { onMount } from "svelte";
 	import { base } from "$app/paths";
 	import * as d3 from "d3";
 	import DATA from "$data/network_map.json";
+	// the group colours, shared with the headline lists' name underlines
+	import { GROUP_COLOR, markNames } from "$utils/whoColors.js";
 	import { fill, or } from "$utils/fill.js";
 
 	let {
@@ -20,6 +23,7 @@
 		key: keyText = "",
 		exploreHead = "",
 		exploreText = "",
+		exploreFind = "",
 		source: sourceText = ""
 	} = $props();
 
@@ -32,19 +36,27 @@
 		league: {
 			label: "WNBA players & coaches",
 			short: "The league",
-			color: "#e8601a"
+			color: GROUP_COLOR.league
 		},
-		politics: { label: "Politics", short: "Politics", color: "#1f9d6e" },
-		media: { label: "Commentators", short: "Commentators", color: "#8b4f00" },
+		politics: {
+			label: "Politics",
+			short: "Politics",
+			color: GROUP_COLOR.politics
+		},
+		media: {
+			label: "Commentators",
+			short: "Commentators",
+			color: GROUP_COLOR.media
+		},
 		antitrans: {
 			label: "Anti-trans advocates",
 			short: "Anti-trans",
-			color: "#b04ac2"
+			color: GROUP_COLOR.antitrans
 		},
 		celebs: {
 			label: "Other celebrities",
 			short: "Celebrities",
-			color: "#8d8578"
+			color: GROUP_COLOR.celebs
 		}
 	};
 
@@ -83,6 +95,7 @@
 	const WHEN = "Fox News headlines from {from} through {to}";
 	const KEY = "Fox News WNBA headlines, per month";
 	const EXPLORE_HEAD = "Explore";
+	const EXPLORE_FIND = "Find anyone on the map…";
 	const EXPLORE_TEXT =
 		"Drag the timeline or press play. Pick any face on the chart, or a name below, for that person’s headlines; " +
 		"then pick a second face for only the headlines naming both. The {n} most named through {month}:";
@@ -458,7 +471,10 @@
 				.selectAll("g.node")
 				.data(nodes, (n) => n.name)
 				.join((enter) => {
-					const g = enter.append("g").attr("class", "node off");
+					const g = enter
+						.append("g")
+						.attr("class", "node off")
+						.attr("role", "button");
 					const inner = g
 						.append("g")
 						.attr("class", "inner")
@@ -521,9 +537,37 @@
 				})
 				.on("click", (e, n) => {
 					e.stopPropagation();
-					if (exploring) pick(n.name);
-					else tapped = tapped === n.name ? null : n.name;
-					render(false);
+					choose(n.name);
+				})
+				// the keyboard: one tab stop for the map, the arrows between faces,
+				// Enter or Space to pick, Escape to let go; the face with focus
+				// shows its tooltip as a hovered one does
+				.on("focus", (e, n) => {
+					keyed = n.name;
+					if (hovered !== n.name) {
+						hovered = n.name;
+						render(false);
+					}
+				})
+				.on("blur", (e, n) => {
+					if (hovered === n.name) {
+						hovered = null;
+						render(false);
+					}
+				})
+				.on("keydown", (e, n) => {
+					const dir = ARROWS[e.key];
+					if (dir) {
+						e.preventDefault();
+						const next = nearest(n, dir);
+						if (next) faceEl(next.name)?.focus({ preventScroll: true });
+					} else if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						choose(n.name);
+					} else if (e.key === "Escape") {
+						pinned = pinned2 = tapped = null;
+						render(false);
+					}
 				});
 
 			// group names, by each group's edge
@@ -582,6 +626,39 @@
 			pinned2 = null,
 			playTimer = null;
 
+		// a click, Enter or Space on a face: picked in explore, its tooltip held otherwise
+		function choose(name) {
+			if (exploring) pick(name);
+			else tapped = tapped === name ? null : name;
+			render(false);
+		}
+		// the face the keyboard last stood on: the map's one tab stop
+		let keyed = null;
+		const ARROWS = {
+			ArrowRight: [1, 0],
+			ArrowLeft: [-1, 0],
+			ArrowDown: [0, 1],
+			ArrowUp: [0, -1]
+		};
+		const faceEl = (name) => nodeSel.filter((n) => n.name === name).node();
+		// the nearest face on the map in that direction (straight ahead counts
+		// for more than off to the side)
+		function nearest(from, [dx, dy]) {
+			const mi = MI.get(currentState().month) ?? M - 1;
+			let best = null,
+				bestScore = Infinity;
+			for (const m of nodes) {
+				if (m === from || !(m.cum[mi] > 0)) continue;
+				const vx = m.x - from.x,
+					vy = m.y - from.y;
+				const ahead = vx * dx + vy * dy;
+				if (ahead <= 0) continue;
+				const score = ahead + 2 * Math.abs(vx * dy - vy * dx);
+				if (score < bestScore) [best, bestScore] = [m, score];
+			}
+			return best;
+		}
+
 		// first face: that person; second: the pair; a face of the pair again:
 		// back to the other one; anyone else: start over with them
 		function pick(name) {
@@ -616,6 +693,13 @@
 			const mi = MI.get(st.month) ?? M - 1;
 			const present = nodes.filter((n) => n.cum[mi] > 0);
 			const presentSet = new Set(present.map((n) => n.name));
+			// the map's one tab stop: the face last used, else the biggest
+			const tabStop = presentSet.has(keyed)
+				? keyed
+				: present.reduce(
+						(a, b) => (!a || sizeAt(b, mi) > sizeAt(a, mi) ? b : a),
+						null
+					)?.name;
 			const shownPairs = pairs.filter((p) => p.cum[mi] > 0);
 			const biggest = (k) =>
 				present
@@ -691,13 +775,24 @@
 				.classed("lit", (n) => lit.has(n.name))
 				.attr(
 					"aria-label",
-					(n) => `${n.name}: ${n.win[mi]} headlines in the past year`
+					(n) =>
+						`${n.name}, ${GROUPS[n.group].label}: ${n.win[mi]} Fox News headlines in the year to ${monthName(MONTHS[mi])}`
+				)
+				// faces not yet on the map are skipped by screen readers
+				.attr("aria-hidden", (n) => (presentSet.has(n.name) ? null : "true"))
+				.attr("tabindex", (n) => (n.name === tabStop ? 0 : -1))
+				.attr("aria-pressed", (n) =>
+					String(n.name === pinned || n.name === pinned2 || n.name === tapped)
 				);
 			nodeSel
 				.select(".inner")
 				.transition(t)
 				.attr("transform", (n) => `scale(${sizeAt(n, mi) / n.R})`);
-			nodeSel.filter((n) => lit.has(n.name)).raise();
+			nodeSel
+				.filter(function (n) {
+					return lit.has(n.name) && this !== document.activeElement;
+				})
+				.raise();
 
 			const lineWidth = (p) =>
 				0.7 + (narrow ? 3.6 : 5.6) * Math.sqrt(p.cum[mi] / pairMax);
@@ -836,14 +931,12 @@
 			);
 			const example =
 				own.find(([, h]) => surnames.some((rx) => rx.test(h))) || own[0];
-			const count = n.cum[mi],
-				year = n.win[mi];
+			// the count is all of them, whatever month the map is on
+			const count = n.total;
 			tipEl.innerHTML =
 				`<div class="r"><i style="background:${color(n.group)}"></i>${GROUPS[n.group].short}</div>` +
 				`<div class="nm">${esc(n.name)}</div>` +
-				`<div class="f"><b>${fmt(year)}</b> Fox News headline${year === 1 ? "" : "s"} in the year to ${monthName(month)}` +
-				(count > year ? `; <b>${fmt(count)}</b> in all` : "") +
-				`</div>` +
+				`<div class="f"><b>${fmt(count)}</b> Fox News headline${count === 1 ? "" : "s"}</div>` +
 				(example
 					? `<div class="q"><span>${monthName(example[0].slice(0, 7))}</span>${esc(example[1])}</div>`
 					: "");
@@ -1011,10 +1104,14 @@
 
 		const xp = el("xp");
 		const headlineList = (list, empty) =>
-			`<ul class="heads">${list.map(([d, h]) => `<li><span class="d">${monthName(d.slice(0, 7))}</span>${esc(h)}</li>`).join("") || `<li>${empty}</li>`}</ul>`;
+			`<ul class="heads">${list.map(([d, h]) => `<li><span class="d">${monthName(d.slice(0, 7))}</span>${markNames(esc(h))}</li>`).join("") || `<li>${empty}</li>`}</ul>`;
 		const backButton = `<button class="back">← Everyone</button>`;
 
+		// the explore list's search: what's typed, and the month it was drawn for
+		let findText = "",
+			exploreMi = M - 1;
 		function drawExplore(mi) {
+			exploreMi = mi;
 			const month = MONTHS[mi];
 			if (pinned && pinned2) {
 				const a = byName.get(pinned),
@@ -1039,37 +1136,78 @@
 					`Pick another face for only the headlines naming both.</p>` +
 					headlineList(own.slice(0, HEADLINE_CAP), "None yet.");
 			} else {
-				const ranked = nodes
+				// the top TOP_N, or everyone matching what's typed in the search
+				const everyone = nodes
 					.filter((n) => n.cum[mi] > 0)
-					.sort((a, b) => b.cum[mi] - a.cum[mi])
-					.slice(0, TOP_N);
+					.sort((a, b) => b.cum[mi] - a.cum[mi]);
+				const q = findText.trim().toLowerCase();
+				// matches: names with a word starting with what's typed come first
+				const startsWord = (n) =>
+					n.name
+						.toLowerCase()
+						.split(/[\s'’.-]+/)
+						.some((w) => w.startsWith(q));
+				const ranked = q
+					? [
+							...everyone.filter(startsWord),
+							...everyone.filter(
+								(n) => !startsWord(n) && n.name.toLowerCase().includes(q)
+							)
+						]
+					: everyone.slice(0, TOP_N);
+				// the list is redrawn as you type: keep the box's focus and cursor
+				const box = xp.querySelector(".xfind");
+				const typing = box && document.activeElement === box;
+				const caret = typing ? box.selectionStart : 0;
 				xp.innerHTML =
 					`<p class="xh">${or(exploreHead, EXPLORE_HEAD)}</p>` +
 					`<p class="xd">${fill(or(exploreText, EXPLORE_TEXT), { n: TOP_N, month: monthName(month) })}</p>` +
+					`<input class="xfind" type="search" value="${esc(findText)}" placeholder="${esc(or(exploreFind, EXPLORE_FIND))}" aria-label="${esc(or(exploreFind, EXPLORE_FIND))}" autocomplete="off">` +
 					`<ol class="rank">` +
 					ranked
 						.map(
 							(n) =>
-								`<li data-n="${esc(n.name)}" style="--c:${color(n.group)}">` +
+								`<li><button type="button" data-n="${esc(n.name)}" style="--c:${color(n.group)}">` +
 								(n.face
 									? `<img src="${base}/net/${n.face}" alt="">`
-									: `<span class="noface">${initials(n.name)}</span>`) +
-								`<span class="nm">${esc(n.name)}</span><span class="n">${fmt(n.cum[mi])}</span></li>`
+									: `<span class="noface" aria-hidden="true">${initials(n.name)}</span>`) +
+								`<span class="nm">${esc(n.name)}</span><span class="n">${fmt(n.cum[mi])}<span class="sr"> headlines</span></span></button></li>`
 						)
 						.join("") +
-					`</ol>`;
+					`</ol>` +
+					(q && !ranked.length
+						? `<p class="xd">No one by that name on the map yet.</p>`
+						: "");
+				if (typing) {
+					const again = xp.querySelector(".xfind");
+					again.focus();
+					again.setSelectionRange(caret, caret);
+				}
 			}
-			root.querySelector(".back")?.addEventListener("click", () => {
+			root.querySelector(".back")?.addEventListener("click", (e) => {
 				pinned = pinned2 = tapped = null;
 				render(false);
+				if (e.detail === 0) xp.querySelector(".xfind")?.focus();
 			});
 		}
+		xp.addEventListener("input", (e) => {
+			if (!e.target.classList.contains("xfind")) return;
+			findText = e.target.value;
+			drawExplore(exploreMi);
+		});
+		// Enter in the search picks the first match
+		xp.addEventListener("keydown", (e) => {
+			if (e.key !== "Enter" || !e.target.classList.contains("xfind")) return;
+			xp.querySelector(".rank button[data-n]")?.click();
+		});
 		xp.addEventListener("click", (e) => {
-			const li = e.target.closest("li[data-n]");
+			const li = e.target.closest("button[data-n]");
 			if (!li) return;
 			pinned = li.dataset.n;
 			pinned2 = tapped = null;
 			render(false);
+			// from the keyboard, on to the way back (the list it was in is gone)
+			if (e.detail === 0) xp.querySelector(".back")?.focus();
 			if (innerWidth <= PHONE_SCREEN)
 				xp.scrollIntoView({
 					block: "start",
@@ -1165,9 +1303,10 @@
 				<div class="when" data-id="when"></div>
 			</div>
 			<div class="netbox" data-id="netbox">
+				<!-- a group, not an image: screen readers then reach the faces inside -->
 				<svg
 					data-id="net"
-					role="img"
+					role="group"
 					aria-label="People Fox News named together in WNBA headlines"
 				>
 					<defs>
@@ -1311,6 +1450,14 @@
 	}
 	.netmap :global(.node.lit .ring) {
 		stroke-width: 3.5;
+	}
+	/* the face the keyboard is on: a dark ring */
+	.netmap :global(.node:focus) {
+		outline: none;
+	}
+	.netmap :global(.node:focus-visible .ring) {
+		stroke: var(--ink);
+		stroke-width: 4.5;
 	}
 	.netmap :global(.initials) {
 		font-family: var(--font-sans);
@@ -1502,17 +1649,60 @@
 		border-top: 1px solid var(--rule);
 	}
 	.netmap :global(.rank li) {
+		border-bottom: 1px solid var(--rule);
+	}
+	.netmap :global(.rank button) {
+		appearance: none;
 		display: grid;
 		grid-template-columns: 26px minmax(0, 1fr) auto;
 		align-items: center;
 		gap: 8px;
+		width: 100%;
 		padding: 4px 0;
-		border-bottom: 1px solid var(--rule);
+		border: 0;
+		border-radius: 0;
+		background: none;
+		color: inherit;
+		font: inherit;
 		font-size: 13.5px;
+		text-align: left;
 		cursor: pointer;
 	}
-	.netmap :global(.rank li:hover .nm) {
+	.netmap :global(.rank button:hover .nm),
+	.netmap :global(.rank button:focus-visible .nm) {
 		text-decoration: underline;
+	}
+	.netmap :global(.rank button:focus-visible) {
+		outline: 2px solid var(--ink);
+		outline-offset: 1px;
+	}
+	/* the search above the list */
+	.netmap :global(.xfind) {
+		box-sizing: border-box;
+		width: 100%;
+		height: 32px;
+		margin: 2px 0 8px;
+		padding: 0 10px 0 30px;
+		border: 1px solid rgba(26, 26, 26, 0.25);
+		border-radius: 16px;
+		background: #fff
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23727272' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E")
+			no-repeat 11px 50%;
+		font: 14px var(--font-sans);
+		color: var(--ink);
+	}
+	.netmap :global(.xfind:focus) {
+		outline: none;
+		border-color: var(--ink);
+	}
+	/* words for screen readers only */
+	.netmap :global(.sr) {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
 	}
 	.netmap :global(.rank img),
 	.netmap :global(.rank .noface) {
@@ -1548,7 +1738,8 @@
 		padding: 0;
 		overflow: auto;
 		list-style: none;
-		border-top: 1px solid var(--rule);
+		/* a dark rule between the name and counts and the headlines */
+		border-top: 1.5px solid var(--ink);
 	}
 	.netmap :global(.heads li) {
 		padding: 7px 0;

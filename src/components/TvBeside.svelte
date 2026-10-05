@@ -64,7 +64,7 @@
 	let tv = $state(null);
 	let clip = $state("");
 	let inView = $state(false);
-	// phones: closed with its × button; tapping a sentence opens it again
+	// closed with its × button; clicking or tapping a sentence opens it again
 	let closed = $state(false);
 	// phones: where the small TV is. "waiting" before the text reaches the
 	// screen, "pinned" in the corner while you read, "gone" once the last line
@@ -141,7 +141,8 @@
 
 	// the contents list shares the right margin: hide it while the TV is there
 	$effect(() => {
-		document.body.classList.toggle("tv-beside-on", inView);
+		// (a closed TV gives the margin back)
+		document.body.classList.toggle("tv-beside-on", inView && !closed);
 		return () => document.body.classList.remove("tv-beside-on");
 	});
 
@@ -242,8 +243,30 @@
 		top: calc(50vh - 170px);
 	}
 
-	/* the close button only shows on narrower screens */
+	/* the × in the TV's corner, and the TV gone once it's used */
 	.close {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: absolute;
+		z-index: 3;
+		top: -6px;
+		left: -6px;
+		width: 24px;
+		height: 24px;
+		padding: 0;
+		border: 1.5px solid #fff;
+		border-radius: 50%;
+		background: rgba(26, 26, 26, 0.85);
+		color: #fff;
+		font: 700 16px/1 var(--font-sans);
+		cursor: pointer;
+	}
+	.close:focus-visible {
+		outline: 2px solid var(--color-ink-dark);
+		outline-offset: 2px;
+	}
+	.side.closed {
 		display: none;
 	}
 
@@ -269,30 +292,9 @@
 			transform: translateY(24px);
 			pointer-events: none;
 		}
-		.side.closed {
-			display: none;
-		}
 		.stick {
 			position: relative;
 			top: auto;
-		}
-		.close {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			position: absolute;
-			z-index: 3;
-			top: -6px;
-			left: -6px;
-			width: 24px;
-			height: 24px;
-			padding: 0;
-			border: 1.5px solid #fff;
-			border-radius: 50%;
-			background: rgba(26, 26, 26, 0.85);
-			color: #fff;
-			font: 700 16px/1 var(--font-sans);
-			cursor: pointer;
 		}
 		.side :global(.now),
 		.side :global(figcaption) {

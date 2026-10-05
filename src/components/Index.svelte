@@ -6,6 +6,7 @@
 	import SimpleBars from "$components/SimpleBars.svelte";
 	import ShareBars from "$components/ShareBars.svelte";
 	import ScrollToc from "$components/ScrollToc.svelte";
+	import ReadingBar from "$components/ReadingBar.svelte";
 	import OutletTopicCompare from "$components/OutletTopicCompare.svelte";
 	import FoxVsField from "$components/FoxVsField.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
@@ -99,6 +100,7 @@
 	}}
 >
 	<ScrollToc />
+	<ReadingBar />
 	<article id="story">
 		<header class="story-header">
 			{#if meta.headerImg}

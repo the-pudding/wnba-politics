@@ -25,6 +25,9 @@ const ZONES = {
 	msnbc: "Mostly MSNBC",
 	centre: "Equal"
 };
+// how far outside the triangle's edges (px) the pointer still counts as on it,
+// so the dots along an edge are easy to hover
+const HOVER_MARGIN = 18;
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -136,13 +139,22 @@ export class Tern {
 		this.gLab = this.svg.append("g");
 		this.tip = d3.select(host).append("div").attr("class", "tip");
 		this.hover = null;
+		// a picked word's tooltip stays up until the pointer has been over the
+		// triangle and left it; picking another word brings it back
+		this.pinGone = false;
 		this.svg
 			.on("pointermove pointerdown", (e) => {
-				this.hover = this.nearest(e);
+				const [px, py] = d3.pointer(e, this.svg.node());
+				if (this.onTriangle(px, py)) this.hover = this.nearest(e);
+				else if (this.hover || !this.pinGone) {
+					this.hover = null;
+					this.pinGone = true;
+				} else return;
 				this.drawTip();
 			})
 			.on("pointerleave", () => {
 				this.hover = null;
+				this.pinGone = true;
 				this.drawTip();
 			});
 		// a triangle scrolled out of view takes its tooltip with it; a scroll lets
@@ -337,6 +349,7 @@ export class Tern {
 		];
 	}
 	set(patch, animate = true) {
+		if ("pin" in patch && patch.pin !== this.state.pin) this.pinGone = false;
 		Object.assign(this.state, patch);
 		this.render(animate);
 	}
@@ -539,6 +552,20 @@ export class Tern {
 		}
 		return null;
 	}
+	// inside the triangle, or within HOVER_MARGIN of it (the svg around it is
+	// wider: the labels and the empty corners don't count)
+	onTriangle(px, py) {
+		const corners = [this.A, this.B, this.C];
+		return corners.every((p, i) => {
+			const q = corners[(i + 1) % 3],
+				r = corners[(i + 2) % 3];
+			// distance from the edge p–q, positive on the side the third corner is on
+			const side = (x, y) =>
+				((q[0] - p[0]) * (y - p[1]) - (q[1] - p[1]) * (x - p[0])) /
+				Math.hypot(q[0] - p[0], q[1] - p[1]);
+			return side(px, py) * Math.sign(side(r[0], r[1])) >= -HOVER_MARGIN;
+		});
+	}
 	nearest(e) {
 		const [px, py] = d3.pointer(e, this.svg.node());
 		let best = null,
@@ -557,7 +584,9 @@ export class Tern {
 	drawTip() {
 		const t = this.offscreen
 			? null
-			: this.hover || (this.state.pin && this.by.get(this.state.pin)) || null;
+			: this.hover ||
+				(this.state.pin && !this.pinGone && this.by.get(this.state.pin)) ||
+				null;
 		this.gOver.selectAll(".hover-ring").remove();
 		if (!t) {
 			this.tip.style("display", "none");

@@ -9,6 +9,26 @@ appearance,noun,bikini
 appearance,noun,swimsuit
 appearance,noun,lingerie
 appearance,noun,photoshoot
+appearance,noun,six[- ]pack
+appearance,noun,abs
+appearance,noun,physique
+appearance,noun,skirts?
+appearance,noun,heels
+appearance,noun,makeup
+appearance,noun,hairstyles?
+appearance,noun,gowns?
+appearance,noun,jumpsuit
+appearance,noun,modell?ing
+appearance,noun,runway
+appearance,noun,victoria[’']?s secret
+appearance,noun,playboy
+appearance,noun,appearance
+appearance,scrub,"makes? (?:an? |her |his |their )?(?:\w+ ){0,2}appearance"
+appearance,scrub,appearances? (?:at|on|in|during|with|for)\b
+appearance,scrub,(?:public|court|tv|television|guest|cameo|surprise|playoff|all-star(?: game)?|first|second|snl|gala|msg|stage|halftime) appearances?
+appearance,scrub,['’] appearances?
+appearance,scrub,(?:racial|ethnic|demographic|political|partisan|gender|genetic|mental|roster|team|league) makeup
+appearance,scrub,makeup of (?:the |its |their |this |our |a )?(?:\w+ )?(?:roster|team|league|staff|staffs|board|electorate|population|country|wnba|coaching)
 appearance,noun,clothes
 appearance,noun,naked
 appearance,adjective,sexy
@@ -239,6 +259,13 @@ performance,word,clutch
 performance,word,hot hand
 performance,word,on fire from
 performance,word,lights[- ]out
+performance,word,(?:strong|big|huge|monster|dominant|hot|historic) (?:first |second )?half
+performance,word,(?:shooting|scoring) (?:night|clinic|display|performance|outburst|spree)
+performance,word,(?:big|huge|monster|career|historic|record|breakout) (?:night|performance|outing)
+performance,word,(?:career|record|monster|breakout) game
+performance,word,(?:3|three)-point (?:contest|shootout)
+performance,word,skills challenge
+performance,scrub,on the rebound
 appearance,verb,sexualize
 appearance,verb,sexualizes
 appearance,adjective,sexualized
@@ -254,3 +281,18 @@ appearance,noun,sex symbol
 appearance,noun,sex appeal
 celebrity,phrase,on the rebound
 celebrity,noun,tom brady
+celebrity,noun,kevin hart
+celebrity,noun,drake
+celebrity,noun,travis kelce
+celebrity,noun,taylor swift
+celebrity,noun,kim kardashian
+celebrity,noun,snoop dogg
+celebrity,noun,(?:olivia|livvy) dunne
+celebrity,noun,netflix
+celebrity,noun,love (?:feud|triangle|life)
+celebrity,noun,cheating (?:claims?|allegations?|rumou?rs?|scandal)
+celebrity,verb,cheat(?:s|ed|ing)? on
+celebrity,noun,hollywood
+celebrity,noun,cameo
+celebrity,noun,acting (?:debut|role|career)
+celebrity,verb,lands? (?:a )?(?:\w+ )?role

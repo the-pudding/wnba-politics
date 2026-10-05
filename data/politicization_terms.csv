@@ -3,7 +3,6 @@ partisan,trump
 partisan,biden
 partisan,kamala
 partisan,harris
-partisan,maga
 partisan,republican
 partisan,democrat
 partisan,gop
@@ -88,3 +87,6 @@ culture_war,clay travis
 culture_war,michele tafoya
 culture_war,media bias
 culture_war,smear
+culture_war,discriminat
+culture_war,protected species
+culture_war,maga\b
