@@ -648,26 +648,33 @@
 	}
 	.head {
 		font-family: var(--font-chart);
-		font-size: 11.5px;
+		text-transform: uppercase !important;
+		font-size: 11px;
 		font-weight: 800;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 	}
 	.head.fox {
 		fill: var(--color-fox-navy);
+		text-transform: uppercase;
+		font-size: 11px;
 	}
 	/* the edge heads: sentence case, a little larger */
 	.head.edge {
-		font-size: 13.5px;
+		text-transform: uppercase;
+		font-size: 11px;
 		font-weight: 700;
 		letter-spacing: 0;
 		text-transform: none;
 	}
 	.head.edge.narrow {
-		font-size: 12px;
+		text-transform: uppercase;
+		font-size: 11px;
 	}
 	.head.others {
 		fill: var(--color-outlets);
+		text-transform: uppercase;
+		font-size: 11px;
 	}
 	.pin-gap {
 		font-size: 16px;
@@ -681,7 +688,7 @@
 		fill: rgba(42, 21, 3, 0.6);
 	}
 	.axis {
-		stroke: rgba(42, 21, 3, 0.45);
+		stroke: var(--wnba-tan-dark);
 		stroke-width: 1.5;
 	}
 	.break {

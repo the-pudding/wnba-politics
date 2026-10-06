@@ -816,7 +816,7 @@
 			</p>
 			<!-- a div, not a p: the menu inside renders block elements -->
 			<div class="subheading">
-				<span>{or(comparedWith, "compared with")}</span>
+				<span>{or(comparedWith, "Compared with")}</span>
 				<LogoSelect
 					options={outletsHere}
 					bind:value={against}
@@ -1257,7 +1257,7 @@
 		margin: 2px 0 0;
 		font-family: var(--font-graphic);
 		font-size: 15px;
-		color: rgba(42, 21, 3, 0.75);
+		color: var(--wnba-tan-dark);
 	}
 	.subheading > span {
 		flex: 0 0 auto;

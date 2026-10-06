@@ -114,7 +114,6 @@
 		max-width: clamp(300px, calc((100vw - 1000px) / 2 - 24px), 380px);
 		margin: 0;
 		background: rgba(255, 253, 248, 0.94);
-		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px;
 		border-radius: 3px;
 		font-size: var(--step-text);
@@ -123,6 +122,7 @@
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 		opacity: 0.35;
 		transition: opacity 250ms ease;
+		pointer-events: auto;
 	}
 	.step.active .card {
 		opacity: 1;

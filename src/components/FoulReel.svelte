@@ -414,7 +414,7 @@
 								{#if r}
 									<figure class="clip" class:fox class:alt={!fox}>
 										<figcaption class="mast" style:color={fox ? FOX : OTHER}>
-											{#if LOGOS[r.o]}<img class="logo" src="{base}/logos/{LOGOS[r.o]}" alt="" />{/if}
+											{#if LOGOS[r.o]}<img class="logo" src="{base}/logos/square/{LOGOS[r.o]}" alt="" />{/if}
 											<span>{mast(r.o)}</span>
 										</figcaption>
 										{#if r.html}
@@ -661,11 +661,10 @@
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
-		font-family: var(--font-serif);
+		font-family: var(--font-sans);
 		font-weight: 700;
 		font-size: 20px;
 		color: var(--color-ink);
-		background: rgba(243, 166, 92, 0.9);
 		padding: 2px 6px;
 		border-radius: 999px;
 		z-index: 1;
@@ -673,10 +672,10 @@
 	}
 	.clip {
 		margin: 0;
-		background: var(--color-paper, var(--color-paper));
+		background: var(--color-white);
 		border: 1px solid var(--color-rule);
-		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
-		padding: 12px 16px 12px;
+		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+    	padding: 10px 15px;
 		transform: rotate(-0.8deg);
 		text-align: left;
 	}
@@ -684,7 +683,7 @@
 		transform: rotate(0.7deg);
 	}
 	.clip .mast .logo {
-		height: 18px;
+		height: 24px;
 		width: auto;
 		max-width: 90px;
 		object-fit: contain;
@@ -759,9 +758,9 @@
 		width: 38px;
 		height: 38px;
 		border-radius: 50%;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		background: var(--color-paper);
-		color: var(--color-ink);
+		border: 1px solid var(--color-rule);
+		background: var(--color-white);
+		color: var(--color-gray-950);
 		cursor: pointer;
 		display: inline-flex;
 		align-items: center;
@@ -775,7 +774,10 @@
 	}
 	.arrow:disabled {
 		opacity: 0.3;
-		cursor: default;
+		cursor: not-allowed;
+	}
+	.arrow:disabled:hover {
+		background: var(--color-white);
 	}
 	.dots {
 		display: flex;
@@ -788,12 +790,12 @@
 		height: 7px;
 		border-radius: 50%;
 		border: 0;
-		background: rgba(42, 21, 3, 0.25);
+		background: var(--wnba-dark-tan);
 		padding: 0;
 		cursor: pointer;
 	}
 	.dot-btn.on {
-		background: var(--color-ink);
+		background: var(--color-gray-950);
 	}
 	@media (max-width: 640px) {
 		/* stacked on a phone: the two clippings close together, the type a

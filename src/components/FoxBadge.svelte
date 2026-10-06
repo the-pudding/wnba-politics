@@ -1,9 +1,11 @@
 <script>
+	import { base } from "$app/paths";
 	// The source mark that sits above a quoted headline.
 	let { outlet = "FOX NEWS", size = 1 } = $props();
 </script>
 
 <span class="source" style="--scale:{size}">
+	<img class="logo" src="{base}/logos/square/fox-news.svg" alt="" />
 	<span class="mark">{outlet}</span>
 </span>
 
@@ -14,14 +16,18 @@
 		vertical-align: middle;
 		margin-right: 8px;
 	}
+
+	.logo {
+		width: 24px;
+		height: 24px;
+		margin-right: 0.25rem;
+	}
 	.mark {
 		font-family: var(--font-chart);
 		font-size: calc(10.5px * var(--scale));
 		font-weight: 800;
 		letter-spacing: 0.09em;
-		color: #fff;
-		background: var(--color-fox-navy);
-		padding: calc(3px * var(--scale)) calc(7px * var(--scale));
+		color: var(--wnba-red);
 		border-radius: 2px;
 		line-height: 1.15;
 		white-space: nowrap;

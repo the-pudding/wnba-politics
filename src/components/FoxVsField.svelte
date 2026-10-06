@@ -36,7 +36,7 @@
 	//   fieldAt where "Other outlets" is written (fieldAtPhone on phones)
 	const TOPICS = {
 		polrace: {
-			color: "var(--color-politics)",
+			color: "#B91C1C",
 			kicker: "Race",
 			name: "race",
 			notes: [
@@ -47,7 +47,7 @@
 			fieldAtPhone: "2022"
 		},
 		lgbtq: {
-			color: "var(--color-lgbtq)",
+			color: "#B91C1C",
 			kicker: "LGBTQ+",
 			name: "LGBTQ+ topics",
 			notes: [],
@@ -479,7 +479,7 @@
 </script>
 
 <figure class="fvf" bind:clientWidth={width}>
-	<p class="kicker" style:color={COLOR[topic]}>{kicker || T.kicker || ""}</p>
+	<!-- <p class="kicker" style:color={COLOR[topic]}>{kicker || T.kicker || ""}</p> -->
 	{#if title}<h4 class="hed">{@html title}</h4>{/if}
 	<p class="dek">
 		{@html dek}
@@ -674,7 +674,7 @@
 						{#if !second}<path
 								class="sm-area"
 								d={sarea(pts)}
-								fill={fox ? COLOR[t] : "#8d877e"}
+								fill={fox ? "#B91C1C" : "#7C7060"}
 							/>{/if}
 						<path
 							class="sm-line"
@@ -745,7 +745,7 @@
 		vertical-align: 4px;
 	}
 	.dek :global(.sw.grey) {
-		background: #c7c2b9;
+		background: #7C7060;
 	}
 	.main {
 		position: relative;

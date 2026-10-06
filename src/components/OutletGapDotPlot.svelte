@@ -33,7 +33,7 @@
 			month: "short",
 			year: "numeric"
 		});
-	const FOX = "var(--color-fox-navy)"; // Fox's own navy, as on the headline clippings
+	const FOX = "var(--wnba-red)"; // Fox's own navy, as on the headline clippings
 	const THEM = "var(--color-outlets)";
 	// left out of the dot plot for now, to keep the rows to the players the
 	// piece discusses; delete names here to bring them back
@@ -51,7 +51,7 @@
 	let {
 		// source: "players" (outlet_gap.json)
 		source = "players",
-		reach = 7.4,
+		reach = 15,
 		// minFox: leave out rows with fewer Fox headlines than this (the pairs page)
 		minFox = 0,
 		highlight = null,
@@ -478,7 +478,7 @@
 		<p class="heading">{or(heading, HEADING)}</p>
 		<!-- a div, not a p: the menu inside renders block elements -->
 		<div class="subheading">
-			<span>{or(comparedWith, "compared with")}</span>
+			<span>{or(comparedWith, "Compared with")}</span>
 			<LogoSelect
 				options={[...AGGREGATES, ...outlets]}
 				bind:value={against}
@@ -649,7 +649,7 @@
 									<circle cx={dx} cy="0" r={Math.max(0, rr - 1)} />
 								</clipPath>
 								{#if faceFiles[ws]}
-									<circle cx={dx} cy="0" r={rr} fill="var(--color-card)" />
+									<circle cx={dx} cy="0" r={rr} fill="#f6e7d6" />
 									<image
 										href="{base}/net/{ws}{faceFiles[ws]}"
 										x={dx - rr * 1.2}
@@ -675,7 +675,7 @@
 								<circle cx="0" cy="0" r={Math.max(0, r - 1)} />
 							</clipPath>
 							{#if faceFiles[slug]}
-								<circle cx="0" cy="0" {r} fill="var(--color-card)" />
+								<circle cx="0" cy="0" {r} fill="#f6e7d6" />
 								<image
 									href="{base}/net/{slug}{faceFiles[slug]}"
 									x={-r * 1.2}
@@ -777,6 +777,11 @@
 		font-family: var(--font-graphic);
 		max-width: 1040px;
 		margin: 0 auto;
+	}
+
+	.head {
+		text-transform: uppercase;
+		font-size: 11px;
 	}
 	svg {
 		width: 100%;
@@ -1021,17 +1026,16 @@
 	}
 
 	.head {
-		font-size: 13px;
+		font-size: 11px;
 		font-weight: 700;
 	}
 	.grid {
-		stroke: rgba(42, 21, 3, 0.2);
+		stroke: var(--wnba-tan-dark);
 		stroke-width: 1;
 	}
 	.grid.middle {
-		stroke: rgba(42, 21, 3, 0.75);
-		stroke-width: 2.5;
-		stroke-dasharray: 6 5;
+		stroke: var(--wnba-tan-dark);
+		stroke-width: 2;
 	}
 	.edge {
 		stroke-width: 3;
@@ -1043,7 +1047,7 @@
 		stroke-dasharray: 3 4;
 	}
 	.tick {
-		font-size: 13px;
+		font-size: 11px;
 		font-weight: 600;
 		fill: rgba(42, 21, 3, 0.72);
 	}
@@ -1051,7 +1055,7 @@
 		font-size: 13px;
 		font-weight: 700;
 		paint-order: stroke;
-		stroke: var(--color-page-orange, var(--color-page-orange));
+		stroke: var(--wnba-tan-bg);
 		stroke-width: 4px;
 		stroke-linejoin: round;
 	}
@@ -1090,18 +1094,19 @@
 		opacity: 0.45;
 	}
 	.veil {
-		fill: var(--color-page-orange, var(--color-page-orange));
+		fill: var(--wnba-tan-bg);
 		opacity: 0.72;
 	}
 
 	.face-mark {
-		cursor: default;
+		cursor: pointer;
 		transition: transform var(--slide, 1500ms) cubic-bezier(0.22, 0.8, 0.3, 1);
 	}
 	/* the named faces swell and settle back as steps change */
 	.face-scale {
 		transition: transform 500ms cubic-bezier(0.22, 0.8, 0.3, 1);
 		transform-origin: 0 0;
+		cursor: pointer;
 	}
 	/* the ticks slide with the axis as it stretches; new ones fade in */
 	.tick-g {

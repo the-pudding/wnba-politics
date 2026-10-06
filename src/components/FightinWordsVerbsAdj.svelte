@@ -472,7 +472,7 @@
 						<span
 							>{narrow
 								? or(phoneVs, "vs.")
-								: or(comparedWith, "compared with")}</span
+								: or(comparedWith, "Compared with")}</span
 						>
 						<LogoSelect
 							options={OUTLET_OPTIONS}
@@ -647,6 +647,7 @@
 		font: inherit;
 		color: var(--color-ink-dark);
 		cursor: pointer;
+		opacity: 0.5;
 	}
 	.player img,
 	.player .blank {
@@ -668,11 +669,15 @@
 	.player:hover img {
 		transform: translateY(-2px);
 	}
+	.player.on, .player:hover {
+		opacity: 1;
+	}
+
 	.player.on img,
 	.player.on .blank {
 		box-shadow:
-			0 0 0 2px var(--color-page-orange),
-			0 0 0 4px var(--color-ink-dark);
+			0 0 0 2px var(--wnba-tan-bg),
+			0 0 0 4px var(--wnba-orange);
 	}
 	.player.on .player-name {
 		color: var(--color-ink-dark);
@@ -938,7 +943,6 @@
 		max-width: clamp(300px, calc((100vw - 900px) / 2 - 24px), 380px);
 		margin: 0;
 		background: rgba(255, 253, 248, 0.94);
-		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px;
 		border-radius: 3px;
 		font-size: var(--step-text);

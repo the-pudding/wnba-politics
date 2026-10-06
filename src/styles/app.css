@@ -63,7 +63,7 @@ body {
 }
 
 body {
-	background: var(--color-page-orange);
+	background: var(--wnba-bg-tan);
 }
 
 /* dark theme */
@@ -121,8 +121,8 @@ svg {
 	object-position: 50% 20%;
 	vertical-align: -0.4em;
 	margin: 0 0.25em 0 0.05em;
-	background: var(--color-card);
-	border: 2px solid var(--color-fox);
+	background: var(--wnba-tan-mid);
+	border: 2px solid var(--wnba-orange);
 	box-shadow: 0 0 0 1.5px var(--color-paper);
 }
 

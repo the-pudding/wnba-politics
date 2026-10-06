@@ -354,8 +354,6 @@
 		transform: translateY(-50%);
 		width: 300px;
 		box-sizing: border-box;
-		background: rgba(255, 253, 248, 0.96);
-		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px 15px;
 		border-radius: 3px;
 		font-size: var(--step-text);
@@ -383,7 +381,6 @@
 		max-width: 300px;
 		margin: 0;
 		background: rgba(255, 253, 248, 0.94);
-		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px 15px;
 		border-radius: 3px;
 		font-size: var(--step-text);

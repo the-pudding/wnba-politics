@@ -250,7 +250,7 @@
 		ontouchstart={onTouchStart}
 		ontouchend={onTouchEnd}
 	>
-		{#if title}<h3 class="plain-title">{@html hl(title)}</h3>{/if}
+		<!-- {#if title}<h3 class="plain-title">{@html hl(title)}</h3>{/if} -->
 		{#if intro}<p class="intro">{@html intro}</p>{/if}
 		<div class="plain-sheet">
 			<div
@@ -278,7 +278,7 @@
 					<CMS body={bodyOf(items[shown], shown)} {components} />
 				</div>
 			{/key}
-			{@render pager("bottom", shown)}
+			<!-- {@render pager("bottom", shown)} -->
 		</div>
 	</div>
 {:else if paper}
@@ -368,7 +368,7 @@
 				<!-- under the thread, for the reader who has just finished it: the
 		     neighbouring threads by name, no "previous" before the first and
 		     no "next" after the last -->
-				{@render pager("bottom")}
+				<!-- {@render pager("bottom")} -->
 			</div>
 		{:else}
 			<p class="hint">Pick a thread above to read it.</p>

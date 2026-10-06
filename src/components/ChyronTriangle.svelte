@@ -42,7 +42,7 @@
 		"throat"
 	];
 	const TOPIC_COLOR = {
-		polrace: "#1f9d6e",
+		polrace: "#166534",
 		fouls: "#7a4a00",
 		lgbtq: "#b04ac2"
 	};
