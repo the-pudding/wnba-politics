@@ -304,6 +304,11 @@
 	.act {
 		margin: 56px 0;
 	}
+
+	p {
+		max-width: 700px;
+		margin: 0 auto;
+	}
 	/* a collapsible section: the heading is the button, with a chevron */
 	.fold {
 		margin: 28px 0;
@@ -372,7 +377,7 @@
 	}
 
 	.chart {
-		margin: 12px 0 22px;
+		margin: 4rem 0;
 	}
 	.chart.full-bleed {
 		width: 100vw;

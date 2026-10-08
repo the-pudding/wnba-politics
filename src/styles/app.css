@@ -63,7 +63,7 @@ body {
 }
 
 body {
-	background: var(--wnba-bg-tan);
+	background: var(--wnba-tan-bg);
 }
 
 /* dark theme */
@@ -84,7 +84,12 @@ h1 {
 }
 
 h2 {
-	font-size: var(--36px, 36px);
+	font-size: var(--48px, 48px);
+	max-width: 900px;
+	margin: 0 auto 3rem auto;
+	font-family: "Tiempos Headline", var(--font-serif);
+	font-weight: 700;
+	text-align: center;
 }
 
 h3 {

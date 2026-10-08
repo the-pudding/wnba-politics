@@ -1354,8 +1354,8 @@
 		--rule: #e2e2e2;
 		--edge: #b3ab9e;
 		position: relative;
-		max-width: 1000px; /* same as the other scrollies, clear of the side menu */
-		margin: 0 auto 5rem auto;
+		max-width: 1400px; /* same as the other scrollies, clear of the side menu */
+		margin: 5rem auto;
 		color: var(--ink);
 		font-family: var(--font-sans);
 	}

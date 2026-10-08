@@ -618,10 +618,10 @@
 		padding-top: 4vh;
 		box-sizing: border-box;
 	}
-	.sticky :global(.fightin-words),
+	/* .sticky :global(.fightin-words),
 	.sticky :global(.word-bars) {
 		width: min(900px, 100%);
-	}
+	} */
 	/* the players: faces in a row that scrolls sideways */
 	.players {
 		position: relative;

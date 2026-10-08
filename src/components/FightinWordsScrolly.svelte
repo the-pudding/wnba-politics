@@ -88,7 +88,7 @@
 	}
 	/* flex item shrinks to its content without this */
 	.sticky :global(.fightin-words) {
-		width: min(1000px, 94vw);
+		width: min(1400px, 94vw);
 	}
 	/* leaves room for the controls the explore beat brings back; the bars
 	   size their own rows to the viewport instead */
@@ -114,7 +114,7 @@
 		/* wider only where the screen leaves a margin beside the 1000px chart */
 		max-width: clamp(300px, calc((100vw - 1000px) / 2 - 24px), 380px);
 		margin: 0;
-		background: rgba(255, 253, 248, 0.94);
+		background: var(--wnba-tan-bg);
 		padding: 14px 16px;
 		border-radius: 3px;
 		font-size: var(--step-text);

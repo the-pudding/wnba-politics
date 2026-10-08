@@ -609,6 +609,7 @@
 <style>
 	.word-bars {
 		width: 100%;
+		max-width: 1000px;
 		position: relative;
 		margin-bottom: 5rem;
 	}
