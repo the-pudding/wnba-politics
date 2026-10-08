@@ -610,6 +610,7 @@
 	.word-bars {
 		width: 100%;
 		position: relative;
+		margin-bottom: 5rem;
 	}
 	svg {
 		display: block;

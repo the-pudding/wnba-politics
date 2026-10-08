@@ -17,6 +17,7 @@
 	//   listLabel: …            list2Label: …   sourceNote: …
 	//   field: false            hide the grey lines
 	//   {}
+	import { base } from "$app/paths";
 	import { scaleLinear, scalePoint } from "d3-scale";
 	import { line as d3line, area as d3area } from "d3-shape";
 	import rows from "$data/outlet_topics.csv";
@@ -140,6 +141,7 @@
 		.sort();
 	const others = COMPARISON.filter((o) => table[topic]?.[o]);
 	const outlets = [FOX, ...others];
+	const outletsShort = ['fox-news', 'espn', 'cbs', 'usa-today', 'nyt', 'ap', 'washington-post'];
 
 	const valueOf = (t, o, p) => {
 		const c = table[t]?.[o]?.[p];
@@ -653,11 +655,14 @@
 
 	<!-- each outlet on its own, same scale -->
 	<div class="strip">
-		{#each outlets as o (o)}
+		{#each outlets as o, i}
 			{@const fox = o === FOX}
 			<div class="sm">
 				<p class="sm-name">
-					<span>{o}</span>
+					<span>
+						<img class="logo" src="{base}/logos/square/{outletsShort[i]}.svg" alt="fox news logo" />
+						{o}
+					</span>
 					<!-- share across all years (no totals for counts) -->
 					{#if !counts}<span>{fmt(overall(topic, o))}</span>{/if}
 				</p>
@@ -707,7 +712,7 @@
 
 <style>
 	.fvf {
-		margin: 0 0 8px;
+		margin: 0 0 5rem 0;
 		font-family: var(--font-graphic);
 		color: var(--color-ink-dark);
 	}
@@ -857,11 +862,20 @@
 	.sm-name {
 		display: flex;
 		justify-content: space-between;
-		align-items: baseline;
+		align-items: center;
 		gap: 6px;
 		margin: 0 0 2px;
 		font-size: 13px;
 		font-weight: 700;
+	}
+	.sm-name .logo {
+			height: 24px;
+			width: 24px;
+			margin-right: 0.25rem;
+		}
+	.sm-name span {
+		display: flex;
+		align-items: center;
 	}
 	.sm-name span:last-child {
 		font-size: 12px;

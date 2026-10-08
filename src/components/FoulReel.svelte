@@ -790,7 +790,7 @@
 		height: 7px;
 		border-radius: 50%;
 		border: 0;
-		background: var(--wnba-dark-tan);
+		background: var(--color-rule);
 		padding: 0;
 		cursor: pointer;
 	}

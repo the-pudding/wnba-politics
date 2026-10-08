@@ -867,8 +867,9 @@
 		width: var(--sheet-w);
 		margin-left: calc((100% - var(--sheet-w)) / 2);
 		padding: 26px 28px 24px;
-		background: #fff;
+		background: var(--color-white);
 		border-radius: 4px;
+		border: 1px solid var(--color-rule);
 	}
 	.plain-panel :global(.act > :not(.chart)) {
 		max-width: 668px;
@@ -882,9 +883,6 @@
 		font-weight: 700;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
-	}
-	.plain-sheet {
-		background: #fff;
 	}
 	.plain-switch {
 		position: sticky;

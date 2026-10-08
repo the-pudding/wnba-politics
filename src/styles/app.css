@@ -256,19 +256,15 @@ span.other {
    <span class="race">16%</span>, <span class="lgbtq">34%</span>,
    <span class="fouls">…</span>, <span class="protect">“protect”</span> */
 span.race {
-	color: var(--color-politics);
 	font-weight: 700;
 }
 span.lgbtq {
-	color: var(--color-lgbtq);
 	font-weight: 700;
 }
 span.fouls {
-	color: #9a5b13;
 	font-weight: 700;
 }
 span.protect {
-	color: #2f5d9e;
 	font-weight: 700;
 }
 

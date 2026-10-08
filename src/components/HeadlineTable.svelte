@@ -874,7 +874,8 @@
 	}
 
 	.chart-caption {
-		font-size: 11.5px;
+		font-size: 12px;
+		font-family: var(--font-sans);
 		line-height: 1.6;
 		color: var(--muted);
 		text-align: center;

@@ -931,6 +931,7 @@
 		z-index: 1;
 		margin-top: -100vh;
 		pointer-events: none;
+		margin-bottom: 5rem;
 	}
 	.step {
 		height: 100vh;
@@ -951,6 +952,7 @@
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 		opacity: 0.3;
 		transition: opacity 250ms ease;
+		pointer-events: auto;
 	}
 	.step.active .card {
 		opacity: 1;

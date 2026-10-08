@@ -396,7 +396,8 @@
 		color: var(--color-ink);
 	}
 	.chart-caption {
-		font-size: 12.5px;
+		font-size: 12px;
+		font-family: var(--font-sans);
 		color: rgba(42, 21, 3, 0.6);
 		margin-top: 4px;
 		text-align: center;
@@ -503,7 +504,8 @@
 		text-align: center;
 	}
 	.photo figcaption {
-		font-size: 12.5px;
+		font-size: 12px;
+		font-family: var(--font-sans);
 		color: rgba(42, 21, 3, 0.6);
 		margin-top: 6px;
 		text-align: center;

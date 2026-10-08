@@ -342,7 +342,7 @@
 					s.heads
 						.map(
 							(h) =>
-								`<div class="clip"><span class="lab">Fox News</span><q>${penHTML(h)}</q></div>`
+								`<div class="clip"><span class="lab"><img class="logo" src="${base}/logos/square/fox-news.svg" alt="fox news logo" /> Fox News</span><q>${penHTML(h)}</q></div>`
 						)
 						.join("") +
 					`</div>`
@@ -1355,7 +1355,7 @@
 		--edge: #b3ab9e;
 		position: relative;
 		max-width: 1000px; /* same as the other scrollies, clear of the side menu */
-		margin: 0 auto;
+		margin: 0 auto 5rem auto;
 		color: var(--ink);
 		font-family: var(--font-sans);
 	}
@@ -1576,19 +1576,25 @@
 		margin-top: 10px;
 	}
 	.netmap :global(.clip .lab) {
-		align-self: flex-start;
-		margin-bottom: 3px;
-		font: 700 10.5px var(--font-sans);
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		font: 700 11px var(--font-sans);
 		letter-spacing: 0.09em;
 		text-transform: uppercase;
-		color: var(--ink-3);
-		background: var(--wnba-red);
-		padding: 0.25rem;
-		color: var(--color-white);
-		border-radius: 2px;
+		color: var(--wnba-red);
+		border-bottom: 2px solid var(--wnba-red);
 		line-height: 1.15;
-		white-space: nowrap;
+		padding-bottom: 4px;
+    	margin-bottom: 8px;
 	}
+
+	.netmap :global(.clip .lab img) {
+		width: 24px;
+		height: 24px;
+		margin-right: 0.25rem;
+	}
+
 	.netmap :global(.clip q) {
 		quotes: none;
 		font: 700 15.5px/1.4 var(--font-serif);

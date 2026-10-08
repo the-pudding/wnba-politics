@@ -101,6 +101,7 @@
 		z-index: 1;
 		margin-top: -100vh;
 		pointer-events: none;
+		margin-bottom: 5rem;
 	}
 	.step {
 		height: 100vh;

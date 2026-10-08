@@ -5,7 +5,7 @@
 </script>
 
 <span class="source" style="--scale:{size}">
-	<img class="logo" src="{base}/logos/square/fox-news.svg" alt="" />
+	<img class="logo" src="{base}/logos/square/fox-news.svg" alt="fox news logo" />
 	<span class="mark">{outlet}</span>
 </span>
 
