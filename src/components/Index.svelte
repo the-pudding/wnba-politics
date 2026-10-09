@@ -15,6 +15,7 @@
 	import FightinWordsScrolly from "$components/FightinWordsScrolly.svelte";
 	import FightinWordsBarsScrolly from "$components/FightinWordsBarsScrolly.svelte";
 	import OutletGapScrolly from "$components/OutletGapScrolly.svelte";
+	import GapToTernaryScrolly from "$components/GapToTernaryScrolly.svelte";
 	import OutletGapFaces from "$components/OutletGapFaces.svelte";
 	import FightinWordsVerbsAdj from "$components/FightinWordsVerbsAdj.svelte";
 	import FightinWordsBars from "$components/FightinWordsBars.svelte";
@@ -53,6 +54,8 @@
 		FightinWordsScrolly,
 		FightinWordsBarsScrolly,
 		OutletGapScrolly,
+		// the dot plot handing its faces to the chyron triangle
+		GapToTernaryScrolly,
 		// a narrower try at the dot plot, kept for its heading and menu
 		OutletGapFaces,
 		FightinWordsVerbsAdj,

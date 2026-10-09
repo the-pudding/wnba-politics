@@ -89,6 +89,7 @@
 		border: 1px solid var(--color-rule);
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 		padding: 10px 15px;
+		border-radius: 4px;
 		transform: rotate(var(--rot, 0deg));
 	}
 

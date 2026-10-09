@@ -654,47 +654,7 @@
 	</div>
 
 	<!-- each outlet on its own, same scale -->
-	<div class="strip">
-		{#each outlets as o, i}
-			{@const fox = o === FOX}
-			<div class="sm">
-				<p class="sm-name">
-					<span>
-						<img class="logo" src="{base}/logos/square/{outletsShort[i]}.svg" alt="fox news logo" />
-						{o}
-					</span>
-					<!-- share across all years (no totals for counts) -->
-					{#if !counts}<span>{fmt(overall(topic, o))}</span>{/if}
-				</p>
-				<svg viewBox="0 0 {SW} {SH}" role="img" aria-label="{o}: {what}">
-					<line
-						class="sm-base"
-						x1={SM.l}
-						x2={SW - SM.r}
-						y1={sy(0)}
-						y2={sy(0)}
-					/>
-					{#each [topic, ...(second ? [second] : [])] as t, k (t)}
-						{@const pts = series(t, o)}
-						{#if !second}<path
-								class="sm-area"
-								d={sarea(pts)}
-								fill={fox ? "#B91C1C" : "#7C7060"}
-							/>{/if}
-						<path
-							class="sm-line"
-							d={spath(pts)}
-							stroke={fox ? COLOR[t] : k ? "#c9c3ba" : "#a39a8d"}
-						/>
-					{/each}
-					<text class="sm-tick" x={SM.l} y={SH - 2}>{edge(periods[0])}</text>
-					<text class="sm-tick" x={SW - SM.r} y={SH - 2} text-anchor="end"
-						>{edge(periods[periods.length - 1])}</text
-					>
-				</svg>
-			</div>
-		{/each}
-	</div>
+	
 
 	<!-- the words counted -->
 	<div class="source">
@@ -854,6 +814,7 @@
 		font-variant-numeric: tabular-nums;
 	}
 	.strip {
+		width: calc(100% - 5rem);
 		margin-top: 30px;
 		display: grid;
 		grid-template-columns: repeat(4, minmax(0, 1fr));

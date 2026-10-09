@@ -41,11 +41,6 @@
 		"loeffler",
 		"throat"
 	];
-	const TOPIC_COLOR = {
-		polrace: "#166534",
-		fouls: "#7a4a00",
-		lgbtq: "#b04ac2"
-	};
 	const TOPIC_LABELS = 7; // topic words labelled on a topic triangle (the most used)
 	const WIDE = 860; // wider than this: the cards beside the triangle, not over it
 	const CARD_COLUMN = 360; // room the cards take on the left, wide screens
@@ -238,7 +233,6 @@
 				groups.push({ terms: g });
 				// a person: one label with the face; other words, a label each
 				if (p) {
-					g.forEach((w) => lit.set(w, color));
 					labels.push({ terms: g, text: p.name, face: p.face, color });
 				} else
 					g.forEach(
@@ -488,7 +482,6 @@
 
 	// ---- one topic's triangle ---------------------------------------------
 	function buildTopic(D, cleanup) {
-		const color = TOPIC_COLOR[topic] ?? COL.fox;
 		const list = (D.topics[topic] ?? [])
 			.map((w) => D.BY.get(w))
 			.filter(Boolean);
@@ -502,10 +495,15 @@
 			.slice(0, TOPIC_LABELS);
 		tern.set(
 			{
-				lit: new Map(list.map((w) => [w.term, color])),
+				// each word in the colour of the zone it sits in
+				lit: new Map(list.map((w) => [w.term, leanColor(w.s)])),
 				floor: 10,
 				groups: [],
-				labels: labelled.map((w) => ({ terms: [w.term], text: w.term, color }))
+				labels: labelled.map((w) => ({
+					terms: [w.term],
+					text: w.term,
+					color: leanColor(w.s)
+				}))
 			},
 			false
 		);
@@ -601,10 +599,10 @@
 		font-weight: 700;
 	}
 	.tri :global(.step-text .fox) {
-		color: #003366;
+		color: var(--wnba-red);
 	}
 	.tri :global(.step-text .others) {
-		color: #6b4bb0;
+		color: var(--wnba-purple);
 	}
 	.tri :global(.step-img) {
 		display: block;
@@ -873,7 +871,7 @@
 		transition: opacity 300ms ease;
 	}
 	.tri :global(.centre-label) {
-		fill: var(--ink-2);
+		fill: var(--wnba-tan-dark);
 	}
 	.tri :global(.corner) {
 		font-size: 15px;

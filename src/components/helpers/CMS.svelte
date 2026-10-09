@@ -27,6 +27,7 @@
 		"FightinWordsBarsScrolly",
 		"TernaryScrolly",
 		"OutletGapScrolly",
+		"GapToTernaryScrolly",
 		"FightinWordsVerbsAdj",
 		"FightinWordsBars",
 		// legacy Doc ids
@@ -377,7 +378,7 @@
 	}
 
 	.chart {
-		margin: 4rem 0;
+		margin: 1rem 0;
 	}
 	.chart.full-bleed {
 		width: 100vw;
@@ -477,15 +478,15 @@
 	}
 
 	.photo {
-		margin: 18px auto 26px;
-		max-width: 640px;
+		margin: 3rem auto;
+		max-width: 700px;
 	}
 	.photo img {
 		display: block;
 		width: 100%;
-		border-radius: 8px;
-		box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
-		border: 1px solid rgba(42, 21, 3, 0.15);
+		border-radius: 4px;
+		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+		border: 1px solid var(--color-rule);
 	}
 	/* a PDF: a letter-shaped frame the document scrolls inside */
 	.photo.pdf .page {

@@ -321,9 +321,6 @@
 		align-items: center;
 		justify-content: center;
 	}
-	.sticky :global(.ternary-static) {
-		width: min(660px, 92vw);
-	}
 	.sticky :global(svg) {
 		max-height: 82vh;
 	}

@@ -8,12 +8,15 @@
 	// the same words counted by year, for the timeline
 	import chyYears from "$data/chyron_ternary_years.json";
 	import capYears from "$data/captions_years.json";
+	import { headlineCase } from "$utils/headlineCase.js";
 
 
 	// bare: no title/footnote inside a scrolly; big + highlightColor: scrolly display labels
 	let {
 		words = [],
 		groups = [],
+		// heading: a title over the triangle; empty: none
+		heading = "",
 		bare = false,
 		big = false,
 		highlightColor = null,
@@ -25,6 +28,8 @@
 		// draw the dashed circle around each band of words (the search step
 		// turns it off: kept words are just lit)
 		enclose = true,
+		// shade the "mostly Fox / CNN / MSNBC" bands at the corners
+		bands: showBands = true,
 		// hide words used fewer times than this (the explore step's slider)
 		minTotal = 0,
 		// topic: "polrace" or "lgbtq" — light that vocabulary's words and shade
@@ -135,15 +140,22 @@
 	// Fox against everyone else, as on the bar charts: the two other corners
 	// share the outlets' purple (their labels tell them apart)
 	const CHANNEL_COLORS = {
-		"Fox News": "var(--color-fox-navy)",
-		CNN: "var(--color-outlets)",
-		MSNBC: "var(--color-outlets)"
+		"Fox News": "var(--wnba-red)",
+		CNN: "var(--wnba-purple)",
+		MSNBC: "var(--wnba-navy)"
 	};
-	const GROUP_COLORS = ["var(--color-grape)", "var(--color-fox-navy)", "var(--color-pine)", "var(--color-msnbc)"];
-	const DOT = "var(--color-dot)";
+	const GROUP_COLORS = ["var(--wnba-purple)", "var(--wnba-red)", "var(--wnba-navy)"];
+	// the middle band, where no network passes half
+	const EQUAL_COLOR = "var(--wnba-tan-dark)";
 	const MIN_TOTAL = 1;
 
 	let channels = $derived(chy.channels ?? []);
+	// a dot takes the colour of the band it sits in: the network with more
+	// than half its uses, else the middle's tan
+	const regionColor = (shares) => {
+		const top = Math.max(...shares);
+		return top > 0.5 ? CHANNEL_COLORS[channels[shares.indexOf(top)]] : EQUAL_COLOR;
+	};
 	// every band takes the chart's highlight colour when one is given (the
 	// scrolly: all Fox red); otherwise each band gets its own palette colour
 	let bands = $derived([
@@ -172,18 +184,14 @@
 	]);
 	const bandFor = (term) =>
 		bands.find((band) => band.words.has(term))?.color ?? null;
-	// a lit word takes the side it sits on: Fox's navy when Fox says it most,
-	// the other networks' purple when CNN or MSNBC does (topic bands keep
+	// a lit word takes the colour of the band it sits in (topic bands keep
 	// their own colour)
 	const litFor = (term, shares) => {
 		const band = bands.find((b) => b.words.has(term));
 		if (!band) return null;
 		if (band.topic || !highlightColor) return band.color;
-		const foxShare = shares?.[channels.indexOf("Fox News")] ?? 0;
-		return foxShare >= Math.max(...shares) ? band.color : "var(--color-outlets)";
+		return regionColor(shares);
 	};
-	// the colour a hovered point takes: its band's, else the chart's highlight
-	let hoverColor = $derived(highlightColor ?? GROUP_COLORS[0]);
 
 	const SIDE = 700,
 		PAD = 58;
@@ -206,6 +214,39 @@
 			shares[1] * corners.B[1] +
 			shares[2] * corners.C[1]
 	];
+
+	// the "mostly" bands: where one network's share passes half, the small
+	// triangle cut off at its corner by the midpoints of its two sides
+	const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+	const SHORT = { "Fox News": "Fox" };
+	let regions = $derived(
+		[
+			[corners.A, corners.B, corners.C],
+			[corners.B, corners.A, corners.C],
+			[corners.C, corners.A, corners.B]
+		].map(([p, q, r], i) => {
+			const m1 = mid(p, q);
+			const m2 = mid(p, r);
+			return {
+				channel: channels[i],
+				points: `${p[0]},${p[1]} ${m1[0]},${m1[1]} ${m2[0]},${m2[1]}`,
+				// the label at the band's centroid
+				x: (p[0] + m1[0] + m2[0]) / 3,
+				y: (p[1] + m1[1] + m2[1]) / 3
+			};
+		})
+	);
+	// the middle band: the triangle left between the three corners' bands
+	const equalPoints = [
+		mid(corners.A, corners.B),
+		mid(corners.B, corners.C),
+		mid(corners.C, corners.A)
+	];
+	const equalRegion = {
+		points: equalPoints.map((p) => p.join(",")).join(" "),
+		x: equalPoints.reduce((a, p) => a + p[0], 0) / 3,
+		y: equalPoints.reduce((a, p) => a + p[1], 0) / 3
+	};
 
 	let terms = $derived.by(() => {
 		const floor = Math.max(MIN_TOTAL, minTotal);
@@ -352,7 +393,13 @@
 					cy += ((far.py - cy) / len) * step;
 					r = Math.max(r, reach(far) - step, ...pts.map(reach));
 				}
-				return { cx, cy, r: r + (big ? 18 : 10), color: band.color };
+				// the ring takes the colour of the band its words sit in, as the
+				// lit dots do: the region of their averaged shares
+				const shares = pts[0].shares.map(
+					(_, k) => pts.reduce((a, t) => a + t.shares[k], 0) / pts.length
+				);
+				const color = highlightColor ? regionColor(shares) : band.color;
+				return { cx, cy, r: r + (big ? 18 : 10), color };
 			})
 			.filter(Boolean);
 	});
@@ -424,6 +471,7 @@
 <svelte:window onclick={away} />
 
 <div class="ternary-static" class:big class:timeline={timelineOn}>
+	{#if heading}<p class="heading">{heading}</p>{/if}
 	{#if timelineOn && controls}
 		<!-- the years: play runs through them; a button jumps to one; "all" is
 		     the whole span -->
@@ -467,6 +515,40 @@
 			points="{corners.A[0]},{corners.A[1]} {corners.B[0]},{corners
 				.B[1]} {corners.C[0]},{corners.C[1]}"
 		/>
+		<!-- the "mostly" bands, under everything else -->
+		<g class="regions" class:off={!showBands} style="pointer-events:none">
+			{#each regions as reg (reg.channel)}
+				<polygon
+					class="region"
+					points={reg.points}
+					fill={CHANNEL_COLORS[reg.channel]}
+					stroke={CHANNEL_COLORS[reg.channel]}
+				/>
+				<text
+					class="region-label"
+					x={reg.x}
+					y={reg.y}
+					text-anchor="middle"
+					dominant-baseline="middle"
+					fill={CHANNEL_COLORS[reg.channel]}
+					>Mostly {SHORT[reg.channel] ?? reg.channel}</text
+				>
+			{/each}
+			<polygon
+				class="region"
+				points={equalRegion.points}
+				fill={EQUAL_COLOR}
+				stroke={EQUAL_COLOR}
+			/>
+			<text
+				class="region-label"
+				x={equalRegion.x}
+				y={equalRegion.y}
+				text-anchor="middle"
+				dominant-baseline="middle"
+				fill={EQUAL_COLOR}>Equal</text
+			>
+		</g>
 		<!-- the topic's heat, under the dots -->
 		{#if heatCells.length}
 			<g
@@ -516,8 +598,8 @@
 				cx={term.px}
 				cy={term.py}
 				r={radius(term.total)}
-				fill={term.lit ?? DOT}
-				opacity={term.lit ? 1 : bands.length ? 0.22 : 0.4}
+				fill={term.lit ?? regionColor(term.shares)}
+				opacity={term.lit ? 1 : bands.length ? 0.1 : 0.22}
 			/>
 		{/each}
 		{#each terms.filter((t) => t.lit) as term (term.term)}
@@ -527,7 +609,7 @@
 				cx={term.px}
 				cy={term.py}
 				r={radius(term.total)}
-				fill={term.lit ?? DOT}
+				fill={term.lit ?? regionColor(term.shares)}
 				opacity={term.lit ? 1 : bands.length ? 0.22 : 0.4}
 			/>
 		{/each}
@@ -547,7 +629,7 @@
 				cx={shown.px}
 				cy={shown.py}
 				r={radius(shown.total) + (big ? 4 : 2.5)}
-				fill={shown.lit ?? hoverColor}
+				fill={shown.lit ?? regionColor(shown.shares)}
 			/>
 		{/if}
 
@@ -568,7 +650,7 @@
 				x={hoverLabelled.px}
 				y={hoverLabelled.py - radius(hoverLabelled.total) - (big ? 12 : 6)}
 				text-anchor="middle"
-				fill={hoverLabelled.lit ?? hoverColor}
+				fill={hoverLabelled.lit ?? regionColor(hoverLabelled.shares)}
 			>
 				{hoverLabelled.term}
 			</text>
@@ -619,7 +701,7 @@
 			{#if tip.term.ex}
 				<p class="example" style="border-left-color:{CHANNEL_COLORS[tip.term.ex_ch]}">
 					<span class="who">{tip.term.ex_ch}</span>
-					“{tip.term.ex}”
+					“{headlineCase(tip.term.ex)}”
 				</p>
 			{/if}
 		</div>
@@ -627,10 +709,26 @@
 </div>
 
 <style>
+	/* set as the dot plot sets its heading */
+	.heading {
+		margin: 0 0 10px;
+		font-family: var(--font-graphic);
+		font-size: 24px;
+		font-weight: 700;
+		line-height: 1.22;
+		letter-spacing: -0.01em;
+		text-wrap: pretty;
+		color: var(--color-ink);
+	}
+	@media (max-width: 640px) {
+		.heading {
+			font-size: 20px;
+		}
+	}
 	.ternary-static {
 		position: relative;
-		max-width: 700px;
-		margin: 0 auto;
+		max-width: 1040px;
+		padding: 1rem;
 	}
 	svg {
 		width: 100%;
@@ -643,6 +741,29 @@
 		fill: rgba(255, 253, 248, 0.35);
 		stroke: rgba(42, 21, 3, 0.3);
 		stroke-width: 1;
+	}
+	.regions {
+		transition: opacity 400ms ease;
+	}
+	.regions.off {
+		opacity: 0;
+	}
+	.region {
+		fill-opacity: 0.07;
+		stroke-opacity: 0.35;
+		stroke-width: 1;
+		stroke-dasharray: 3 3;
+	}
+	.region-label {
+		font-family: var(--font-graphic);
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		opacity: 0.6;
+	}
+	.big .region-label {
+		font-size: 16px;
 	}
 	.corner {
 		font-size: 20px;
