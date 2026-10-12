@@ -1300,6 +1300,7 @@
 	<div class="scrolly" data-id="scrolly">
 		<div class="graphic">
 			<div class="status">
+				<p class="kicker">on the web</p>
 				<div class="when" data-id="when"></div>
 			</div>
 			<div class="netbox" data-id="netbox">
@@ -1385,6 +1386,20 @@
 	.netmap :global(.status) {
 		padding-bottom: 8px;
 	}
+
+	.kicker {
+		background: var(--wnba-red);
+		color: var(--wnba-tan-bg);
+		display: inline-block;
+		text-transform: uppercase;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 10px;
+		padding: 6px;
+		border-radius: 4px;
+		margin: 0 0 6px 0;
+	}
+	
 	.netmap :global(.when) {
 		font-size: 24px;
 		line-height: 1.3;

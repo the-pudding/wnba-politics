@@ -2,6 +2,7 @@
 	import { getContext } from "svelte";
 	import { base } from "$app/paths";
 	import CMS from "$components/helpers/CMS.svelte";
+	import Footer from "$components/Footer.svelte";
 	import Toc from "$components/Toc.svelte";
 	import SimpleBars from "$components/SimpleBars.svelte";
 	import ShareBars from "$components/ShareBars.svelte";
@@ -114,6 +115,7 @@
 
 		<CMS {body} {components} />
 	</article>
+	<Footer />
 </svelte:boundary>
 
 <style>

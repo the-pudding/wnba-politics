@@ -1081,7 +1081,8 @@
 </script>
 
 <section class="swarm" bind:this={root}>
-	<p class="kicker">{or(kicker, "How Fox News frames each player")}</p>
+	<p class="kicker">on the web</p>
+	<h5>{or(kicker, "How Fox News frames each player")}</h5>
 	<div class="tabrow">
 		<div class="tabs" data-id="tabs" role="tablist" aria-label="Measure"></div>
 		<div class="unit" data-id="unit" role="group" aria-label="Counted over">
@@ -1166,21 +1167,33 @@
 		padding: 24px 28px 22px;
 		background: var(--sheet);
 		border-radius: 4px;
+		border: 1px solid var(--color-rule);
 		color: var(--ink);
 		font-family: var(--font-sans);
 	}
+
+	h5 {
+		font-weight: 700;
+		margin: 0 0 1rem 0;
+	}
+
+	.kicker {
+		background: var(--wnba-red);
+		color: var(--wnba-tan-bg);
+		display: inline-block;
+		text-transform: uppercase;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 10px;
+		padding: 6px;
+		border-radius: 4px;
+		margin: 0 0 6px 0;
+	}
+
 	.swarm :global(*) {
 		box-sizing: border-box;
 	}
 
-	.kicker {
-		margin: 0 0 12px;
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--ink-2);
-	}
 	/* the measure as tabs on a rule; the count basis a quiet switch at its end */
 	.swarm :global(.tabrow) {
 		display: flex;

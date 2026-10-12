@@ -471,6 +471,7 @@
 <svelte:window onclick={away} />
 
 <div class="ternary-static" class:big class:timeline={timelineOn}>
+	<p class="kicker">on television</p>
 	{#if heading}<p class="heading">{heading}</p>{/if}
 	{#if timelineOn && controls}
 		<!-- the years: play runs through them; a button jumps to one; "all" is
@@ -720,6 +721,20 @@
 		text-wrap: pretty;
 		color: var(--color-ink);
 	}
+
+	.kicker {
+		background: var(--wnba-red);
+		color: var(--wnba-tan-bg);
+		display: inline-block;
+		text-transform: uppercase;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 10px;
+		padding: 6px;
+		border-radius: 4px;
+		margin: 0 0 6px 0;
+	}
+
 	@media (max-width: 640px) {
 		.heading {
 			font-size: 20px;
@@ -766,6 +781,7 @@
 		font-size: 16px;
 	}
 	.corner {
+		font-family: var(--font-sans);
 		font-size: 20px;
 		font-weight: 800;
 	}

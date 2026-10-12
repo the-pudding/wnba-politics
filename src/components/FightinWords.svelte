@@ -802,6 +802,7 @@
 	{#if !source}
 		<!-- the title, and who Fox is compared with, as on the player chart -->
 		<div class="head">
+			<p class="kicker">on the web</p>
 			<p class="heading">
 				{#if bodyMode && player === ALL}{fillIn(
 						or(headingText, "How Fox News writes about the WNBA"),
@@ -1167,6 +1168,20 @@
 		margin: 0 auto;
 		position: relative;
 	}
+
+	.kicker {
+		background: var(--wnba-red);
+		color: var(--wnba-tan-bg);
+		display: inline-block;
+		text-transform: uppercase;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 10px;
+		padding: 6px;
+		border-radius: 4px;
+		margin: 0 0 6px 0;
+	}
+	
 	.tip-card {
 		position: absolute;
 		z-index: 8;

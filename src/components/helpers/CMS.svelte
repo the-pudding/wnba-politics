@@ -286,14 +286,14 @@
 		{#if foldable(section)}
 			<!-- a collapsible section: its heading opens and closes the rest -->
 			{@const [heading, rest] = splitHeading(section)}
-			<h2 class="fold-head">
+			<h3 class="fold-head">
 				<button
 					type="button"
 					aria-expanded={!!opened[section.section]}
 					onclick={() => (opened[section.section] = !opened[section.section])}
 					>{@html heading}<span class="chev" aria-hidden="true"></span></button
 				>
-			</h2>
+			</h3>
 			{#if opened[section.section]}{@render blockList(rest)}{/if}
 		{:else}
 			{@render blockList(section.content)}
@@ -312,14 +312,20 @@
 	}
 	/* a collapsible section: the heading is the button, with a chevron */
 	.fold {
-		margin: 28px 0;
-		border-top: 1px solid rgba(42, 21, 3, 0.25);
+		margin: 28px auto;
+		max-width: 1000px;
 	}
 	.fold + .fold {
 		margin-top: -28px;
 	}
 	.fold-head {
-		margin: 0;
+		font-weight: 700;
+		margin: 0 0 3rem 0;
+		position: sticky;
+		top: 0;
+		z-index: 1000;
+		background: var(--wnba-tan-bg);
+		border-bottom: 1px solid var(--color-rule);
 	}
 	.fold-head button {
 		display: flex;
@@ -368,9 +374,10 @@
 	ol {
 		font-size: 17px;
 		line-height: 1.65;
-		margin: 0 0 1em;
+		margin: 0 auto 1rem auto;
 		padding-left: 1.3em;
 		color: var(--color-ink);
+		max-width: 700px;
 	}
 	ul :global(li),
 	ol :global(li) {
