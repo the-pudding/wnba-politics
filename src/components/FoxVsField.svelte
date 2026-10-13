@@ -482,7 +482,7 @@
 
 <figure class="fvf" bind:clientWidth={width}>
 	<!-- <p class="kicker" style:color={COLOR[topic]}>{kicker || T.kicker || ""}</p> -->
-	{#if title}<h4 class="hed">{@html title}</h4>{/if}
+	<p class="kicker">on the web</p>
 	<p class="dek">
 		{@html dek}
 	</p>
@@ -672,16 +672,22 @@
 
 <style>
 	.fvf {
-		margin: 0 0 5rem 0;
+		width: 100%;
+		margin: 0;
 		font-family: var(--font-graphic);
 		color: var(--color-ink-dark);
 	}
 	.kicker {
-		margin: 0 0 6px;
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.08em;
+		background: var(--wnba-red);
+		color: var(--wnba-tan-bg);
+		display: inline-block;
 		text-transform: uppercase;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 10px;
+		padding: 6px;
+		border-radius: 4px;
+		margin: 0 0 6px 0;
 	}
 	.hed {
 		margin: 0 0 8px;
@@ -693,9 +699,10 @@
 	}
 	.dek {
 		margin: 0 0 18px;
-		font-size: 15px;
-		line-height: 1.45;
-		color: #4a4a4a;
+		font-size: 18px;
+		line-height: 1.15;
+		color: var(--color-gray-950);
+		font-weight: 700;
 	}
 	.dek :global(b) {
 		font-weight: 700;

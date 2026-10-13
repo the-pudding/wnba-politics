@@ -881,6 +881,7 @@
 	.period {
 		margin: 4px 0 0;
 		font-size: 12px;
+		font-family: var(--font-sans);
 		line-height: 1.4;
 		text-align: center;
 		color: rgba(42, 21, 3, 0.6);

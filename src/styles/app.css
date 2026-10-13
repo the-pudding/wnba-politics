@@ -252,9 +252,24 @@ span.fox {
 	color: var(--color-fox-navy);
 	font-weight: 700;
 }
+
+span.cnn {
+	color: var(--wnba-purple);
+	font-weight: 700;
+}
+
+span.msnbc {
+	color: var(--wnba-navy);
+	font-weight: 700;
+}
 span.others,
 span.other {
 	color: var(--color-outlets);
+	font-weight: 700;
+}
+
+span.others-gray {
+	color: var(--color-gray-600);
 	font-weight: 700;
 }
 /* the topics, in their trend charts' colours (FoxVsField):

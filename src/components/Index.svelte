@@ -35,6 +35,7 @@
 	import TvBeside from "$components/TvBeside.svelte";
 	import Subsections from "$components/Subsections.svelte";
 	import Aside from "$components/Aside.svelte";
+	import SideBySide from "$components/SideBySide.svelte";
 
 	const copy = getContext("copy");
 	const { body } = copy;
@@ -81,6 +82,7 @@
 		TvSet,
 		TvBeside,
 		Subsections,
+		SideBySide,
 		Aside,
 		// legacy Doc ids — delete once the Doc carries component names
 		toc: Toc,

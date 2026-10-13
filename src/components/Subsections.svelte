@@ -110,9 +110,8 @@
 
     .name {
         font-family: var(--font-sans);
-		text-transform: uppercase;
         font-weight: 700;
-        font-size: 14px;
+        font-size: 24px;
         line-height: 1.15;
         margin: 0;
         color: var(--color-ink-dark);
@@ -130,7 +129,7 @@
     /* Outer wrapper caps height to 100svh */
     .content-wrapper {
         position: relative;
-        max-height: 100svh;
+        max-height: 130svh;
         overflow: hidden;
     }
 

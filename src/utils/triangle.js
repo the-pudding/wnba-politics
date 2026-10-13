@@ -350,7 +350,8 @@ export class Tern {
 			},
 			{ x0: B[0] - 4, x1: B[0] + cw(NET[1]) + 6, y0: B[1] + 4, y1: B[1] + 28 },
 			{ x0: C[0] - cw(NET[2]) - 6, x1: C[0] + 4, y0: C[1] + 4, y1: C[1] + 28 },
-			...zones.map((z) => z.box),
+			// (the middle zone has no label, so no box)
+			...zones.filter((z) => z.box).map((z) => z.box),
 			{ x0: G[0] - eq, x1: G[0] + eq, y0: G[1] - 8, y1: G[1] + 8 }
 		];
 	}

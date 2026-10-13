@@ -455,6 +455,7 @@
 			<!-- the heading, in plain words that follow the tab; a step's own
 			     title, or a pair's, as before -->
 			<div class="head">
+				<p class="kicker">on the web</p>
 				{#if narrow && shown.vs === "outlets"}
 					<p class="heading">
 						{HEADING[shown.rel]?.(shown.who) ?? source.relation}
@@ -611,6 +612,20 @@
 		align-items: center;
 		justify-content: center;
 	}
+
+	.kicker {
+		background: var(--wnba-red);
+		color: var(--wnba-tan-bg);
+		display: inline-block;
+		text-transform: uppercase;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 10px;
+		padding: 6px;
+		border-radius: 4px;
+		margin: 0 0 6px 0;
+	}
+	
 	/* the bars hang from a fixed top: a step with more or fewer words only
 	   lengthens the chart downward, instead of re-centring everything */
 	.words-scrolly.bars .sticky {

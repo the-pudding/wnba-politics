@@ -37,10 +37,11 @@
 		"outlet-gap-scrolly",
 		"timeline-scrolly",
 		"player-words-scrolly",
-		"TvSet"
+		"TvSet",
+		"SideBySide"
 	]);
 	// these render Doc copy of their own and need the component map for it
-	const NESTING = new Set(["Subsections", "Aside", "TvBeside"]);
+	const NESTING = new Set(["Subsections", "Aside", "TvBeside", "SideBySide"]);
 	// these draw their own title and caption
 	const SELF_CAPTIONED = new Set([
 		"Subsections",
@@ -60,7 +61,8 @@
 		"TvSet",
 		"TvBeside",
 		"WordCompare",
-		"WordNeighbors"
+		"WordNeighbors",
+		"SideBySide"
 	]);
 
 	// one-liner: `chart: name | key: value | …`
@@ -184,6 +186,9 @@
 					<h4 class="chart-title">{@html hl(props.title)}</h4>
 				{/if}
 				<!-- subtitle: a plain line under the title, in the ink colour -->
+				 {#if props.kicker && !SELF_CAPTIONED.has(name)}
+					<p class="kicker">{@html props.kicker}</p>
+				{/if}
 				{#if props.subtitle && !SELF_CAPTIONED.has(name)}
 					<p class="chart-subtitle">{@html props.subtitle}</p>
 				{/if}
@@ -385,7 +390,7 @@
 	}
 
 	.chart {
-		margin: 1rem 0;
+		margin: 0;
 	}
 	.chart.full-bleed {
 		width: 100vw;
@@ -403,10 +408,24 @@
 		margin-top: -6px;
 	}
 	.chart-subtitle {
-		font-size: 15px;
-		text-align: center;
+		font-size: 18px;
+		font-family: var(--font-sans);
 		margin: 0 0 12px;
-		color: var(--color-ink);
+		line-height: 1.15;
+		font-weight: 700;
+		color: var(--color-gray-950);
+	}
+	.kicker {
+		background: var(--wnba-red);
+		color: var(--wnba-tan-bg);
+		display: inline-block;
+		text-transform: uppercase;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 10px;
+		padding: 6px;
+		border-radius: 4px;
+		margin: 0 0 6px 0;
 	}
 	.chart-caption {
 		font-size: 12px;
