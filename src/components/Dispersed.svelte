@@ -1,14 +1,16 @@
 <!--
   Dispersed.svelte — Svelte 5 (runes)
-  Renders an image with the pixel-dispersion effect baked in.
+  Stacks two images: `under` is shown as-is, `over` gets the pixel-dispersion
+  effect painted on top of it. Both should share the same dimensions.
   Defaults match the settings dialled in with Pixel.svelte.
 
-  Usage:  <Dispersed src="/img/photo.jpg" alt="Player portrait" />
+  Usage:  <Dispersed under="/img/bg.png" over="/img/player.png" alt="Player portrait" />
   Cross-origin images need CORS headers, since the pixels are read back.
 -->
 <script>
   let {
-    src,
+    under,
+    over,
     alt = '',
     tiles = 63,            // tiles across the short side
     direction = 'down',    // down | up | left | right
@@ -51,10 +53,10 @@
     return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
   }
 
-  // Copy the server-rendered <img> into an offscreen canvas once it has loaded.
+  // Copy the server-rendered `over` <img> into an offscreen canvas once it has loaded.
   // The <img> is in the HTML, so the browser fetches it before hydration.
   $effect(() => {
-    if (!src || !img) return;
+    if (!over || !img) return;
     let cancelled = false;
     const ready = () => {
       if (cancelled || !img.naturalWidth) return;
@@ -182,14 +184,14 @@
             if (!ignore || alpha[sj * cols + si] >= SOLID_ENOUGH) { s = (sj * cols + si) * 3; break; }
           }
           if (s >= 0) {
-            const under = base ?? [...ownColor, ownA];
+            const beneath = base ?? [...ownColor, ownA];
             const mix = r6 * blend;
-            const rgbMix = mix * under[3];
+            const rgbMix = mix * beneath[3];
             color = [
-              colors[s] + (under[0] - colors[s]) * rgbMix,
-              colors[s + 1] + (under[1] - colors[s + 1]) * rgbMix,
-              colors[s + 2] + (under[2] - colors[s + 2]) * rgbMix,
-              1 - mix * (1 - under[3])
+              colors[s] + (beneath[0] - colors[s]) * rgbMix,
+              colors[s + 1] + (beneath[1] - colors[s + 1]) * rgbMix,
+              colors[s + 2] + (beneath[2] - colors[s + 2]) * rgbMix,
+              1 - mix * (1 - beneath[3])
             ];
           }
         }
@@ -287,29 +289,48 @@
 </script>
 
 <div class="dispersed {className}">
-  <!-- shown straight away; the canvas takes over once it's drawn -->
-  <img bind:this={img} {src} {alt} crossorigin="anonymous" class:covered={!!layout} />
+  <!-- `under` sets the size; `over` shows straight away until the canvas takes over -->
+  <img class="under" src={under} {alt} />
+  <img
+    class="over"
+    bind:this={img}
+    src={over}
+    alt=""
+    aria-hidden="true"
+    crossorigin="anonymous"
+    class:covered={!!layout}
+  />
   <canvas bind:this={canvas} aria-hidden="true" class:ready={!!layout}></canvas>
 </div>
 
 <style>
   .dispersed {
     position: relative;
+    width: fit-content;
+    max-width: 100%;
+    max-height: 90svh;
   }
   img {
     display: block;
-    width: 100%;
-    height: auto;
   }
-  /* opacity rather than visibility, so the alt text stays readable */
-  img.covered {
+  /* `under` sizes the box: shrink to fit the container, keep aspect ratio */
+  img.under {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: inherit;
+  }
+  img.over.covered {
     opacity: 0;
   }
+  img.over,
   canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
+  }
+  canvas {
     image-rendering: pixelated;
     opacity: 0;
   }

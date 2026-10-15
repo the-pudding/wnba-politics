@@ -110,7 +110,7 @@
 	<ReadingBar />
 	<article id="story">
 		<header class="story-header">
-			<Dispersed src="{base}/images/cc-fox-logo.png" alt="caitlin clark shoots a three over the fox news logo" />
+			<Dispersed under="{base}/images/cc-fox-logo.png" over="{base}/images/cc-solo.png" alt="caitlin clark shoots a three over the fox news logo" />
 			<!-- <img class="from-the-logo" src="{base}/images/cc-fox-logo.png" alt="caitlin clark shoots a three over the fox news logo" /> -->
 			<div class="text-wrapper">
 				<h1>{meta.hed}</h1>
@@ -135,6 +135,7 @@
 		width: 100%;
 		align-items: center;
 		justify-content: center;
+		height: 100svh;
 	}
 	.from-the-logo {
 		max-height: 50vh;
