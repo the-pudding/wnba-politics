@@ -147,7 +147,7 @@
 	}
 	.story-header h1 {
 		font-family: var(--font-display);
-		font-size: clamp(48px, 6vw, 96px);
+		font-size: clamp(100px, 6vw, 200px);
 		margin-bottom: 12px;
 	}
 	.story-dek {
