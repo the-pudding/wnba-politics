@@ -1,6 +1,7 @@
 <script>
 	import { getContext } from "svelte";
 	import { base } from "$app/paths";
+	import Dispersed from "$components/Dispersed.svelte";
 	import CMS from "$components/helpers/CMS.svelte";
 	import Footer from "$components/Footer.svelte";
 	import Toc from "$components/Toc.svelte";
@@ -109,10 +110,14 @@
 	<ReadingBar />
 	<article id="story">
 		<header class="story-header">
-			<img class="from-the-logo" src="{base}/images/cc-fox-logo.png" alt="caitlin clark shoots a three over the fox news logo" />
-			<h1>{meta.hed}</h1>
-			<p class="story-dek">{meta.dek}</p>
-			<p class="byline">By {@html meta.byline}, with {@html meta.with}</p>
+			<Dispersed src="{base}/images/cc-fox-logo.png" alt="caitlin clark shoots a three over the fox news logo" />
+			<!-- <img class="from-the-logo" src="{base}/images/cc-fox-logo.png" alt="caitlin clark shoots a three over the fox news logo" /> -->
+			<div class="text-wrapper">
+				<h1>{meta.hed}</h1>
+				<p class="story-dek">{meta.dek}</p>
+				<p class="byline">By {@html meta.byline}, with {@html meta.with}</p>
+			</div>
+			
 		</header>
 
 		<CMS {body} {components} />
@@ -126,20 +131,23 @@
 	}
 	.story-header {
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
 		width: 100%;
 		align-items: center;
 		justify-content: center;
-		text-align: center;
 	}
 	.from-the-logo {
 		max-height: 50vh;
 	}
+	.text-wrapper {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
 	.story-header h1 {
-		font-family: "Tiempos Headline", var(--font-serif);
+		font-family: var(--font-display);
 		font-size: clamp(48px, 6vw, 96px);
 		margin-bottom: 12px;
-		text-transform: capitalize;
 	}
 	.story-dek {
 		font-family: var(--font-sans);

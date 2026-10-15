@@ -26,6 +26,7 @@
 	import { COMPARISON, SHORT } from "$utils/outlets.js";
 	import { wordGroupsFor } from "$utils/topicWords.js";
 	import { fill, or } from "$utils/fill.js";
+	import { tidy } from "$utils/clips.js";
 
 	// ---------------------------------------------------------------------
 	// Settings for each topic
@@ -473,11 +474,11 @@
 				? ` In grey, each other outlet’s articles with ${NAME[topic]}.`
 				: "")
 		: `Share of each outlet’s WNBA articles that mention ${NAME[topic]}, by ${monthly ? "month" : "year"}.<br />{swatch}<b>Fox News</b> and {grey}${others.length === 6 ? "six" : others.length} other outlets.`;
-	const dek = fill(or(subtitle, dekDefault), {
+	const dek = tidy(fill(or(subtitle, dekDefault), {
 		swatch: swatch(COLOR[topic]),
 		swatch2: second ? swatch(COLOR[second]) : "",
 		grey: '<span class="sw grey"></span>'
-	});
+	}));
 </script>
 
 <figure class="fvf" bind:clientWidth={width}>
@@ -662,9 +663,8 @@
 			<p><b>{g.label}:</b> {g.words.join(", ")}</p>
 		{/each}
 		<p>
-			{@html or(
-				sourceNote,
-				"An article counts once, however often it uses them."
+			{@html tidy(
+				or(sourceNote, "An article counts once, however often it uses them.")
 			)}
 		</p>
 	</div>

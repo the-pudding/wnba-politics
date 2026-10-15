@@ -69,9 +69,33 @@ export const clipPops = (html, base = "") =>
 // paragraph into it, the server and client trees disagree, and hydration
 // fails — blanking the whole story. Straighten the quotes inside tags.
 export const tidy = (html) =>
-	String(html ?? "").replace(/<[^<>]*>/g, (tag) =>
-		tag.replace(/[“”„‟]/g, '"').replace(/[‘’‚‛]/g, "'")
+	balance(
+		String(html ?? "").replace(/<[^<>]*>/g, (tag) =>
+			tag.replace(/[“”„‟]/g, '"').replace(/[‘’‚‛]/g, "'")
+		)
 	);
+
+// A mistyped closing tag in the Doc (<span>…</a>) leaves an element open:
+// the browser closes it somewhere else than the server did, and hydration
+// fails. Drop closers that match nothing and close whatever is left open.
+const VOID = /^(br|img|hr|wbr|input|source|meta|link|col|area|embed|track)$/i;
+export const balance = (html) => {
+	const open = [];
+	const out = String(html ?? "").replace(
+		/<(\/?)([a-zA-Z][\w-]*)\b[^<>]*?(\/?)>/g,
+		(tag, closing, name, selfClosing) => {
+			name = name.toLowerCase();
+			if (VOID.test(name) || selfClosing) return tag;
+			if (!closing) return open.push(name), tag;
+			const at = open.lastIndexOf(name);
+			if (at < 0) return "";
+			// close anything opened inside it that was left open
+			const inner = open.splice(at).slice(1).reverse();
+			return inner.map((n) => `</${n}>`).join("") + tag;
+		}
+	);
+	return out + open.reverse().map((n) => `</${n}>`).join("");
+};
 
 export const faces = (html, base = "") =>
 	tidy(html).replace(
