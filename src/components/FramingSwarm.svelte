@@ -1619,6 +1619,7 @@
 		font: 400 16px/1.38 var(--font-serif);
 		color: var(--ink);
 		text-decoration: none;
+		font-style: italic;
 	}
 	.swarm :global(.hh a:hover) {
 		text-decoration: underline;
