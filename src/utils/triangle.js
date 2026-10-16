@@ -20,6 +20,12 @@ export const COL = {
 };
 export const NET = ["Fox News", "CNN", "MSNBC"];
 export const NET_COL = [COL.fox, COL.cnn, COL.msnbc];
+// each network's square logo in static/logos/square
+const NET_LOGO = ["fox-news.svg", "cnn.svg", "msnbc.svg"];
+const logoHTML = (i) =>
+	NET_LOGO[i]
+		? `<img class="logo" src="${base}/logos/square/${NET_LOGO[i]}" alt="">`
+		: `<span class="logo"></span>`;
 const ZONES = {
 	fox: "Mostly Fox",
 	cnn: "Mostly CNN",
@@ -105,11 +111,11 @@ export function loadTriangle() {
 // the tooltip: the word, its uses, each network's share, one real chyron
 function tipHTML(t) {
 	const ex = t.ex
-		? `<p class="ex"><span>On ${t.exCh >= 0 ? NET[t.exCh] : "air"}</span>“${esc(tidyChyron(t.ex))}”</p>`
+		? `<p class="ex"${t.exCh >= 0 ? ` style="border-left-color:${NET_COL[t.exCh]}"` : ""}><span>On ${t.exCh >= 0 ? NET[t.exCh] : "air"}</span>“${esc(tidyChyron(t.ex))}”</p>`
 		: "";
 	return (
 		`<div class="w"><span>${esc(t.term)}</span><small>${fmt(t.total)} use${t.total === 1 ? "" : "s"}</small></div>` +
-		`<div class="shares">${NET.map((n, i) => `<span><b style="color:${i === 2 ? COL.msnbcText : NET_COL[i]}">${n}</b><i>${pct(t.s[i])}</i></span>`).join("")}</div>${ex}`
+		`<div class="shares">${NET.map((n, i) => `<span><b style="color:${i === 2 ? COL.msnbcText : NET_COL[i]}">${logoHTML(i)}${n}</b><i>${pct(t.s[i])}</i></span>`).join("")}</div>${ex}`
 	);
 }
 
@@ -154,13 +160,38 @@ export class Tern {
 					this.hover = null;
 					this.pinGone = true;
 				} else return;
+				this.svg.classed("pointing", !!this.hover && !this.locked);
 				this.drawTip();
 			})
 			.on("pointerleave", () => {
 				this.hover = null;
 				this.pinGone = true;
+				this.svg.classed("pointing", false);
+				this.drawTip();
+			})
+			// a click locks the nearest word's tooltip in place; clicking it
+			// again, an empty spot, anywhere off the triangle, or Escape lets it go
+			.on("click", (e) => {
+				const [px, py] = d3.pointer(e, this.svg.node());
+				const hit = this.onTriangle(px, py) ? this.nearest(e) : null;
+				this.locked = hit && hit !== this.locked ? hit : null;
+				this.svg.classed("pointing", false);
 				this.drawTip();
 			});
+		this.locked = null;
+		this.unlock = () => {
+			if (!this.locked) return;
+			this.locked = null;
+			this.drawTip();
+		};
+		this.onAway = (e) => {
+			if (!this.svg.node().contains(e.target)) this.unlock();
+		};
+		this.onKey = (e) => {
+			if (e.key === "Escape") this.unlock();
+		};
+		addEventListener("click", this.onAway);
+		addEventListener("keydown", this.onKey);
 		// a triangle scrolled out of view takes its tooltip with it; a scroll lets
 		// go of the dot under the finger or pointer
 		this.offscreen = false;
@@ -194,6 +225,8 @@ export class Tern {
 		this.io.disconnect();
 		this.ro.disconnect();
 		removeEventListener("scroll", this.onScroll);
+		removeEventListener("click", this.onAway);
+		removeEventListener("keydown", this.onKey);
 	}
 	layout() {
 		const W = this.host.clientWidth;
@@ -611,24 +644,29 @@ export class Tern {
 		return bd < 34 ? best : null;
 	}
 	drawTip() {
+		// a locked word the floor has since hidden lets go
+		if (this.locked && !this.visible().includes(this.locked)) this.locked = null;
 		const t = this.offscreen
 			? null
-			: this.hover ||
+			: this.locked ||
+				this.hover ||
 				(this.state.pin && !this.pinGone && this.by.get(this.state.pin)) ||
 				null;
-		this.gOver.selectAll(".hover-ring").remove();
+		this.gOver.selectAll(".hover-dot").remove();
 		this.gLab.selectAll(".hover-label").remove();
 		this.gLab.selectAll("g.label").attr("opacity", null);
 		if (!t) {
 			this.tip.style("display", "none");
 			return;
 		}
+		// the hovered dot drawn again on top, a little larger
 		this.gOver
 			.append("circle")
-			.attr("class", "ring hover-ring")
+			.attr("class", "hover-dot")
 			.attr("cx", t.x)
 			.attr("cy", t.y)
-			.attr("r", this.r(t.total) * 1.25 + 5);
+			.attr("r", this.r(t.total) + 2.5)
+			.attr("fill", this.state.lit.get(t.term) || leanColor(t.s));
 		// the hovered word named above its dot, as on TernaryStatic, lit or not;
 		// its own label steps aside meanwhile
 		this.gLab.selectAll("g.label").attr("opacity", (d) =>
@@ -638,7 +676,7 @@ export class Tern {
 			.append("text")
 			.attr("class", "wlabel hover-label")
 			.attr("x", t.x)
-			.attr("y", t.y - this.r(t.total) * 1.25 - 8)
+			.attr("y", t.y - this.r(t.total) - 9)
 			.attr("text-anchor", "middle")
 			.attr("fill", this.state.lit.get(t.term) || leanColor(t.s))
 			.style("font-size", (this.narrow ? 12.5 : 13) + "px")

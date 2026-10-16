@@ -105,13 +105,13 @@
 		justify-content: flex-start;
 		gap: 9px;
 		text-decoration: none;
-		color: rgba(42, 21, 3, 0.45);
+		color: var(--wnba-tan-dark);
 	}
 	.dot {
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
-		background: rgba(42, 21, 3, 0.3);
+		background: var(--wnba-tan-dark);
 		flex: 0 0 auto;
 		transition:
 			background 250ms ease,

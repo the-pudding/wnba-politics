@@ -1710,7 +1710,6 @@
 	.swarm :global(.rows) {
 		max-height: 560px;
 		overflow-y: auto;
-		border-bottom: 1.5px solid var(--ink);
 	}
 	.swarm :global(.rows .hr:last-child) {
 		border-bottom: 0;

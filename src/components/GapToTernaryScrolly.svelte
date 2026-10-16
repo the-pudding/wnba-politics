@@ -665,7 +665,7 @@
 
 	.stage.ternary {
 		justify-content: flex-end;
-		margin-right: 3rem;
+		margin-right: 6rem;
 	}
 
 	/* the dot plot, framed as on OutletGapScrolly */

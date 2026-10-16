@@ -315,7 +315,7 @@ span.other {
 }
 
 span.others-gray {
-	color: var(--color-gray-600);
+	color: var(--wnba-tan-dark);
 	font-weight: 700;
 }
 /* the topics, in their trend charts' colours (FoxVsField):

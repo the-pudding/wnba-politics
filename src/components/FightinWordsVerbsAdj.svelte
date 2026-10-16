@@ -822,8 +822,8 @@
 		gap: 4px 20px;
 		width: 100%;
 		max-width: 720px;
-		margin: 0 0 1.5rem 0;
-		border-bottom: 1px solid var(--color-ink-dark);
+		margin: 4px auto 1.5rem;
+		border-bottom: 1px solid var(--color-fg);
 	}
 	.rel-tabs {
 		display: flex;
@@ -842,16 +842,16 @@
 		font-family: var(--font-sans);
 		font-size: 14px;
 		font-weight: 700;
-		color: rgba(42, 21, 3, 0.6);
+		color: var(--wnba-tan-dark);
 		cursor: pointer;
 	}
 	.rel-tabs button.on {
-		color: var(--color-ink-dark);
-		border-bottom-color: var(--color-ink-dark);
+		color: var(--color-fg);
+		border-bottom-color: var(--color-fg);
 	}
 	.rel-tabs button:hover:not(:disabled),
 	.unit-switch button:hover {
-		color: var(--color-ink-dark);
+		color: var(--color-fg);
 	}
 	.rel-tabs button:disabled {
 		opacity: 0.35;

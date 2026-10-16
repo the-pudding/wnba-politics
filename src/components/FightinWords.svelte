@@ -1124,10 +1124,7 @@
 				)}px"
 			>
 				<!-- the side's colour in a swatch and on the quote's rule; the words in ink -->
-				<span class="tip-head"
-					><i class="swatch" style="background:{side}"></i>{properCase(
-						tip.word
-					)}</span
+				<span class="tip-head">{properCase(tip.word)}</span
 				>
 				<!-- the split behind the dot: uses on each side, and the score -->
 				<span class="tip-count"
@@ -1294,7 +1291,7 @@
 		gap: 8px 22px;
 		max-width: 720px;
 		margin: 4px auto 1.5rem;
-		border-bottom: 1px solid var(--color-ink-dark);
+		border-bottom: 1px solid var(--color-fg);
 	}
 	.unit-tabs {
 		display: flex;
@@ -1308,7 +1305,7 @@
 		border-radius: 0;
 		border-bottom: 3px solid transparent;
 		background: none;
-		color: rgba(42, 21, 3, 0.62);
+		color: var(--wnba-tan-dark);
 		font-family: var(--font-sans);
 		font-size: 14px;
 		font-weight: 700;

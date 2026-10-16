@@ -30,16 +30,74 @@
     function toggle(i) {
         expanded[i] = !expanded[i];
     }
+
+    // The nav: a button jumps to its stack, opened, just under the sticky nav
+    let navEl = $state(null);
+    let sheets = $state([]);
+    let active = $state(-1);
+    const navBottom = () => navEl?.getBoundingClientRect().bottom ?? 0;
+    function jump(i) {
+        expanded[i] = true;
+        const sheet = sheets[i];
+        if (!sheet) return;
+        const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const navH = navEl?.offsetHeight ?? 0;
+        scrollTo({
+            top: sheet.getBoundingClientRect().top + scrollY - navH - 16,
+            behavior: reduce ? "auto" : "smooth"
+        });
+    }
+
+    // The active stack: the last one whose top has passed a line a third of
+    // the way down the screen under the nav, while it is still on screen;
+    // none before the first or after the last
+    $effect(() => {
+        let frame = null;
+        const update = () => {
+            frame = null;
+            const line = navBottom() + innerHeight * 0.33;
+            let at = -1;
+            sheets.forEach((sheet, i) => {
+                if (!sheet) return;
+                const r = sheet.getBoundingClientRect();
+                if (r.top <= line && r.bottom > navBottom()) at = i;
+            });
+            active = at;
+        };
+        const queue = () => {
+            if (frame === null) frame = requestAnimationFrame(update);
+        };
+        update();
+        addEventListener("scroll", queue, { passive: true });
+        addEventListener("resize", queue);
+        return () => {
+            removeEventListener("scroll", queue);
+            removeEventListener("resize", queue);
+            if (frame !== null) cancelAnimationFrame(frame);
+        };
+    });
 </script>
 
 <div class="stacked-sections" aria-label={title || "Threads"}>
-
+    <nav bind:this={navEl}>
+        Jump to
+        {#each items as tab, i (i)}
+            <button
+                type="button"
+                class:active={active === i}
+                aria-current={active === i ? "true" : undefined}
+                onclick={() => jump(i)}
+            >
+                {tab.kicker}
+            </button>
+        {/each}
+    </nav>
     <div class="stack">
         {#each items as tab, i (i)}
             {@const isExpanded = expanded[i]}
             {@const isOverflowing = (innerHeights[i] ?? 0) > (outerHeights[i] ?? 0) + 2}
             
-            <section class="sheet">
+            <section class="sheet" bind:this={sheets[i]}>
                 <h4 class="heading">{tab.title}</h4>
 
                 <div
@@ -70,8 +128,48 @@
 
 <style>
     .stacked-sections {
-		max-width: 1200px;
-        margin: 2rem auto;
+		width: 100%;
+        margin-top: 3rem;
+    }
+
+    nav {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        align-items: center;
+        justify-content: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 1rem 0;
+        background-color: var(--wnba-tan-bg);
+        border-bottom: 1px solid var(--color-rule);
+        color: var(--wnba-tan-dark);
+        font-family: var(--font-sans);
+        font-size: 14px;
+    }
+
+    nav button {
+        border-radius: 6px;
+        background-color: var(--color-white);
+        color: var(--wnba-tan-dark);
+        border: 1px solid var(--color-rule);
+        font-weight: 400;
+        width: 100px;
+        text-transform: capitalize;
+        cursor: pointer;
+        transition:
+            background 150ms ease,
+            color 150ms ease;
+    }
+
+    /* the stack in view */
+    nav button.active {
+        background: var(--color-ink-dark);
+        border-color: var(--color-ink-dark);
+        color: #fff;
+        font-weight: 700;
     }
     
     .title {
@@ -90,6 +188,8 @@
         display: flex;
         flex-direction: column;
         gap: 40px;
+        max-width: 1200px;
+        margin: 2rem auto;
     }
 
     .sheet {
