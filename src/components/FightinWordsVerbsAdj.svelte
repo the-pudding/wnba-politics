@@ -612,19 +612,6 @@
 		align-items: center;
 		justify-content: center;
 	}
-
-	.kicker {
-		background: var(--wnba-red);
-		color: var(--wnba-tan-bg);
-		display: inline-block;
-		text-transform: uppercase;
-		font-family: var(--font-sans);
-		font-weight: 700;
-		font-size: 10px;
-		padding: 6px;
-		border-radius: 4px;
-		margin: 0 0 6px 0;
-	}
 	
 	/* the bars hang from a fixed top: a step with more or fewer words only
 	   lengthens the chart downward, instead of re-centring everything */
@@ -643,9 +630,9 @@
 		display: flex;
 		gap: 4px;
 		width: 100%;
-		max-width: 760px;
+		max-width: 720px;
 		padding: 4px 2px 8px;
-		margin: 0 0 6px;
+		margin: 0 0 1rem 0;
 	}
 	.player {
 		appearance: none;
@@ -670,22 +657,26 @@
 		height: 46px;
 		border-radius: 50%;
 		object-fit: cover;
-		background: #f6e7d6;
+		background: var(--wnba-tan-mid);
 		transition: transform 120ms ease;
 	}
 	.player-name {
 		font-family: var(--font-sans);
-		font-size: 11px;
-		font-weight: 700;
+		font-size: 12px;
+		font-weight: 500;
 		line-height: 1.15;
 		text-align: center;
-		color: rgba(42, 21, 3, 0.7);
+		color: var(--color-fg);
+		margin-top: 4px;
 	}
 	.player:hover img {
 		transform: translateY(-2px);
 	}
 	.player.on, .player:hover {
 		opacity: 1;
+	}
+	.player.on .player-name, .player:hover .player-name {
+		font-weight: 700;
 	}
 
 	.player.on img,
@@ -776,17 +767,8 @@
 	/* the heading in plain words, and what it is compared with */
 	.head {
 		width: 100%;
-		max-width: 760px;
+		max-width: 720px;
 		margin: 0 0 10px;
-	}
-	.heading {
-		margin: 0;
-		font-family: var(--font-graphic);
-		font-size: 24px;
-		font-weight: 700;
-		line-height: 1.22;
-		letter-spacing: -0.01em;
-		text-align: left;
 	}
 	.heading .vs {
 		font-weight: 400;
@@ -839,8 +821,8 @@
 		align-items: flex-end;
 		gap: 4px 20px;
 		width: 100%;
-		max-width: 760px;
-		margin: 0 0 10px;
+		max-width: 720px;
+		margin: 0 0 1.5rem 0;
 		border-bottom: 1px solid var(--color-ink-dark);
 	}
 	.rel-tabs {

@@ -29,7 +29,7 @@
     seed = 7,
     maxSize = 2400,        // working resolution cap
     animate = true,        // reveal tiles when scrolled into view
-    duration = 900,        // ms for the reveal to sweep across
+    duration = 2000,        // ms for the reveal to sweep across
     pop = 150,             // ms for each tile to grow in
     threshold = 0.3,       // how much of the canvas must be visible to start
     class: className = ''
@@ -308,7 +308,8 @@
     position: relative;
     width: fit-content;
     max-width: 100%;
-    max-height: 90svh;
+    height: 90svh;
+    max-height: 700px;
   }
   img {
     display: block;

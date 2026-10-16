@@ -124,19 +124,6 @@
 		margin: 8px auto 20px;
 	}
 
-	.kicker {
-		background: var(--wnba-red);
-		color: var(--wnba-tan-bg);
-		display: inline-block;
-		text-transform: uppercase;
-		font-family: var(--font-sans);
-		font-weight: 700;
-		font-size: 10px;
-		padding: 6px;
-		border-radius: 4px;
-		margin: 0 0 6px 0;
-	}
-
 	.controls {
 		display: flex;
 		justify-content: center;

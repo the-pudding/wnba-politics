@@ -635,14 +635,6 @@
 	.head {
 		margin: 0 0 12px;
 	}
-	.heading {
-		margin: 0;
-		font-family: var(--font-serif);
-		font-size: 22px;
-		font-weight: 700;
-		line-height: 1.25;
-		color: var(--ink);
-	}
 	.subheading {
 		display: flex;
 		align-items: center;

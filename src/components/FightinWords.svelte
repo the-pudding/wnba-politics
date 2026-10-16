@@ -1168,20 +1168,6 @@
 		margin: 0 auto;
 		position: relative;
 	}
-
-	.kicker {
-		background: var(--wnba-red);
-		color: var(--wnba-tan-bg);
-		display: inline-block;
-		text-transform: uppercase;
-		font-family: var(--font-sans);
-		font-weight: 700;
-		font-size: 10px;
-		padding: 6px;
-		border-radius: 4px;
-		margin: 0 0 6px 0;
-	}
-	
 	.tip-card {
 		position: absolute;
 		z-index: 8;
@@ -1255,16 +1241,6 @@
 		max-width: 720px;
 		margin: 0 auto 10px;
 	}
-	.heading {
-		margin: 0;
-		font-family: var(--font-graphic);
-		font-size: 24px;
-		font-weight: 700;
-		line-height: 1.22;
-		letter-spacing: -0.01em;
-		text-align: left;
-		color: var(--color-ink-dark);
-	}
 	.subheading {
 		display: flex;
 		align-items: center;
@@ -1317,7 +1293,7 @@
 		align-items: flex-end;
 		gap: 8px 22px;
 		max-width: 720px;
-		margin: 4px auto 14px;
+		margin: 4px auto 1.5rem;
 		border-bottom: 1px solid var(--color-ink-dark);
 	}
 	.unit-tabs {
@@ -1359,9 +1335,9 @@
 		width: 200px;
 		height: 30px;
 		padding: 0 10px 0 28px;
-		border: 1px solid rgba(42, 21, 3, 0.25);
-		border-radius: 15px;
-		background: #fff
+		border: 1px solid var(--wnba-tan-light);
+		border-radius: 4px;
+		background: var(--color-white)
 			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23727272' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E")
 			no-repeat 10px 50%;
 		font-family: var(--font-sans);
@@ -1369,8 +1345,8 @@
 		color: var(--color-ink-dark);
 	}
 	.find input:focus {
-		outline: none;
-		border-color: var(--color-ink-dark);
+		outline: 2px solid var(--color-ink-dark);
+		outline-offset: -2px;
 	}
 	.uses.even {
 		color: rgba(42, 21, 3, 0.55);

@@ -476,11 +476,10 @@
 							</span>
 						</label>
 						<label class="control">
-							<span class="control-label">Find a word</span>
 							<div class="search-box">
 								<input
 									type="search"
-									placeholder="Search for a word…"
+									placeholder="Find a word…"
 									bind:value={query}
 									autocomplete="off"
 									spellcheck="false"
@@ -690,6 +689,10 @@
 	.handing .gap :global(.face-mark) {
 		opacity: 0;
 	}
+	/* and the named faces settle back to size, so every head leaves the same */
+	.handing .gap :global(.face-scale) {
+		transform: scale(1) !important;
+	}
 
 	/* the triangle, framed as on TernaryScrolly */
 	.ternary :global(svg) {
@@ -709,7 +712,7 @@
 		top: 0;
 		border-radius: 50%;
 		overflow: hidden;
-		background: #f6e7d6;
+		background: var(--wnba-tan-light);
 		will-change: transform;
 	}
 	/* the photo framed as the dot plot frames it: a little large, a little low */
@@ -1018,18 +1021,21 @@
 		margin-top: 2px;
 	}
 	.control input[type="search"] {
-		width: 100%;
-		box-sizing: border-box;
-		font: inherit;
+		width: 200px;
+		height: 30px;
+		padding: 0 10px 0 28px;
+		border: 1px solid var(--wnba-tan-light);
+		border-radius: 4px;
+		background: var(--color-white)
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23727272' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E")
+			no-repeat 10px 50%;
+		font-family: var(--font-sans);
 		font-size: 14px;
-		padding: 7px 9px;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		border-radius: 3px;
-		background: #fff;
-		color: var(--color-ink);
+		color: var(--color-ink-dark);
 	}
 	.control input[type="search"]:focus {
-		outline: none;
+		outline: 2px solid var(--color-ink-dark);
+		outline-offset: -2px;
 	}
 	.search-box {
 		position: relative;

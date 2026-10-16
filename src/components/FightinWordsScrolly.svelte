@@ -83,12 +83,13 @@
 	   lengthens the chart downward, instead of re-centring it */
 	.fw-scrolly.bars .sticky {
 		align-items: flex-start;
-		padding-top: 5vh;
+		padding: 2rem 0;
 		box-sizing: border-box;
 	}
 	/* flex item shrinks to its content without this */
 	.sticky :global(.fightin-words) {
 		width: min(1400px, 94vw);
+		height: 100%;
 	}
 	/* leaves room for the controls the explore beat brings back; the bars
 	   size their own rows to the viewport instead */

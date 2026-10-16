@@ -107,7 +107,7 @@
 	}}
 >
 	<ScrollToc />
-	<ReadingBar />
+	<!-- <ReadingBar /> -->
 	<article id="story">
 		<header class="story-header">
 			<Dispersed under="{base}/images/cc-fox-logo.png" over="{base}/images/cc-solo.png" alt="caitlin clark shoots a three over the fox news logo" />
@@ -137,9 +137,6 @@
 		justify-content: center;
 		height: 100svh;
 	}
-	.from-the-logo {
-		max-height: 50vh;
-	}
 	.text-wrapper {
 		display: flex;
 		flex-direction: column;
@@ -147,8 +144,9 @@
 	}
 	.story-header h1 {
 		font-family: var(--font-display);
-		font-size: clamp(100px, 6vw, 200px);
+		font-size: clamp(120px, 6vw, 200px);
 		margin-bottom: 12px;
+		line-height: 1;
 	}
 	.story-dek {
 		font-family: var(--font-sans);

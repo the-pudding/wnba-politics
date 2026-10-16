@@ -677,18 +677,6 @@
 		font-family: var(--font-graphic);
 		color: var(--color-ink-dark);
 	}
-	.kicker {
-		background: var(--wnba-red);
-		color: var(--wnba-tan-bg);
-		display: inline-block;
-		text-transform: uppercase;
-		font-family: var(--font-sans);
-		font-weight: 700;
-		font-size: 10px;
-		padding: 6px;
-		border-radius: 4px;
-		margin: 0 0 6px 0;
-	}
 	.hed {
 		margin: 0 0 8px;
 		font-family: var(--font-graphic);

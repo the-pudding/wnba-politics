@@ -516,6 +516,8 @@
 			role="img"
 			aria-label="Whether Fox News or {against} gives each player a larger share of its WNBA headlines"
 		>
+			<!-- the Fox half: from the equal line to the end of the axis -->
+			<rect class="fox-half" x={x(0)} y="28" width={NAMES + PLOT - x(0)} height={height - 82} />
 			<text
 				class="head"
 				x={narrow ? NAMES + 24 + 10 : x(0) - 22}
@@ -650,7 +652,7 @@
 									<circle cx={dx} cy="0" r={Math.max(0, rr - 1)} />
 								</clipPath>
 								{#if faceFiles[ws]}
-									<circle cx={dx} cy="0" r={rr} fill="#f6e7d6" />
+									<circle cx={dx} cy="0" r={rr}  />
 									<image
 										href="{base}/net/{ws}{faceFiles[ws]}"
 										x={dx - rr * 1.2}
@@ -661,7 +663,7 @@
 										preserveAspectRatio="xMidYMid slice"
 									/>
 								{:else}
-									<circle cx={dx} cy="0" r={rr} fill="var(--color-sand)" />
+									<circle cx={dx} cy="0" r={rr} />
 								{/if}
 								<circle
 									cx={dx}
@@ -676,7 +678,7 @@
 								<circle cx="0" cy="0" r={Math.max(0, r - 1)} />
 							</clipPath>
 							{#if faceFiles[slug]}
-								<circle cx="0" cy="0" {r} fill="#f6e7d6" />
+								<circle cx="0" cy="0" {r} fill="var(--wnba-tan-light)" />
 								<image
 									href="{base}/net/{slug}{faceFiles[slug]}"
 									x={-r * 1.2}
@@ -780,28 +782,19 @@
 		margin: 0 auto;
 	}
 
-	.kicker {
-		background: var(--wnba-red);
-		color: var(--wnba-tan-bg);
-		display: inline-block;
-		text-transform: uppercase;
-		font-family: var(--font-sans);
-		font-weight: 700;
-		font-size: 10px;
-		padding: 6px;
-		border-radius: 4px;
-		margin: 0 0 6px 0;
-	}
-
 	.head {
 		text-transform: uppercase;
-		font-size: 11px;
+		font-size: 12px;
 	}
 	svg {
 		width: 100%;
 		height: auto;
 		display: block;
 		overflow: visible;
+	}
+
+	.fox-half {
+		fill: var(--wnba-tan-light);
 	}
 
 	.tip .ex {
@@ -866,16 +859,6 @@
 		margin: 0 0 14px var(--axis-left, 0px);
 		width: var(--axis-width, auto);
 		max-width: 100%;
-	}
-	.heading {
-		margin: 0;
-		font-family: var(--font-graphic);
-		font-size: 24px;
-		font-weight: 700;
-		line-height: 1.22;
-		letter-spacing: -0.01em;
-		text-wrap: pretty;
-		color: var(--color-ink);
 	}
 	.subheading {
 		display: flex;
@@ -1040,7 +1023,7 @@
 	}
 
 	.head {
-		font-size: 11px;
+		font-size: 12px;
 		font-weight: 700;
 	}
 	.grid {
@@ -1056,14 +1039,14 @@
 		stroke-linecap: round;
 	}
 	.guide {
-		stroke: rgba(42, 21, 3, 0.3);
+		stroke: var(--color-fg);
 		stroke-width: 1;
-		stroke-dasharray: 3 4;
+		stroke-dasharray: 2 2;
 	}
 	.tick {
-		font-size: 11px;
-		font-weight: 600;
-		fill: rgba(42, 21, 3, 0.72);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--color-fg);
 	}
 	.ratio {
 		font-size: 13px;
@@ -1084,7 +1067,8 @@
 
 	.name {
 		font-size: 15px;
-		fill: rgba(42, 21, 3, 0.85);
+		font-weight: 700;
+		fill: var(--color-fg);
 	}
 	.name.short {
 		font-size: 13.5px;
@@ -1094,7 +1078,7 @@
 		font-size: 12px;
 	}
 	.row.lit .name {
-		fill: var(--color-ink);
+		fill: var(--color-fg);
 		font-weight: 700;
 	}
 	.row {
@@ -1103,9 +1087,13 @@
 	.row.dim {
 		opacity: 0.22;
 	}
+	.row.dim .name {
+		font-weight: 500;
+	}
 	/* not yet placed: on the equal line, veiled, name faded */
 	.row.waiting .name {
 		opacity: 0.45;
+		font-weight: 500;
 	}
 	.veil {
 		fill: var(--wnba-tan-bg);

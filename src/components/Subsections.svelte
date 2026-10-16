@@ -40,7 +40,7 @@
             {@const isOverflowing = (innerHeights[i] ?? 0) > (outerHeights[i] ?? 0) + 2}
             
             <section class="sheet">
-                <h4 class="name">{tab.title}</h4>
+                <h4 class="heading">{tab.title}</h4>
 
                 <div
                     class="content-wrapper"
@@ -115,15 +115,6 @@
         line-height: 1.15;
         margin: 0;
         color: var(--color-ink-dark);
-    }
-
-    .kicker {
-        display: block;
-        font-size: 14px;
-        font-weight: 400;
-        line-height: 1.2;
-        opacity: 0.75;
-        margin-top: 6px;
     }
 
     /* Outer wrapper caps height to 100svh */

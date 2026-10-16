@@ -491,14 +491,6 @@
 		margin: 0 auto 22px;
 		text-align: center;
 	}
-	.kicker {
-		font-size: 11px;
-		font-weight: 700;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		color: var(--accent);
-		margin: 0 0 10px;
-	}
 	.lede h3 {
 		font-family: var(--font-serif);
 		font-size: 34px;

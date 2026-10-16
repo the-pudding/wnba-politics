@@ -1082,7 +1082,7 @@
 
 <section class="swarm" bind:this={root}>
 	<p class="kicker">on the web</p>
-	<h5>{or(kicker, "How Fox News frames each player")}</h5>
+	<h4 class="heading">{or(kicker, "How Fox News frames each player")}</h4>
 	<div class="tabrow">
 		<div class="tabs" data-id="tabs" role="tablist" aria-label="Measure"></div>
 		<div class="unit" data-id="unit" role="group" aria-label="Counted over">
@@ -1177,19 +1177,6 @@
 		margin: 0 0 1rem 0;
 	}
 
-	.kicker {
-		background: var(--wnba-red);
-		color: var(--wnba-tan-bg);
-		display: inline-block;
-		text-transform: uppercase;
-		font-family: var(--font-sans);
-		font-weight: 700;
-		font-size: 10px;
-		padding: 6px;
-		border-radius: 4px;
-		margin: 0 0 6px 0;
-	}
-
 	.swarm :global(*) {
 		box-sizing: border-box;
 	}
@@ -1200,6 +1187,7 @@
 		flex-wrap: wrap;
 		align-items: flex-end;
 		gap: 6px 20px;
+		margin: 1.5rem 0;
 		border-bottom: 1px solid var(--ink);
 	}
 	.swarm :global(.tabs) {
@@ -1548,34 +1536,39 @@
 	.swarm :global(.tctl select) {
 		font: 400 14px var(--font-sans);
 		color: var(--ink);
-		background: #fff;
-		border: 1px solid #cfcac2;
-		border-radius: 3px;
-		padding: 4px 6px;
+		background-color: var(--color-white);
+		border: 1px solid var(--wnba-tan-light);
+		outline: 1px solid var(--color-border, ray);
+		border-radius: 4px;
+		padding: 4px 24px 4px 6px;
+		height: 30px;
+		width: 120px;
 	}
 	.swarm :global(.tctl select:focus) {
-		outline: 2px solid var(--ink);
-		outline-offset: 1px;
+		outline: 2px solid var(--color-fg);
+		outline-offset: -2px;
 	}
 	.swarm :global(.find) {
 		position: relative;
 		margin-left: auto;
 	}
+
 	.swarm :global(.find input) {
 		width: 200px;
 		height: 30px;
 		padding: 0 10px 0 28px;
-		border: 1px solid #cfcac2;
-		border-radius: 15px;
-		font: 14px var(--font-sans);
-		color: var(--ink);
-		background: #fff
+		border: 1px solid var(--wnba-tan-light);
+		border-radius: 4px;
+		background: var(--color-white)
 			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23727272' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E")
 			no-repeat 10px 50%;
+		font-family: var(--font-sans);
+		font-size: 14px;
+		color: var(--color-ink-dark);
 	}
 	.swarm :global(.find input:focus) {
-		outline: none;
-		border-color: var(--ink);
+		outline: 2px solid var(--color-ink-dark);
+		outline-offset: -2px;
 	}
 
 	.swarm :global(.rows-h),

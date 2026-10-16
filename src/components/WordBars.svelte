@@ -402,14 +402,14 @@
 <div class="word-bars" bind:this={el}>
 	{#if source}
 		<!-- the column heads -->
-		<svg width={WIDTH} height={TOP - 6} viewBox="0 0 {WIDTH} {TOP - 6}" role="presentation">
+		<svg width={WIDTH} height={TOP - 24} viewBox="0 0 {WIDTH} {TOP - 24}" role="presentation">
 			{#if source.topHead}
 				<!-- heads at the bars' outer edges, saying what each side means:
 				     "← Other outlets use more" · "Fox News uses more →" (2026-10-02) -->
 				{@const oneLine = textWidth(source.bottomHead) + textWidth(source.topHead) + 60 < 2 * barsReach}
 				{#if oneLine}
-					<text class="head edge others" x={mid - barsReach} y="16" text-anchor="start">← {source.bottomHead}</text>
-					<text class="head edge fox" x={mid + barsReach} y="16" text-anchor="end">{source.topHead} →</text>
+					<text class="head edge others" x={0} y="10" text-anchor="start">← {source.bottomHead}</text>
+					<text class="head edge fox" x={WIDTH} y="10" text-anchor="end">{source.topHead} →</text>
 				{:else}
 					<!-- too narrow for both on one line: each breaks before "use(s) more" -->
 					{@const split = (t) => { const i = t.search(/ uses? more$/); return i > 0 ? [t.slice(0, i), t.slice(i + 1)] : [t, ""]; }}
@@ -609,9 +609,9 @@
 <style>
 	.word-bars {
 		width: 100%;
-		max-width: 1000px;
+		max-width: 720px;
+		margin: 0 auto 5rem auto;
 		position: relative;
-		margin-bottom: 5rem;
 	}
 	svg {
 		display: block;
@@ -651,32 +651,32 @@
 	.head {
 		font-family: var(--font-chart);
 		text-transform: uppercase !important;
-		font-size: 11px;
-		font-weight: 800;
+		font-size: 12px;
+		font-weight: 700;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 	}
 	.head.fox {
 		fill: var(--color-fox-navy);
 		text-transform: uppercase;
-		font-size: 11px;
+		font-size: 12px;
 	}
 	/* the edge heads: sentence case, a little larger */
 	.head.edge {
 		text-transform: uppercase;
-		font-size: 11px;
+		font-size: 12px;
 		font-weight: 700;
 		letter-spacing: 0;
 		text-transform: none;
 	}
 	.head.edge.narrow {
 		text-transform: uppercase;
-		font-size: 11px;
+		font-size: 12px;
 	}
 	.head.others {
 		fill: var(--color-outlets);
 		text-transform: uppercase;
-		font-size: 11px;
+		font-size: 12px;
 	}
 	.pin-gap {
 		font-size: 16px;

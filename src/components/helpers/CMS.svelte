@@ -369,6 +369,17 @@
 		margin-bottom: 1em;
 		color: var(--color-ink);
 	}
+	.kicker {
+		background: var(--wnba-red);
+		color: var(--wnba-tan-bg);
+		display: inline-block;
+		text-transform: uppercase;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 10px;
+		padding: 6px;
+		margin: 0 0 6px 0;
+	}
 	p :global(mark) {
 		color: inherit;
 		padding: 0 3px;
@@ -396,7 +407,7 @@
 		width: 100vw;
 		margin-left: 50%;
 		transform: translateX(-50%);
-		padding: 0 12px;
+		padding: 0 2rem;
 	}
 	.chart-title {
 		font-size: 19px;
@@ -414,18 +425,6 @@
 		line-height: 1.15;
 		font-weight: 700;
 		color: var(--color-gray-950);
-	}
-	.kicker {
-		background: var(--wnba-red);
-		color: var(--wnba-tan-bg);
-		display: inline-block;
-		text-transform: uppercase;
-		font-family: var(--font-sans);
-		font-weight: 700;
-		font-size: 10px;
-		padding: 6px;
-		border-radius: 4px;
-		margin: 0 0 6px 0;
 	}
 	.chart-caption {
 		font-size: 12px;
@@ -482,7 +481,6 @@
 	}
 	/* desktop: larger body text (2026-09-30); phones keep 17px */
 	@media (min-width: 769px) {
-		p,
 		ul,
 		ol,
 		.quote p {
