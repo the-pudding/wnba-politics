@@ -14,6 +14,7 @@
 	import LogoSelect from "$components/helpers/LogoSelect.svelte";
 	import { checks } from "$utils/checks.svelte.js";
 	import { base } from "$app/paths";
+	import { faces, clipPops } from "$utils/clips.js";
 	import roster from "$data/people.json";
 	import data from "$data/player_words.json";
 	const faceFiles = Object.fromEntries(
@@ -587,7 +588,7 @@
 					class:active={last === i}
 					class:explore={step.explore}
 				>
-					<p class="card">{@html step.html}</p>
+					<p class="card">{@html clipPops(faces(step.html, base), base)}</p>
 				</div>
 			{/each}
 			<!-- cardless final beat: the chart stays put for another screen and a

@@ -350,7 +350,7 @@ mark.pen {
    (utils/whoColors.js) */
 .name-line {
 	text-decoration: underline;
-	text-decoration-color: var(--who);
+	text-decoration-color: var(--wnba-orange);
 	text-decoration-thickness: 2px;
 	text-underline-offset: 3px;
 }

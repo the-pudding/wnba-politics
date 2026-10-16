@@ -1042,6 +1042,7 @@
 		font-size: 13.5px;
 		line-height: 1.4;
 		color: var(--color-fg);
+		font-style: italic;
 	}
 	.tip .ex span {
 		display: block;

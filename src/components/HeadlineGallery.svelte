@@ -190,10 +190,10 @@
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
-		background: var(--wnba-tan-dark);
+		background: var(--color-rule);
 	}
 	.dot.on {
-		background: var(--color-gray-950);
+		background: var(--color-fg);
 	}
 	figcaption {
 		font-size: 12.5px;

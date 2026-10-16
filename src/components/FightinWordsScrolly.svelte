@@ -1,7 +1,9 @@
 <script>
 	// The Fightin' Words scatter walked through
 	import Scrolly from "$components/helpers/Scrolly.svelte";
+	import { base } from "$app/paths";
 	import FightinWords from "$components/FightinWords.svelte";
+	import { faces, clipPops } from "$utils/clips.js";
 
 	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
 	// the rest: the Doc's words for the chart (see FightinWords)
@@ -55,7 +57,7 @@
 		<Scrolly bind:value={index}>
 			{#each STEPS as step, i}
 				<div class="step" class:active={index === i}>
-					<p class="card">{@html step.html}</p>
+					<p class="card">{@html clipPops(faces(step.html, base), base)}</p>
 				</div>
 			{/each}
 			<!-- cardless final beat: the chart stays put for another screen and a

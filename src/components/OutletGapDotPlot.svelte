@@ -803,6 +803,7 @@
 		border-left: 3px solid var(--tip-rule);
 		font: var(--tip-quote);
 		max-width: 260px;
+		font-style: italic;
 	}
 	.tip {
 		position: absolute;

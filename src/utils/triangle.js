@@ -111,7 +111,7 @@ export function loadTriangle() {
 // the tooltip: the word, its uses, each network's share, one real chyron
 function tipHTML(t) {
 	const ex = t.ex
-		? `<p class="ex"${t.exCh >= 0 ? ` style="border-left-color:${NET_COL[t.exCh]}"` : ""}><span>On ${t.exCh >= 0 ? NET[t.exCh] : "air"}</span>“${esc(tidyChyron(t.ex))}”</p>`
+		? `<p class="ex"${t.exCh >= 0 ? ` style="border-left-color:${NET_COL[t.exCh]}"` : ""}><span> ${t.exCh >= 0 ? NET[t.exCh] : "air"}</span>“${esc(tidyChyron(t.ex))}”</p>`
 		: "";
 	return (
 		`<div class="w"><span>${esc(t.term)}</span><small>${fmt(t.total)} use${t.total === 1 ? "" : "s"}</small></div>` +

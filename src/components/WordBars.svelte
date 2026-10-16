@@ -802,6 +802,7 @@
 		border-left: 3px solid var(--tip-rule);
 		font: var(--tip-quote);
 		color: var(--color-fg);
+		font-style: italic;
 	}
 	/* the pointer: a paper triangle with the same hairline, at the bar */
 	/* .tip-card::after,

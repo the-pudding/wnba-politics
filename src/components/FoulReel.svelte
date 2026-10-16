@@ -537,9 +537,8 @@
 
 <style>
 	.foul-reel {
-		margin: 0;
 		max-width: 760px;
-		margin-inline: auto;
+		margin: 1rem auto;
 		font-family: var(--font-chart);
 	}
 	.note,
@@ -678,6 +677,8 @@
     	padding: 10px 15px;
 		transform: rotate(-0.8deg);
 		text-align: left;
+		font-style: italic;
+		font-size: 18px;
 	}
 	.clip.alt {
 		transform: rotate(0.7deg);
@@ -795,7 +796,7 @@
 		cursor: pointer;
 	}
 	.dot-btn.on {
-		background: var(--color-gray-950);
+		background: var(--color-fg);
 	}
 	@media (max-width: 640px) {
 		/* stacked on a phone: the two clippings close together, the type a

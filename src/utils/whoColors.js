@@ -68,7 +68,7 @@ export function markNames(html, only = null) {
 				if (h.at < from) continue;
 				out +=
 					part.slice(from, h.at) +
-					`<span class="name-line" style="--who:${h.color}">${part.slice(h.at, h.end)}</span>`;
+					`<span class="name-line">${part.slice(h.at, h.end)}</span>`;
 				from = h.end;
 			}
 			return out + part.slice(from);

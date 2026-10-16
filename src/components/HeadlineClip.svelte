@@ -99,11 +99,12 @@
 		margin-bottom: 8px;
 	}
 	.clip-title {
-		font-size: 15.5px;
-		font-weight: 700;
+		font-size: 18px;
+		font-weight: 400;
 		line-height: 1.4;
 		margin: 5px 0 0;
 		font-family: var(--font-serif);
+		font-style: italic;
 		color: var(--color-ink-dark);
 	}
 	.clip-title :global(mark:not(.pen)) {

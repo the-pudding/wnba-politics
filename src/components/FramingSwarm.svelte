@@ -473,16 +473,16 @@
 						.text("Neutral");
 				if (L.binW) {
 					gAxis
-						.append("line")
-						.attr("class", "sep")
-						.attr("x1", L.binW + 14)
-						.attr("x2", L.binW + 14)
-						.attr("y1", L.top - 6)
-						.attr("y2", baseY + 20);
+						.insert("rect", ":first-child")
+						.attr("class", "bin")
+						.attr("x", 0)
+						.attr("y", 0)
+						.attr("width", L.binW + 14)
+						.attr("height", baseY + 20);
 					gAxis
 						.append("text")
 						.attr("class", "note b")
-						.attr("x", L.binW / 2)
+						.attr("x", (L.binW + 14) / 2)
 						.attr("y", 14)
 						.attr("text-anchor", "middle")
 						.text(NONE[tab]);
@@ -527,17 +527,18 @@
 						.text("Neutral");
 				if (L.zn.length) {
 					gAxis
-						.append("line")
-						.attr("class", "sep")
-						.attr("x1", 0)
-						.attr("x2", W)
-						.attr("y1", L.binTop)
-						.attr("y2", L.binTop);
+						.insert("rect", ":first-child")
+						.attr("class", "bin")
+						.attr("x", 0)
+						.attr("y", L.binTop)
+						.attr("width", W)
+						.attr("height", H - L.binTop);
 					gAxis
 						.append("text")
 						.attr("class", "note b")
-						.attr("x", 0)
+						.attr("x", W / 2)
 						.attr("y", L.binTop + 15)
+						.attr("text-anchor", "middle")
 						.text(NONE[tab]);
 				}
 			}
@@ -744,10 +745,9 @@
 				u = unit();
 			let html = `<p class="t">${esc(curly(p.name))}</p>`;
 			if (tab === "tone") {
-				html += `<p class="f">Average tone <b>${toneFmt(p.tone)}</b> across ${fmt(p.n)} ${u} naming her</p>`;
-				html += `<p class="rk">${rankLine(p, L.P)}</p>`;
-				html += `<p class="q h"><span>Her harshest ${unit1()}</span>${esc(curly(p.worst))}</p>`;
-				html += `<p class="q w"><span>Her warmest</span>${esc(curly(p.best))}</p>`;
+				html += `<p class="f">Average tone <b>${toneFmt(p.tone)}</b> across ${fmt(p.n)} ${u} naming her • ${rankLine(p, L.P)}</p>`;
+				html += `<p class="q h"><span>Harshest ${unit1()}</span>${esc(curly(p.worst))}</p>`;
+				html += `<p class="q w"><span>Warmest</span>${esc(curly(p.best))}</p>`;
 			} else {
 				html += `<p class="f"><b>${fmt(p[tab + "N"])}</b> of the ${fmt(p.n)} ${u} naming her ${DOES[tab]}: <b>${pct(p[tab])}</b></p>`;
 				html += `<p class="rk">${rankLine(p, L.P)}</p>`;
@@ -1257,8 +1257,9 @@
 		font-family: var(--font-sans);
 	}
 	.swarm :global(.grid) {
-		stroke: var(--grid);
+		stroke: var(--color-fg);
 		stroke-width: 1;
+		stroke-dasharray: 2 2;
 		shape-rendering: crispEdges;
 	}
 	.swarm :global(.base) {
@@ -1272,10 +1273,9 @@
 		stroke-dasharray: 3 3;
 		shape-rendering: crispEdges;
 	}
-	.swarm :global(.sep) {
-		stroke: var(--rule);
-		stroke-width: 1;
-		stroke-dasharray: 2 3;
+	.swarm :global(.bin) {
+		fill: var(--wnba-tan-light);
+		opacity: 0.5;
 	}
 	.swarm :global(.tick) {
 		font-size: 12px;
@@ -1283,17 +1283,17 @@
 		font-variant-numeric: tabular-nums;
 	}
 	.swarm :global(.dir) {
-		font-size: 13px;
+		font-size: 12px;
 		font-weight: 700;
-		fill: var(--ink);
+		fill: var(--color-fg);
 	}
 	.swarm :global(.note) {
 		font-size: 12px;
-		fill: var(--ink-3);
+		fill: var(--color-fg);
 	}
 	.swarm :global(.note.b) {
 		font-weight: 700;
-		fill: var(--ink-2);
+		fill: var(--wnba-tan-dark);
 	}
 	.swarm :global(.node) {
 		cursor: pointer;
@@ -1308,12 +1308,12 @@
 	.swarm :global(.node .ring) {
 		fill: none;
 		stroke: var(--ring);
-		stroke-width: 1.5;
+		stroke-width: 3;
 		vector-effect: non-scaling-stroke;
 	}
 	.swarm :global(.node.neg .ring) {
 		stroke: var(--harsh);
-		stroke-width: 2;
+		stroke-width: 3;
 	}
 	.swarm :global(.node.picked .ring) {
 		stroke: var(--ink);
@@ -1400,8 +1400,9 @@
 	}
 	.swarm :global(.tip .f) {
 		font: 400 13px/1.45 var(--font-sans);
-		color: var(--ink-2);
-		margin: 0;
+		color: var(--color-fg);
+		margin:  0 0 0.75rem 0;
+		line-height: 1.2;
 	}
 	.swarm :global(.tip .f b) {
 		color: var(--ink);
@@ -1417,7 +1418,8 @@
 		padding-left: 9px;
 		border-left: 2px solid rgba(28, 25, 23, 0.22);
 		font: 400 13.5px/1.4 var(--font-serif);
-		color: var(--ink);
+		color: var(--color-fg);
+		font-style: italic;
 	}
 	.swarm :global(.tip .q.h) {
 		border-left-color: var(--harsh);
@@ -1458,10 +1460,11 @@
 	.swarm :global(.tbl-h) {
 		margin: 0 0 4px;
 		font: 700 18px var(--font-sans);
+		font-size: 18px;
 	}
 	.swarm :global(.summary) {
 		margin: 0 0 10px;
-		font-size: 14px;
+		font-size: 16px;
 		line-height: 1.5;
 		color: var(--ink-2);
 	}
@@ -1490,9 +1493,9 @@
 		gap: 5px;
 		margin: 2px 4px 2px 0;
 		padding: 2px 9px 2px 10px;
-		border: 1px solid var(--ink);
-		border-radius: 13px;
-		background: #fff;
+		border: 1px solid var(--color-rule);
+		border-radius: 4px;
+		background: var(--wnba-tan-light);
 		font: 700 12.5px/1.5 var(--font-sans);
 		color: var(--ink);
 		cursor: pointer;
@@ -1505,7 +1508,7 @@
 		line-height: 1;
 	}
 	.swarm :global(.chip:hover) {
-		background: #f4f2ee;
+		background: var(--color-rule);
 	}
 	.swarm :global(.clearall) {
 		appearance: none;
@@ -1524,7 +1527,7 @@
 		flex-wrap: wrap;
 		gap: 10px 16px;
 		align-items: center;
-		margin: 0 0 12px;
+		margin: 2rem 0 1rem 0;
 	}
 	.swarm :global(.tctl label) {
 		display: flex;

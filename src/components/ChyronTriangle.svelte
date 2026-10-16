@@ -990,12 +990,14 @@
 		font-size: 12.5px;
 		line-height: 1.4;
 		color: var(--color-fg);
+		font-style: italic;
 	}
 	.tri :global(.tip .ex span) {
 		display: block;
 		font-family: var(--font-sans);
 		font-size: 11.5px;
 		color: var(--wnba-tan-dark);
+		font-style: normal;
 	}
 
 	/* a topic's triangle, on its own */

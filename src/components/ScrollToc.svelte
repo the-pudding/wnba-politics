@@ -111,7 +111,7 @@
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
-		background: var(--wnba-tan-dark);
+		background: var(--color-rule);
 		flex: 0 0 auto;
 		transition:
 			background 250ms ease,

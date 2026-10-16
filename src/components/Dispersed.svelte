@@ -310,6 +310,7 @@
     max-width: 100%;
     height: 90svh;
     max-height: 700px;
+    margin-right: 3rem;
   }
   img {
     display: block;

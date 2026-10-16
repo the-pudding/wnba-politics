@@ -429,9 +429,8 @@
 	.chart-caption {
 		font-size: 12px;
 		font-family: var(--font-sans);
-		color: rgba(42, 21, 3, 0.6);
-		margin-top: 4px;
-		text-align: center;
+		color: var(--wnba-tan-dark);
+		margin: 4px auto 3rem auto;
 	}
 	.missing {
 		font-size: 13px;
