@@ -334,24 +334,42 @@
 		const stem = esc(word.length > 4 ? word.slice(0, -1) : word);
 		return new RegExp(`\\b(?:${esc(form ?? word)}|${stem}\\w*)\\b`, "i");
 	};
-	function excerpt(sentence, word, form) {
-		const MAX = 170;
-		if (sentence.length <= MAX) return sentence;
-		const m = nearestMatch(sentence, wordRx(word, form));
-		const at = m ? m.index : 0;
-		const start = Math.max(0, Math.min(at - 90, sentence.length - MAX));
-		let cut = sentence.slice(start, start + MAX);
-		if (start > 0) cut = "…" + cut.replace(/^\S*\s/, "");
-		if (start + MAX < sentence.length) cut = cut.replace(/\s\S*$/, "") + "…";
-		return cut;
+	// the word the example is for: where the notebook says it starts (`at`),
+	// else the occurrence nearest the middle
+	function findWord(text, rx, at) {
+		if (at != null) {
+			const here = new RegExp(rx.source, rx.flags.replace("g", "") + "y");
+			here.lastIndex = at;
+			const m = here.exec(text);
+			if (m) return m;
+		}
+		return nearestMatch(text, rx);
 	}
-	function markWord(sentence, word, form, color) {
-		const safe = escapeHtml(excerpt(sentence, word, form));
-		const m = nearestMatch(safe, wordRx(word, form));
-		if (!m) return safe;
-		return safe.slice(0, m.index) +
+	// a window of the passage around the word, and where the word is in it
+	function excerpt(sentence, word, form, at) {
+		const MAX = 170;
+		const m = findWord(sentence, wordRx(word, form), at);
+		if (sentence.length <= MAX) return [sentence, m?.index];
+		const from = m ? m.index : 0;
+		const start = Math.max(0, Math.min(from - 90, sentence.length - MAX));
+		let cut = sentence.slice(start, start + MAX);
+		let shift = start;
+		if (start > 0) {
+			const trimmed = cut.replace(/^\S*\s/, "");
+			shift += cut.length - trimmed.length - 1;
+			cut = "…" + trimmed;
+		}
+		if (start + MAX < sentence.length) cut = cut.replace(/\s\S*$/, "") + "…";
+		return [cut, m ? m.index - shift : undefined];
+	}
+	function markWord(sentence, word, form, color, at) {
+		const [cut, where] = excerpt(sentence, word, form, at);
+		const m = findWord(cut, wordRx(word, form), where);
+		if (!m) return escapeHtml(cut);
+		return escapeHtml(cut.slice(0, m.index)) +
 			`<mark style="background:${color}2e;box-shadow:inset 0 -2px 0 ${color}66;` +
-			`color:inherit;padding:0 1px;">${m[0]}</mark>` + safe.slice(m.index + m[0].length);
+			`color:inherit;padding:0 1px;">${escapeHtml(m[0])}</mark>` +
+			escapeHtml(cut.slice(m.index + m[0].length));
 	}
 	let tip = $derived.by(() => {
 		if (!hovered) return null;
@@ -370,7 +388,7 @@
 			// the example, with the outlet it came from (a player chart's
 			// stored example says so itself; otherwise the side is enough)
 			const eg = p.eg
-				? { s: p.eg, w: p.egw, o: p.ego ?? (sign > 0 ? (topName === "Fox" ? "Fox News" : topName) : "the other outlets") }
+				? { s: p.eg, w: p.egw, a: p.ega, o: p.ego ?? (sign > 0 ? (topName === "Fox" ? "Fox News" : topName) : "the other outlets") }
 				: (example?.(p.word, p.z) ?? null);
 			return { p, sign, y: yOf(i), x, eg };
 		}
@@ -585,7 +603,7 @@
 					})}{#if tip.p.pin} · #{tip.p.rank}{/if}</span
 				>
 				{#if tip.eg}
-					<p style="border-left-color:{color}">{@html markWord(tip.eg.s, tip.p.word, tip.eg.w, color)}</p>
+					<p style="border-left-color:{color}">{@html markWord(tip.eg.s, tip.p.word, tip.eg.w, color, tip.eg.a)}</p>
 					{#if tip.eg.o}<span class="tip-source">{tip.eg.o}</span>{/if}
 				{/if}
 			</div>

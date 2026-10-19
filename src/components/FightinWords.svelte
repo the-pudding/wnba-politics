@@ -716,7 +716,9 @@
 	let cardEx = $derived.by(() => {
 		if (!tip) return null;
 		if (source)
-			return tip.eg ? { s: tip.eg, w: tip.egw, o: tip.ego ?? null } : null;
+			return tip.eg
+				? { s: tip.eg, w: tip.egw, a: tip.ega, o: tip.ego ?? null }
+				: null;
 		const mode = bodyMode ? bodyKey : "headlines";
 		const hit = exampleFor(mode, tip.word, tip.z ?? 0);
 		return { s: hit?.[0] ?? null, w: hit?.[1] ?? null, o: hit?.[2] ?? null };
@@ -759,32 +761,49 @@
 		}
 		return best;
 	}
-	function excerpt(sentence, word, form, budget = 300) {
-		if (sentence.length <= budget) return sentence;
+	// the word the example is for: where the notebook says it starts (`at`),
+	// else the occurrence nearest the middle
+	function findWord(text, rx, at) {
+		if (at != null) {
+			const here = new RegExp(rx.source, rx.flags.replace("g", "") + "y");
+			here.lastIndex = at;
+			const m = here.exec(text);
+			if (m) return m;
+		}
+		return nearestMatch(text, rx);
+	}
+	// a window of the passage around the word, and where the word is in it
+	function excerpt(sentence, word, form, at, budget = 300) {
 		const m =
-			(form && nearestMatch(sentence, wordRx(word, form))) ||
-			nearestMatch(sentence, wordRx(word));
-		if (!m) return sentence.slice(0, budget).replace(/\s\S*$/, "") + "…";
+			(form && findWord(sentence, wordRx(word, form), at)) ||
+			findWord(sentence, wordRx(word), at);
+		if (sentence.length <= budget) return [sentence, m?.index];
+		if (!m) return [sentence.slice(0, budget).replace(/\s\S*$/, "") + "…"];
 		let start = Math.max(0, m.index - Math.round(budget * 0.45));
 		if (start + budget > sentence.length)
 			start = Math.max(0, sentence.length - budget);
 		let out = sentence.slice(start, start + budget);
-		if (start > 0) out = "…" + out.replace(/^\S*\s/, "");
+		let shift = start;
+		if (start > 0) {
+			const trimmed = out.replace(/^\S*\s/, "");
+			shift += out.length - trimmed.length - 1;
+			out = "…" + trimmed;
+		}
 		if (start + budget < sentence.length) out = out.replace(/\s\S*$/, "") + "…";
-		return out;
+		return [out, m.index - shift];
 	}
 
-	function markWord(sentence, word, color, form) {
-		const safe = escapeHtml(excerpt(sentence, word, form));
+	function markWord(sentence, word, color, form, at) {
+		const [cut, where] = excerpt(sentence, word, form, at);
 		const rx =
-			form && wordRx(word, form).test(safe) ? wordRx(word, form) : wordRx(word);
-		const m = nearestMatch(safe, rx);
-		if (!m) return safe;
+			form && wordRx(word, form).test(cut) ? wordRx(word, form) : wordRx(word);
+		const m = findWord(cut, rx, where);
+		if (!m) return escapeHtml(cut);
 		return (
-			safe.slice(0, m.index) +
+			escapeHtml(cut.slice(0, m.index)) +
 			`<mark style="background:${color}2e;box-shadow:inset 0 -2px 0 ${color}66;` +
-			`color:inherit;padding:0 1px;">${m[0]}</mark>` +
-			safe.slice(m.index + m[0].length)
+			`color:inherit;padding:0 1px;">${escapeHtml(m[0])}</mark>` +
+			escapeHtml(cut.slice(m.index + m[0].length))
 		);
 	}
 	const tickValues = [10, 100, 1000, 10000];
@@ -1138,7 +1157,7 @@
 				>
 				{#if cardEx?.s}
 					<p style="border-left-color:{side}">
-						{@html markWord(cardEx.s, tip.word, side, cardEx.w)}
+						{@html markWord(cardEx.s, tip.word, side, cardEx.w, cardEx.a)}
 					</p>
 					{#if cardEx.o}<span class="tip-source">{cardEx.o}</span>{/if}
 				{/if}

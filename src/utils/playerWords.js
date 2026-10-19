@@ -148,6 +148,8 @@ export function playerWordsSource({ who, rel, vs, pair, outlet = null, byOutlet 
 					no,
 					eg: own?.eg ?? entry.eg ?? lent?.eg,
 					egw: own?.egw ?? entry.egw ?? lent?.egw,
+					// where the word starts in the example (a hand-picked one has none)
+					ega: own?.eg ? own.ega : (entry.ega ?? lent?.ega),
 					// the outlet the example is from ("ESPN", "The Athletic"); a
 					// hand-picked override names its own, else it is Fox's
 					ego: own?.ego ?? (own?.eg ? "Fox News" : (entry.ego ?? lent?.ego))
