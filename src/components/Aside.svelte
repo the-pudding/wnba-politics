@@ -317,7 +317,8 @@
 
 <style>
 	.aside {
-		margin: 28px 0;
+		max-width: 700px;
+		margin: 2rem auto;
 	}
 	/* the card: the headline table's heavy white box */
 	.card {

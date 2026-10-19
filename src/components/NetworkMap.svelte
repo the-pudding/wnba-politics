@@ -342,7 +342,7 @@
 					s.heads
 						.map(
 							(h) =>
-								`<div class="clip"><span class="lab">Fox News headline</span><q>${penHTML(h)}</q></div>`
+								`<div class="clip"><span class="lab"><img class="logo" src="${base}/logos/square/fox-news.svg" alt="fox news logo" /> Fox News</span><q>${penHTML(h)}</q></div>`
 						)
 						.join("") +
 					`</div>`
@@ -493,7 +493,7 @@
 			nodeSel
 				.select(".disc")
 				.attr("r", (n) => n.R)
-				.attr("fill", (n) => (n.group === "league" ? "#fff" : "#f3efe6"));
+				.attr("fill", (n) => (n.group === "league" ? "#f6e7d6" : "#f6e7d6"));
 			// no photo: initials instead
 			nodeSel
 				.select(".initials")
@@ -1300,6 +1300,7 @@
 	<div class="scrolly" data-id="scrolly">
 		<div class="graphic">
 			<div class="status">
+				<p class="kicker">on the web</p>
 				<div class="when" data-id="when"></div>
 			</div>
 			<div class="netbox" data-id="netbox">
@@ -1354,8 +1355,8 @@
 		--rule: #e2e2e2;
 		--edge: #b3ab9e;
 		position: relative;
-		max-width: 1000px; /* same as the other scrollies, clear of the side menu */
-		margin: 0 auto;
+		max-width: 1400px; /* same as the other scrollies, clear of the side menu */
+		margin: 5rem auto;
 		color: var(--ink);
 		font-family: var(--font-sans);
 	}
@@ -1376,10 +1377,6 @@
 		height: 94vh;
 		display: flex;
 		flex-direction: column;
-		padding: 14px 20px 10px;
-		border-radius: 4px;
-		background: var(--sheet);
-		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.12);
 	}
 	.netmap :global(.steps) {
 		grid-column: 1;
@@ -1387,13 +1384,13 @@
 		padding-top: 62vh;
 	}
 	.netmap :global(.status) {
-		border-bottom: 1px solid var(--rule);
 		padding-bottom: 8px;
 	}
+	
 	.netmap :global(.when) {
-		font-size: 14px;
+		font-size: 24px;
 		line-height: 1.3;
-		color: var(--ink-2);
+		color: var(--color-gray-1000);
 	}
 	.netmap :global(.when b) {
 		color: var(--ink);
@@ -1434,7 +1431,7 @@
 		opacity: 0;
 	}
 	.netmap :global(.node) {
-		cursor: pointer;
+		/* cursor: pointer; */
 		transition: opacity 350ms ease;
 	}
 	.netmap :global(.node.dim) {
@@ -1472,9 +1469,9 @@
 	}
 	.netmap :global(.nlabel) {
 		font: 700 12.5px var(--font-sans);
-		fill: var(--ink);
+		fill: var(--color-gray-1000);
 		paint-order: stroke;
-		stroke: var(--sheet);
+		stroke: var(--wnba-tan-bg);
 		stroke-width: 3.5px;
 		stroke-linejoin: round;
 		pointer-events: none;
@@ -1490,18 +1487,19 @@
 		gap: 8px;
 	}
 	.netmap :global(.play) {
-		display: none;
 		flex: 0 0 auto;
-		width: 30px;
-		height: 30px;
-		margin-bottom: 20px;
-		padding: 0;
-		border: 1px solid var(--ink);
+		width: 38px;
+		height: 38px;
 		border-radius: 50%;
-		background: #fff;
-		color: var(--ink);
-		font: 700 11px var(--font-sans);
+		border: 1px solid var(--color-rule);
+		background: var(--color-white);
+		color: var(--color-gray-950);
 		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 1px 4px rgba(42, 21, 3, 0.15);
+		padding: 0;
 	}
 	.netmap :global(.exploring .play) {
 		display: block;
@@ -1517,7 +1515,7 @@
 		outline: none;
 	}
 	.netmap :global(.scrub .bar) {
-		fill: #a39a8d;
+		fill: var(--wnba-tan-dark);
 	}
 	.netmap :global(.scrub .future) {
 		opacity: 0.4;
@@ -1527,7 +1525,7 @@
 		fill: var(--ink-3);
 	}
 	.netmap :global(.scrub .tick) {
-		stroke: var(--ink-3);
+		display: none;
 	}
 	.netmap :global(.scrub .handle) {
 		stroke: var(--ink);
@@ -1547,9 +1545,7 @@
 	.netmap :global(.step) {
 		margin-bottom: 60vh;
 		padding: 16px 18px;
-		border-left: 3px solid var(--color-fox);
 		border-radius: 3px;
-		background: rgba(255, 253, 248, 0.96);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 		opacity: 0.45;
 		transition: opacity 250ms ease;
@@ -1571,20 +1567,36 @@
 	}
 	.netmap :global(.clip) {
 		margin-top: 14px;
-		padding: 2px 0 2px 12px;
-		border-left: 3px solid var(--ink);
+		padding: 10px 15px;
+		border: 1px solid var(--color-rule);
+		background: var(--color-white);
+		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+		display: flex;
+		flex-direction: column;
 	}
 	.netmap :global(.clip + .clip) {
 		margin-top: 10px;
 	}
 	.netmap :global(.clip .lab) {
-		display: block;
-		margin-bottom: 3px;
-		font: 700 10.5px var(--font-sans);
-		letter-spacing: 0.08em;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		font: 700 11px var(--font-sans);
+		letter-spacing: 0.09em;
 		text-transform: uppercase;
-		color: var(--ink-3);
+		color: var(--wnba-red);
+		border-bottom: 2px solid var(--wnba-red);
+		line-height: 1.15;
+		padding-bottom: 4px;
+    	margin-bottom: 8px;
 	}
+
+	.netmap :global(.clip .lab img) {
+		width: 24px;
+		height: 24px;
+		margin-right: 0.25rem;
+	}
+
 	.netmap :global(.clip q) {
 		quotes: none;
 		font: 700 15.5px/1.4 var(--font-serif);

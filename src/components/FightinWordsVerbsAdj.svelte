@@ -14,6 +14,7 @@
 	import LogoSelect from "$components/helpers/LogoSelect.svelte";
 	import { checks } from "$utils/checks.svelte.js";
 	import { base } from "$app/paths";
+	import { faces, clipPops } from "$utils/clips.js";
 	import roster from "$data/people.json";
 	import data from "$data/player_words.json";
 	const faceFiles = Object.fromEntries(
@@ -455,6 +456,7 @@
 			<!-- the heading, in plain words that follow the tab; a step's own
 			     title, or a pair's, as before -->
 			<div class="head">
+				<p class="kicker">on the web</p>
 				{#if narrow && shown.vs === "outlets"}
 					<p class="heading">
 						{HEADING[shown.rel]?.(shown.who) ?? source.relation}
@@ -472,7 +474,7 @@
 						<span
 							>{narrow
 								? or(phoneVs, "vs.")
-								: or(comparedWith, "compared with")}</span
+								: or(comparedWith, "Compared with")}</span
 						>
 						<LogoSelect
 							options={OUTLET_OPTIONS}
@@ -586,7 +588,7 @@
 					class:active={last === i}
 					class:explore={step.explore}
 				>
-					<p class="card">{@html step.html}</p>
+					<p class="card">{@html clipPops(faces(step.html, base), base)}</p>
 				</div>
 			{/each}
 			<!-- cardless final beat: the chart stays put for another screen and a
@@ -611,6 +613,7 @@
 		align-items: center;
 		justify-content: center;
 	}
+	
 	/* the bars hang from a fixed top: a step with more or fewer words only
 	   lengthens the chart downward, instead of re-centring everything */
 	.words-scrolly.bars .sticky {
@@ -618,19 +621,19 @@
 		padding-top: 4vh;
 		box-sizing: border-box;
 	}
-	.sticky :global(.fightin-words),
+	/* .sticky :global(.fightin-words),
 	.sticky :global(.word-bars) {
 		width: min(900px, 100%);
-	}
+	} */
 	/* the players: faces in a row that scrolls sideways */
 	.players {
 		position: relative;
 		display: flex;
 		gap: 4px;
 		width: 100%;
-		max-width: 760px;
+		max-width: 720px;
 		padding: 4px 2px 8px;
-		margin: 0 0 6px;
+		margin: 0 0 1rem 0;
 	}
 	.player {
 		appearance: none;
@@ -647,6 +650,7 @@
 		font: inherit;
 		color: var(--color-ink-dark);
 		cursor: pointer;
+		opacity: 0.5;
 	}
 	.player img,
 	.player .blank {
@@ -654,25 +658,33 @@
 		height: 46px;
 		border-radius: 50%;
 		object-fit: cover;
-		background: #f6e7d6;
+		background: var(--wnba-tan-mid);
 		transition: transform 120ms ease;
 	}
 	.player-name {
 		font-family: var(--font-sans);
-		font-size: 11px;
-		font-weight: 700;
+		font-size: 12px;
+		font-weight: 500;
 		line-height: 1.15;
 		text-align: center;
-		color: rgba(42, 21, 3, 0.7);
+		color: var(--color-fg);
+		margin-top: 4px;
 	}
 	.player:hover img {
 		transform: translateY(-2px);
 	}
+	.player.on, .player:hover {
+		opacity: 1;
+	}
+	.player.on .player-name, .player:hover .player-name {
+		font-weight: 700;
+	}
+
 	.player.on img,
 	.player.on .blank {
 		box-shadow:
-			0 0 0 2px var(--color-page-orange),
-			0 0 0 4px var(--color-ink-dark);
+			0 0 0 2px var(--wnba-tan-bg),
+			0 0 0 4px var(--wnba-orange);
 	}
 	.player.on .player-name {
 		color: var(--color-ink-dark);
@@ -756,17 +768,8 @@
 	/* the heading in plain words, and what it is compared with */
 	.head {
 		width: 100%;
-		max-width: 760px;
+		max-width: 720px;
 		margin: 0 0 10px;
-	}
-	.heading {
-		margin: 0;
-		font-family: var(--font-graphic);
-		font-size: 24px;
-		font-weight: 700;
-		line-height: 1.22;
-		letter-spacing: -0.01em;
-		text-align: left;
 	}
 	.heading .vs {
 		font-weight: 400;
@@ -819,9 +822,9 @@
 		align-items: flex-end;
 		gap: 4px 20px;
 		width: 100%;
-		max-width: 760px;
-		margin: 0 0 10px;
-		border-bottom: 1px solid var(--color-ink-dark);
+		max-width: 720px;
+		margin: 4px auto 1.5rem;
+		border-bottom: 1px solid var(--color-fg);
 	}
 	.rel-tabs {
 		display: flex;
@@ -840,16 +843,16 @@
 		font-family: var(--font-sans);
 		font-size: 14px;
 		font-weight: 700;
-		color: rgba(42, 21, 3, 0.6);
+		color: var(--wnba-tan-dark);
 		cursor: pointer;
 	}
 	.rel-tabs button.on {
-		color: var(--color-ink-dark);
-		border-bottom-color: var(--color-ink-dark);
+		color: var(--color-fg);
+		border-bottom-color: var(--color-fg);
 	}
 	.rel-tabs button:hover:not(:disabled),
 	.unit-switch button:hover {
-		color: var(--color-ink-dark);
+		color: var(--color-fg);
 	}
 	.rel-tabs button:disabled {
 		opacity: 0.35;
@@ -926,6 +929,7 @@
 		z-index: 1;
 		margin-top: -100vh;
 		pointer-events: none;
+		margin-bottom: 5rem;
 	}
 	.step {
 		height: 100vh;
@@ -938,7 +942,6 @@
 		max-width: clamp(300px, calc((100vw - 900px) / 2 - 24px), 380px);
 		margin: 0;
 		background: rgba(255, 253, 248, 0.94);
-		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px;
 		border-radius: 3px;
 		font-size: var(--step-text);
@@ -947,6 +950,7 @@
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 		opacity: 0.3;
 		transition: opacity 250ms ease;
+		pointer-events: auto;
 	}
 	.step.active .card {
 		opacity: 1;

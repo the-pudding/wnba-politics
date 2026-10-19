@@ -17,7 +17,9 @@ const config = {
 		adapter: adapterStatic({ strict: false, fallback: null }),
 		// GitHub Pages serves a project repo from /<repo>, so every asset and
 		// link needs that prefix. Set BASE_PATH in the workflow; empty locally.
-		paths: { base: process.env.BASE_PATH ?? "" },
+		// relative: false keeps `base` the same on server and client — {@html}
+		// strings built with it (faces, clipPops) otherwise fail hydration
+		paths: { base: process.env.BASE_PATH ?? "", relative: false },
 		// the site is one page, so prerender it and ship plain files
 		prerender: {
 			entries: ["*"],

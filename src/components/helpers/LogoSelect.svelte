@@ -67,11 +67,16 @@
 </script>
 
 {#snippet mark(o)}
-	{#if logoOf(o)}
-		<img src="{base}/logos/{logoOf(o)}" alt={nameOf(o)} class:square={logoOf(o).endsWith(".png")} />
-	{:else}
-		<span class="text">{nameOf(o)}</span>
-	{/if}
+    {#if o && logoOf(o)}
+        {@const logo = logoOf(o)}
+        {@const src = logo.endsWith('.svg') 
+            ? `${base}/logos/square/${logo}` 
+            : `${base}/logos/square/${logo}.svg`}
+        <img src={src} alt={nameOf(o) || ''} />
+        <span class="text">{nameOf(o)}</span>
+    {:else if o}
+        <span class="text">{nameOf(o)}</span>
+    {/if}
 {/snippet}
 
 <div class="logo-select" bind:this={root}>
@@ -117,7 +122,7 @@
 		display: flex;
 		align-items: center;
 		height: 38px;
-		min-width: 170px;
+		min-width: 200px;
 		width: 100%;
 		box-sizing: border-box;
 		padding: 0 34px 0 12px;
@@ -155,9 +160,10 @@
 	}
 	img {
 		display: block;
-		height: 16px;
+		height: 24px;
+		aspect-ratio: 1 / 1;
 		width: auto;
-		max-width: 130px;
+		margin-right: 1rem;
 	}
 	img.square {
 		height: 20px;

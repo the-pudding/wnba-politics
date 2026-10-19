@@ -23,6 +23,8 @@
 		topic = "",
 		firstWords = "",
 		tryWords = "",
+		// the label over the static triangle; empty: none
+		kicker = "on television",
 		...unused
 	} = $props();
 
@@ -41,11 +43,6 @@
 		"loeffler",
 		"throat"
 	];
-	const TOPIC_COLOR = {
-		polrace: "#1f9d6e",
-		fouls: "#7a4a00",
-		lgbtq: "#b04ac2"
-	};
 	const TOPIC_LABELS = 7; // topic words labelled on a topic triangle (the most used)
 	const WIDE = 860; // wider than this: the cards beside the triangle, not over it
 	const CARD_COLUMN = 360; // room the cards take on the left, wide screens
@@ -238,7 +235,6 @@
 				groups.push({ terms: g });
 				// a person: one label with the face; other words, a label each
 				if (p) {
-					g.forEach((w) => lit.set(w, color));
 					labels.push({ terms: g, text: p.name, face: p.face, color });
 				} else
 					g.forEach(
@@ -488,7 +484,6 @@
 
 	// ---- one topic's triangle ---------------------------------------------
 	function buildTopic(D, cleanup) {
-		const color = TOPIC_COLOR[topic] ?? COL.fox;
 		const list = (D.topics[topic] ?? [])
 			.map((w) => D.BY.get(w))
 			.filter(Boolean);
@@ -502,10 +497,15 @@
 			.slice(0, TOPIC_LABELS);
 		tern.set(
 			{
-				lit: new Map(list.map((w) => [w.term, color])),
+				// each word in the colour of the zone it sits in
+				lit: new Map(list.map((w) => [w.term, leanColor(w.s)])),
 				floor: 10,
 				groups: [],
-				labels: labelled.map((w) => ({ terms: [w.term], text: w.term, color }))
+				labels: labelled.map((w) => ({
+					terms: [w.term],
+					text: w.term,
+					color: leanColor(w.s)
+				}))
 			},
 			false
 		);
@@ -601,10 +601,10 @@
 		font-weight: 700;
 	}
 	.tri :global(.step-text .fox) {
-		color: #003366;
+		color: var(--wnba-red);
 	}
 	.tri :global(.step-text .others) {
-		color: #6b4bb0;
+		color: var(--wnba-purple);
 	}
 	.tri :global(.step-img) {
 		display: block;
@@ -873,7 +873,7 @@
 		transition: opacity 300ms ease;
 	}
 	.tri :global(.centre-label) {
-		fill: var(--ink-2);
+		fill: var(--wnba-tan-dark);
 	}
 	.tri :global(.corner) {
 		font-size: 15px;
@@ -887,6 +887,14 @@
 		fill: none;
 		stroke: var(--ink);
 		stroke-width: 1.5;
+		pointer-events: none;
+	}
+	.tri :global(svg.pointing) {
+		cursor: pointer;
+	}
+	.tri :global(.hover-dot) {
+		stroke: #fff;
+		stroke-width: 2;
 		pointer-events: none;
 	}
 	.tri :global(.wlabel) {
@@ -914,17 +922,16 @@
 		position: absolute;
 		z-index: 5;
 		pointer-events: none;
-		width: 236px;
-		padding: 10px 12px 11px;
-		background: #fff;
-		border: 1px solid rgba(28, 25, 23, 0.14);
+		width: 240px;
+		padding: 0.75rem 1rem;
+		background: var(--color-white);
+		border: 1px solid var(--color-rule);
 		border-radius: 4px;
-		box-shadow:
-			0 6px 24px rgba(28, 25, 23, 0.14),
-			0 1px 2px rgba(28, 25, 23, 0.06);
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
 		font-size: 12.5px;
+		pointer-events: none;
 		line-height: 1.45;
-		color: var(--ink-2);
+		color: var(--color-fg);
 		display: none;
 	}
 	.tri :global(.tip .w) {
@@ -932,46 +939,65 @@
 		justify-content: space-between;
 		align-items: baseline;
 		gap: 8px;
-		font-size: 16px;
+		font-size: 18px;
 		font-weight: 700;
-		color: var(--ink);
+		color: var(--color-fg);
+		font-family: var(--font-serif);
 		margin-bottom: 6px;
 	}
 	.tri :global(.tip .w small) {
 		font-size: 12px;
 		font-weight: 400;
-		color: var(--ink-3);
+		font-family: var(--font-sans);
+		color: var(--wnba-tan-dark);
 	}
 	.tri :global(.tip .shares) {
-		display: grid;
-		grid-template-columns: auto auto;
-		justify-content: space-between;
-		row-gap: 1px;
 		margin: 0;
 		font-variant-numeric: tabular-nums;
 		color: var(--ink);
 	}
-	.tri :global(.tip .shares span) {
-		display: contents;
+	/* a row per network, ruled underneath */
+	.tri :global(.tip .shares > span) {
+		display: flex;
+		justify-content: space-between;
+		gap: 8px;
+		width: 100%;
+		padding: 0.25rem 0;
+		border-bottom: 1px solid var(--color-rule);
+	}
+	/* the network's square logo before its name; an empty slot the same size
+	   where there is none, so the names line up */
+	.tri :global(.tip .shares b) {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.tri :global(.tip .shares .logo) {
+		display: block;
+		flex: 0 0 auto;
+		width: 18px;
+		height: 18px;
 	}
 	.tri :global(.tip .shares i) {
 		font-style: normal;
 		text-align: right;
 	}
 	.tri :global(.tip .ex) {
-		margin: 8px 0 0;
+		margin: 1rem 0 0 0;
 		padding-left: 8px;
 		border-left: 2px solid var(--rule);
 		font-family: var(--font-serif);
-		font-size: 13px;
+		font-size: 12.5px;
 		line-height: 1.4;
-		color: var(--ink-2);
+		color: var(--color-fg);
+		font-style: italic;
 	}
 	.tri :global(.tip .ex span) {
 		display: block;
 		font-family: var(--font-sans);
 		font-size: 11.5px;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
+		font-style: normal;
 	}
 
 	/* a topic's triangle, on its own */

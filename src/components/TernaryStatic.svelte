@@ -1,5 +1,6 @@
 <script>
 	// Static chyron ternary
+	import { base } from "$app/paths";
 	import chyData from "$data/chyrons.json";
 	import capData from "$data/captions.json";
 	// the piece's topic vocabularies, for `topic:` (the same file the outlet
@@ -14,6 +15,8 @@
 	let {
 		words = [],
 		groups = [],
+		// heading: a title over the triangle; empty: none
+		heading = "",
 		bare = false,
 		big = false,
 		highlightColor = null,
@@ -25,6 +28,8 @@
 		// draw the dashed circle around each band of words (the search step
 		// turns it off: kept words are just lit)
 		enclose = true,
+		// shade the "mostly Fox / CNN / MSNBC" bands at the corners
+		bands: showBands = true,
 		// hide words used fewer times than this (the explore step's slider)
 		minTotal = 0,
 		// topic: "polrace" or "lgbtq" — light that vocabulary's words and shade
@@ -135,15 +140,28 @@
 	// Fox against everyone else, as on the bar charts: the two other corners
 	// share the outlets' purple (their labels tell them apart)
 	const CHANNEL_COLORS = {
-		"Fox News": "var(--color-fox-navy)",
-		CNN: "var(--color-outlets)",
-		MSNBC: "var(--color-outlets)"
+		"Fox News": "var(--wnba-red)",
+		CNN: "var(--wnba-purple)",
+		MSNBC: "var(--wnba-navy)"
 	};
-	const GROUP_COLORS = ["var(--color-grape)", "var(--color-fox-navy)", "var(--color-pine)", "var(--color-msnbc)"];
-	const DOT = "var(--color-dot)";
+	// each network’s square logo in static/logos/square
+	const CHANNEL_LOGOS = {
+		"Fox News": "fox-news.svg",
+		CNN: "cnn.svg",
+		MSNBC: "msnbc.svg"
+	};
+	const GROUP_COLORS = ["var(--wnba-purple)", "var(--wnba-red)", "var(--wnba-navy)"];
+	// the middle band, where no network passes half
+	const EQUAL_COLOR = "var(--wnba-tan-dark)";
 	const MIN_TOTAL = 1;
 
 	let channels = $derived(chy.channels ?? []);
+	// a dot takes the colour of the band it sits in: the network with more
+	// than half its uses, else the middle's tan
+	const regionColor = (shares) => {
+		const top = Math.max(...shares);
+		return top > 0.5 ? CHANNEL_COLORS[channels[shares.indexOf(top)]] : EQUAL_COLOR;
+	};
 	// every band takes the chart's highlight colour when one is given (the
 	// scrolly: all Fox red); otherwise each band gets its own palette colour
 	let bands = $derived([
@@ -172,18 +190,14 @@
 	]);
 	const bandFor = (term) =>
 		bands.find((band) => band.words.has(term))?.color ?? null;
-	// a lit word takes the side it sits on: Fox's navy when Fox says it most,
-	// the other networks' purple when CNN or MSNBC does (topic bands keep
+	// a lit word takes the colour of the band it sits in (topic bands keep
 	// their own colour)
 	const litFor = (term, shares) => {
 		const band = bands.find((b) => b.words.has(term));
 		if (!band) return null;
 		if (band.topic || !highlightColor) return band.color;
-		const foxShare = shares?.[channels.indexOf("Fox News")] ?? 0;
-		return foxShare >= Math.max(...shares) ? band.color : "var(--color-outlets)";
+		return regionColor(shares);
 	};
-	// the colour a hovered point takes: its band's, else the chart's highlight
-	let hoverColor = $derived(highlightColor ?? GROUP_COLORS[0]);
 
 	const SIDE = 700,
 		PAD = 58;
@@ -206,6 +220,39 @@
 			shares[1] * corners.B[1] +
 			shares[2] * corners.C[1]
 	];
+
+	// the "mostly" bands: where one network's share passes half, the small
+	// triangle cut off at its corner by the midpoints of its two sides
+	const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+	const SHORT = { "Fox News": "Fox" };
+	let regions = $derived(
+		[
+			[corners.A, corners.B, corners.C],
+			[corners.B, corners.A, corners.C],
+			[corners.C, corners.A, corners.B]
+		].map(([p, q, r], i) => {
+			const m1 = mid(p, q);
+			const m2 = mid(p, r);
+			return {
+				channel: channels[i],
+				points: `${p[0]},${p[1]} ${m1[0]},${m1[1]} ${m2[0]},${m2[1]}`,
+				// the label at the band's centroid
+				x: (p[0] + m1[0] + m2[0]) / 3,
+				y: (p[1] + m1[1] + m2[1]) / 3
+			};
+		})
+	);
+	// the middle band: the triangle left between the three corners' bands
+	const equalPoints = [
+		mid(corners.A, corners.B),
+		mid(corners.B, corners.C),
+		mid(corners.C, corners.A)
+	];
+	const equalRegion = {
+		points: equalPoints.map((p) => p.join(",")).join(" "),
+		x: equalPoints.reduce((a, p) => a + p[0], 0) / 3,
+		y: equalPoints.reduce((a, p) => a + p[1], 0) / 3
+	};
 
 	let terms = $derived.by(() => {
 		const floor = Math.max(MIN_TOTAL, minTotal);
@@ -352,78 +399,170 @@
 					cy += ((far.py - cy) / len) * step;
 					r = Math.max(r, reach(far) - step, ...pts.map(reach));
 				}
-				return { cx, cy, r: r + (big ? 18 : 10), color: band.color };
+				// the ring takes the colour of the band its words sit in, as the
+				// lit dots do: the region of their averaged shares
+				const shares = pts[0].shares.map(
+					(_, k) => pts.reduce((a, t) => a + t.shares[k], 0) / pts.length
+				);
+				const color = highlightColor ? regionColor(shares) : band.color;
+				return { cx, cy, r: r + (big ? 18 : 10), color };
 			})
 			.filter(Boolean);
 	});
 
-	// Hover snaps to the nearest word wherever the pointer is over the drawing
+	// Hover and tooltip as on the Doc's triangle (Tern in $utils/triangle.js,
+	// keep the two in step): the pointer counts while it is on the triangle or
+	// just outside an edge, and takes the nearest word within reach; lit words
+	// win near-ties. Distances are screen px.
+	const HOVER_MARGIN = 18,
+		REACH = 34,
+		LIT_EDGE = 8;
+	let hostEl = $state(null);
 	let svgEl = $state(null);
+	let tipEl = $state(null);
 	let hovered = $state(null);
-	let tip = $state(null);
-	function nearest(event) {
-		if (!svgEl || !terms.length) return null;
+	// a pinned word's tooltip (`focus`) stays up until the pointer has been
+	// over the triangle and left it; pinning another word brings it back
+	let pinGone = $state(false);
+	let lastFocus = null;
+	$effect(() => {
+		if (focus !== lastFocus) {
+			lastFocus = focus;
+			pinGone = false;
+		}
+	});
+	// the pointer in drawing units, and how many drawing units make a screen px
+	function toDrawing(event) {
+		const ctm = svgEl?.getScreenCTM();
+		if (!ctm) return null;
 		const pt = new DOMPoint(event.clientX, event.clientY).matrixTransform(
-			svgEl.getScreenCTM().inverse()
+			ctm.inverse()
 		);
+		return { x: pt.x, y: pt.y, k: 1 / ctm.a };
+	}
+	function onTriangle({ x, y, k }) {
+		const cs = [corners.A, corners.B, corners.C];
+		return cs.every((p, i) => {
+			const q = cs[(i + 1) % 3],
+				r = cs[(i + 2) % 3];
+			// distance from the edge p–q, positive on the side the third corner is on
+			const side = (a, b) =>
+				((q[0] - p[0]) * (b - p[1]) - (q[1] - p[1]) * (a - p[0])) /
+				Math.hypot(q[0] - p[0], q[1] - p[1]);
+			return side(x, y) * Math.sign(side(r[0], r[1])) >= -HOVER_MARGIN * k;
+		});
+	}
+	function nearest({ x, y, k }) {
 		let best = null,
 			bestD = Infinity;
-		// on a topic triangle the grey words are context: only the counted
-		// (lit) words take a tooltip
-		const candidates = topicRx ? terms.filter((x) => x.lit) : terms;
-		for (const term of candidates) {
-			const d = (term.px - pt.x) ** 2 + (term.py - pt.y) ** 2;
+		for (const term of terms) {
+			const d = Math.hypot(term.px - x, term.py - y) / k - (term.lit ? LIT_EDGE : 0);
 			if (d < bestD) ((bestD = d), (best = term));
 		}
-		return best;
+		return bestD < REACH ? best : null;
 	}
-	// the tooltip sits below the word's dot (above its label near the bottom),
-	// clamped inside the drawing; percentages, so it needs no measuring
-	const tipFor = (term) => {
-		if (!term) return null;
-		const r = radius(term.total);
-		const labelRoom = big ? 44 : 24;
-		const above = term.py > HEIGHT - 150;
-		return {
-			term,
-			x: (Math.min(Math.max(term.px, 110), SIDE - 110) / SIDE) * 100,
-			y:
-				((above ? term.py - r - labelRoom - 10 : term.py + r + 12) / HEIGHT) *
-				100,
-			above
-		};
-	};
 	function track(event) {
-		hovered = nearest(event);
+		const p = toDrawing(event);
+		if (!p) return;
+		if (onTriangle(p)) hovered = nearest(p);
+		else {
+			hovered = null;
+			pinGone = true;
+		}
 	}
 	function leave() {
 		hovered = null;
+		pinGone = true;
 	}
-	// a tap on the drawing shows the nearest word (touch never hovers); a click
-	// anywhere else takes it away again
-	function away(event) {
-		if (svgEl && !svgEl.contains(event.target)) hovered = null;
+	// a click locks the nearest word's tooltip in place; clicking it again, an
+	// empty spot, anywhere off the triangle, or Escape lets it go
+	let lockedTerm = $state(null);
+	function lock(event) {
+		const p = toDrawing(event);
+		const hit = p && onTriangle(p) ? nearest(p) : null;
+		lockedTerm = hit && hit.term !== lockedTerm ? hit.term : null;
 	}
+	function unlockAway(event) {
+		if (lockedTerm && svgEl && !svgEl.contains(event.target)) lockedTerm = null;
+	}
+	function unlockKey(event) {
+		if (event.key === "Escape") lockedTerm = null;
+	}
+	// the locked word, wherever it sits now (the timeline moves it); gone if
+	// the slider hides it
+	let locked = $derived(
+		lockedTerm ? (terms.find((t) => t.term === lockedTerm) ?? null) : null
+	);
+	// a triangle scrolled out of view takes its tooltip with it; a scroll lets
+	// go of the dot under the finger or pointer
+	let offscreen = $state(false);
+	$effect(() => {
+		if (!hostEl) return;
+		const io = new IntersectionObserver(
+			([e]) => (offscreen = !e.isIntersecting),
+			{ threshold: 0.2 }
+		);
+		io.observe(hostEl);
+		const onScroll = () => (hovered = null);
+		addEventListener("scroll", onScroll, { passive: true });
+		return () => {
+			io.disconnect();
+			removeEventListener("scroll", onScroll);
+		};
+	});
 	let focused = $derived(
 		focus
 			? (terms.find((t) => t.term === String(focus).toLowerCase()) ?? null)
 			: null
 	);
-	// the hovered word wins; otherwise the chip being hovered in the card
-	let shown = $derived(hovered ?? focused);
-	$effect(() => {
-		tip = tipFor(shown);
-	});
-	let hoverLabelled = $derived(
-		labels && shown && !labelled.some((t) => t.term === shown.term)
-			? shown
-			: null
+	// a locked word wins, then the hovered one, then the pinned one
+	let shown = $derived(
+		offscreen ? null : (locked ?? hovered ?? (pinGone ? null : focused))
 	);
+	// the tooltip beside the dot (the other side near the right edge, under or
+	// over it when neither side fits), kept within the drawing; in px
+	let tipPos = $state(null);
+	$effect(() => {
+		const t = shown;
+		if (!t || !tipEl || !svgEl || !hostEl) return (tipPos = null);
+		const ctm = svgEl.getScreenCTM();
+		if (!ctm) return;
+		const host = hostEl.getBoundingClientRect();
+		const box = svgEl.getBoundingClientRect();
+		const at = new DOMPoint(t.px, t.py).matrixTransform(ctm);
+		const x = at.x - host.left,
+			y = at.y - host.top;
+		const x0 = box.left - host.left,
+			x1 = box.right - host.left,
+			y0 = box.top - host.top,
+			y1 = box.bottom - host.top;
+		const tw = tipEl.offsetWidth,
+			th = tipEl.offsetHeight;
+		let left = x + 16,
+			top = y - th / 2;
+		if (left + tw > x1) left = x - tw - 16;
+		if (left < x0) {
+			left = Math.max(x0, Math.min(x1 - tw, x - tw / 2));
+			top = y + 16;
+			if (top + th > y1) top = y - th - 16;
+		}
+		top = Math.max(y0 - 8, Math.min(y1 - th + 8, top));
+		tipPos = { left, top };
+	});
+	const pct = (v) => (v > 0 && v < 0.005 ? "<1%" : `${Math.round(v * 100)}%`);
+	// a chyron as the archive read it, less a cut-off scrap at its end ("… (TR")
+	const tidyChyron = (x) =>
+		String(x)
+			.replace(/\s*\([^)]{0,4}$/, "")
+			.replace(/\s+/g, " ")
+			.trim();
 </script>
 
-<svelte:window onclick={away} />
+<svelte:window onclick={unlockAway} onkeydown={unlockKey} />
 
-<div class="ternary-static" class:big class:timeline={timelineOn}>
+<div class="ternary-static" class:big class:timeline={timelineOn} bind:this={hostEl}>
+	<p class="kicker">on television</p>
+	{#if heading}<p class="heading">{heading}</p>{/if}
 	{#if timelineOn && controls}
 		<!-- the years: play runs through them; a button jumps to one; "all" is
 		     the whole span -->
@@ -453,6 +592,8 @@
 			</div>
 		</div>
 	{/if}
+	<!-- the click only locks the tooltip (Escape, on the window, lets it go) -->
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 	<svg
 		bind:this={svgEl}
 		viewBox="0 0 {SIDE} {HEIGHT}"
@@ -461,12 +602,48 @@
 		onpointermove={track}
 		onpointerdown={track}
 		onpointerleave={leave}
+		onclick={lock}
+		class:pointing={hovered && !locked}
 	>
 		<polygon
 			class="frame"
 			points="{corners.A[0]},{corners.A[1]} {corners.B[0]},{corners
 				.B[1]} {corners.C[0]},{corners.C[1]}"
 		/>
+		<!-- the "mostly" bands, under everything else -->
+		<g class="regions" class:off={!showBands} style="pointer-events:none">
+			{#each regions as reg (reg.channel)}
+				<polygon
+					class="region"
+					points={reg.points}
+					fill={CHANNEL_COLORS[reg.channel]}
+					stroke={CHANNEL_COLORS[reg.channel]}
+				/>
+				<text
+					class="region-label"
+					x={reg.x}
+					y={reg.y}
+					text-anchor="middle"
+					dominant-baseline="middle"
+					fill={CHANNEL_COLORS[reg.channel]}
+					>Mostly {SHORT[reg.channel] ?? reg.channel}</text
+				>
+			{/each}
+			<polygon
+				class="region"
+				points={equalRegion.points}
+				fill={EQUAL_COLOR}
+				stroke={EQUAL_COLOR}
+			/>
+			<text
+				class="region-label"
+				x={equalRegion.x}
+				y={equalRegion.y}
+				text-anchor="middle"
+				dominant-baseline="middle"
+				fill={EQUAL_COLOR}>Equal</text
+			>
+		</g>
 		<!-- the topic's heat, under the dots -->
 		{#if heatCells.length}
 			<g
@@ -516,8 +693,8 @@
 				cx={term.px}
 				cy={term.py}
 				r={radius(term.total)}
-				fill={term.lit ?? DOT}
-				opacity={term.lit ? 1 : bands.length ? 0.22 : 0.4}
+				fill={term.lit ?? regionColor(term.shares)}
+				opacity={term.lit ? 1 : bands.length ? 0.1 : 0.22}
 			/>
 		{/each}
 		{#each terms.filter((t) => t.lit) as term (term.term)}
@@ -527,7 +704,7 @@
 				cx={term.px}
 				cy={term.py}
 				r={radius(term.total)}
-				fill={term.lit ?? DOT}
+				fill={term.lit ?? regionColor(term.shares)}
 				opacity={term.lit ? 1 : bands.length ? 0.22 : 0.4}
 			/>
 		{/each}
@@ -547,13 +724,14 @@
 				cx={shown.px}
 				cy={shown.py}
 				r={radius(shown.total) + (big ? 4 : 2.5)}
-				fill={shown.lit ?? hoverColor}
+				fill={shown.lit ?? regionColor(shown.shares)}
 			/>
 		{/if}
 
 		{#each labelled as term (term.term)}
 			<text
 				class="word"
+				opacity={shown?.term === term.term ? 0 : null}
 				x={term.x}
 				y={term.y}
 				text-anchor={term.anchor ?? "start"}
@@ -562,15 +740,17 @@
 				{term.term}
 			</text>
 		{/each}
-		{#if hoverLabelled}
+		<!-- the hovered word named above its dot, lit or not; its own label
+		     steps aside meanwhile -->
+		{#if labels && shown}
 			<text
 				class="word hover"
-				x={hoverLabelled.px}
-				y={hoverLabelled.py - radius(hoverLabelled.total) - (big ? 12 : 6)}
+				x={shown.px}
+				y={shown.py - radius(shown.total) - (big ? 12 : 8)}
 				text-anchor="middle"
-				fill={hoverLabelled.lit ?? hoverColor}
+				fill={shown.lit ?? regionColor(shown.shares)}
 			>
-				{hoverLabelled.term}
+				{shown.term}
 			</text>
 		{/if}
 	</svg>
@@ -596,30 +776,37 @@
 		</p>
 	{/if}
 
-	{#if tip}
+	{#if shown}
 		<div
-			class="tooltip"
-			class:above={tip.above}
-			style="left:{tip.x}%; top:{tip.y}%"
+			class="tip"
+			bind:this={tipEl}
+			style:left="{tipPos?.left ?? 0}px"
+			style:top="{tipPos?.top ?? 0}px"
+			style:visibility={tipPos ? null : "hidden"}
 		>
-			<strong
-				>“{tip.term.term}” · {tip.term.total.toLocaleString()} total uses</strong
-			>
-			<div class="rows">
-				{#each channels as channel, i}
-					<div class="row">
-						<span class="who" style="color:{CHANNEL_COLORS[channel]}"
-							>{channel}</span
-						>
-						<!-- each outlet's share of the word's uses; the counts stay in the data -->
-						<span class="pct">{Math.round(tip.term.shares[i] * 100)}%</span>
-					</div>
+			<div class="w">
+				<span>{shown.term}</span><small
+					>{shown.total.toLocaleString()} use{shown.total === 1 ? "" : "s"}</small
+				>
+			</div>
+			<div class="shares">
+				{#each channels as channel, i (channel)}
+					<span
+						><b style:color={CHANNEL_COLORS[channel]}
+							>{#if CHANNEL_LOGOS[channel]}<img
+									class="logo"
+									src="{base}/logos/square/{CHANNEL_LOGOS[channel]}"
+									alt=""
+								/>{:else}<span class="logo"></span>{/if}{channel}</b
+						><i
+							>{pct(shown.shares[i])}</i
+						></span
+					>
 				{/each}
 			</div>
-			{#if tip.term.ex}
-				<p class="example" style="border-left-color:{CHANNEL_COLORS[tip.term.ex_ch]}">
-					<span class="who">{tip.term.ex_ch}</span>
-					“{tip.term.ex}”
+			{#if shown.ex}
+				<p class="ex" style:border-left-color={CHANNEL_COLORS[shown.ex_ch]}>
+					<span>{shown.ex_ch ?? "air"}</span>“{tidyChyron(shown.ex)}”
 				</p>
 			{/if}
 		</div>
@@ -627,10 +814,17 @@
 </div>
 
 <style>
+	/* set as the dot plot sets its heading */
+
+	@media (max-width: 640px) {
+		.heading {
+			font-size: 20px;
+		}
+	}
 	.ternary-static {
 		position: relative;
-		max-width: 700px;
-		margin: 0 auto;
+		max-width: 1040px;
+		padding: 1rem;
 	}
 	svg {
 		width: 100%;
@@ -639,17 +833,44 @@
 		overflow: visible;
 	}
 
+	svg.pointing {
+		cursor: pointer;
+	}
 	.frame {
-		fill: rgba(255, 253, 248, 0.35);
-		stroke: rgba(42, 21, 3, 0.3);
+		fill: var(--wnba-tan-light);
+		stroke: var(--color-fg);
 		stroke-width: 1;
 	}
+	.regions {
+		transition: opacity 400ms ease;
+	}
+	.regions.off {
+		opacity: 0;
+	}
+	.region {
+		fill-opacity: 0.07;
+		stroke-opacity: 0.35;
+		stroke-width: 1;
+		stroke-dasharray: 3 3;
+	}
+	.region-label {
+		font-family: var(--font-graphic);
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		opacity: 1;
+	}
+	.big .region-label {
+		font-size: 16px;
+	}
 	.corner {
-		font-size: 20px;
+		font-family: var(--font-sans);
+		font-size: 16px;
 		font-weight: 800;
 	}
 	.big .corner {
-		font-size: 26px;
+		font-size: 24px;
 	}
 	.dot.lit {
 		stroke: var(--color-paper);
@@ -744,68 +965,97 @@
 	.period {
 		margin: 4px 0 0;
 		font-size: 12px;
+		font-family: var(--font-sans);
 		line-height: 1.4;
 		text-align: center;
 		color: rgba(42, 21, 3, 0.6);
 	}
-	.tooltip {
+	/* the tooltip, as on the Doc's triangle (ChyronTriangle) */
+	.tip {
 		position: absolute;
-		transform: translate(-50%, 0);
-		width: 200px;
-		background: var(--tip-bg);
-		border: 1px solid var(--tip-border);
-		border-radius: var(--tip-radius);
-		padding: var(--tip-pad);
-		box-shadow: var(--tip-shadow);
-		pointer-events: none;
 		z-index: 5;
+		pointer-events: none;
+		width: 240px;
+		background: var(--color-white);
+		border: 1px solid var(--color-rule);
+		border-radius: 4px;
+		padding: 0.75rem 1rem;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+		color: var(--color-fg);
+		font-size: 12.5px;
+		pointer-events: none;
 	}
-	.tooltip.above {
-		transform: translate(-50%, -100%);
-	}
-	/* the shared tooltip (variables.css) */
-	.tooltip strong {
-		display: block;
-		font: var(--tip-title);
-		color: var(--tip-ink);
-	}
-	.rows {
-		margin-top: 6px;
-	}
-	.row {
+	.tip .w {
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
-		font: var(--tip-body);
-		line-height: 1.6;
-		color: var(--tip-ink);
-	}
-	.row .who {
+		gap: 8px;
+		font-family: var(--font-serif);
+		font-size: 18px;
 		font-weight: 700;
+		color: var(--color-fg);
+		margin-bottom: 6px;
 	}
-	.row .pct {
-		font-weight: 600;
-		color: var(--tip-ink);
+	.tip .w small {
+		font-size: 12px;
+		font-weight: 400;
+		color: var(--wnba-tan-dark);
+		font-family: var(--font-sans);
+	}
+	.tip .shares {
+		margin: 0;
 		font-variant-numeric: tabular-nums;
+		color: var(--color-fg);
+		font-family: var(--font-sans);
 	}
-	.example {
-		margin: 9px 0 0;
-		padding: 1px 0 1px 9px;
-		border-left: 3px solid var(--tip-rule);
-		font: var(--tip-quote);
-		color: var(--tip-ink);
+	/* a row per network, ruled underneath */
+	.tip .shares > span {
+		display: flex;
+		justify-content: space-between;
+		gap: 8px;
+		width: 100%;
+		padding: 0.25rem 0;
+		border-bottom: 1px solid var(--color-rule);
 	}
-	.example .who {
+	/* the network's square logo before its name; an empty slot the same size
+	   where there is none, so the names line up */
+	.tip .shares b {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.tip .shares .logo {
 		display: block;
-		font: var(--tip-small);
-		color: var(--tip-sub);
+		flex: 0 0 auto;
+		width: 18px;
+		height: 18px;
+	}
+	.tip .shares i {
+		font-style: normal;
+		text-align: right;
+	}
+	.tip .ex {
+		margin: 1rem 0 0 0;
+		padding-left: 8px;
+		border-left: 2px solid #e2e2e2;
+		font-family: var(--font-serif);
+		font-size: 13.5px;
+		line-height: 1.4;
+		color: var(--color-fg);
+		font-style: italic;
+	}
+	.tip .ex span {
+		display: block;
+		font-family: var(--font-sans);
+		font-size: 11.5px;
+		color: var(--wnba-tan-dark);
 	}
 	/* the triangle is drawn 700 units wide and scaled to the screen: on a
 	   phone that halves every label, so they are set larger there */
 	@media (max-width: 640px) {
 		.corner,
 		.big .corner {
-			font-size: 34px;
+			font-size: 24px;
 		}
 		.word,
 		.big .word {

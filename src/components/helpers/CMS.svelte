@@ -27,6 +27,7 @@
 		"FightinWordsBarsScrolly",
 		"TernaryScrolly",
 		"OutletGapScrolly",
+		"GapToTernaryScrolly",
 		"FightinWordsVerbsAdj",
 		"FightinWordsBars",
 		// legacy Doc ids
@@ -36,10 +37,11 @@
 		"outlet-gap-scrolly",
 		"timeline-scrolly",
 		"player-words-scrolly",
-		"TvSet"
+		"TvSet",
+		"SideBySide"
 	]);
 	// these render Doc copy of their own and need the component map for it
-	const NESTING = new Set(["Subsections", "Aside", "TvBeside"]);
+	const NESTING = new Set(["Subsections", "Aside", "TvBeside", "SideBySide"]);
 	// these draw their own title and caption
 	const SELF_CAPTIONED = new Set([
 		"Subsections",
@@ -59,7 +61,8 @@
 		"TvSet",
 		"TvBeside",
 		"WordCompare",
-		"WordNeighbors"
+		"WordNeighbors",
+		"SideBySide"
 	]);
 
 	// one-liner: `chart: name | key: value | …`
@@ -183,6 +186,9 @@
 					<h4 class="chart-title">{@html hl(props.title)}</h4>
 				{/if}
 				<!-- subtitle: a plain line under the title, in the ink colour -->
+				 {#if props.kicker && !SELF_CAPTIONED.has(name)}
+					<p class="kicker">{@html props.kicker}</p>
+				{/if}
 				{#if props.subtitle && !SELF_CAPTIONED.has(name)}
 					<p class="chart-subtitle">{@html props.subtitle}</p>
 				{/if}
@@ -285,14 +291,14 @@
 		{#if foldable(section)}
 			<!-- a collapsible section: its heading opens and closes the rest -->
 			{@const [heading, rest] = splitHeading(section)}
-			<h2 class="fold-head">
+			<h3 class="fold-head">
 				<button
 					type="button"
 					aria-expanded={!!opened[section.section]}
 					onclick={() => (opened[section.section] = !opened[section.section])}
 					>{@html heading}<span class="chev" aria-hidden="true"></span></button
 				>
-			</h2>
+			</h3>
 			{#if opened[section.section]}{@render blockList(rest)}{/if}
 		{:else}
 			{@render blockList(section.content)}
@@ -304,16 +310,27 @@
 	.act {
 		margin: 56px 0;
 	}
+
+	p {
+		max-width: 700px;
+		margin: 0 auto;
+	}
 	/* a collapsible section: the heading is the button, with a chevron */
 	.fold {
-		margin: 28px 0;
-		border-top: 1px solid rgba(42, 21, 3, 0.25);
+		margin: 28px auto;
+		max-width: 1000px;
 	}
 	.fold + .fold {
 		margin-top: -28px;
 	}
 	.fold-head {
-		margin: 0;
+		font-weight: 700;
+		margin: 0 0 3rem 0;
+		position: sticky;
+		top: 0;
+		z-index: 1000;
+		background: var(--wnba-tan-bg);
+		border-bottom: 1px solid var(--color-rule);
 	}
 	.fold-head button {
 		display: flex;
@@ -352,6 +369,17 @@
 		margin-bottom: 1em;
 		color: var(--color-ink);
 	}
+	.kicker {
+		background: var(--wnba-red);
+		color: var(--wnba-tan-bg);
+		display: inline-block;
+		text-transform: uppercase;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 10px;
+		padding: 6px;
+		margin: 0 0 6px 0;
+	}
 	p :global(mark) {
 		color: inherit;
 		padding: 0 3px;
@@ -362,9 +390,10 @@
 	ol {
 		font-size: 17px;
 		line-height: 1.65;
-		margin: 0 0 1em;
+		margin: 0 auto 1rem auto;
 		padding-left: 1.3em;
 		color: var(--color-ink);
+		max-width: 700px;
 	}
 	ul :global(li),
 	ol :global(li) {
@@ -372,13 +401,13 @@
 	}
 
 	.chart {
-		margin: 12px 0 22px;
+		margin: 0;
 	}
 	.chart.full-bleed {
 		width: 100vw;
 		margin-left: 50%;
 		transform: translateX(-50%);
-		padding: 0 12px;
+		padding: 0 2rem;
 	}
 	.chart-title {
 		font-size: 19px;
@@ -390,16 +419,18 @@
 		margin-top: -6px;
 	}
 	.chart-subtitle {
-		font-size: 15px;
-		text-align: center;
+		font-size: 18px;
+		font-family: var(--font-sans);
 		margin: 0 0 12px;
-		color: var(--color-ink);
+		line-height: 1.15;
+		font-weight: 700;
+		color: var(--color-gray-950);
 	}
 	.chart-caption {
-		font-size: 12.5px;
-		color: rgba(42, 21, 3, 0.6);
-		margin-top: 4px;
-		text-align: center;
+		font-size: 12px;
+		font-family: var(--font-sans);
+		color: var(--wnba-tan-dark);
+		margin: 4px auto 3rem auto;
 	}
 	.missing {
 		font-size: 13px;
@@ -449,7 +480,6 @@
 	}
 	/* desktop: larger body text (2026-09-30); phones keep 17px */
 	@media (min-width: 769px) {
-		p,
 		ul,
 		ol,
 		.quote p {
@@ -471,15 +501,15 @@
 	}
 
 	.photo {
-		margin: 18px auto 26px;
-		max-width: 640px;
+		margin: 3rem auto;
+		max-width: 700px;
 	}
 	.photo img {
 		display: block;
 		width: 100%;
-		border-radius: 8px;
-		box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
-		border: 1px solid rgba(42, 21, 3, 0.15);
+		border-radius: 4px;
+		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+		border: 1px solid var(--color-rule);
 	}
 	/* a PDF: a letter-shaped frame the document scrolls inside */
 	.photo.pdf .page {
@@ -503,7 +533,8 @@
 		text-align: center;
 	}
 	.photo figcaption {
-		font-size: 12.5px;
+		font-size: 12px;
+		font-family: var(--font-sans);
 		color: rgba(42, 21, 3, 0.6);
 		margin-top: 6px;
 		text-align: center;

@@ -75,26 +75,36 @@
 			<FoxBadge size={0.8} /><span class="words">{@html shown}</span>
 		</p>
 	{:else}
-		<FoxBadge size={small ? 0.85 : 1} />
-		{#if clip?.date}<span class="clip-date">{clip.date}</span>{/if}
+		<div class="deets">
+			<FoxBadge size={small ? 0.85 : 1} />
+			{#if clip?.date}<span class="clip-date">{clip.date}</span>{/if}
+		</div>
 		<p class="clip-title"><span class="words">{@html shown}</span></p>
 	{/if}
 </div>
 
 <style>
 	.clip {
-		background: var(--color-paper);
+		background: var(--color-white);
 		border: 1px solid var(--color-rule);
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 		padding: 10px 15px;
+		border-radius: 4px;
 		transform: rotate(var(--rot, 0deg));
 	}
+
+	.deets {
+		border-bottom: 2px solid var(--wnba-red);
+		padding-bottom: 4px;
+		margin-bottom: 8px;
+	}
 	.clip-title {
-		font-size: 15.5px;
-		font-weight: 700;
+		font-size: 18px;
+		font-weight: 400;
 		line-height: 1.4;
 		margin: 5px 0 0;
 		font-family: var(--font-serif);
+		font-style: italic;
 		color: var(--color-ink-dark);
 	}
 	.clip-title :global(mark:not(.pen)) {
@@ -114,6 +124,7 @@
 	}
 	.clip-date {
 		font-size: 12px;
+		font-family: var(--font-sans);
 		color: rgba(42, 21, 3, 0.55);
 	}
 	.clip.compact {

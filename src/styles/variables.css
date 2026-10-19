@@ -3,6 +3,15 @@
  */
 
 :root {
+  --wnba-tan-bg: #FCFAF7;
+  --wnba-tan-light:  #f2f0ed;
+  --wnba-tan-mid: #f6e7d6;
+  --wnba-tan-dark: #7C7060;
+  --wnba-orange: #FA4D00;
+  --wnba-navy: #103A63;
+  --wnba-red: #B91C1C;
+  --wnba-green: #166534;
+  --wnba-purple: #6B1D91;
   --category-blue: #4477AA;
   --category-red: #EE6677;
   --category-green: #228833;
@@ -31,9 +40,9 @@
   --color-clark: #2a78d6;
   --color-griner: #7db3e0;
   --color-cunningham: #e0851f;
-  --color-politics: #1f9d6e;
+  --color-politics: #166534;
   --color-race: #d55181;
-  --color-lgbtq: #b04ac2;
+  --color-lgbtq: #6B1D91;
   --color-trans: #17a2b8;
   --color-nba: #2a1503;
   --color-cream: #f5ecd8;
@@ -43,8 +52,8 @@
   --color-page-orange: #f9a660;
   --color-cnn: #6b4bb0;
   --color-msnbc: #a08ad6; /** a lighter shade where the two cable networks sit side by side */
-  --color-fox-navy: #003366; /** Fox as a data series --color-fox (red) is the brand accent. */
-  --color-outlets: #6b4bb0; /** the other outlets, and CNN/MSNBC */
+  --color-fox-navy: #B91C1C; /** Fox as a data series --color-fox (red) is the brand accent. */
+  --color-outlets: #191919; /** the other outlets, and CNN/MSNBC */
   --color-ink-dark: #1a1a1a; /** near-black text and fills on the cream cards */
   --color-rule: #e6dcc3; /** hairline borders on cards and tables */
   --color-card: #f7f2e6; /** the cream of clipping cards and unlit nodes */

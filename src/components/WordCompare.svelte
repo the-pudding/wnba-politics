@@ -45,6 +45,7 @@
 </script>
 
 <div class="word-compare" class:multiples>
+	<p class="kicker">on the web</p>
 	{#if heading.trim()}<h4 class="chart-title">{@html heading}</h4>{/if}
 	{#if multiples}
 		<div class="grid">
@@ -122,6 +123,7 @@
 		max-width: 100%;
 		margin: 8px auto 20px;
 	}
+
 	.controls {
 		display: flex;
 		justify-content: center;

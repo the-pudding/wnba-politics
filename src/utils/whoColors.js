@@ -7,11 +7,11 @@ import net from "$data/network_map.json";
 
 // the network map's group colours (NetworkMap reads them from here too)
 export const GROUP_COLOR = {
-	league: "#e8601a",
-	politics: "#1f9d6e",
-	media: "#8b4f00",
-	antitrans: "#b04ac2",
-	celebs: "#8d8578"
+	league: "#FA4D00",
+	politics: "#166534",
+	media: "#191919",
+	antitrans: "#6B1D91",
+	celebs: "#7C7060"
 };
 // people.json's groups, for anyone the network map doesn't have
 const FROM_PEOPLE = {
@@ -68,7 +68,7 @@ export function markNames(html, only = null) {
 				if (h.at < from) continue;
 				out +=
 					part.slice(from, h.at) +
-					`<span class="name-line" style="--who:${h.color}">${part.slice(h.at, h.end)}</span>`;
+					`<span class="name-line">${part.slice(h.at, h.end)}</span>`;
 				from = h.end;
 			}
 			return out + part.slice(from);

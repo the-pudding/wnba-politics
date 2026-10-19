@@ -90,12 +90,12 @@
 						<td class="who">
 							{#if logoOf(row)}
 								<img
-									src="{base}/logos/{logoOf(row)}"
+									src="{base}/logos/square/{logoOf(row)}"
 									alt={showName(row) ? "" : row.outlet}
 									class:square={logoOf(row).endsWith(".png")}
 								/>
 							{/if}
-							{#if showName(row)}{row.outlet}{/if}
+							{row.outlet}
 						</td>
 						{#each columns as col}
 							<td class:num={numericCol(col)}>{short(row[col]) || "—"}</td>
@@ -111,7 +111,7 @@
 <style>
 	.box-score {
 		margin: 22px auto 28px;
-		max-width: 340px;
+		max-width: 460px;
 		font-family: var(--font-chart);
 	}
 	.scroll {
@@ -121,7 +121,7 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-size: 13.5px;
-		color: var(--color-ink);
+		color: var(--color-fg);
 		font-variant-numeric: tabular-nums;
 	}
 	th,
@@ -129,16 +129,22 @@
 		padding: 6px 8px;
 		text-align: left;
 		white-space: nowrap;
-		border-bottom: 1px solid rgba(42, 21, 3, 0.18);
+	}
+	tr {
+		border-bottom: 1px solid var(--color-rule);
+	}
+	tr:last-of-type {
+		border-bottom: 0;
 	}
 	th {
 		font-size: 10.5px;
 		font-weight: 800;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		color: rgba(42, 21, 3, 0.7);
+		color: var(--wnba-tan-dark);
 		border-bottom: 1.5px solid var(--color-ink);
 		padding-top: 8px;
+		line-height: 1;
 	}
 	.num {
 		text-align: right;
@@ -154,14 +160,10 @@
 	}
 	td.who img {
 		display: inline-block;
-		height: 13px;
+		height: 24px;
 		width: auto;
-		vertical-align: -2px;
 		margin-right: 7px;
-	}
-	td.who img.square {
-		height: 16px;
-		vertical-align: -3px;
+		vertical-align: -7px;
 	}
 	tbody tr:nth-child(odd) {
 		background: rgba(255, 253, 248, 0.35);
@@ -174,8 +176,8 @@
 	.note {
 		font-size: 12px;
 		line-height: 1.5;
-		color: rgba(42, 21, 3, 0.62);
-		margin: 8px 0 0;
+		color: var(--wnba-tan-dark);
+		margin: 1rem 0 0 0;
 	}
 	@media (max-width: 640px) {
 		table {

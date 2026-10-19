@@ -1,7 +1,9 @@
 <script>
 	// The Fightin' Words scatter walked through
 	import Scrolly from "$components/helpers/Scrolly.svelte";
+	import { base } from "$app/paths";
 	import FightinWords from "$components/FightinWords.svelte";
+	import { faces, clipPops } from "$utils/clips.js";
 
 	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
 	// the rest: the Doc's words for the chart (see FightinWords)
@@ -55,7 +57,7 @@
 		<Scrolly bind:value={index}>
 			{#each STEPS as step, i}
 				<div class="step" class:active={index === i}>
-					<p class="card">{@html step.html}</p>
+					<p class="card">{@html clipPops(faces(step.html, base), base)}</p>
 				</div>
 			{/each}
 			<!-- cardless final beat: the chart stays put for another screen and a
@@ -83,12 +85,13 @@
 	   lengthens the chart downward, instead of re-centring it */
 	.fw-scrolly.bars .sticky {
 		align-items: flex-start;
-		padding-top: 5vh;
+		padding: 2rem 0;
 		box-sizing: border-box;
 	}
 	/* flex item shrinks to its content without this */
 	.sticky :global(.fightin-words) {
-		width: min(1000px, 94vw);
+		width: min(1400px, 94vw);
+		height: 100%;
 	}
 	/* leaves room for the controls the explore beat brings back; the bars
 	   size their own rows to the viewport instead */
@@ -101,6 +104,7 @@
 		z-index: 1;
 		margin-top: -100vh;
 		pointer-events: none;
+		margin-bottom: 5rem;
 	}
 	.step {
 		height: 100vh;
@@ -113,8 +117,7 @@
 		/* wider only where the screen leaves a margin beside the 1000px chart */
 		max-width: clamp(300px, calc((100vw - 1000px) / 2 - 24px), 380px);
 		margin: 0;
-		background: rgba(255, 253, 248, 0.94);
-		border-left: 3px solid var(--color-fox);
+		background: var(--wnba-tan-bg);
 		padding: 14px 16px;
 		border-radius: 3px;
 		font-size: var(--step-text);
@@ -123,6 +126,7 @@
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 		opacity: 0.35;
 		transition: opacity 250ms ease;
+		pointer-events: auto;
 	}
 	.step.active .card {
 		opacity: 1;

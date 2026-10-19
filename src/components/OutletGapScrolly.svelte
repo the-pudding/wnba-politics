@@ -118,6 +118,8 @@
 		   through them: wider costs little here (2026-09-30) */
 		max-width: 420px;
 		opacity: 0.3;
+		pointer-events: auto;
+		margin: 0 auto;
 		transition: opacity 250ms ease;
 	}
 	.step.active .stack {

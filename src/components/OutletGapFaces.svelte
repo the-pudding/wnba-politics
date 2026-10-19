@@ -528,7 +528,7 @@
 				<p class="heading">{or(heading, HEADING)}</p>
 				<!-- a div, not a p: the menu inside renders block elements -->
 				<div class="subheading">
-					<span>{or(comparedWith, "compared with")}</span>
+					<span>{or(comparedWith, "Compared with")}</span>
 					<LogoSelect
 						options={CMP.map((c) => c.id)}
 						bind:value={against}
@@ -635,14 +635,6 @@
 	.head {
 		margin: 0 0 12px;
 	}
-	.heading {
-		margin: 0;
-		font-family: var(--font-serif);
-		font-size: 22px;
-		font-weight: 700;
-		line-height: 1.25;
-		color: var(--ink);
-	}
 	.subheading {
 		display: flex;
 		align-items: center;
@@ -650,9 +642,10 @@
 		margin: 2px 0 0;
 		font-family: var(--font-serif);
 		font-size: 17px;
-		color: rgba(42, 21, 3, 0.75);
+		color: var(--color-gray-700);
 	}
 	.subheading > span {
+		color: var(--color-gray-700);
 		flex: 0 0 auto;
 		white-space: nowrap;
 	}

@@ -31,7 +31,7 @@
 		onhover = null,
 		fill = false,
 		// the name of the bottom side in the tooltip's counts ("others", "ESPN")
-		otherName = "others",
+		otherName = "Others",
 		// the top side's short name ("Fox", or "conservative media" for the pair)
 		topName = "Fox",
 		// note: the line under the chart — left out for the stock one, written
@@ -283,6 +283,9 @@
 			: 0
 	);
 	const fmt = (z) => Math.abs(z).toFixed(1);
+	// a word's count with thousands commas ("1,234"); anything not a number as it came
+	const count = (n) =>
+		n != null && n !== "" && Number.isFinite(+n) ? (+n).toLocaleString("en-US") : n;
 	// the width the bars reach, both sides (the longest bar and its word), so
 	// the note under the chart wraps to the drawing rather than the frame
 	// how far the bars (and their words) reach from the middle, either side,
@@ -420,14 +423,14 @@
 <div class="word-bars" bind:this={el}>
 	{#if source}
 		<!-- the column heads -->
-		<svg width={WIDTH} height={TOP - 6} viewBox="0 0 {WIDTH} {TOP - 6}" role="presentation">
+		<svg width={WIDTH} height={TOP - 24} viewBox="0 0 {WIDTH} {TOP - 24}" role="presentation">
 			{#if source.topHead}
 				<!-- heads at the bars' outer edges, saying what each side means:
 				     "← Other outlets use more" · "Fox News uses more →" (2026-10-02) -->
 				{@const oneLine = textWidth(source.bottomHead) + textWidth(source.topHead) + 60 < 2 * barsReach}
 				{#if oneLine}
-					<text class="head edge others" x={mid - barsReach} y="16" text-anchor="start">← {source.bottomHead}</text>
-					<text class="head edge fox" x={mid + barsReach} y="16" text-anchor="end">{source.topHead} →</text>
+					<text class="head edge others" x={0} y="10" text-anchor="start">← {source.bottomHead}</text>
+					<text class="head edge fox" x={WIDTH} y="10" text-anchor="end">{source.topHead} →</text>
 				{:else}
 					<!-- too narrow for both on one line: each breaks before "use(s) more" -->
 					{@const split = (t) => { const i = t.search(/ uses? more$/); return i > 0 ? [t.slice(0, i), t.slice(i + 1)] : [t, ""]; }}
@@ -520,6 +523,7 @@
 						class="bar"
 						class:dim={!on}
 						class:weak
+						class:hovered={hovered === p.word}
 						onmouseenter={() => {
 							hovered = p.word;
 							onhover?.(p.word);
@@ -592,19 +596,21 @@
 				style="left:{tipBox.left}px; top:{tipBox.top}px; --arrow:{tipBox.arrow}px"
 			>
 				<!-- the side's colour in a swatch and on the quote's rule; the words in ink -->
-				<span class="tip-head"><i class="swatch" style="background:{color}"></i>{properCase(tip.p.word)}</span>
+				<span class="tip-head">{properCase(tip.p.word)}</span>
 				<span class="tip-count"
-					>{fillIn(or(hoverCounts, "{top} {topCount} · {bottom} {bottomCount} · score {score}"), {
+					>{fillIn(or(hoverCounts, "{top} {topCount} · {bottom} {bottomCount} · Score {score}"), {
 						top: topName,
 						bottom: otherName,
-						topCount: tip.p.nf,
-						bottomCount: tip.p.no,
+						topCount: count(tip.p.nf),
+						bottomCount: count(tip.p.no),
 						score: fmt(tip.p.z)
 					})}{#if tip.p.pin} · #{tip.p.rank}{/if}</span
 				>
 				{#if tip.eg}
-					<p style="border-left-color:{color}">{@html markWord(tip.eg.s, tip.p.word, tip.eg.w, color, tip.eg.a)}</p>
-					{#if tip.eg.o}<span class="tip-source">{tip.eg.o}</span>{/if}
+					<p style="border-left-color:{color}">
+						{#if tip.eg.o}<span class="tip-source">{tip.eg.o}</span>{/if}
+						{@html markWord(tip.eg.s, tip.p.word, tip.eg.w, color, tip.eg.a)}
+					</p>
 				{/if}
 			</div>
 		{/if}
@@ -627,6 +633,8 @@
 <style>
 	.word-bars {
 		width: 100%;
+		max-width: 720px;
+		margin: 0 auto 5rem auto;
 		position: relative;
 	}
 	svg {
@@ -642,14 +650,14 @@
 		margin-top: 6px;
 		font-family: var(--font-chart);
 		font-size: 12px;
-		color: var(--color-ink-dark);
+		color: var(--color-fg);
 	}
 	.pager button {
 		appearance: none;
 		border: 0;
 		background: none;
 		padding: 2px 0;
-		color: var(--color-ink-dark);
+		color: var(--color-fg);
 		font: inherit;
 		text-decoration: underline;
 		text-underline-offset: 2px;
@@ -658,34 +666,41 @@
 	.pager button:disabled {
 		opacity: 0.3;
 		text-decoration: none;
-		cursor: default;
+		cursor: not-allowed;
 	}
 	.pager-range {
 		font-variant-numeric: tabular-nums;
-		color: var(--ink-muted, rgba(26, 26, 26, 0.62));
+		color: var(--wnba-tan-dark);
 	}
 	.head {
 		font-family: var(--font-chart);
-		font-size: 11.5px;
-		font-weight: 800;
+		text-transform: uppercase !important;
+		font-size: 12px;
+		font-weight: 700;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 	}
 	.head.fox {
 		fill: var(--color-fox-navy);
+		text-transform: uppercase;
+		font-size: 12px;
 	}
 	/* the edge heads: sentence case, a little larger */
 	.head.edge {
-		font-size: 13.5px;
+		text-transform: uppercase;
+		font-size: 12px;
 		font-weight: 700;
 		letter-spacing: 0;
 		text-transform: none;
 	}
 	.head.edge.narrow {
+		text-transform: uppercase;
 		font-size: 12px;
 	}
 	.head.others {
 		fill: var(--color-outlets);
+		text-transform: uppercase;
+		font-size: 12px;
 	}
 	.pin-gap {
 		font-size: 16px;
@@ -699,7 +714,7 @@
 		fill: rgba(42, 21, 3, 0.6);
 	}
 	.axis {
-		stroke: rgba(42, 21, 3, 0.45);
+		stroke: var(--wnba-tan-dark);
 		stroke-width: 1.5;
 	}
 	.break {
@@ -729,6 +744,15 @@
 	.bar:hover .fill {
 		opacity: 1;
 	}
+	/* the hovered (or tapped) bar's words at full strength, faded bar or not */
+	.bar:hover .word,
+	.bar:hover .score,
+	.bar:hover .pin-rank,
+	.bar.hovered .word,
+	.bar.hovered .score,
+	.bar.hovered .pin-rank {
+		opacity: 1;
+	}
 	.word {
 		font-family: var(--font-chart);
 		font-weight: 700;
@@ -755,16 +779,19 @@
 		pointer-events: none;
 		width: 300px;
 		max-width: 80vw;
-		background: var(--tip-bg);
-		border: 1px solid var(--tip-border);
-		border-radius: var(--tip-radius);
-		padding: var(--tip-pad);
-		box-shadow: var(--tip-shadow);
-		color: var(--tip-ink);
+		background: var(--color-white);
+		border: 1px solid var(--color-rule);
+		border-radius: 4px;
+		padding: 0.75rem 1rem;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+		color: var(--color-fg);
+		font-size: 12.5px;
+		pointer-events: none;
 	}
 	/* the shared tooltip (variables.css) */
 	.tip-head {
 		display: block;
+		font-size: 18px;
 		font: var(--tip-title);
 	}
 	.tip-card .swatch {
@@ -778,13 +805,13 @@
 	.tip-source {
 		display: block;
 		font: var(--tip-small);
-		color: var(--tip-sub);
+		color: var(--wnba-tan-dark);
 		margin-top: 4px;
 	}
 	.tip-count {
 		display: block;
 		font: var(--tip-small);
-		color: var(--tip-sub);
+		color: var(--wnba-tan-dark);
 		margin: 3px 0 0;
 	}
 	.tip-card p {
@@ -792,10 +819,11 @@
 		padding: 1px 0 1px 9px;
 		border-left: 3px solid var(--tip-rule);
 		font: var(--tip-quote);
-		color: var(--tip-ink);
+		color: var(--color-fg);
+		font-style: italic;
 	}
 	/* the pointer: a paper triangle with the same hairline, at the bar */
-	.tip-card::after,
+	/* .tip-card::after,
 	.tip-card::before {
 		content: "";
 		position: absolute;
@@ -822,18 +850,18 @@
 		top: -15px;
 		border-top-color: transparent;
 		border-bottom-color: var(--tip-bg);
-	}
+	} */
 	.note {
 		margin: 6px auto 0;
 		font-size: 12px;
-		color: rgba(42, 21, 3, 0.6);
+		color: var(--wnba-tan-dark);
 		text-align: center;
 	}
 	.note.source {
 		font-family: var(--font-sans);
-		margin-top: 12px;
+		margin-top: 2rem;
 		padding-top: 8px;
-		border-top: 1px solid rgba(42, 21, 3, 0.2);
+		border-top: 1px solid var(--color-rule);
 		text-align: left;
 		line-height: 1.5;
 	}

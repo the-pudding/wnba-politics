@@ -917,6 +917,7 @@
 
 <section class="network-scrolly" class:exploring={atFinalStep} bind:this={rootEl}>
 	<div class="sticky">
+		<p class="kicker">on the web</p>
 		<p class="year-label">
 			Fox News WNBA {LINK_WORD}s, 2019–<strong>{shownYear}</strong>
 		</p>

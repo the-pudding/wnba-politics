@@ -17,6 +17,15 @@
 }
 
 @font-face {
+	font-family: "Tiempos Headline";
+	src: url("https://pudding.cool/assets/fonts/tiempos/TiemposHeadlineWeb-Regular.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-stretch: normal;
+	font-display: swap;
+}
+
+@font-face {
 	font-family: "Tiempos Text";
 	src: url("https://pudding.cool/assets/fonts/tiempos/TiemposTextWeb-Regular.woff2") format("woff2");
 	font-weight: 400;
@@ -43,4 +52,21 @@
 	font-display: swap;
 }
 
+@font-face {
+	font-family: "Newsagent";
+	src: url("https://pudding.cool/assets/fonts/newsagent/Newsagent-Regular.woff2") format("woff2");
+	font-weight: 500;
+	font-style: normal;
+	font-stretch: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "That That New Pixel";
+	src: url("../assets/fonts/ThatThatNewPixel-ItalicRound.woff2") format("woff2");
+	font-weight: 400;
+	font-style: italic;
+	font-stretch: normal;
+	font-display: swap;
+}
 

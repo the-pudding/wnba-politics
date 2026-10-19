@@ -160,9 +160,9 @@
 		width: 38px;
 		height: 38px;
 		border-radius: 50%;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		background: var(--color-paper);
-		color: var(--color-ink);
+		border: 1px solid var(--color-rule);
+		background: var(--color-white);
+		color: var(--color-gray-950);
 		cursor: pointer;
 		display: inline-flex;
 		align-items: center;
@@ -175,7 +175,10 @@
 	}
 	.arrow:disabled {
 		opacity: 0.3;
-		cursor: default;
+		cursor: not-allowed;
+	}
+	.arrow:disabled:hover {
+		background: var(--color-white);
 	}
 	.dots {
 		display: flex;
@@ -187,10 +190,10 @@
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
-		background: rgba(42, 21, 3, 0.25);
+		background: var(--color-rule);
 	}
 	.dot.on {
-		background: var(--color-ink);
+		background: var(--color-fg);
 	}
 	figcaption {
 		font-size: 12.5px;

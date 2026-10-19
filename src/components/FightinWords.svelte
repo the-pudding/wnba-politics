@@ -821,6 +821,7 @@
 	{#if !source}
 		<!-- the title, and who Fox is compared with, as on the player chart -->
 		<div class="head">
+			<p class="kicker">on the web</p>
 			<p class="heading">
 				{#if bodyMode && player === ALL}{fillIn(
 						or(headingText, "How Fox News writes about the WNBA"),
@@ -835,7 +836,7 @@
 			</p>
 			<!-- a div, not a p: the menu inside renders block elements -->
 			<div class="subheading">
-				<span>{or(comparedWith, "compared with")}</span>
+				<span>{or(comparedWith, "Compared with")}</span>
 				<LogoSelect
 					options={outletsHere}
 					bind:value={against}
@@ -1142,10 +1143,7 @@
 				)}px"
 			>
 				<!-- the side's colour in a swatch and on the quote's rule; the words in ink -->
-				<span class="tip-head"
-					><i class="swatch" style="background:{side}"></i>{properCase(
-						tip.word
-					)}</span
+				<span class="tip-head">{properCase(tip.word)}</span
 				>
 				<!-- the split behind the dot: uses on each side, and the score -->
 				<span class="tip-count"
@@ -1182,7 +1180,7 @@
 
 <style>
 	.fightin-words {
-		max-width: 900px;
+		max-width: 1000px;
 		margin: 0 auto;
 		position: relative;
 	}
@@ -1259,16 +1257,6 @@
 		max-width: 720px;
 		margin: 0 auto 10px;
 	}
-	.heading {
-		margin: 0;
-		font-family: var(--font-graphic);
-		font-size: 24px;
-		font-weight: 700;
-		line-height: 1.22;
-		letter-spacing: -0.01em;
-		text-align: left;
-		color: var(--color-ink-dark);
-	}
 	.subheading {
 		display: flex;
 		align-items: center;
@@ -1276,7 +1264,7 @@
 		margin: 2px 0 0;
 		font-family: var(--font-graphic);
 		font-size: 15px;
-		color: rgba(42, 21, 3, 0.75);
+		color: var(--wnba-tan-dark);
 	}
 	.subheading > span {
 		flex: 0 0 auto;
@@ -1321,8 +1309,8 @@
 		align-items: flex-end;
 		gap: 8px 22px;
 		max-width: 720px;
-		margin: 4px auto 14px;
-		border-bottom: 1px solid var(--color-ink-dark);
+		margin: 4px auto 1.5rem;
+		border-bottom: 1px solid var(--color-fg);
 	}
 	.unit-tabs {
 		display: flex;
@@ -1336,7 +1324,7 @@
 		border-radius: 0;
 		border-bottom: 3px solid transparent;
 		background: none;
-		color: rgba(42, 21, 3, 0.62);
+		color: var(--wnba-tan-dark);
 		font-family: var(--font-sans);
 		font-size: 14px;
 		font-weight: 700;
@@ -1363,9 +1351,9 @@
 		width: 200px;
 		height: 30px;
 		padding: 0 10px 0 28px;
-		border: 1px solid rgba(42, 21, 3, 0.25);
-		border-radius: 15px;
-		background: #fff
+		border: 1px solid var(--wnba-tan-light);
+		border-radius: 4px;
+		background: var(--color-white)
 			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23727272' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E")
 			no-repeat 10px 50%;
 		font-family: var(--font-sans);
@@ -1373,8 +1361,8 @@
 		color: var(--color-ink-dark);
 	}
 	.find input:focus {
-		outline: none;
-		border-color: var(--color-ink-dark);
+		outline: 2px solid var(--color-ink-dark);
+		outline-offset: -2px;
 	}
 	.uses.even {
 		color: rgba(42, 21, 3, 0.55);

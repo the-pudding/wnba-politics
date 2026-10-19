@@ -17,14 +17,16 @@
 	//   listLabel: …            list2Label: …   sourceNote: …
 	//   field: false            hide the grey lines
 	//   {}
+	import { base } from "$app/paths";
 	import { scaleLinear, scalePoint } from "d3-scale";
 	import { line as d3line, area as d3area } from "d3-shape";
 	import rows from "$data/outlet_topics.csv";
 	import monthRows from "$data/outlet_topics_monthly.csv";
 	import termRows from "$data/foul_terms_monthly.csv"; // each foul word, Fox, by month
-	import { COMPARISON, SHORT } from "$utils/outlets.js";
+	import { COMPARISON, SHORT, LOGO } from "$utils/outlets.js";
 	import { wordGroupsFor } from "$utils/topicWords.js";
 	import { fill, or } from "$utils/fill.js";
+	import { tidy } from "$utils/clips.js";
 
 	// ---------------------------------------------------------------------
 	// Settings for each topic
@@ -36,7 +38,7 @@
 	//   fieldAt where "Other outlets" is written (fieldAtPhone on phones)
 	const TOPICS = {
 		polrace: {
-			color: "var(--color-politics)",
+			color: "#B91C1C",
 			kicker: "Race",
 			name: "race",
 			notes: [
@@ -47,21 +49,21 @@
 			fieldAtPhone: "2022"
 		},
 		lgbtq: {
-			color: "var(--color-lgbtq)",
+			color: "#B91C1C",
 			kicker: "LGBTQ+",
 			name: "LGBTQ+ topics",
 			notes: [],
 			fieldAt: "2022"
 		},
 		fouls: {
-			color: "#9a5b13",
+			color: "#B91C1C",
 			kicker: "Fouls",
 			name: "hip-check, poke, punch or throat",
 			notes: [],
 			fieldAt: "2025-01"
 		},
 		protect: {
-			color: "#2f5d9e",
+			color: "#7C7060",
 			kicker: "Protect",
 			name: "“protect”",
 			notes: []
@@ -424,15 +426,17 @@
 		const rows = [
 			...heroes.map((h) => ({
 				name: second ? h.name : FOX,
+				o: FOX,
 				v: valueOf(h.t, FOX, p),
 				hi: true
 			})),
 			...(withField ? others : []).map((o) => ({
 				name: SHORT[o] ?? o,
+				o,
 				v: valueOf(topic, o, p)
 			}))
 		].filter((r) => r.v != null);
-		rows.sort((a, b) => (b.hi === true) - (a.hi === true) || b.v - a.v);
+		rows.sort((a, b) => b.v - a.v);
 		hover = { p, px: x(p), rows };
 	}
 
@@ -471,16 +475,16 @@
 				? ` In grey, each other outlet’s articles with ${NAME[topic]}.`
 				: "")
 		: `Share of each outlet’s WNBA articles that mention ${NAME[topic]}, by ${monthly ? "month" : "year"}.<br />{swatch}<b>Fox News</b> and {grey}${others.length === 6 ? "six" : others.length} other outlets.`;
-	const dek = fill(or(subtitle, dekDefault), {
+	const dek = tidy(fill(or(subtitle, dekDefault), {
 		swatch: swatch(COLOR[topic]),
 		swatch2: second ? swatch(COLOR[second]) : "",
 		grey: '<span class="sw grey"></span>'
-	});
+	}));
 </script>
 
 <figure class="fvf" bind:clientWidth={width}>
-	<p class="kicker" style:color={COLOR[topic]}>{kicker || T.kicker || ""}</p>
-	{#if title}<h4 class="hed">{@html title}</h4>{/if}
+	<!-- <p class="kicker" style:color={COLOR[topic]}>{kicker || T.kicker || ""}</p> -->
+	<p class="kicker">on the web</p>
 	<p class="dek">
 		{@html dek}
 	</p>
@@ -552,7 +556,7 @@
 				<text
 					class="field-label"
 					x={x(fieldLabel.p)}
-					y={fieldLabel.y}
+					y={fieldLabel.y - 10}
 					text-anchor="middle"
 					>{or(
 						fieldName,
@@ -635,16 +639,20 @@
 		{#if hover}
 			<div
 				class="tip"
+				class:plain={topic === "fouls"}
 				style:left="{Math.min(
 					width - 190,
-					Math.max(0, hover.px + (hover.px > width / 2 ? -190 : 14))
+					Math.max(0, hover.px + (hover.px > width / 2 ? -210 : 10))
 				)}px"
 				style:top="{M.top}px"
 			>
 				<p class="tip-t">{periodName(hover.p)}</p>
 				{#each hover.rows as r (r.name)}
 					<p class="tip-row" class:hi={r.hi}>
-						<span>{r.name}</span><span>{fmt(r.v)}</span>
+						<span class="tip-name">
+							{#if LOGO[r.o] && topic !== "fouls"}<img class="logo" alt="" src="{base}/logos/square/{LOGO[r.o]}" />{/if}
+							{r.name}
+						</span><span>{fmt(r.v)}</span>
 					</p>
 				{/each}
 			</div>
@@ -652,44 +660,7 @@
 	</div>
 
 	<!-- each outlet on its own, same scale -->
-	<div class="strip">
-		{#each outlets as o (o)}
-			{@const fox = o === FOX}
-			<div class="sm">
-				<p class="sm-name">
-					<span>{o}</span>
-					<!-- share across all years (no totals for counts) -->
-					{#if !counts}<span>{fmt(overall(topic, o))}</span>{/if}
-				</p>
-				<svg viewBox="0 0 {SW} {SH}" role="img" aria-label="{o}: {what}">
-					<line
-						class="sm-base"
-						x1={SM.l}
-						x2={SW - SM.r}
-						y1={sy(0)}
-						y2={sy(0)}
-					/>
-					{#each [topic, ...(second ? [second] : [])] as t, k (t)}
-						{@const pts = series(t, o)}
-						{#if !second}<path
-								class="sm-area"
-								d={sarea(pts)}
-								fill={fox ? COLOR[t] : "#8d877e"}
-							/>{/if}
-						<path
-							class="sm-line"
-							d={spath(pts)}
-							stroke={fox ? COLOR[t] : k ? "#c9c3ba" : "#a39a8d"}
-						/>
-					{/each}
-					<text class="sm-tick" x={SM.l} y={SH - 2}>{edge(periods[0])}</text>
-					<text class="sm-tick" x={SW - SM.r} y={SH - 2} text-anchor="end"
-						>{edge(periods[periods.length - 1])}</text
-					>
-				</svg>
-			</div>
-		{/each}
-	</div>
+	
 
 	<!-- the words counted -->
 	<div class="source">
@@ -697,9 +668,8 @@
 			<p><b>{g.label}:</b> {g.words.join(", ")}</p>
 		{/each}
 		<p>
-			{@html or(
-				sourceNote,
-				"An article counts once, however often it uses them."
+			{@html tidy(
+				or(sourceNote, "An article counts once, however often it uses them.")
 			)}
 		</p>
 	</div>
@@ -707,16 +677,10 @@
 
 <style>
 	.fvf {
-		margin: 0 0 8px;
+		width: 100%;
+		margin: 0;
 		font-family: var(--font-graphic);
 		color: var(--color-ink-dark);
-	}
-	.kicker {
-		margin: 0 0 6px;
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
 	}
 	.hed {
 		margin: 0 0 8px;
@@ -728,9 +692,10 @@
 	}
 	.dek {
 		margin: 0 0 18px;
-		font-size: 15px;
-		line-height: 1.45;
-		color: #4a4a4a;
+		font-size: 18px;
+		line-height: 1.15;
+		color: var(--color-gray-950);
+		font-weight: 700;
 	}
 	.dek :global(b) {
 		font-weight: 700;
@@ -745,7 +710,7 @@
 		vertical-align: 4px;
 	}
 	.dek :global(.sw.grey) {
-		background: #c7c2b9;
+		background: #7C7060;
 	}
 	.main {
 		position: relative;
@@ -762,16 +727,17 @@
 		font-size: 12px;
 	}
 	.base {
-		stroke: var(--color-ink-dark);
+		stroke: var(--color-fg);
 		stroke-width: 1;
 	}
 	.field {
 		fill: none;
-		stroke: #c7c2b9;
+		stroke: var(--wnba-tan-dark);
+		opacity: 0.33;
 		stroke-width: 1.25px;
 	}
 	.field-label {
-		fill: #727272;
+		fill: var(--wnba-tan-dark);
 		font-size: 13px;
 		font-weight: 600;
 	}
@@ -809,19 +775,19 @@
 	}
 	.note-head {
 		font-weight: 700;
-		fill: var(--color-ink-dark);
+		fill: var(--color-fg);
 	}
 	.cross {
-		stroke: var(--color-ink-dark);
-		stroke-width: 1;
+		stroke: var(--color-fg);
+		stroke-width: 2;
 	}
 	.tip {
 		position: absolute;
 		z-index: 4;
-		width: 180px;
-		padding: 8px 10px;
-		background: #fff;
-		border: 1px solid #e2e2e2;
+		width: 200px;
+		padding: 0.75rem 1rem;
+		background: var(--color-white);
+		border: 1px solid var(--color-rule);
 		border-radius: 4px;
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
 		font-size: 12.5px;
@@ -832,23 +798,53 @@
 	}
 	.tip-t {
 		font-weight: 700;
-		margin-bottom: 4px !important;
+		font-family: var(--font-serif);
+		font-size: 18px;
+		margin-bottom: 1rem !important;
 	}
 	.tip-row {
 		display: flex;
 		justify-content: space-between;
-		gap: 14px;
+		gap: 24px;
 		line-height: 1.5;
-		color: #4a4a4a;
+		color: var(--color-fg);
+		border-bottom: 1px solid var(--wnba-tan-light);
+		padding: 0.125rem 0;
+	}
+	.tip-row:last-child {
+		border-bottom: none;
 	}
 	.tip-row.hi {
-		color: var(--color-ink-dark);
+		color: var(--wnba-red);
 		font-weight: 700;
+		line-height: 1.2;
+		padding: 0.125rem 0;
+	}
+	/* the fouls chart: Fox's lines only, so no logos and no red */
+	.tip.plain .tip-row.hi {
+		color: var(--color-fg);
+		font-weight: 400;
+	}
+	/* with no logos to hold the rows open, the padding does it */
+	.tip.plain .tip-row {
+		line-height: 1.5;
+		padding: 0.375rem 0;
+	}
+	.tip-name {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.tip-name .logo {
+		display: block;
+		width: 24px;
+		height: 24px;
 	}
 	.tip-row span:last-child {
 		font-variant-numeric: tabular-nums;
 	}
 	.strip {
+		width: calc(100% - 5rem);
 		margin-top: 30px;
 		display: grid;
 		grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -857,11 +853,20 @@
 	.sm-name {
 		display: flex;
 		justify-content: space-between;
-		align-items: baseline;
+		align-items: center;
 		gap: 6px;
 		margin: 0 0 2px;
 		font-size: 13px;
 		font-weight: 700;
+	}
+	.sm-name .logo {
+			height: 24px;
+			width: 24px;
+			margin-right: 0.25rem;
+		}
+	.sm-name span {
+		display: flex;
+		align-items: center;
 	}
 	.sm-name span:last-child {
 		font-size: 12px;

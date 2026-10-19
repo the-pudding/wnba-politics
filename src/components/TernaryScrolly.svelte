@@ -321,9 +321,6 @@
 		align-items: center;
 		justify-content: center;
 	}
-	.sticky :global(.ternary-static) {
-		width: min(660px, 92vw);
-	}
 	.sticky :global(svg) {
 		max-height: 82vh;
 	}
@@ -354,8 +351,6 @@
 		transform: translateY(-50%);
 		width: 300px;
 		box-sizing: border-box;
-		background: rgba(255, 253, 248, 0.96);
-		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px 15px;
 		border-radius: 3px;
 		font-size: var(--step-text);
@@ -383,7 +378,6 @@
 		max-width: 300px;
 		margin: 0;
 		background: rgba(255, 253, 248, 0.94);
-		border-left: 3px solid var(--color-fox);
 		padding: 14px 16px 15px;
 		border-radius: 3px;
 		font-size: var(--step-text);
@@ -492,19 +486,21 @@
 		margin-top: 2px;
 	}
 	.control input[type="search"] {
-		width: 100%;
-		box-sizing: border-box;
-		font: inherit;
+		width: 200px;
+		height: 30px;
+		padding: 0 10px 0 28px;
+		border: 1px solid var(--wnba-tan-light);
+		border-radius: 4px;
+		background: var(--color-white)
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23727272' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E")
+			no-repeat 10px 50%;
+		font-family: var(--font-sans);
 		font-size: 14px;
-		padding: 7px 9px;
-		border: 1px solid rgba(42, 21, 3, 0.3);
-		border-radius: 3px;
-		background: #fff;
-		color: var(--color-ink);
+		color: var(--color-ink-dark);
 	}
 	.control input[type="search"]:focus {
-		outline: none;
-		outline-offset: 1px;
+		outline: 2px solid var(--color-ink-dark);
+		outline-offset: -2px;
 	}
 	.search-box {
 		position: relative;
