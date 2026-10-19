@@ -1,0 +1,14 @@
+[
+ {
+  "id": "cable",
+  "from": 0,
+  "to": 47.75,
+  "credit": "Fox News clips from <a href=\"https://www.tiktok.com/@foxnews/video/7665910704095923469\" target=\"_blank\" rel=\"noopener\">Riley Gaines on Hannity</a>, <a href=\"https://www.tiktok.com/@willcainshow/video/7655825046493007134\" target=\"_blank\" rel=\"noopener\">The Will Cain Show</a>, and <a href=\"https://www.youtube.com/watch?v=KsKWJHAE1Zg\" target=\"_blank\" rel=\"noopener\">Clay Travis on The Ingraham Angle</a>."
+ },
+ {
+  "id": "web",
+  "from": 47.8,
+  "to": 60.55,
+  "credit": "From <a href=\"https://www.foxnews.com/category/sports/wnba\" target=\"_blank\" rel=\"noopener\">Fox News’s WNBA page</a>, October 2026."
+ }
+]
