@@ -11,7 +11,7 @@ column that names Caitlin Clark elsewhere. With no full name before it (a
 headline, a lede), the article's first full name decides.
 
 The other people were found by listing every "Firstname Surname" in the
-corpora for each roster surname (2026-09-29); misspellings of the player's
+corpora for each roster surname; misspellings of the player's
 own first name ("Cailtin", "Britney") count as her.
 """
 

@@ -141,7 +141,7 @@
 
 <style>
 	/* the table closes the section at the beeswarm's width, in the text
-	   column (2026-10-01) */
+	   column */
 	.wide-table {
 		width: 100%;
 	}

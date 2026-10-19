@@ -20,7 +20,7 @@ UNIONS = {
 # a topic pinned here overrides (or adds to) the sheet's rows: "fouls" is only
 # the four words the Republicans' letter to the WNBA cited; "protect" (the
 # "protect Caitlin Clark" turn of summer 2026) is its own topic, drawn in a
-# second colour beside it (2026-09-28)
+# second colour beside it
 OVERRIDES = {
     "fouls": [r"hip-?check", r"\bpoke[ds]?\b", r"\bpunch(?:ed|es|ing)?\b", r"\bthroat\b"],
     "protect": [r"\bprotects?\b"],

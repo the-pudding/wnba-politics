@@ -115,7 +115,7 @@
 	}
 	.stack {
 		/* the cards sit over the middle of the plot, which already shows
-		   through them: wider costs little here (2026-09-30) */
+		   through them: wider costs little here */
 		max-width: 420px;
 		opacity: 0.3;
 		pointer-events: auto;

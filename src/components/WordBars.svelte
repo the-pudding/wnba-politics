@@ -9,7 +9,7 @@
 		top = 12,
 		// more: rank the list further than `top`, a page of `top` at a time
 		// with Previous / Next under the bars, the frame the same height
-		// (2026-10-01; it scrolled before)
+		// (it scrolled before)
 		more = 0,
 		// pager: show Previous / Next (a scrolly keeps it for its explore step)
 		pager = true,
@@ -38,7 +38,7 @@
 		// for your own (HTML allowed), present but blank for none
 		note = undefined,
 		// noteKind: "source" sets the note as a source line (small, left, over
-		// a thin rule), as the main chart's caption is (2026-10-02)
+		// a thin rule), as the main chart's caption is
 		noteKind = "",
 		// the Doc's words for the pager and the hover counts (fill.js slots)
 		previous = "",
@@ -130,7 +130,7 @@
 	// a highlighted word that isn't on the page showing: it stays at its real
 	// rank, but the page gives up its last rows for a "⋯" and a row for it
 	// ("#38"), so the reader sees it without the order being changed
-	// (2026-10-02). The page keeps its height.
+	//. The page keeps its height.
 	let pins = $derived.by(() => {
 		const none = { 1: [], [-1]: [], rows: 0, keep: topN };
 		if (!paged || !anyLit) return none;
@@ -182,7 +182,7 @@
 	let mid = $derived(WIDTH / 2);
 	// a column head can carry the outlet's wordmark on its outer side ("← [logo]
 	// in ESPN", "in Fox News [logo] →"): source.topLogo /
-	// source.bottomLogo name a file in static/logos (2026-09-29)
+	// source.bottomLogo name a file in static/logos
 	// a logo's height in the head: a long wordmark (the Times, the Post) a
 	// little shorter so it does not dwarf the words; its width from its shape
 	const logoHeight = (file) => ((LOGO_RATIO[file] ?? 3) > 5 ? 12 : 15);
@@ -426,7 +426,7 @@
 		<svg width={WIDTH} height={TOP - 24} viewBox="0 0 {WIDTH} {TOP - 24}" role="presentation">
 			{#if source.topHead}
 				<!-- heads at the bars' outer edges, saying what each side means:
-				     "← Other outlets use more" · "Fox News uses more →" (2026-10-02) -->
+				     "← Other outlets use more" · "Fox News uses more →" -->
 				{@const oneLine = textWidth(source.bottomHead) + textWidth(source.topHead) + 60 < 2 * barsReach}
 				{#if oneLine}
 					<text class="head edge others" x={0} y="10" text-anchor="start">← {source.bottomHead}</text>

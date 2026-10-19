@@ -66,7 +66,7 @@
      and the chart takes the full column width -->
 <div class="simple-bars" class:dense={rows.length >= 10} class:horizontal={HORIZONTAL} style="--n: {rows.length}" bind:this={rootEl}>
 	{#if HORIZONTAL}
-	<!-- a table of bars (2026-09-30): the outlet's name, its share on a track
+	<!-- a table of bars: the outlet's name, its share on a track
 	     that runs to 100%, and its WNBA articles that year. Fox first, the
 	     others by share. Counts alone (no "of") fill to the most -->
 	{@const hasOf = rows.some((r) => r.of)}
@@ -78,7 +78,7 @@
 		<div class="thead" role="row">
 			{#if hasOf}
 				<!-- % or #: the share of each outlet's articles, or the articles
-				     themselves, in the header row over the names (2026-10-01) -->
+				     themselves, in the header row over the names -->
 				<div class="measure-pick" role="group" aria-label="Show shares or counts">
 					<button type="button" class:active={showCounts} aria-pressed={showCounts} title="Number of articles" onclick={() => (showCounts = true)}>#</button>
 					<button type="button" class:active={!showCounts} aria-pressed={!showCounts} title="Share of each outlet's WNBA articles" onclick={() => (showCounts = false)}>%</button>

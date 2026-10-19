@@ -46,7 +46,7 @@ for r in rows:
 sentences = []   # (date, url, text, [names], is_headline)
 # a bare surname someone else shares goes to whoever the article last named in
 # full ("Ryan Clark is so dumb ... Clark's stupidity" is not Caitlin); the
-# article is the headline, a newline, then the body (2026-09-29)
+# article is the headline, a newline, then the body
 from lookalikes import bare_is_her
 def note(date, url, text, is_head, article="", offset=0):
     who = []

@@ -117,17 +117,16 @@ def attribute(nlp, headlines, groups, register, name_rx=None):
     # every term is a pattern (framing_terms.csv holds regexes such as
     # "scor(?:es|ed|ing)" and "\\d+ points" beside plain words): a match in the
     # sentence text is pinned to the token holding its last character, and
-    # ownership is judged from that token (2026-09-28: the literal word test
-    # this replaced never fired for the performance register's patterns)
+    # ownership is judged from that token (a literal word test would never
+    # fire for the performance register's patterns)
     trigger_terms = set().union(*[terms for (reg, kind), terms in load_terms().items()
                                   if reg == register and kind not in ("prefilter", "scrub")])
     # whole words only: without the boundaries "dress" matched inside "address"
-    # and "hair" inside "chair" (fixed 2026-09-29; the bug came in with the
-    # pattern-matching rewrite of 2026-09-28)
+    # and "hair" inside "chair"
     trigger_rx = re.compile(r"\b(?:" + "|".join(rf"(?:{t})" for t in sorted(trigger_terms, key=len, reverse=True)) + r")\b", re.I) if trigger_terms else None
     scrub = scrub_rx(register)
     # look-alikes' surnames blanked ("Ryan Clark" -> "Ryan Cxxxx", same length)
-    # so the surname test below cannot hand his words to Caitlin (2026-09-29)
+    # so the surname test below cannot hand his words to Caitlin
     # and a video tag ("WATCH:", ": WATCH") dropped: the parser takes it for
     # the headline's main word and loses who the rest is about
     text_for = (lambda r: scrub.sub(" ", untag(mask(r["t"])))) if scrub else (lambda r: untag(mask(r["t"])))

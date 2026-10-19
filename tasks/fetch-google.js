@@ -66,7 +66,7 @@ const warnUnbalancedTags = (text) => {
 			let str = await fetchGoogle(d);
 			// a sheet row whose cells were cleared instead of deleted comes down as
 			// ",,": an empty term matches every sentence (it made every player
-			// 100% political, 2026-09-29), so blank rows are dropped here
+			// 100% political), so blank rows are dropped here
 			if (d.sheet) {
 				const lines = str.split(/\r?\n/);
 				const kept = lines.filter((line) => line.replace(/[",\s]/g, "") !== "");

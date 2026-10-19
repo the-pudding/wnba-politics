@@ -99,7 +99,7 @@
 		bare = false,
 		controls = true,
 		// pager: Previous / Next under the bars (a scrolly holds it back until
-		// its last card, 2026-10-02)
+		// its last card)
 		pager: showPager = true,
 		mode = null,
 		source = null,
@@ -144,7 +144,7 @@
 	} = $props();
 	import { fill as fillIn, or } from "$utils/fill.js";
 	// words, two-word or three-word phrases: the Doc's `ngrams` sets it, the
-	// Show dropdown flips it (three-word phrases added 2026-09-30)
+	// Show dropdown flips it
 	let gram = $state(1);
 	$effect(() => {
 		const n = String(ngrams).trim();
@@ -181,7 +181,7 @@
 	// A check, shown only with ?checks in the address (utils/checks.svelte.js):
 	// with or without college coverage, that the words hold on WNBA coverage
 	// alone. The no-college files come from a rerun of notebook 06 with college
-	// articles dropped from every outlet (static/data/nocollege/, 2026-09-30).
+	// articles dropped from every outlet (static/data/nocollege/).
 	let college = $state("with");
 	let noCollege = $derived(college === "without" && player === ALL);
 	let nc = $state({
@@ -220,7 +220,7 @@
 	// A check, shown only with ?checks: "Leave out" game words (the box score, results, teams and cities), so
 	// what is left is how the coverage talks about the league rather than the
 	// games, and/or people's names, so what is left is what is said rather than
-	// who it is said about (src/utils/gameWords.js, nameWords.js; 2026-09-30)
+	// who it is said about (src/utils/gameWords.js, nameWords.js)
 	let leaveOut = $state("none");
 	let hideGame = $derived(leaveOut === "game" || leaveOut === "both");
 	let hideNames = $derived(leaveOut === "names" || leaveOut === "both");
@@ -316,7 +316,7 @@
 	);
 	let floor = $derived(player === ALL ? 5 : 3);
 	// the line under the bars, in the topic graphics' source-line style
-	// (2026-10-02): what was compared, then how it was scored
+	//: what was compared, then how it was scored
 	let caption = $derived.by(() => {
 		if (!sample) return note;
 		const them =
@@ -350,7 +350,7 @@
 				: or(tabWords, "Words");
 
 	// --- the explore step's search box (as on the ternary) -----------------
-	// the search, as in the redesign demo (2026-10-02): typing only suggests,
+	// the search: typing only suggests,
 	// each suggestion tagged with its side and rank; picking one lights it (a
 	// word off the page is pinned under it at its rank) and a line under the
 	// chart says how the two sides use it, with an example
@@ -948,7 +948,7 @@
 		{/if}
 	{/if}
 
-	<!-- the counts that sat over the chart are in its caption now (2026-10-02) -->
+	<!-- the counts that sat over the chart are in its caption now -->
 
 	{#if chart === "bars"}
 		<!-- the same words as mirrored bars: the strongest on each side -->

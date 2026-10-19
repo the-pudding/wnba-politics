@@ -2,7 +2,7 @@
 // the word lists are lowercased for counting ("aces", "indiana fever"), and
 // only the people and places the network knows come back capitalised. The
 // nicknames that are also ordinary words (sun, storm, sky, fire, dream, wings)
-// are almost always the teams in this coverage. (2026-09-29)
+// are almost always the teams in this coverage.
 const TEAMS = [
 	"aces", "fever", "sky", "liberty", "lynx", "mercury", "storm", "sparks", "dream",
 	"wings", "sun", "mystics", "valkyries", "tempo", "fire"
@@ -18,7 +18,7 @@ const RX = new RegExp(
 );
 
 // a nickname that is also a verb, followed by its particle, is the verb:
-// "fire off" (a tweet), "storm off", "sparks up" (2026-10-01)
+// "fire off" (a tweet), "storm off", "sparks up"
 const PARTICLE = /^\s+(off|up|back|out|away|down|at|on|over|through)\b/;
 
 export function properCase(word) {

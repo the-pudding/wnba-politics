@@ -296,7 +296,7 @@
 	// the svg is drawn WIDTH wide and scaled to fit, so its type is set in
 	// frame units that land at a fixed size on screen: 14px axis ends (the
 	// controls' size), 12px
-	// ticks, whatever the column width (2026-09-29)
+	// ticks, whatever the column width
 	let shownWidth = $state(0);
 	// the axis ends read as phrases: "← Harsher coverage" (the first letter up)
 	const sentenceCase = (t) => (t ?? "").replace(/[a-z]/, (c) => c.toUpperCase());
@@ -304,7 +304,7 @@
 	let PAD = $derived(
 		narrow
 			// the axis runs edge to edge, on the column's edge like the controls
-			// above it (2026-09-29); faces are kept inside by their own radius
+			// above it; faces are kept inside by their own radius
 			? { top: 30, right: 2, bottom: 52, left: 2 }
 			: { top: 26, right: 2, bottom: 46, left: 2 }
 	);
@@ -333,7 +333,7 @@
 	// a little taller when many same-size faces have to fit (37 by sentence,
 	// 34 by headline): the swarm spreads sideways first, so a dozen pixels a
 	// face beyond the first twenty is enough
-	// on a desktop the faces are big (2026-09-29): the frame grows with their
+	// on a desktop the faces are big: the frame grows with their
 	// total area, packed about half full, so they never pile against an edge
 	let faceArea = $derived(
 		people.reduce((sum, p) => sum + Math.PI * (radiusOf(p) + 1.5) ** 2, 0)

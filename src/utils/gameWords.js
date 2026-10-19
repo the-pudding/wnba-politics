@@ -1,7 +1,7 @@
 // Game vocabulary: the box score, results, the court, and the teams and
 // cities a game recap names. The Fightin' Words chart can hide any word or
 // phrase with one of these in it, so what is left on each side is how the
-// coverage talks about the league rather than the games (2026-09-30).
+// coverage talks about the league rather than the games.
 // Left in on purpose: fouls (part of the story being told), and the
 // business of the league (draft, contract, trade, coach, rookie, salary).
 const STATS = [

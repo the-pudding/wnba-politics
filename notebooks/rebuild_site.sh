@@ -1,5 +1,6 @@
 #!/bin/bash
-cd ~/wnba-politics
+# rebuild every chart's data from the corpora in data/; run from anywhere
+cd "$(dirname "$0")/.."
 run() { echo; echo "=== $(date '+%H:%M:%S') $*"; "$@" 2>&1 | grep -v "Warning\|warn(\|Kernel is running\|IPKernelApp\|Inference\|Map:" || echo "!!! FAILED: $*"; }
 nb() { (cd notebooks && python3 run_nb.py "$1"); }
 run python3 notebooks/fox_corpus_filter.py

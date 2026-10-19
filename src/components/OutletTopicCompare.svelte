@@ -75,7 +75,7 @@
 		polrace: "var(--color-politics)",
 		// the word chart's brown and navy, each a step lighter here, where the
 		// two lines cross month after month near zero and the darker pair
-		// muddied into one (2026-10-02)
+		// muddied into one
 		fouls: "color-mix(in srgb, var(--color-brown) 78%, #e09a3e)",   // the foul words in brown
 		protect: "color-mix(in srgb, var(--color-fox-navy) 52%, white)" // "protect" in a lighter navy
 	};
@@ -559,8 +559,7 @@
 		{/each}
 	</div>
 
-	<!-- the vocabulary, always shown under the panels as their caption
-	     (it was a fold-out "See words included" until 2026-10-01) -->
+	<!-- the vocabulary, always shown under the panels as their caption -->
 	{#if wordGroups.length}
 		<div class="word-list">
 			{#if wordsNote}<p>{@html wordsNote}</p>{/if}
@@ -633,7 +632,7 @@
 	/* two tracks per pane, so a short last row can sit centred; the space
 	   between panes is each pane's own padding, not a column gap (a gap on
 	   every narrow track outgrew a narrow box and squeezed every column to
-	   nothing, 2026-10-01) */
+	   nothing) */
 	.grid {
 		display: grid;
 		grid-template-columns: repeat(var(--tracks, 4), minmax(0, 1fr));

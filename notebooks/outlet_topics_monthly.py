@@ -10,14 +10,14 @@ from outlets import OUTLETS
 import topics
 csv.field_size_limit(10 ** 9)
 pats = topics.patterns()
-# the race panels: race terms only, BLM among them (2026-09-29)
+# the race panels: race terms only, BLM among them
 PATTERNS = {"polrace": re.compile(pats["race / racism"], re.I),
             "lgbtq": re.compile(pats["LGBTQ or trans"], re.I),
             "fouls": re.compile(pats["fouls"], re.I),
             "protect": re.compile(pats["protect"], re.I)}
 PAIRS = [("fouls", "protect"), ("polrace", "lgbtq")]
 # each of the fouls topic's words on its own, so a chart can name the word
-# behind each spike (2026-10-02)
+# behind each spike
 FOUL_TERMS = {"hip-check": r"hip-?check", "poke": r"\bpoke[ds]?\b",
               "punch": r"\bpunch(?:ed|es|ing)?\b", "throat": r"\bthroat\b"}
 assert list(FOUL_TERMS.values()) == topics.OVERRIDES["fouls"], "the fouls words changed in topics.py"

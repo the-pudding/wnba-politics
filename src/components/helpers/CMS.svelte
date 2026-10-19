@@ -478,7 +478,7 @@
 		margin: 0;
 		color: var(--color-ink);
 	}
-	/* desktop: larger body text (2026-09-30); phones keep 17px */
+	/* desktop: larger body text; phones keep 17px */
 	@media (min-width: 769px) {
 		ul,
 		ol,

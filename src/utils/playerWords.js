@@ -20,7 +20,7 @@ const RELATION = {
 	play: "how her play is described",
 	all: "every word attached to her",
 	phrases: "two-word phrases in sentences about her",
-	// each relation's two-word phrases (notebook 09, 2026-09-30)
+	// each relation's two-word phrases (notebook 09)
 	subject2: "what she does, in two-word phrases",
 	object2: "what is done to her, in two-word phrases",
 	describe2: "how she is described, in two-word phrases",

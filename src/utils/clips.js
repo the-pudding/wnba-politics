@@ -111,7 +111,7 @@ export const faces = (html, base = "") =>
 
 // ==word== anywhere (Doc text, clip titles, network headlines): the yellow
 // marker pen the foul reel uses, one highlighter across the piece
-// (2026-10-01; styled by mark.pen in app.css). `color` is no longer used.
+// (styled by mark.pen in app.css). `color` is no longer used.
 export const hl = (html, color = null) =>
 	tidy(html).replace(/==(.+?)==/g, (_, w) => `<mark class="pen">${w}</mark>`);
 

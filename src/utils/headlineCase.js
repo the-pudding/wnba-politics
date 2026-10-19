@@ -1,6 +1,6 @@
 // Chyrons come in capitals ("REESE CRITICIZED FOR GESTURES AT CAITLIN CLARK"):
 // set them in sentence case for a tooltip, with the site's people, the teams
-// and their cities, and the usual acronyms capitalised again (2026-10-09)
+// and their cities, and the usual acronyms capitalised again
 import roster from "$data/people.json";
 import { properCase } from "$utils/properCase.js";
 

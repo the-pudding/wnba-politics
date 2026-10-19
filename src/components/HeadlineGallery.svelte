@@ -131,8 +131,7 @@
 		padding: 14px 0 18px;
 	}
 	/* room inside each slide for the card's tilt and shadow: the gallery's
-	   own frame clips at the slide's edge, which showed on the white sheet
-	   (2026-09-29) */
+	   own frame clips at the slide's edge, which showed on the white sheet */
 	swiper-slide {
 		width: min(340px, 78vw);
 		box-sizing: border-box;

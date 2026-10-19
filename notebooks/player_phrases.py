@@ -20,7 +20,7 @@ this that these those i you he she they we his her their our your my not no do d
 will would can could should may might must about after before over under again more most other some
 such only own same so too very what which who whom when where why how all any both each few said says
 say new just also even still back one two her's she's it's
-first second last""".split())   # first/second/last: game-time ordinals, not framing (2026-09-30)
+first second last""".split())   # first/second/last: game-time ordinals, not framing
 BAD = re.compile(r"\b(?:contributed report|click here|view post|instagram post|post instagram|getty images|"
                  r"associated press|fox news|fox sports|news digital|read more|foxnews com|usa today)\b")
 # names and teams, belt and braces: any part of a roster name (unless it is
@@ -71,7 +71,7 @@ for player, sides in rows.items():
     sides_out = {"clark": [], "others": []}
     # strongest first on both sides: bayes_compare_language returns the scores
     # in ascending order, so reading it straight gave Fox's side the phrases
-    # nearest zero (fixed 2026-09-30)
+    # nearest zero
     for phrase, z in sorted(scored, key=lambda t: -abs(t[1])):
         i = idx.get(phrase)
         if i is None: continue

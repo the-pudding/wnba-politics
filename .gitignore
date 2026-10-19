@@ -13,23 +13,8 @@ archive/
 data/samples/
 data/audit/
 
-# data collection scripts: kept local, not published (2026-09-29)
-notebooks/nyt_search.py
-notebooks/athletic-scrape.ipynb
-notebooks/nyt_proquest.py
-notebooks/wapo_proquest.py
-notebooks/proquest.py
-notebooks/merge_exports.py
-notebooks/refresh_bodies.py
-notebooks/coverage_audit.py
-notebooks/corpus_sources.py
-data/corpus_sources.md
-notebooks/refresh_harvest.sh
-notebooks/news_arms.py
-
-# article text stays local: the corpora hold full bodies (copyrighted, some
-# paywalled, the NYT and Post via a licence that bars redistribution) and the
-# site does not read them. Headline/URL tables and the term lists stay public.
+# article text stays local: the corpora hold full article bodies, which the
+# site does not read. Headline/URL tables and the term lists are kept.
 data/*.csv
 !data/topic_terms.csv
 !data/politicization_terms.csv
@@ -43,9 +28,6 @@ data/*.csv
 
 # no-college check data (?checks): local only, 120 MB with its parse caches
 static/data/nocollege/
-
-# notes for Claude Code, kept local
-CLAUDE.md
 
 # Storm TV sources and build script (downloads clips)
 notebooks/storm_tv/

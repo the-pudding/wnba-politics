@@ -2,7 +2,7 @@
 // media, politicians in data/people.json) plus the names that turn up in the
 // chart's top words without being on it. The chart can hide any word or
 // phrase with a name in it, to show what is said rather than who it is
-// said about (2026-09-30).
+// said about.
 import roster from "$data/people.json";
 
 // surnames and first names that are also ordinary words ("white privilege",
@@ -13,7 +13,7 @@ const ORDINARY = new Set([
 	"taylor", "sunny", "clay", "dawn", "kim", "joe", "paul", "lia", "stephen", "parker", "carter"
 ]);
 // not on the roster but in the chart's top 150 words and phrases, capitalised
-// mid-sentence in the articles at least 85% of the time (checked 2026-09-30)
+// mid-sentence in the articles at least 85% of the time
 const EXTRA = [
 	"azzi fudd", "olivia miles", "lauren betts", "juju watkins", "kate martin", "christie sides",
 	"natalie nakase", "sandy brondello", "noelle quinn", "pat summitt", "lisa bluder", "pat mcafee",

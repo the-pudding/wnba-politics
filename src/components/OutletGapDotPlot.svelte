@@ -97,7 +97,7 @@
 	// A check, shown only with ?checks in the address (utils/checks.svelte.js):
 	// with or without college coverage. The no-college numbers come from a rerun
 	// of notebook 05, cast_gap.py and pair_gap.py with college articles dropped
-	// (static/data/nocollege/src/, 2026-09-30).
+	// (static/data/nocollege/src/).
 	let college = $state("with");
 	let ncData = $state(null);
 	$effect(() => {
@@ -756,7 +756,7 @@
 			<div>
 				<span class="swatch" style="background:{FOX}"></span>
 				{pct(tooltip.person.top.share)} of Fox's WNBA headlines
-				<!-- the raw count beside every share (2026-09-30) -->
+				<!-- the raw count beside every share -->
 				<span class="count">({tooltip.person.top.n.toLocaleString()})</span>
 			</div>
 			<div>

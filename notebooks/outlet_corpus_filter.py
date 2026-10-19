@@ -59,7 +59,7 @@ NOT_ARTICLE = re.compile(r"/(crosswords|puzzles|podcasts|videos?|slideshow|galle
 # the print edition's multi-sport briefs pages (ProQuest): a WNBA brief among
 # hockey, golf and soccer items, under a section label ("PRO BASKETBALL") or the
 # first item's headline. Their WNBA items are mostly wire recaps the web corpus
-# already has (2026-10-01)
+# already has
 SECTION = re.compile(r"(?<![A-Za-z])(PRO BASKETBALL|PRO FOOTBALL|HOCKEY|GOLF|SOCCER|TENNIS|BASEBALL|COLLEGES|"
                      r"COLLEGE BASKETBALL|COLLEGE FOOTBALL|COLLEGE BASEBALL|AUTO RACING|TRACK AND FIELD|BOXING|"
                      r"OLYMPICS|HORSE RACING|CYCLING|SWIMMING|THE DAY IN SPORTS)(?![A-Za-z])")
@@ -100,7 +100,7 @@ def run(stem, report_only):
     for row in rows:
         why = why_drop(row)
         (drop if why else keep).append((row, why))
-    # one copy of each article (dedupe.py, 2026-09-30)
+    # one copy of each article (dedupe.py)
     kept, copies = dedupe([row for row, _ in keep])
     keep = [(row, None) for row in kept]
     drop += copies

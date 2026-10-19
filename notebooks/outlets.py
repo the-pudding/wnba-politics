@@ -5,7 +5,7 @@
 import json
 from pathlib import Path
 
-# 2026-09-28: the brand-level comparison. Sister outlets are bundled by
+# The brand-level comparison: sister outlets are bundled by
 # notebooks/bundle_outlets.py into one corpus each (the member's own name
 # survives in the `source` column): Fox News = Fox News + OutKick; New York
 # Times = NYT + The Athletic; CBS Sports = CBS Sports + CBS News (incl. its

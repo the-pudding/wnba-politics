@@ -97,7 +97,7 @@
 </div>
 
 <style>
-	/* a labelled field in the headline table's style (2026-09-29): the label
+	/* a labelled field in the headline table's style: the label
 	   above, a heavy-edged white box with the table's caret */
 	.face-picker {
 		position: relative;

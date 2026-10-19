@@ -21,7 +21,7 @@ export const LOGO_WIDTH = {
 	"breitbart.svg": 60, "redstate.svg": 54, "hotair.svg": 46, "gatewaypundit.svg": 64, "brobible.svg": 52
 };
 
-// each wordmark's width over its height, from its file's viewBox (2026-09-29):
+// each wordmark's width over its height, from its file's viewBox:
 // the chart heads size a logo from this so it keeps its shape
 export const LOGO_RATIO = {"ap.svg": 0.864, "breitbart.svg": 4.0, "brobible.svg": 3.467, "cbs-news.svg": 7.5, "cbs-sports.svg": 4.683, "cbs.svg": 4.615, "espn.svg": 4.044, "fox-news.svg": 1.0, "fox-sports.svg": 1.689, "gatewaypundit.svg": 4.267, "hotair.svg": 3.067, "ms-now.svg": 6.255, "nbc-news.svg": 1.317, "nyt.svg": 7.4, "redstate.svg": 3.6, "usa-today.svg": 6.68, "washington-post.svg": 6.431, "yahoo.svg": 3.606, "jws.png": 1, "the-athletic.png": 1};
 

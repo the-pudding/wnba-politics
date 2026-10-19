@@ -617,7 +617,7 @@
 	});
 	const shownSize = (node) => sizeTweens.get(node.name)?.current ?? radius(node);
 
-	// only the faces on screen take part in the layout (2026-09-29): a hidden
+	// only the faces on screen take part in the layout: a hidden
 	// face pushed nothing but still took up room, repelled the rest and
 	// dragged the centring, so a month with three people scattered them to
 	// the edges. Hidden faces now weigh nothing; the shown ones are centred
@@ -736,7 +736,7 @@
 	// click: false when the pointer only left the chart or the browser took the
 	// touch for a scroll (pointercancel). On a phone, a scroll that began on a
 	// face used to end in pointerleave and count as a tap on her, pinning her
-	// through every later step (2026-09-30)
+	// through every later step
 	function endDrag(event, click = true) {
 		if (!dragging && bgPressed && bgMoved < 4 && click) selectedNames = [];
 		bgPressed = false;
@@ -1504,7 +1504,7 @@
 		background: rgba(28, 25, 23, 0.045);
 	}
 	/* the width includes the cell's padding (border-box): 14 + 12 of it, and
-	   room for "YEAR" in spaced capitals (2026-09-30) */
+	   room for "YEAR" in spaced capitals */
 	.hl .col-year {
 		width: 80px;
 		white-space: nowrap;

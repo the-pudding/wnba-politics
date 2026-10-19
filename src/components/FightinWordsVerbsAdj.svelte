@@ -102,7 +102,7 @@
 	});
 	let current = $derived(STEPS[last] ?? STEPS[0]);
 
-	// the relations as tabs (2026-10-02), each with the plain-language heading
+	// the relations as tabs, each with the plain-language heading
 	// it gives the chart
 	const RELATIONS = $derived([
 		["describe", or(tabDescribe, "Described as")],
@@ -156,7 +156,7 @@
 	const bySurname = (a, b) =>
 		a.split(" ").pop().localeCompare(b.split(" ").pop()) || a.localeCompare(b);
 	// the row: the players Fox writes about most first, as many as fit, then
-	// a button for the rest (2026-10-02)
+	// a button for the rest
 	const foxWords = (name) => data.players?.[name]?.vsCounts?.all?.clark ?? 0;
 	const PICKABLE = [...PEOPLE].sort(
 		(a, b) => foxWords(b) - foxWords(a) || bySurname(a, b)
@@ -209,8 +209,8 @@
 	// stand alone; the rest grey out
 	// A check, shown only with ?checks in the address (utils/checks.svelte.js):
 	// with or without college coverage. The no-college numbers come from a rerun
-	// of notebook 09 with college articles dropped (static/data/nocollege/,
-	// 2026-09-30; words only, not two-word phrases).
+	// of notebook 09 with college articles dropped (static/data/nocollege/;
+	// words only, not two-word phrases).
 	let college = $state("with");
 	let ncWords = $state(null);
 	$effect(() => {
@@ -221,7 +221,7 @@
 			.catch(() => {});
 	});
 	// words, or two-word phrases (each relation's word and its partner in the
-	// parse: "foul out", "cheap shot"; notebook 09, 2026-09-30). The phrases
+	// parse: "foul out", "cheap shot"; notebook 09). The phrases
 	// ship one file per player (static/data/player_phrases2), fetched on use
 	let unit = $state("words");
 	let phrases = $derived(unit === "phrases");
@@ -341,7 +341,7 @@
 		if (fresh) lastSource = fresh;
 		const src = fresh ?? (waiting ? lastSource : null);
 		// against the outlets, heads at the bars' edges saying who uses a word
-		// more, as on the main chart (2026-10-02)
+		// more, as on the main chart
 		if (!src || shown.vs !== "outlets") return src;
 		return {
 			...src,
@@ -383,7 +383,7 @@
 >
 	<div class="sticky">
 		{#if source}
-			<!-- the players as faces in a row, one tap each (2026-10-02) -->
+			<!-- the players as faces in a row, one tap each -->
 			<div
 				class="players"
 				role="radiogroup"

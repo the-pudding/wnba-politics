@@ -34,8 +34,8 @@ csv.field_size_limit(10 ** 9)
 # "Liberty", "Mercury", "Fever") is an ordinary English word far more often
 # than a team, so it counts only capitalised and only once the article has an
 # unambiguous mention somewhere (WNBA, women's basketball, a city-qualified
-# team, a roster name). Found 2026-09-22 when a sitemap harvest brought in
-# "Statue of Liberty" and "sparks outrage" stories that passed the old rule.
+# team, a roster name), so "Statue of Liberty" and "sparks outrage" stories
+# stay out.
 CITY_TEAMS = (r"Indiana Fever|Las Vegas Aces|New York Liberty|Minnesota Lynx|Phoenix Mercury|"
               r"Los Angeles Sparks|L\.?A\.? Sparks|Washington Mystics|Golden State Valkyries|"
               r"Toronto Tempo|Chicago Sky|Connecticut Sun|Atlanta Dream|Dallas Wings|"
@@ -46,12 +46,12 @@ people = json.loads((HERE / "src" / "data" / "people.json").read_text())
 # fall through to a bare surname for 26 of the 38, which is right for counting
 # mentions inside an article already about the league and wrong as a test of
 # relevance: it admitted Martha Stewart and Senate candidate Cal Cunningham
-# (2026-09-25). Apostrophes and curly quotes are interchangeable.
+#. Apostrophes and curly quotes are interchangeable.
 def _full_name(name):
     return r"\s+".join(re.escape(part).replace("'", "['\u2019]") for part in name.split())
 # people in the roster who are not WNBA figures do not make an article about
 # the WNBA: the NBA commissioner's China week and his TV deals are not league
-# coverage (2026-09-25)
+# coverage
 NOT_WNBA = {"Adam Silver"}
 ROSTER = "|".join(rf"\b{_full_name(name)}\b" for name, p in people.items()
                   if p.get("group") in ("players", "league") and name not in NOT_WNBA)
@@ -62,7 +62,7 @@ UNRIVALED = re.compile(r"\bUnrivaled\b")
 NICK = re.compile(rf"\b(?:{NICKNAMES})\b")   # case-sensitive on purpose
 # a nickname that is plainly not the team: the Post's Knicks-parade history
 # reached the corpus on "Statue of Liberty" plus "the WNBA's New York Liberty"
-# counted three times over (2026-09-27)
+# counted three times over
 NOT_NICK = re.compile(r"Statue of Liberty|Liberty (?:Bell|Island|University|Mutual|Media|Ballers)|"
                       r"Fever (?:pitch|dream)|Sparks (?:fly|flew|flying)|Storm (?:surge|warning|clouds?|system|damage)|"
                       r"Mercury (?:Prize|rising|poisoning)|Sun Belt|Sky Sports|Sky News")

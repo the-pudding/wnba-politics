@@ -1,4 +1,4 @@
-"""One copy of each article (2026-09-30).
+"""One copy of each article.
 
 The harvests reached some articles more than once, and found 947 extra copies
 in ESPN alone: the same story under a second URL (a #b or ?utm tail, :80, a
@@ -27,8 +27,8 @@ Rows are the same article when any of these match:
      text, so rules 2 and 3 miss it. The same story when half of the first
      300 words' four-word runs are shared, or a quarter of them and at least
      35% of the names in the first 150 words (wire game recaps share stock
-     phrases; two different games share few names). Added 2026-10-01 for the
-     Post's and the Times' print twins.
+     phrases; two different games share few names). This catches the Post's
+     and the Times' print twins.
 
 The copy kept: the one with text, then a web page over a ProQuest record,
 then a clean URL, then the longest text.

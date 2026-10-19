@@ -53,7 +53,7 @@ def write_fighting_words(grid, lit):
     # article words and two-word phrases load separately, each when first shown
     (STATIC / "fw_articles.json").write_text(json.dumps(_compact(grid["articleWords"], POOLED), ensure_ascii=False))
     (STATIC / "fw_bigrams.json").write_text(json.dumps(_compact(grid["articleBigrams"], POOLED), ensure_ascii=False))
-    # three-word phrases (2026-09-30), when the notebook scored them
+    # three-word phrases, when the notebook scored them
     if grid.get("articleTrigrams"):
         (STATIC / "fw_trigrams.json").write_text(json.dumps(_compact(grid["articleTrigrams"], POOLED), ensure_ascii=False))
     d = STATIC / "fw_outlet"; d.mkdir(exist_ok=True)
@@ -81,7 +81,7 @@ def write_player_words(slim):
         block["vsByOutletKeys"] = {rel: sorted(cmp) for rel, cmp in by.items()}
         if any(singles.values()):
             (d / f"{slug(who)}.json").write_text(json.dumps(singles, ensure_ascii=False))
-        # two-word phrases (the relations ending in 2, 2026-09-30) would double
+        # two-word phrases (the relations ending in 2) would double
         # the bundle: they go to one file per player, fetched when switched on
         phr = {}
         for part in ("relations", "counts", "vsOutlets", "vsCounts", "vsByOutlet"):

@@ -63,7 +63,7 @@
 		OutletGapFaces,
 		FightinWordsVerbsAdj,
 		FightinWordsBars,
-		// the Doc's network block draws the redesigned map (2026-10-02); the
+		// the Doc's network block draws the redesigned map; the
 		// old network is still there by name
 		NetworkScrolly: NetworkMap,
 		NetworkMap,

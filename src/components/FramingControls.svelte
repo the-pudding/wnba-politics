@@ -67,7 +67,7 @@
 	/* one control row on one ink rule, flush with the column's left edge
 	   (the section title, the chart's axis and the table below share it):
 	   the measure as tabs on the left, the count basis as a quiet text
-	   switch at the right end (2026-09-29) */
+	   switch at the right end */
 	.pick {
 		display: flex;
 		flex-wrap: wrap;
@@ -133,7 +133,7 @@
 		border-radius: 0;
 		overflow: visible;
 		margin-bottom: 0; /* stands on the rule, which shows under each tab */
-		/* the rule runs only under the tabs (2026-10-01) */
+		/* the rule runs only under the tabs */
 		border-bottom: 2px solid var(--color-ink-dark);
 	}
 	.toggle-group.tabs button {

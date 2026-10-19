@@ -1,5 +1,5 @@
-"""Bundle related outlets into one corpus each for the brand-level comparison
-(2026-09-28). Each bundle file carries the bundle's label in `outlet` and the
+"""Bundle related outlets into one corpus each for the brand-level comparison.
+Each bundle file carries the bundle's label in `outlet` and the
 member's own name in `source`, so nothing downstream changes and the members
 can still be told apart.
 
@@ -45,7 +45,7 @@ def rows_of(path, member):
         r["source"] = r["source"] or member
         # OutKick's pages end every headline with its tagline ("… | OutKick"):
         # site furniture, not the story, and it matched the "outkick"
-        # culture-war term, flagging all 1,568 of them as political (2026-09-29)
+        # culture-war term, flagging all 1,568 of them as political
         r["headline"] = re.sub(r"\s*\|\s*OutKick\s*$", "", r["headline"] or "")
         # OutKick moved under foxnews.com/outkick-sports in 2025-26: those pages
         # come in with the Fox News harvest but are OutKick's
