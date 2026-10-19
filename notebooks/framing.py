@@ -7,6 +7,19 @@ from collections import defaultdict
 from pathlib import Path
 
 TERMS_CSV = Path(__file__).resolve().parent.parent / "data" / "framing_terms.csv"
+# the grammar models that decide whose word is whose. In article sentences the
+# transformer model reads long, quote-heavy prose far better than the small one
+# ("mocking Clark as a scared little girl" is about Clark, not the player who
+# posted it); Title Case headlines throw it, so they keep the small model
+PARSER = "en_core_web_trf"
+HEADLINE_PARSER = "en_core_web_sm"
+
+
+def load_parser(model=PARSER, disable=("ner",)):
+    """One of the parsers above, on the GPU when there is one."""
+    import spacy
+    spacy.prefer_gpu()
+    return spacy.load(model, disable=list(disable))
 
 
 def load_terms():

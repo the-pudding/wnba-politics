@@ -92,11 +92,17 @@ def hit(rx, key, text):
 # whose looks, whose private life, whose stat line: the register word has to
 # belong to the player grammatically, as in 01 (framing.attribute) — a
 # sentence that names two players and mentions one's outfit is about her only
-nlp_dep = spacy.load("en_core_web_sm", disable=["ner", "lemmatizer"])
+# (article sentences with the transformer, headlines with the small model:
+# framing.PARSER / HEADLINE_PARSER)
+nlp_dep = framing.load_parser(disable=("ner", "lemmatizer"))
+nlp_head = framing.load_parser(framing.HEADLINE_PARSER, disable=("ner", "lemmatizer"))
 def attributed(register, rx, key):
-    rows = [{"t": t} for t in sorted({t for _, _, t, _, _ in sentences if hit(rx, key, t)})]
-    got = framing.attribute(nlp_dep, rows, list(people), register, name_rx)
-    return {(name, r["t"]) for name, rs in got.items() for r in rs}
+    found = set()
+    for is_head, nlp_ in ((False, nlp_dep), (True, nlp_head)):
+        rows = [{"t": t} for t in sorted({t for _, _, t, _, h in sentences if h == is_head and hit(rx, key, t)})]
+        got = framing.attribute(nlp_, rows, list(people), register, name_rx)
+        found |= {(name, r["t"]) for name, rs in got.items() for r in rs}
+    return found
 looks_of = attributed("appearance", appearance_rx, "appearance")
 celeb_of = attributed("celebrity", celebrity_rx, "celebrity") | looks_of
 play_of = attributed("performance", performance_rx, "performance")
