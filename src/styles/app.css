@@ -80,18 +80,13 @@ body {
 	}
 }
 
+#intro {
+	margin-top: 0;
+}
+
 h1 {
 	font-size: var(--48px, 48px);
 	font-family: var(--font-display);
-}
-
-h1::after {
-	content: "";
-	display: block;
-	width: 100px;
-	height: 10px;
-	background: var(--color-fox-navy);
-	margin-top: 2rem;
 }
 
 h2 {

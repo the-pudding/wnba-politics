@@ -18,6 +18,7 @@
 
 	// scrollytelling charts take the full viewport width
 	const FULL_BLEED = new Set([
+		"IntroWall",
 		"NetworkScrolly",
 		"NetworkMap",
 		"NetworkScrollyOld",
@@ -310,6 +311,10 @@
 	.act {
 		margin: 56px 0;
 	}
+	/* the opening section starts flush with the top of the page (the intro wall) */
+	.act:first-of-type {
+		margin-top: 0;
+	}
 
 	p {
 		max-width: 700px;
@@ -407,7 +412,7 @@
 		width: 100vw;
 		margin-left: 50%;
 		transform: translateX(-50%);
-		padding: 0 2rem;
+		padding: 0;
 	}
 	.chart-title {
 		font-size: 19px;

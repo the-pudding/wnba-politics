@@ -740,6 +740,7 @@
 		pointer-events: none;
 	}
 	.bridge {
+		padding: 0 2rem;
 		height: 160vh;
 		display: flex;
 		align-items: center;
@@ -762,7 +763,7 @@
 		justify-content: center;
 	}
 	.stack {
-		max-width: 400px;
+		max-width: 460px;
 		opacity: 0.3;
 		pointer-events: auto;
 		margin: 0 auto;
@@ -772,6 +773,7 @@
 		opacity: 1;
 	}
 	.gap-card {
+		font-size: 17px;
 		margin: 0;
 		background: #fff;
 		padding: 14px 18px;
@@ -784,6 +786,7 @@
 
 	/* the triangle's cards: at the left */
 	.ter-step {
+		padding: 0 2rem;
 		position: relative;
 		height: 100vh;
 		display: flex;
@@ -792,7 +795,7 @@
 		pointer-events: none;
 	}
 	.card {
-		max-width: 400px;
+		max-width: 460px;
 		margin: 0;
 		background: rgba(255, 253, 248, 0.94);
 		padding: 14px 16px 15px;
@@ -827,6 +830,7 @@
 		line-height: 1.2;
 	}
 	.card-text {
+		font-size: 17px;
 		margin: 0;
 	}
 
