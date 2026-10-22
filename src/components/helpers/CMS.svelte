@@ -324,6 +324,7 @@
 	.fold {
 		margin: 28px auto;
 		max-width: 1000px;
+		padding: 0 1rem;
 	}
 	.fold + .fold {
 		margin-top: -28px;
@@ -372,7 +373,8 @@
 		font-size: 17px;
 		line-height: 1.65;
 		margin-bottom: 1em;
-		color: var(--color-ink);
+		color: var(--color-fg);
+		padding: 0 1rem;
 	}
 	.kicker {
 		background: var(--wnba-red);
@@ -508,6 +510,7 @@
 	.photo {
 		margin: 3rem auto;
 		max-width: 700px;
+		padding: 1rem;
 	}
 	.photo img {
 		display: block;

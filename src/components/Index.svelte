@@ -117,9 +117,6 @@
 </svelte:boundary>
 
 <style>
-	#story {
-		padding: 0 1rem 1rem 1rem;
-	}
 	.story-header {
 		display: flex;
 		flex-direction: row;

@@ -24,8 +24,7 @@
 	import { stageSteps } from "$utils/gapSteps.js";
 	import { faces, clipPops } from "$utils/clips.js";
 	import { or } from "$utils/fill.js";
-	import { fade, fly } from "svelte/transition";
-	import { cubicOut, cubicInOut } from "svelte/easing";
+	import { cubicInOut } from "svelte/easing";
 
 	let {
 		steps = null,
@@ -40,7 +39,9 @@
 	} = $props();
 	// the Doc sends "true"/"false" as text; blank means "not set"
 	const flag = (v) => {
-		const s = String(v ?? "").trim().toLowerCase();
+		const s = String(v ?? "")
+			.trim()
+			.toLowerCase();
 		return s === "" ? null : !["false", "no", "off", "0"].includes(s);
 	};
 
@@ -97,7 +98,10 @@
 	// words' summed counts as rates of these, normalised across the three (the
 	// same sum that places the dots on TernaryStatic)
 	const TOTALS = [0, 1, 2].map((i) =>
-		Object.values(chyYears.totals ?? {}).reduce((sum, t) => sum + (t[i] ?? 0), 0)
+		Object.values(chyYears.totals ?? {}).reduce(
+			(sum, t) => sum + (t[i] ?? 0),
+			0
+		)
 	);
 	const COUNTS = new Map((chy.ternary ?? []).map((t) => [t.term, t]));
 	// names keyed loosely: "a’ja, wilson" in the Doc finds A'ja Wilson
@@ -105,13 +109,17 @@
 	const FACES = new Map(
 		Object.entries(roster)
 			.filter(([, p]) => p.face)
-			.map(([name, p]) => [nameKey(name), { name, face: `${base}/net/${p.face}` }])
+			.map(([name, p]) => [
+				nameKey(name),
+				{ name, face: `${base}/net/${p.face}` }
+			])
 	);
 	const shareRow = (group) => {
 		const pts = group.map((w) => COUNTS.get(w.toLowerCase())).filter(Boolean);
 		if (!pts.length) return null;
 		const rates = [0, 1, 2].map(
-			(i) => pts.reduce((sum, p) => sum + p.counts[i], 0) / Math.max(TOTALS[i], 1)
+			(i) =>
+				pts.reduce((sum, p) => sum + p.counts[i], 0) / Math.max(TOTALS[i], 1)
 		);
 		const sum = rates.reduce((a, b) => a + b, 0) || 1;
 		const person = FACES.get(nameKey(group.join(" ")));
@@ -125,7 +133,11 @@
 		};
 	};
 	const pctOf = (v) => (v > 0 && v < 0.005 ? "<1%" : `${Math.round(v * 100)}%`);
-	const SHARE_COLORS = ["var(--wnba-red)", "var(--wnba-purple)", "var(--wnba-navy)"];
+	const SHARE_COLORS = [
+		"var(--wnba-red)",
+		"var(--wnba-purple)",
+		"var(--wnba-navy)"
+	];
 	const foxLeans = (s) => s[0] >= Math.max(s[1], s[2]);
 
 	let terIndex = $state(0);
@@ -177,9 +189,15 @@
 		const width = SIDE - PAD * 2;
 		const tall = (width * Math.sqrt(3)) / 2;
 		const top = (HEIGHT - tall) / 2 + 6;
-		return { A: [SIDE / 2, top], B: [PAD, top + tall], C: [SIDE - PAD, top + tall] };
+		return {
+			A: [SIDE / 2, top],
+			B: [PAD, top + tall],
+			C: [SIDE - PAD, top + tall]
+		};
 	})();
-	const totals = (chy.ternary ?? []).map((row) => row.total).filter((n) => n >= 1);
+	const totals = (chy.ternary ?? [])
+		.map((row) => row.total)
+		.filter((n) => n >= 1);
 	const BIGGEST = Math.max(1, ...totals);
 	const SMALLEST = Math.max(1, Math.min(...totals));
 	// the "big" radius, with no slider floor
@@ -240,7 +258,12 @@
 			let end = null;
 			if (at) {
 				const p = new DOMPoint(at.px, at.py).matrixTransform(ctm);
-				end = { x: p.x - box.left, y: p.y - box.top, r: at.r * ctm.a, color: at.color };
+				end = {
+					x: p.x - box.left,
+					y: p.y - box.top,
+					r: at.r * ctm.a,
+					color: at.color
+				};
 			}
 			out.push({
 				slug,
@@ -272,7 +295,8 @@
 			t = clamp((mid - r.top) / Math.max(1, r.height));
 			// (and once past it, if a fast scroll skipped it, so the names are known)
 			// and while the heads sit on the triangle, so they follow a resize
-			if ((t > 0 && t < 1) || (t >= 1 && (!bridgeWords.length || headsOn))) measure();
+			if ((t > 0 && t < 1) || (t >= 1 && (!bridgeWords.length || headsOn)))
+				measure();
 		};
 		const queue = () => {
 			if (frame === null) frame = requestAnimationFrame(update);
@@ -299,7 +323,9 @@
 	const lerp = (a, b, p) => a + (b - a) * p;
 	function flight(f, i, n) {
 		const delay = n > 1 ? (STAGGER * i) / (n - 1) : 0;
-		const p = cubicInOut(clamp((t - FLY_FROM - delay) / (FLY_TO - FLY_FROM - STAGGER)));
+		const p = cubicInOut(
+			clamp((t - FLY_FROM - delay) / (FLY_TO - FLY_FROM - STAGGER))
+		);
 		// a face with no word on the triangle fades where it is
 		const end = f.end ?? f.start;
 		const r = lerp(f.start.r, f.end ? Math.max(end.r, HEAD_MIN) : f.start.r, p);
@@ -325,12 +351,18 @@
 	const MAX_LIT = 30;
 	let query = $state("");
 	let q = $derived(query.trim().toLowerCase());
-	let exact = $derived(q ? (vocabulary.find((w) => w.term === q) ?? null) : null);
-	let partial = $derived(q && !exact ? vocabulary.filter((w) => w.term.includes(q)) : []);
+	let exact = $derived(
+		q ? (vocabulary.find((w) => w.term === q) ?? null) : null
+	);
+	let partial = $derived(
+		q && !exact ? vocabulary.filter((w) => w.term.includes(q)) : []
+	);
 	let suggestions = $derived.by(() => {
 		if (!q) return [];
 		const starts = vocabulary.filter((w) => w.term.startsWith(q));
-		const inside = vocabulary.filter((w) => !w.term.startsWith(q) && w.term.includes(q));
+		const inside = vocabulary.filter(
+			(w) => !w.term.startsWith(q) && w.term.includes(q)
+		);
 		return [...starts, ...inside].slice(0, 8);
 	});
 	let open = $state(false);
@@ -389,7 +421,9 @@
 				? [
 						[
 							...picked,
-							...(exact ? [exact.term] : partial.slice(0, MAX_LIT).map((w) => w.term))
+							...(exact
+								? [exact.term]
+								: partial.slice(0, MAX_LIT).map((w) => w.term))
 						]
 					]
 				: holdNames
@@ -403,14 +437,15 @@
 	);
 	// the heads stay on their words through the handoff and for as long as
 	// the names are held lit, then fade
-	let headsOn = $derived(phase === "bridge" || (phase === "ternary" && holdNames));
+	let headsOn = $derived(
+		phase === "bridge" || (phase === "ternary" && holdNames)
+	);
 </script>
 
 <svelte:window onclick={unpin} />
 
 <section
 	class="gap-ternary"
-	class:explore={search}
 	class:handing={phase !== "gap"}
 >
 	<div class="sticky" bind:this={stageEl}>
@@ -454,94 +489,6 @@
 				topic={terStep?.topic ?? null}
 				bands={phase === "ternary" && (terStep?.bands ?? flag(bands) ?? true)}
 			/>
-
-			{#if search}
-				<aside class="panel">
-					<div
-						class="panel-inner"
-						in:fly|global={{ y: 16, duration: 480, easing: cubicOut }}
-						out:fade|global={{ duration: 180 }}
-					>
-						{#if terStep.title}<h4 class="card-title">{terStep.title}</h4>{/if}
-						{#if terStep.html}<p class="card-text">
-								{@html clipPops(faces(terStep.html, base), base)}
-							</p>{/if}
-						<label class="control">
-							<span class="control-label"
-								>Minimum uses: <b>{minTotal.toLocaleString()}</b></span
-							>
-							<input type="range" min="0" max="100" step="1" bind:value={slider} />
-							<span class="ends" aria-hidden="true">
-								<span>1</span><span>{biggest.toLocaleString()}</span>
-							</span>
-						</label>
-						<label class="control">
-							<div class="search-box">
-								<input
-									type="search"
-									placeholder="Find a word…"
-									bind:value={query}
-									autocomplete="off"
-									spellcheck="false"
-									onfocus={() => (open = true)}
-									onblur={() => (open = false)}
-									oninput={() => ((open = true), (cursor = -1))}
-									onkeydown={onKey}
-								/>
-								{#if open && q && suggestions.length}
-									<ul class="suggest" role="listbox">
-										{#each suggestions as w, i (w.term)}
-											<li
-												role="option"
-												aria-selected={i === cursor}
-												class:on={i === cursor}
-												onpointerdown={(e) => (e.preventDefault(), choose(w.term))}
-											>
-												<span class="term">{w.term}</span>
-												<span class="uses">{w.total.toLocaleString()}</span>
-											</li>
-										{/each}
-									</ul>
-								{/if}
-							</div>
-							{#if q && !exact}
-								<span class="control-note">
-									{#if !partial.length}
-										No word contains “{q}”.
-									{:else if partial.length > MAX_LIT}
-										{partial.length} words contain “{q}”; the {MAX_LIT} most common are
-										lit.
-									{:else}
-										{partial.length}
-										{partial.length === 1 ? "word contains" : "words contain"} “{q}”.
-									{/if}
-								</span>
-							{:else if exact}
-								<span class="control-note">Press Enter to keep “{exact.term}”.</span>
-							{/if}
-						</label>
-						{#if picked.length}
-							<div class="chips">
-								{#each picked as word (word)}
-									<span
-										class="chip"
-										class:on={pinned === word}
-										role="button"
-										tabindex="0"
-										onpointerenter={() => (focus = word)}
-										onpointerleave={() => (focus = null)}
-									>
-										{word}
-										<button class="x" aria-label="remove {word}" onclick={() => drop(word)}
-											>×</button
-										>
-									</span>
-								{/each}
-							</div>
-						{/if}
-					</div>
-				</aside>
-			{/if}
 		</div>
 
 		<!-- the faces in flight, from their rows to their words -->
@@ -570,7 +517,9 @@
 				<div class="gap-step" class:active={phase === "gap" && gapIndex === i}>
 					{#if step.html.trim()}
 						<div class="stack">
-							<p class="gap-card">{@html clipPops(faces(step.html, base), base)}</p>
+							<p class="gap-card">
+								{@html clipPops(faces(step.html, base), base)}
+							</p>
 						</div>
 					{/if}
 				</div>
@@ -588,8 +537,106 @@
 
 		<Scrolly bind:value={terIndex}>
 			{#each TER as step, i}
-				<div class="ter-step" class:active={phase === "ternary" && terLast === i}>
-					{#if !step.search}
+				<div
+					class="ter-step"
+					class:search-step={step.search}
+					class:active={phase === "ternary" && terLast === i}
+				>
+					{#if step.search}
+						<!-- the explore panel: the last card, and it stays to be played with -->
+						<aside class="card panel">
+							{#if step.title}<h4 class="card-title">{step.title}</h4>{/if}
+							{#if step.html}<p class="card-text">
+									{@html clipPops(faces(step.html, base), base)}
+								</p>{/if}
+							<label class="control">
+								<span class="control-label"
+									>Minimum uses: <b>{minTotal.toLocaleString()}</b></span
+								>
+								<input
+									type="range"
+									min="0"
+									max="100"
+									step="1"
+									bind:value={slider}
+								/>
+								<span class="ends" aria-hidden="true">
+									<span>1</span><span>{biggest.toLocaleString()}</span>
+								</span>
+							</label>
+							<label class="control">
+								<div class="search-box">
+									<input
+										type="search"
+										placeholder="Find a word…"
+										bind:value={query}
+										autocomplete="off"
+										spellcheck="false"
+										onfocus={() => (open = true)}
+										onblur={() => (open = false)}
+										oninput={() => ((open = true), (cursor = -1))}
+										onkeydown={onKey}
+									/>
+									{#if open && q && suggestions.length}
+										<ul class="suggest" role="listbox">
+											{#each suggestions as w, i (w.term)}
+												<li
+													role="option"
+													aria-selected={i === cursor}
+													class:on={i === cursor}
+													onpointerdown={(e) => (
+														e.preventDefault(),
+														choose(w.term)
+													)}
+												>
+													<span class="term">{w.term}</span>
+													<span class="uses">{w.total.toLocaleString()}</span>
+												</li>
+											{/each}
+										</ul>
+									{/if}
+								</div>
+								{#if q && !exact}
+									<span class="control-note">
+										{#if !partial.length}
+											No word contains “{q}”.
+										{:else if partial.length > MAX_LIT}
+											{partial.length} words contain “{q}”; the {MAX_LIT} most common
+											are lit.
+										{:else}
+											{partial.length}
+											{partial.length === 1 ? "word contains" : "words contain"} “{q}”.
+										{/if}
+									</span>
+								{:else if exact}
+									<span class="control-note"
+										>Press Enter to keep “{exact.term}”.</span
+									>
+								{/if}
+							</label>
+							{#if picked.length}
+								<div class="chips">
+									{#each picked as word (word)}
+										<span
+											class="chip"
+											class:on={pinned === word}
+											role="button"
+											tabindex="0"
+											onpointerenter={() => (focus = word)}
+											onpointerleave={() => (focus = null)}
+										>
+											{word}
+											<button
+												class="x"
+												aria-label="remove {word}"
+												onclick={() => drop(word)}>×</button
+											>
+										</span>
+									{/each}
+								</div>
+							{/if}
+						</aside>
+					{:else}
 						<div class="card">
 							{#if step.title}<h4 class="card-title">{step.title}</h4>{/if}
 							{#if step.html}<p class="card-text">
@@ -610,7 +657,8 @@
 											class:on={focus === row.lead}
 											onpointerenter={() => (focus = row.lead)}
 											onpointerleave={() => (focus = null)}
-											onclick={() => (focus = focus === row.lead ? null : row.lead)}
+											onclick={() =>
+												(focus = focus === row.lead ? null : row.lead)}
 										>
 											<span class="who">
 												{#if row.face}<img src={row.face} alt="" />{/if}
@@ -618,21 +666,29 @@
 											</span>
 											<span class="sbar">
 												{#each row.shares as v, i}
-													<span style:width="{(v * 100).toFixed(2)}%" style:background={SHARE_COLORS[i]}
+													<span
+														style:width="{(v * 100).toFixed(2)}%"
+														style:background={SHARE_COLORS[i]}
 													></span>
 												{/each}
 											</span>
 											<span
 												class="pct"
-												style:color={foxLeans(row.shares) ? SHARE_COLORS[0] : SHARE_COLORS[1]}
-												>{pctOf(row.shares[0])}</span
+												style:color={foxLeans(row.shares)
+													? SHARE_COLORS[0]
+													: SHARE_COLORS[1]}>{pctOf(row.shares[0])}</span
 											>
 										</button>
 									{/each}
 								</div>
 							{/if}
 							{#if step.img}
-								<img class="figure" src="{base}/images/{step.img}" alt="" loading="lazy" />
+								<img
+									class="figure"
+									src="{base}/images/{step.img}"
+									alt=""
+									loading="lazy"
+								/>
 							{/if}
 						</div>
 					{/if}
@@ -740,6 +796,7 @@
 		pointer-events: none;
 	}
 	.bridge {
+		max-width: 460px;
 		padding: 0 2rem;
 		height: 160vh;
 		display: flex;
@@ -773,9 +830,10 @@
 		opacity: 1;
 	}
 	.gap-card {
+		max-width: 460px;
 		font-size: 17px;
 		margin: 0;
-		background: #fff;
+		background: var(--wnba-tan-bg);
 		padding: 14px 18px;
 		border-radius: 4px;
 		font-size: var(--step-text);
@@ -786,6 +844,7 @@
 
 	/* the triangle's cards: at the left */
 	.ter-step {
+		max-width: 460px;
 		padding: 0 2rem;
 		position: relative;
 		height: 100vh;
@@ -797,7 +856,7 @@
 	.card {
 		max-width: 460px;
 		margin: 0;
-		background: rgba(255, 253, 248, 0.94);
+		background: var(--wnba-tan-bg);
 		padding: 14px 16px 15px;
 		border-radius: 3px;
 		font-size: var(--step-text);
@@ -834,20 +893,14 @@
 		margin: 0;
 	}
 
-	/* the explore panel: a card that stays put, at the left like the cards */
+	/* the explore panel: the last card, at the left like the others */
 	.panel {
-		position: absolute;
-		left: 0;
-		top: 50%;
-		transform: translateY(-50%);
-		width: 340px;
+		max-width: 460px;
 		box-sizing: border-box;
-		padding: 14px 16px 15px;
-		border-radius: 3px;
-		font-size: var(--step-text);
-		line-height: 1.5;
-		color: var(--color-ink);
-		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
+		padding: 1rem;
+	}
+	/* it's the last thing the reader meets, so it stays above the triangle */
+	.ter-step.search-step {
 		z-index: 5;
 	}
 
@@ -1087,10 +1140,6 @@
 		.linger {
 			height: 70vh;
 		}
-		.stack,
-		.card {
-			max-width: 84vw;
-		}
 		.ter-step {
 			flex-direction: column;
 			justify-content: center;
@@ -1102,23 +1151,8 @@
 			width: 84vw;
 			max-height: 40vh;
 		}
-		/* the explore step: triangle on top, the controls under it */
-		.explore .ternary {
-			flex-direction: column;
-			justify-content: flex-start;
-			gap: 8px;
-			padding-top: 6px;
-			box-sizing: border-box;
-		}
-		.explore .ternary :global(svg) {
-			max-height: 44vh;
-		}
 		.panel {
-			position: static;
-			transform: none;
-			width: min(660px, 92vw);
-			flex: 0 1 auto;
-			min-height: 0;
+			max-width: 460px;
 			font-size: 14.5px;
 		}
 		.suggest {

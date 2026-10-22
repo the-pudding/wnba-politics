@@ -9,7 +9,11 @@
 		rot = -1.4,
 		small = false,
 		compact = false,
-		blurred = false
+		blurred = false,
+		// false: show the headline straight away, without the letter scramble
+		scramble = true,
+		// true: the date goes on its own line after the headline instead of next to the badge
+		dateAfter = false
 	} = $props();
 
 	const escape = (t) =>
@@ -32,7 +36,7 @@
 	$effect(() => {
 		const title = clip?.title ?? "";
 		const final = hl(faces(title, base), CLIP_BLUE);
-		if (blurred || reduced) {
+		if (blurred || reduced || !scramble) {
 			shown = final;
 			return;
 		}
@@ -77,9 +81,10 @@
 	{:else}
 		<div class="deets">
 			<FoxBadge size={small ? 0.85 : 1} />
-			{#if clip?.date}<span class="clip-date">{clip.date}</span>{/if}
+			{#if clip?.date && !dateAfter}<span class="clip-date">{clip.date}</span>{/if}
 		</div>
 		<p class="clip-title"><span class="words">{@html shown}</span></p>
+		{#if clip?.date && dateAfter}<p class="clip-date after">{clip.date}</p>{/if}
 	{/if}
 </div>
 
@@ -99,7 +104,7 @@
 		margin-bottom: 8px;
 	}
 	.clip-title {
-		font-size: 18px;
+		font-size: 16px;
 		font-weight: 400;
 		line-height: 1.4;
 		margin: 5px 0 0;
@@ -126,6 +131,10 @@
 		font-size: 12px;
 		font-family: var(--font-sans);
 		color: rgba(42, 21, 3, 0.55);
+	}
+	.clip-date.after {
+		display: block;
+		margin: 6px 0 0;
 	}
 	.clip.compact {
 		padding: 5px 9px 6px;

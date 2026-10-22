@@ -551,9 +551,6 @@
 		.linger {
 			height: 70vh;
 		}
-		.card {
-			max-width: 84vw;
-		}
 		/* card, then its image right underneath */
 		.step {
 			flex-direction: column;

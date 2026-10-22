@@ -286,6 +286,11 @@ svg {
 	padding: 6px 4px 2px;
 }
 
+#framing .chart {
+	padding: 0 1rem;
+	max-width: 1000px;
+}
+
 /* inline colour in the Doc's text, as the kids-book copy does with he/she:
    <span class="fox">4.5x more</span> in the dot plot's Fox navy,
    <span class="others">1.3x less</span> in its other-outlets purple */
