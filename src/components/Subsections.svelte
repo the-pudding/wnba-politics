@@ -221,7 +221,7 @@
     /* Outer wrapper caps height to 100svh */
     .content-wrapper {
         position: relative;
-        max-height: 130svh;
+        max-height: 70svh;
         overflow: hidden;
     }
 

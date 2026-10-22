@@ -853,6 +853,7 @@
 	} */
 	.note {
 		margin: 6px auto 0;
+		padding-bottom: 2rem;
 		font-size: 12px;
 		color: var(--wnba-tan-dark);
 		text-align: center;

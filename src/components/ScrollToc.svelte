@@ -75,14 +75,14 @@
 		right: 18px;
 		top: 50%;
 		transform: translateY(-50%);
-		z-index: 30;
+		z-index: 1000;
 		transition: opacity 250ms ease;
 	}
-	/* out of the way while the Storm TV is in the margin */
+	/* out of the way while the Storm TV is in the margin
 	:global(body.tv-beside-on) .scroll-toc {
 		opacity: 0;
 		pointer-events: none;
-	}
+	} */
 	/* only where there is room beside the text column */
 	@media (max-width: 1180px) {
 		.scroll-toc {

@@ -5,6 +5,7 @@
 	import HeadlineClip from "$components/HeadlineClip.svelte";
 	import { fade } from "svelte/transition";
 	import { faces, clipPops } from "$utils/clips.js";
+	import arrowSvg from "$svg/arrow-up-right.svg";
     const copy = getContext("copy");
 
 	let { steps = [] } = $props();
@@ -217,8 +218,6 @@
 	const FEATURE_VIDEO = `${base}/video/watters-tv.mp4`;
 	const FEATURE_POSTER = `${base}/video/watters-tv.jpg`;
 	const FEATURE_STAGGER = 0.15; // seconds between each pull-out
-	// the same tilts the headline gallery gives its clippings
-	const CLIP_ROTS = [-1.6, 1.3, -1];
 
 	// only play while pulled out, so the hidden clips don't run in the background
 	function playWhen(node, on) {
@@ -275,7 +274,10 @@
                 </span>
                 <span class="hedRight">{copy.meta.hedRight}</span>
             </h1>
-            <p class="byline">By {@html copy.meta.byline}, with {@html copy.meta.with}</p>
+            <p class="byline">
+                By {@html copy.meta.byline}, with {@html copy.meta.with}
+                <span class="scroll-hint" aria-hidden="true">{@html arrowSvg}</span>
+            </p>
         </header>
         <!-- 16×9 wall of screenshots behind the title -->
         <div
@@ -319,7 +321,7 @@
                             <div class="clip-inner">
                                 <HeadlineClip
                                     clip={{ date: cell.date, title: cell.styled }}
-                                    rot={CLIP_ROTS[(spot?.k ?? 0) % CLIP_ROTS.length]}
+                                    rot={0}
                                     small={(spot?.scale ?? 1) * tileW < 260}
                                     scramble={false}
                                     dateAfter
@@ -506,6 +508,31 @@
         bottom: 0;
         left: 50%;
         transform: translate(-50%, 0);
+    }
+    .scroll-hint {
+        display: inline-block;
+        vertical-align: middle;
+        width: 2rem;
+        height: 2rem;
+        border: 2px solid var(--color-fg); 
+        border-radius: 100%; 
+        padding: 0.25rem;
+        margin-left: 0.25rem;
+    }
+    .scroll-hint :global(svg) {
+        width: 100%;
+        height: 100%;
+        transform: rotate(135deg);
+    }
+    /* a gentle downward nudge, only for people who haven't asked for less motion */
+    @media (prefers-reduced-motion: no-preference) {
+        .scroll-hint {
+            animation: hint-bounce 1s ease-in-out infinite;
+        }
+    }
+    @keyframes hint-bounce {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(4px); }
     }
     h1 {
         /* image height drives everything; width follows from its 494×1200 ratio */

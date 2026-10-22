@@ -429,6 +429,7 @@
 		font-size: 18px;
 		font-family: var(--font-sans);
 		margin: 0 0 12px;
+		padding: 0;
 		line-height: 1.15;
 		font-weight: 700;
 		color: var(--color-gray-950);

@@ -429,7 +429,7 @@
 											</p>
 										{/if}
 										<p class="dateline">
-											{r.dateText || when(r.d)}{#if r.h}&nbsp;· <span class="badge">headline</span>{/if}{#if r.u}&nbsp;· <a href={r.u} target="_blank" rel="noopener">article ↗</a>{/if}
+											{r.dateText || when(r.d)}{#if r.h}&nbsp;· <span class="badge">headline</span>{/if}{#if r.u}&nbsp;· <a href={r.u} target="_blank" rel="noopener">Article ↗</a>{/if}
 										</p>
 									</figure>
 								{:else}
@@ -537,7 +537,7 @@
 
 <style>
 	.foul-reel {
-		max-width: 760px;
+		max-width: 1000px;
 		margin: 1rem auto;
 		font-family: var(--font-chart);
 	}
@@ -663,7 +663,7 @@
 		font-family: var(--font-sans);
 		font-weight: 700;
 		font-size: 20px;
-		color: var(--color-ink);
+		color: var(--wnba-tan-dark); 
 		padding: 2px 6px;
 		border-radius: 999px;
 		z-index: 1;
@@ -675,14 +675,12 @@
 		border: 1px solid var(--color-rule);
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
     	padding: 10px 15px;
-		transform: rotate(-0.8deg);
 		text-align: left;
-		font-style: italic;
 		font-size: 18px;
 	}
-	.clip.alt {
+	/* .clip.alt {
 		transform: rotate(0.7deg);
-	}
+	} */
 	.clip .mast .logo {
 		height: 24px;
 		width: auto;
@@ -710,6 +708,7 @@
 		font-weight: 400;
 		line-height: 1.42;
 		color: var(--color-ink-dark);
+		font-style: italic;
 	}
 	.clip .name,
 	.clip :global(.name) {
@@ -744,6 +743,7 @@
 		font-size: 12px;
 		font-weight: 400;
 		color: rgba(42, 21, 3, 0.65);
+		font-style: normal;
 	}
 	.clip .dateline a {
 		color: inherit;
@@ -818,6 +818,7 @@
 			margin: -4px 0;
 			font-size: 16px;
 			padding: 1px 6px;
+			color: var(--wnba-tan-dark);
 		}
 		.slide .clip:first-of-type {
 			order: 0;
