@@ -9,7 +9,7 @@
 	import ShareBars from "$components/ShareBars.svelte";
 	import ScrollToc from "$components/ScrollToc.svelte";
 	import ReadingBar from "$components/ReadingBar.svelte";
-	import IntroWall from "$components/IntroWall.svelte";
+	import GridWall from "$components/GridWall.svelte";
 	import OutletTopicCompare from "$components/OutletTopicCompare.svelte";
 	import FoxVsField from "$components/FoxVsField.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
@@ -46,7 +46,7 @@
 	// Doc `chart:` names -> components
 	const components = {
 		Toc,
-		IntroWall,
+		GridWall,
 		SimpleBars,
 		ShareBars,
 		OutletTopicCompare,

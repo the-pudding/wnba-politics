@@ -18,7 +18,7 @@
 
 	// scrollytelling charts take the full viewport width
 	const FULL_BLEED = new Set([
-		"IntroWall",
+		"GridWall",
 		"NetworkScrolly",
 		"NetworkMap",
 		"NetworkScrollyOld",
@@ -72,8 +72,8 @@
 	function chartProps(value) {
 		if (typeof value === "string")
 			return parseChart(value ? "_ | " + value : "_").props;
-		const pairs = Object.entries(value ?? {}).filter(([k]) => k !== "id");
-		return pairsToProps(pairs);
+		// here the type names the component, so `id` is free to pass through (GridWall uses it)
+		return pairsToProps(Object.entries(value ?? {}));
 	}
 
 	function parseChart(value) {
