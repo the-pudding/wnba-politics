@@ -311,8 +311,8 @@ svg {
 /* the Explore header already sticks; with two cards the jump bar can scroll away,
    and needs no rule under it */
 #framing .stacked-sections nav {
-	position: static;
-	border-bottom: 0;
+	position: sticky;
+	top: 4.5rem;
 }
 /* a link to a card stops it under the Explore header */
 #framing .sheet {

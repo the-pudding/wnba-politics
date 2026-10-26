@@ -25,6 +25,9 @@
 		tryWords = "",
 		// the label over the static triangle; empty: none
 		kicker = "on television",
+		// the line under a topic's triangle, from the Doc; {period} stands for the
+		// months the chyrons cover. Empty: no line.
+		note = "",
 		...unused
 	} = $props();
 
@@ -93,6 +96,13 @@
 			: [];
 
 	let root = $state(null);
+	// the span of the chyron data ("September 2017–October 2026"), for the note
+	let period = $state("");
+	const monthName = (ym) =>
+		new Date(+ym.slice(0, 4), +ym.slice(5) - 1, 1).toLocaleString("en-US", {
+			month: "long",
+			year: "numeric"
+		});
 	const el = (id) => root.querySelector(`[data-id="${id}"]`);
 
 	onMount(() => {
@@ -100,6 +110,8 @@
 		let alive = true;
 		loadTriangle().then((D) => {
 			if (!alive) return;
+			if (D.months?.length)
+				period = `${monthName(D.months[0])}–${monthName(D.months.at(-1))}`;
 			if (steps) buildScrolly(D, cleanup);
 			else buildTopic(D, cleanup);
 			// labels are measured in Atlas: redraw once it has loaded
@@ -520,6 +532,9 @@
 {:else}
 	<div class="tri topic" bind:this={root}>
 		<div class="tern tern-solo" data-id="tern"></div>
+		{#if note?.trim() && period}
+			<p class="period">{@html note.replaceAll("{period}", period)}</p>
+		{/if}
 	</div>
 {/if}
 
@@ -1004,6 +1019,16 @@
 	.tri :global(.tern-solo) {
 		max-width: 520px;
 		margin: 8px auto 18px;
+	}
+	/* the source line under a topic's triangle, as on TernaryStatic */
+	.period {
+		max-width: 520px;
+		margin: 1rem auto;
+		font-size: 12px;
+		font-family: var(--font-sans);
+		line-height: 1.4;
+		text-align: center;
+		color: rgba(42, 21, 3, 0.6);
 	}
 
 	/* narrower screens: the triangle pinned at the top, the cards passing under it */

@@ -6,9 +6,10 @@
 
 // `on`: the reader has turned sound on (one switch for the whole page). `playable`:
 // per wall, whether a clip with sound is on screen right now (the corner switch
-// only shows while one is). `blocked`: the phone refused to play a clip's sound, so
-// the switches ask for a tap ("Tap for sound").
-export const sound = $state({ on: false, playable: {}, blocked: false });
+// only shows while one is). `blocked`: the phone refused to play, so the switches
+// ask for a tap ("Tap for sound"). `call`: a sound to play as sound comes on, set
+// while the title page is up (the announcer's call).
+export const sound = $state({ on: false, playable: {}, blocked: false, call: null });
 
 let heard = null; // the video whose sound is on
 let call = null; // the announcer's call (title page), its own player

@@ -309,7 +309,11 @@
 
 	let width = $state(640);
 	const narrow = $derived(width < 520);
-	const H = $derived(narrow ? 300 : 340);
+	// the chart's height: at least this, and taller when its box is stretched
+	// (beside a taller triangle in a SideBySide, it fills the column)
+	const MIN_H = $derived(narrow ? 300 : 340);
+	let boxH = $state(0);
+	const H = $derived(Math.max(MIN_H, Math.round(boxH)));
 	const M = $derived({
 		top: 28,
 		right: narrow ? 72 : 100,
@@ -489,7 +493,7 @@
 		{@html dek}
 	</p>
 
-	<div class="main">
+	<div class="main" style:min-height="{MIN_H}px" bind:clientHeight={boxH}>
 		<svg
 			{width}
 			height={H}
@@ -712,8 +716,25 @@
 	.dek :global(.sw.grey) {
 		background: #7C7060;
 	}
+	/* the chart box takes whatever room the column leaves; the svg sits on top of it
+	   (out of the flow) so its own height never props the box open */
+	.fvf {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+	}
+	/* the flex column would stretch it across; it stays as wide as its words */
+	.fvf .kicker {
+		align-self: flex-start;
+	}
 	.main {
 		position: relative;
+		flex: 1 1 auto;
+	}
+	.main > svg {
+		position: absolute;
+		top: 0;
+		left: 0;
 	}
 	svg text {
 		font-family: var(--font-graphic);

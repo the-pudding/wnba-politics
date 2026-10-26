@@ -39,8 +39,7 @@
 		"outlet-gap-scrolly",
 		"timeline-scrolly",
 		"player-words-scrolly",
-		"TvSet",
-		"SideBySide"
+		"TvSet"
 	]);
 	// these render Doc copy of their own and need the component map for it
 	const NESTING = new Set(["Subsections", "Aside", "TvBeside", "SideBySide"]);
@@ -349,24 +348,25 @@
 	}
 
 	p {
+		width: 100%;
 		max-width: 700px;
 		margin: 0 auto;
 	}
-	/* in a folding section the text lines up with the section's heading, rather
-	   than sitting in the page's centred column */
-	.fold p,
-	.fold ul,
-	.fold ol,
-	.fold .quote,
-	.fold .photo {
-		margin-left: 0;
+
+	#methods p, #reading p, #reading ul {
+		font-family: var(--font-sans);
+		font-size: 1rem;
 	}
+
 	/* a linked heading (#the-universe) lands below the section's sticky heading */
 	.fold :global(:is(h2, h3, h4)[id]) {
 		scroll-margin-top: 5rem;
 	}
 	/* a collapsible section: the heading is the button, with a chevron */
 	.fold {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 		margin: 28px auto;
 		max-width: 1000px;
 		padding: 0 1rem;
@@ -375,8 +375,9 @@
 		margin-top: -28px;
 	}
 	.fold-head {
+		width: 100%;
 		font-weight: 700;
-		margin: 0 0 3rem 0;
+		margin: 0 0 1rem 0;
 		position: sticky;
 		top: 0;
 		z-index: 1000;
@@ -435,6 +436,7 @@
 		background: var(--wnba-red);
 		color: var(--wnba-tan-bg);
 		display: inline-block;
+		width: auto;
 		text-transform: uppercase;
 		font-family: var(--font-sans);
 		font-weight: 700;
@@ -467,9 +469,17 @@
 	}
 	.chart.full-bleed {
 		width: 100vw;
-		margin-left: 50%;
-		transform: translateX(-50%);
+		margin-top: 3rem;
+		/* centred with margins, not a transform: a transform here would pin anything
+		   position: fixed inside (GridWall's call bubble) to this box, not the screen */
+		margin-left: calc(50% - 50vw);
 		padding: 0;
+	}
+	/* ...but not the page's opening wall: with nothing above it, its margin would
+	   push the whole page down */
+	.act:first-of-type > .chart.full-bleed:first-child {
+		margin-top: 0;
+		margin-bottom: 3rem;
 	}
 	.chart-title {
 		font-size: 19px;

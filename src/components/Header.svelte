@@ -1,0 +1,40 @@
+<script>
+	// shadow, plain, line, bubble
+	import wordmark from "$svg/wordmark-script-stacked-plain.svg";
+</script>
+
+<header>
+	<div class="wordmark">
+		<a href="https://pudding.cool" aria-label="The Pudding" target="_self"
+			>{@html wordmark}</a
+		>
+	</div>
+</header>
+
+<style>
+
+	header {
+		/* out of the flow, so the story starts at the top of the page; over the
+		   intro wall, which comes after it and would otherwise cover it */
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 10;
+	}
+	.wordmark {
+		max-width: 10em;
+		margin: 0 auto;
+		padding: 1rem;
+		/* transform: rotate(-4deg); */
+	}
+
+	.wordmark a {
+		border: none;
+		display: block;
+		color: var(--color-fg);
+	}
+
+	.wordmark a:hover {
+		background-color: transparent;
+	}
+</style>
