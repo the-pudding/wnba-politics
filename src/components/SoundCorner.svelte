@@ -11,7 +11,7 @@
 	// sound on, and the phone playing it (not waiting for a tap: sound.blocked)
 	let heard = $derived(sound.on && !sound.blocked);
 
-	// with ?checks in the address: what the audio player is doing, for testing on a
+	// with ?checks in the address: what the sound is doing, for testing on a
 	// phone or the simulator, where the sound itself can't be checked by eye
 	let status = $state(null);
 	$effect(() => {
@@ -22,9 +22,11 @@
 </script>
 
 {#if status}
-	<pre class="sound-status">{Object.entries(status)
-			.map(([key, value]) => `${key}: ${value}`)
-			.join("\n")}</pre>
+	<div class="sound-status">
+		<pre>{Object.entries(status)
+				.map(([key, value]) => `${key}: ${value}`)
+				.join("\n")}</pre>
+	</div>
 {/if}
 
 <button
@@ -103,11 +105,15 @@
 		padding: 6px 8px;
 		background: rgb(0 0 0 / 0.75);
 		color: #fff;
+		font-family: ui-monospace, monospace;
 		font-size: 11px;
 		line-height: 1.35;
-		white-space: pre-wrap;
 		max-width: 70vw;
-		pointer-events: none;
+	}
+	.sound-status pre {
+		margin: 0;
+		font: inherit;
+		white-space: pre-wrap;
 	}
 	.sound-corner:focus-visible {
 		outline: 2px solid var(--wnba-red);

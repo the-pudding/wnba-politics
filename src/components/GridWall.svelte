@@ -738,8 +738,8 @@
 	// a clip is heard only while it's pulled out on a step that names it (audio: …), it's
 	// that clip's turn, and the reader has turned sound on; it starts again from the top
 	// when its turn comes, and turning sound on joins it wherever it's got to. When it
-	// loops back round, its turn is over (done). The video stays muted: its sound comes
-	// from the page's one audio player (clipSound).
+	// loops back round, its turn is over (done). The video is unmuted for its turn
+	// (clipSound).
 	let turn = $state(0);
 	$effect(() => {
 		// each step starts with the first clip named
@@ -756,11 +756,6 @@
 		return scene.audio.filter((name) => shown.has(name));
 	});
 	let speaking = $derived(voices.length ? voices[turn % voices.length] : null);
-	// fetch the wall's soundtracks once it's on screen, so each starts on time
-	$effect(() => {
-		if (!wallInView) return;
-		for (const s of config.scenes) for (const name of s.audio ?? []) clipSound.preload(name);
-	});
 	// tell the corner sound switch whether this wall can play sound right now
 	$effect(() => {
 		sound.playable[id] = wallInView && !closing && activeGroup >= 0 && !!scene.audio;
@@ -774,7 +769,6 @@
 		const watch = () => {
 			if (on && node.currentTime + 0.3 < last) done();
 			last = node.currentTime;
-			if (on) clipSound.sync(node);
 		};
 		node.addEventListener("timeupdate", watch);
 		const start = () => {
