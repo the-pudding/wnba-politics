@@ -7,7 +7,7 @@
 	import { cubicOut } from "svelte/easing";
 	import { faces, clipPops } from "$utils/clips.js";
 	import { titleCase } from "$utils/titleCase.js";
-	import { sound } from "$utils/sound.svelte.js";
+	import { sound, wallClips } from "$utils/sound.svelte.js";
 	import arrowSvg from "$svg/arrow-up-right.svg";
 	// the corner bubble and the sound button's icons, from Lucide (lucide.dev)
 	import MessageCircle from "@lucide/svelte/icons/message-circle";
@@ -53,6 +53,7 @@
 	let callAudio;
 	function toggleSound(playCall) {
 		sound.on = !sound.on;
+		wallClips.start();
 		if (!callAudio) return;
 		if (sound.on && playCall) {
 			callAudio.currentTime = 0;
@@ -579,6 +580,10 @@
 
 	let gridW = $state(0);
 	let gridH = $state(0);
+	// the screen's height with the browser's toolbars showing: the pull-outs are placed
+	// within it. The wall of tiles behind runs taller, to the height with the toolbars
+	// hidden, so a phone shows no empty band at the bottom once they slide away
+	let stickyH = $state(0);
 	// whole pixels avoid hairline seams between tiles
 	let tileW = $derived(Math.floor(Math.min(MAX_TILE_W, gridW / MIN_COLS)));
 	let tileH = $derived(Math.round(tileW * TILE_RATIO));
@@ -657,22 +662,23 @@
 		if (!cols || !rows) return map;
 		const gutter = gridW / 2 - CARD_HALF;
 		const wide = gutter >= 160;
+		const H = stickyH || gridH;
 		let w, layouts, layoutsFive;
 		if (wide) {
-			w = Math.min(320, gutter - 2 * PAD, (gridH * 0.4) / TILE_RATIO);
+			w = Math.min(320, gutter - 2 * PAD, (H * 0.4) / TILE_RATIO);
 			const xL = gutter / 2;
 			const xR = gridW - xL;
-			const place = (l) => l.map(([side, y]) => [side === "L" ? xL : xR, gridH * y]);
+			const place = (l) => l.map(([side, y]) => [side === "L" ? xL : xR, H * y]);
 			layouts = WIDE_LAYOUTS.map(place);
 			layoutsFive = WIDE_LAYOUTS_FIVE.map(place);
 		} else {
-			w = Math.min(gridW * 0.44, (gridH * 0.2) / TILE_RATIO);
+			w = Math.min(gridW * 0.44, (H * 0.2) / TILE_RATIO);
 			const h = w * TILE_RATIO;
 			const Y = {
 				top: PAD + h / 2,
 				top2: PAD + h / 2 + h * 0.35,
-				bottom: gridH - PAD - h / 2,
-				bottom2: gridH - PAD - h / 2 - h * 0.35
+				bottom: H - PAD - h / 2,
+				bottom2: H - PAD - h / 2 - h * 0.35
 			};
 			const place = (l) => l.map(([x, y]) => [gridW * x, Y[y]]);
 			layouts = NARROW_LAYOUTS.map(place);
@@ -747,6 +753,7 @@
 	});
 	function audible(node, opts) {
 		let { on, done } = opts;
+		wallClips.add(node);
 		let last = 0;
 		const watch = () => {
 			if (on && node.currentTime + 0.3 < last) done();
@@ -756,15 +763,25 @@
 		const set = (next) => {
 			if (next.on && node.muted) node.currentTime = last = 0;
 			node.muted = !next.on;
+			wallClips.speak(node, next.voice);
 			({ on, done } = next);
 		};
 		set(opts);
-		return { update: set, destroy: () => node.removeEventListener("timeupdate", watch) };
+		return {
+			update: set,
+			destroy: () => {
+				node.removeEventListener("timeupdate", watch);
+				wallClips.remove(node);
+			}
+		};
 	}
 
 	// only play while pulled out, so the hidden clips don't run in the background
 	function playWhen(node, on) {
-		const set = (v) => (v ? node.play().catch(() => {}) : node.pause());
+		const set = (v) => {
+			wallClips.want(node, v);
+			v ? node.play().catch(() => {}) : node.pause();
+		};
 		set(on);
 		return { update: set };
 	}
@@ -818,7 +835,7 @@
 	style="--end-space: {END_SPACE * 100}svh"
 	use:watchView
 >
-	<div class="sticky">
+	<div class="sticky" bind:clientHeight={stickyH}>
         {#if config.header && id == "intro"}
         <header
             class="intro-wall-header"
@@ -944,6 +961,8 @@
                             use:playWhen={wallInView && ((!!f && !closing) || ready)}
                             use:audible={{
                                 on: wallInView && !!f && !closing && sound.on && speaking === videoName(spot),
+                                // the clip that's heard once sound is on (see wallClips)
+                                voice: wallInView && !!f && !closing && speaking === videoName(spot),
                                 done: () => (turn += 1)
                             }}
                         ></video>
@@ -1043,6 +1062,9 @@
     .bg-grid {
         position: absolute;
         inset: 0;
+        /* past the bottom of the frame by however much taller the screen gets when a
+           phone's toolbars slide away (nothing on desktop) */
+        bottom: calc(100svh - 100lvh);
         z-index: 0;
         display: grid;
         grid-template-columns: repeat(var(--cols), var(--tile-w));
@@ -1803,6 +1825,12 @@
 	}
 	.step.active .card {
 		opacity: 1;
+	}
+	/* phones: the cards keep 2rem clear of the screen's edges, as the other scrollies' do */
+	@media (max-width: 600px) {
+		.step {
+			padding: 0 2rem;
+		}
 	}
 
     .outro-header {

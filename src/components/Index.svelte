@@ -21,17 +21,10 @@
 	import OutletGapScrolly from "$components/OutletGapScrolly.svelte";
 	import GapToTernaryScrolly from "$components/GapToTernaryScrolly.svelte";
 	import OutletGapFaces from "$components/OutletGapFaces.svelte";
-	import FightinWordsVerbsAdj from "$components/FightinWordsVerbsAdj.svelte";
-	import FightinWordsBars from "$components/FightinWordsBars.svelte";
-	import NetworkScrolly from "$components/NetworkScrolly.svelte";
+	import FightinWordsBarsLazy from "$components/FightinWordsBarsLazy.svelte";
 	import NetworkMap from "$components/NetworkMap.svelte";
-	import FramingTabs from "$components/FramingTabs.svelte";
 	import FramingSwarm from "$components/FramingSwarm.svelte";
-	import WordTimeline from "$components/WordTimeline.svelte";
-	import WordCompare from "$components/WordCompare.svelte";
-	import WordNeighbors from "$components/WordNeighbors.svelte";
 	import FoulReel from "$components/FoulReel.svelte";
-	import HeadlineTable from "$components/HeadlineTable.svelte";
 	import BoxScore from "$components/BoxScore.svelte";
 	import HeadlineGallery from "$components/HeadlineGallery.svelte";
 	import TvSet from "$components/TvSet.svelte";
@@ -44,7 +37,10 @@
 	const { body } = copy;
 	const meta = copy.meta ?? {};
 
-	// Doc `chart:` names -> components
+	// Doc `chart:` names -> components. Charts the Doc no longer uses are left out, so
+	// their data isn't built into the page: NetworkScrolly (the old network story),
+	// FramingTabs (the old explore tabs), HeadlineTable, WordTimeline, WordCompare and
+	// WordNeighbors are still in src/components; import one here to use it again.
 	const components = {
 		Toc,
 		GridWall,
@@ -64,22 +60,15 @@
 		GapToTernaryScrolly,
 		// a narrower try at the dot plot, kept for its heading and menu
 		OutletGapFaces,
-		FightinWordsVerbsAdj,
-		FightinWordsBars,
-		// the Doc's network block draws the redesigned map; the
-		// old network is still there by name
+		// loaded once the page is up (see FightinWordsBarsLazy)
+		FightinWordsBars: FightinWordsBarsLazy,
+		// the Doc's network block draws the redesigned map
 		NetworkScrolly: NetworkMap,
 		NetworkMap,
-		NetworkScrollyOld: NetworkScrolly,
-		// the explore beeswarm; the earlier version stays as FramingTabsOld
+		// the explore beeswarm
 		FramingTabs: FramingSwarm,
 		FramingSwarm,
-		FramingTabsOld: FramingTabs,
-		WordTimeline,
-		WordCompare,
-		WordNeighbors,
 		FoulReel,
-		HeadlineTable,
 		BoxScore,
 		HeadlineGallery,
 		Gallery: HeadlineGallery,
@@ -96,10 +85,8 @@
 		"fightin-words-scrolly": FightinWordsScrolly,
 		"word-quadrant-scrolly": FightinWordsScrolly,
 		"outlet-gap-scrolly": OutletGapScrolly,
-		"player-words-scrolly": FightinWordsVerbsAdj,
 		"network-story": NetworkMap,
-		"framing-tabs": FramingSwarm,
-		"headline-table": HeadlineTable
+		"framing-tabs": FramingSwarm
 	};
 </script>
 

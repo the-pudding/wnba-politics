@@ -1144,6 +1144,10 @@
 		.linger {
 			height: 70vh;
 		}
+		/* the dot plot's cards keep 2rem clear of the edges, as the triangle's do */
+		.gap-step {
+			padding: 0 2rem;
+		}
 		/* the triangle and its find box centred, inside the page's gutters */
 		.stage.ternary {
 			padding: 0 16px;

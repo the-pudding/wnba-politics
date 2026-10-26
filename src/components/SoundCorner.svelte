@@ -2,7 +2,7 @@
 	// A sound switch in the top-right corner, shown only while a clip with sound is on
 	// screen (a step with an `audio:` line, its clips pulled out). It's the same switch
 	// as the ones on the title page and in the step cards.
-	import { sound } from "$utils/sound.svelte.js";
+	import { sound, wallClips } from "$utils/sound.svelte.js";
 	import Volume2 from "@lucide/svelte/icons/volume-2";
 	import VolumeX from "@lucide/svelte/icons/volume-x";
 
@@ -17,7 +17,10 @@
 	aria-label={sound.on ? "Turn sound off" : "Turn sound on"}
 	title={sound.on ? "Sound on" : "Sound off"}
 	tabindex={shown ? 0 : -1}
-	onclick={() => (sound.on = !sound.on)}
+	onclick={() => {
+		sound.on = !sound.on;
+		wallClips.start();
+	}}
 >
 	{#if sound.on}
 		<Volume2 size={15} strokeWidth={2.25} aria-hidden="true" />
