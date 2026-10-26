@@ -1,61 +1,118 @@
-// Whether the reader has turned the story's sound on: one switch for the whole page,
-// so turning it on in the intro carries through to the clips further down.
-// `playable` says, per wall, whether a clip with sound is on screen right now; the
-// corner switch only shows while one is. `blocked`: the phone wouldn't play a clip
-// with its sound without a fresh tap, so it's playing muted and the switches ask for
-// one ("Tap for sound").
+// The story's sound. Every clip on the walls is a muted video, always; all sound
+// comes from one audio player, so only one thing is ever heard and a clip can't be
+// heard by accident. A phone lets the player play once a tap has started it, so the
+// sound switches start it (toggleSound), and from then on each clip's soundtrack
+// (static/audio/clips/<clip>.m4a, made by tasks/clip-audio.sh) is swapped in and
+// kept in step with its video.
+import { base } from "$app/paths";
+
+// `on`: the reader has turned sound on (one switch for the whole page). `playable`:
+// per wall, whether a clip with sound is on screen right now (the corner switch
+// only shows while one is). `blocked`: the phone refused to play, so the switches
+// ask for a tap ("Tap for sound").
 export const sound = $state({ on: false, playable: {}, blocked: false });
 
-// The walls' clips, for the sound switches. Some phones hold back autoplay (an iPhone
-// in Low Power Mode, for one) and play a clip with sound only after a tap, so a tap on
-// any sound switch starts every clip once (see start), which lets each one play,
-// and play with sound, later on.
-const clips = new Set();
-const wanted = new Set();
-let voice = null;
-export const wallClips = {
-	add(node) {
-		clips.add(node);
-	},
-	remove(node) {
-		clips.delete(node);
-		wanted.delete(node);
-		if (voice === node) voice = null;
-	},
-	// should this clip be playing (on screen, pulled out or about to be)
-	want(node, on) {
-		on ? wanted.add(node) : wanted.delete(node);
-	},
-	// is it the clip that's heard when sound is on
-	speak(node, on) {
-		if (on) voice = node;
-		else if (voice === node) voice = null;
-	},
-	// a clip should be playing with its sound: if the phone refused, play it muted
-	// and have the switches ask for a tap
-	play(node) {
-		node.play().catch(() => {
-			if (node.muted || !wanted.has(node)) return;
-			node.muted = true;
-			sound.blocked = true;
-			node.play().catch(() => {});
+const DRIFT = 0.3; // seconds the sound may stray from its picture before it's put back
+const SILENCE = `${base}/audio/silence.wav`;
+const clipSrc = (name) => `${base}/audio/clips/${name}.m4a`;
+
+let player = null;
+let heard = null; // { src, video }: the clip being heard, and its picture
+const getPlayer = () => (player ??= new Audio());
+
+function playSrc(src, at = 0) {
+	const p = getPlayer();
+	if (p.dataset.src !== src) {
+		p.dataset.src = src;
+		p.src = src;
+	}
+	p.currentTime = at;
+	p.play()
+		.then(() => (sound.blocked = false))
+		.catch((error) => {
+			if (error.name === "NotAllowedError") sound.blocked = true;
 		});
+}
+
+// The clips' muted videos, so the tap can start them too: some phones (an iPhone in
+// Low Power Mode) don't autoplay even muted video, but play what a tap started
+const videos = new Set();
+const wanted = new Set();
+export const wallVideos = {
+	add: (video) => videos.add(video),
+	remove(video) {
+		videos.delete(video);
+		wanted.delete(video);
 	},
-	// call from the tap itself, after the switch has flipped. Every clip, playing or
-	// not, is started by the tap with its sound on and stopped in the same moment, so
-	// nothing is heard: that start is what lets a phone play it, and play it with
-	// sound, later. Then the clips that should be playing start again, only the one
-	// to be heard unmuted.
-	start() {
-		sound.blocked = false;
-		for (const node of clips) {
-			const heard = node === voice && sound.on && wanted.has(node);
-			node.pause();
-			node.muted = false;
-			node.play().catch(() => {});
-			node.pause();
-			node.muted = !heard;
-			if (wanted.has(node)) node.play().catch(() => {});
-		}
+	// should this video be playing now
+	want: (video, on) => (on ? wanted.add(video) : wanted.delete(video))
+};
+
+export const clipSound = {
+	// a clip's turn to be heard: its soundtrack, in step with its video
+	play(name, video) {
+		heard = { src: clipSrc(name), video };
+		if (sound.on) playSrc(heard.src, video.currentTime);
+	},
+	// its turn is over (only if it's still the one being heard)
+	stop(video) {
+		if (heard?.video !== video) return;
+		heard = null;
+		player?.pause();
+	},
+	// what the player is doing, for the ?checks readout (SoundCorner)
+	status() {
+		const name = (src) => src?.split("/").pop() ?? "none";
+		return {
+			on: sound.on,
+			blocked: sound.blocked,
+			loaded: name(player?.dataset.src),
+			playing: !!player && !player.paused,
+			time: player ? player.currentTime.toFixed(1) : "-",
+			clip: name(heard?.src),
+			clipTime: heard ? heard.video.currentTime.toFixed(1) : "-",
+			// each video that should be playing: time, paused (p) or not, how much is
+			// loaded (readyState 0-4), and any error code
+			videos: [...wanted]
+				.map(
+					(v) =>
+						`${name(v.getAttribute("src")).replace(".mp4", "")} ${v.currentTime.toFixed(1)}${v.paused ? " p" : ""} r${v.readyState}${v.error ? " e" + v.error.code : ""}`
+				)
+				.join("; ")
+		};
+	},
+	// from the video's timeupdate: put the sound back in step if it has strayed,
+	// and start it again when the video loops round
+	sync(video) {
+		if (!sound.on || sound.blocked || heard?.video !== video || !player) return;
+		const off = Math.abs(player.currentTime - video.currentTime);
+		if (off > DRIFT) player.currentTime = video.currentTime;
+		if (player.paused) playSrc(heard.src, video.currentTime);
 	}
 };
+
+// The sound switches (the title page's, each step card's, the corner's), from the
+// tap itself. `call`: the announcer's call to play as sound comes on (title page).
+// A tap while the phone is asking for one ("Tap for sound") turns sound on, not off.
+export function toggleSound(call = null) {
+	if (sound.blocked || !sound.on) {
+		sound.on = true;
+		// start the player inside the tap: the clip that's up (from the top), the
+		// call, or silence
+		if (heard) {
+			heard.video.currentTime = 0;
+			playSrc(heard.src, 0);
+		} else playSrc(call ?? SILENCE);
+		for (const video of videos) {
+			if (wanted.has(video)) video.play().catch(() => {});
+			else
+				video
+					.play()
+					.then(() => !wanted.has(video) && video.pause())
+					.catch(() => {});
+		}
+	} else {
+		sound.on = false;
+		player?.pause();
+	}
+}

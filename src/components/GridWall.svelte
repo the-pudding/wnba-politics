@@ -7,12 +7,12 @@
 	import { cubicOut } from "svelte/easing";
 	import { faces, clipPops } from "$utils/clips.js";
 	import { titleCase } from "$utils/titleCase.js";
-	import { sound, wallClips } from "$utils/sound.svelte.js";
+	import { sound, clipSound, wallVideos, toggleSound } from "$utils/sound.svelte.js";
 	import arrowSvg from "$svg/arrow-up-right.svg";
 	// the corner bubble and the sound button's icons, from Lucide (lucide.dev)
 	import MessageCircle from "@lucide/svelte/icons/message-circle";
 	import Volume2 from "@lucide/svelte/icons/volume-2";
-	import VolumeX from "@lucide/svelte/icons/volume-x";
+	import VolumeOff from "@lucide/svelte/icons/volume-off";
     const copy = getContext("copy");
 
 	let { id = "intro", steps = [], header, highlights, videos } = $props();
@@ -28,12 +28,13 @@
 	//                  pointing up and out, or beside the byline, pointing down and out
 	//                  toward the broadcast table)
 	//   soundNote: Turn on sound   (beside the sound button)
+	//   soundOnNote: Turn off sound   (beside it once sound is on)
 	const LOGO_CALL = "You bet! From beyond the logo!";
 	const LOGO_CREDIT = "ESPN’s Ryan Ruocco";
 	const LOGO_CALL_SHORT = "From the logo!";
 	const LOGO_LINK = "https://x.com/IndianaFever/status/1919143866818515093";
 	const SOUND_NOTE = "Turn on sound";
-	const SOUND_ON_NOTE = "Sound on";
+	const SOUND_ON_NOTE = "Turn off sound";
 	const SOUND_BLOCKED_NOTE = "Tap for sound"; // a phone that wants a fresh tap for a clip's sound
 	// once the wall comes in, the title drops down onto it, in red, for this many steps:
 	// how big it gets there (share of its size on the title page) and how far from the top
@@ -48,20 +49,11 @@
 	const CALL_SPOT = "upper";
 	const callSpot = String(copy.meta?.logoCallSpot || CALL_SPOT).trim().toLowerCase();
 	const soundNote = copy.meta?.soundNote || SOUND_NOTE;
+	const soundOnNote = copy.meta?.soundOnNote || SOUND_ON_NOTE;
 
-	// sound: off until the reader turns it on (one switch for the whole page). Turning it
-	// on from the title page plays the call.
-	let callAudio;
-	function toggleSound(playCall) {
-		// a tap while a phone is waiting for one turns the sound on, not off
-		if (!sound.blocked) sound.on = !sound.on;
-		wallClips.start();
-		if (!callAudio) return;
-		if (sound.on && playCall) {
-			callAudio.currentTime = 0;
-			callAudio.play().catch(() => {});
-		} else callAudio.pause();
-	}
+	// sound: off until the reader turns it on (one switch for the whole page, see
+	// utils/sound.svelte.js). Turning it on from the title page plays the call.
+	const CALL = `${base}/audio/logo-call.mp3`;
 	// the switch fades in once the page's code is running: drawn before then, a click on
 	// it would do nothing
 	let soundReady = $state(false);
@@ -702,8 +694,10 @@
 				while (map.has(row * cols + col)) col = (col + 1) % cols;
 				const cx = x0 + (col + 0.5) * tileW;
 				const cy = y0 + (row + 0.5) * tileH;
-				// k staggers the pull-outs, one after another
-				map.set(row * cols + col, { g, type: group.type, k, dx: tx - cx, dy: ty - cy, scale });
+				// k staggers the pull-outs, one after another. `low`: in the lower half of the
+				// screen, where a headline card taller than its tile grows upward, not off
+				// the bottom (the upper ones grow downward)
+				map.set(row * cols + col, { g, type: group.type, k, dx: tx - cx, dy: ty - cy, scale, low: ty > H / 2 });
 			});
 		});
 		return map;
@@ -737,9 +731,10 @@
 	const WALL_NAMES = String(copy.meta?.wallNames ?? "true").trim().toLowerCase() !== "false";
 	const outlineOf = (t) => (FOX_CLIPS.test(videoName(t)) ? OUTLINE.fox : OUTLINE.other);
 
-	// a clip has its sound only while it's pulled out on a step that names it (audio: …),
-	// it's that clip's turn, and the reader has turned sound on; it starts again from the
-	// top when it does. When it loops back round, its turn is over (done).
+	// a clip is heard only while it's pulled out on a step that names it (audio: …), it's
+	// that clip's turn, and the reader has turned sound on; it starts again from the top
+	// when its turn comes. When it loops back round, its turn is over (done). The video
+	// stays muted: its sound comes from the page's one audio player (clipSound).
 	let turn = $state(0);
 	$effect(() => {
 		// each step, and each time sound comes on, starts with the first clip named
@@ -747,49 +742,60 @@
 		sound.on;
 		turn = 0;
 	});
-	let speaking = $derived(scene.audio ? scene.audio[turn % scene.audio.length] : null);
+	// the clips the step names for sound that are actually pulled out (a phone shows only
+	// the first three), so the turn never passes to a clip that isn't on screen
+	let voices = $derived.by(() => {
+		if (!scene.audio) return [];
+		const shown = new Set(
+			[...tiles.values()].filter((t) => t.g === activeGroup && t.type === "clips").map(videoName)
+		);
+		return scene.audio.filter((name) => shown.has(name));
+	});
+	let speaking = $derived(voices.length ? voices[turn % voices.length] : null);
 	// tell the corner sound switch whether this wall can play sound right now
 	$effect(() => {
 		sound.playable[id] = wallInView && !closing && activeGroup >= 0 && !!scene.audio;
 		return () => delete sound.playable[id];
 	});
+	// `on`: it's this clip's turn to be heard (whether or not sound is on, so a tap on
+	// a sound switch can start it straight away)
 	function audible(node, opts) {
-		let { on, done } = opts;
-		wallClips.add(node);
+		let { on, name, done } = opts;
 		let last = 0;
 		const watch = () => {
 			if (on && node.currentTime + 0.3 < last) done();
 			last = node.currentTime;
+			if (on) clipSound.sync(node);
 		};
 		node.addEventListener("timeupdate", watch);
-		const set = (next) => {
-			const unmuting = next.on && node.muted;
-			if (unmuting) node.currentTime = last = 0;
-			node.muted = !next.on;
-			wallClips.speak(node, next.voice);
-			// a phone may stop a clip whose sound comes on without a tap; check, and
-			// fall back to muted (see wallClips.play)
-			if (unmuting) requestAnimationFrame(() => node.paused && wallClips.play(node));
-			({ on, done } = next);
+		const start = () => {
+			node.currentTime = last = 0;
+			clipSound.play(name, node);
 		};
-		set(opts);
+		if (on) start();
 		return {
-			update: set,
-			destroy: () => {
+			update(next) {
+				const was = on;
+				({ on, name, done } = next);
+				if (on && !was) start();
+				else if (!on && was) clipSound.stop(node);
+			},
+			destroy() {
 				node.removeEventListener("timeupdate", watch);
-				wallClips.remove(node);
+				if (on) clipSound.stop(node);
 			}
 		};
 	}
 
 	// only play while pulled out, so the hidden clips don't run in the background
 	function playWhen(node, on) {
+		wallVideos.add(node);
 		const set = (v) => {
-			wallClips.want(node, v);
-			v ? wallClips.play(node) : node.pause();
+			wallVideos.want(node, v);
+			v ? node.play().catch(() => {}) : node.pause();
 		};
 		set(on);
-		return { update: set };
+		return { update: set, destroy: () => wallVideos.remove(node) };
 	}
 
 	// once a pull-out has shown, the picked tiles skip the staggered fade so they settle
@@ -817,18 +823,18 @@
 <!-- the sound switch: under the byline, and in the card of any step with audio -->
 {#snippet soundSwitch(playCall)}
     <span class="sound-line" class:ready={soundReady}>
-        {@html sound.blocked ? SOUND_BLOCKED_NOTE : sound.on ? SOUND_ON_NOTE : soundNote}
+        {@html sound.blocked ? SOUND_BLOCKED_NOTE : sound.on ? soundOnNote : soundNote}
         <button
             class="sound-button"
             class:on={sound.on && !sound.blocked}
             aria-pressed={sound.on && !sound.blocked}
             aria-label={sound.blocked ? SOUND_BLOCKED_NOTE : sound.on ? "Turn sound off" : "Turn sound on"}
-            onclick={() => toggleSound(playCall)}
+            onclick={() => toggleSound(playCall ? CALL : null)}
         >
             {#if sound.on && !sound.blocked}
-                <Volume2 size={12} strokeWidth={2.25} aria-hidden="true" />
+                <Volume2 size={16} strokeWidth={1.75} aria-hidden="true" />
             {:else}
-                <VolumeX size={12} strokeWidth={2.25} aria-hidden="true" />
+                <VolumeOff size={16} strokeWidth={1.75} aria-hidden="true" />
             {/if}
         </button>
     </span>
@@ -885,7 +891,6 @@
                 By {@html copy.meta.byline}, with {@html copy.meta.with}
                 <span class="scroll-hint" aria-hidden="true">{@html arrowSvg}</span>
                 {@render soundSwitch(true)}
-                <audio bind:this={callAudio} src="{base}/audio/logo-call.mp3" preload="none"></audio>
             </p>
         </header>
         {:else if config.header && id == "outro"}
@@ -943,6 +948,7 @@
                     class:quiet={ready && CLIPS_EARLY === "playing"}
                     class:lift-now={f?.type === "clips" && liftNow}
                     class:pull-heads={f?.type === "heads"}
+                    class:low={f?.low}
                     class:has-clip={!!cell.date}
                     class:quick={featureSeen && !!spot}
                     style="--d: {cell.delay}s; --across: {cell.across}; {spot ? `--s0: ${spot.scale};` : ''} {f ? `--dx: ${f.dx}px; --dy: ${f.dy}px; --s: ${f.scale}; --fd: ${f.k * FEATURE_STAGGER}s;` : ''} {f?.type === 'clips' || ready ? `--outline: ${outlineOf(spot)};` : ''}"
@@ -966,9 +972,8 @@
                             preload="metadata"
                             use:playWhen={wallInView && ((!!f && !closing) || ready)}
                             use:audible={{
-                                on: wallInView && !!f && !closing && sound.on && speaking === videoName(spot),
-                                // the clip that's heard once sound is on (see wallClips)
-                                voice: wallInView && !!f && !closing && speaking === videoName(spot),
+                                on: wallInView && !!f && !closing && speaking === videoName(spot),
+                                name: videoName(spot),
                                 done: () => (turn += 1)
                             }}
                         ></video>
@@ -978,7 +983,7 @@
                                 {#if sound.on && speaking === videoName(spot)}
                                     <Volume2 strokeWidth={2.25} aria-hidden="true" />
                                 {:else}
-                                    <VolumeX strokeWidth={2.25} aria-hidden="true" />
+                                    <VolumeOff strokeWidth={2.25} aria-hidden="true" />
                                 {/if}
                             </span>
                         {/if}
@@ -1179,6 +1184,20 @@
         align-items: center;
         justify-content: center;
         pointer-events: none;
+    }
+    /* a headline card is taller than its tile: it hangs from the tile's top edge, or in
+       the lower half of the screen stands on its bottom edge, so it stays on screen */
+    .pull-heads .clip-wrap {
+        align-items: flex-start;
+    }
+    .pull-heads.low .clip-wrap {
+        align-items: flex-end;
+    }
+    .pull-heads .clip-inner {
+        transform-origin: top center;
+    }
+    .pull-heads.low .clip-inner {
+        transform-origin: bottom center;
     }
     .clip-inner {
         flex: 0 0 auto;
@@ -1680,16 +1699,20 @@
         opacity: 1;
         pointer-events: auto;
     }
+    /* a filled circle with a ring set a little apart (colours in app.css); the icon
+       says whether sound is on */
     .sound-button {
         display: grid;
         place-items: center;
-        width: 1.6rem;
-        height: 1.6rem;
+        width: 2rem;
+        height: 2rem;
+        margin: 4px;
         padding: 0;
-        border: 1.5px solid var(--color-fg);
+        border: 0;
         border-radius: 50%;
-        background: transparent;
-        color: var(--color-fg);
+        background: var(--sound-fill);
+        color: var(--sound-icon);
+        box-shadow: 0 0 0 2px var(--wnba-tan-bg), 0 0 0 4px var(--sound-ring);
         cursor: pointer;
     }
     /* in a step's card: under the text, to the left */
@@ -1714,10 +1737,6 @@
     .clip-sound :global(svg) {
         width: 62%;
         height: 62%;
-    }
-    .sound-button.on {
-        background: var(--color-fg);
-        color: var(--wnba-tan-bg, #fff);
     }
     /* phones: the bubble keeps inside the image's right edge, a little smaller */
     @media (max-width: 600px) {

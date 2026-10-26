@@ -6,6 +6,11 @@
 
 /* colors defined in variables.css */
 :root {
+	/* the sound buttons (title page, step cards, top-right corner): a filled circle,
+	   its speaker icon, and a ring set a little apart */
+	--sound-fill: var(--color-fg);
+	--sound-icon: #fff;
+	--sound-ring: var(--wnba-tan-dark);
 	/* font */
 	--font-sans:
 		"Atlas Grotesk", -apple-system, BlinkMacSystemFont, Helvetica, Arial,
