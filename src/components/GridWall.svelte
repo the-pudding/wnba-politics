@@ -34,6 +34,7 @@
 	const LOGO_LINK = "https://x.com/IndianaFever/status/1919143866818515093";
 	const SOUND_NOTE = "Turn on sound";
 	const SOUND_ON_NOTE = "Sound on";
+	const SOUND_BLOCKED_NOTE = "Tap for sound"; // a phone that wants a fresh tap for a clip's sound
 	// once the wall comes in, the title drops down onto it, in red, for this many steps:
 	// how big it gets there (share of its size on the title page) and how far from the top
 	const TITLE_STEPS = 1;
@@ -52,7 +53,8 @@
 	// on from the title page plays the call.
 	let callAudio;
 	function toggleSound(playCall) {
-		sound.on = !sound.on;
+		// a tap while a phone is waiting for one turns the sound on, not off
+		if (!sound.blocked) sound.on = !sound.on;
 		wallClips.start();
 		if (!callAudio) return;
 		if (sound.on && playCall) {
@@ -761,9 +763,13 @@
 		};
 		node.addEventListener("timeupdate", watch);
 		const set = (next) => {
-			if (next.on && node.muted) node.currentTime = last = 0;
+			const unmuting = next.on && node.muted;
+			if (unmuting) node.currentTime = last = 0;
 			node.muted = !next.on;
 			wallClips.speak(node, next.voice);
+			// a phone may stop a clip whose sound comes on without a tap; check, and
+			// fall back to muted (see wallClips.play)
+			if (unmuting) requestAnimationFrame(() => node.paused && wallClips.play(node));
 			({ on, done } = next);
 		};
 		set(opts);
@@ -780,7 +786,7 @@
 	function playWhen(node, on) {
 		const set = (v) => {
 			wallClips.want(node, v);
-			v ? node.play().catch(() => {}) : node.pause();
+			v ? wallClips.play(node) : node.pause();
 		};
 		set(on);
 		return { update: set };
@@ -811,15 +817,15 @@
 <!-- the sound switch: under the byline, and in the card of any step with audio -->
 {#snippet soundSwitch(playCall)}
     <span class="sound-line" class:ready={soundReady}>
-        {@html sound.on ? SOUND_ON_NOTE : soundNote}
+        {@html sound.blocked ? SOUND_BLOCKED_NOTE : sound.on ? SOUND_ON_NOTE : soundNote}
         <button
             class="sound-button"
-            class:on={sound.on}
-            aria-pressed={sound.on}
-            aria-label={sound.on ? "Turn sound off" : "Turn sound on"}
+            class:on={sound.on && !sound.blocked}
+            aria-pressed={sound.on && !sound.blocked}
+            aria-label={sound.blocked ? SOUND_BLOCKED_NOTE : sound.on ? "Turn sound off" : "Turn sound on"}
             onclick={() => toggleSound(playCall)}
         >
-            {#if sound.on}
+            {#if sound.on && !sound.blocked}
                 <Volume2 size={12} strokeWidth={2.25} aria-hidden="true" />
             {:else}
                 <VolumeX size={12} strokeWidth={2.25} aria-hidden="true" />
