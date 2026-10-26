@@ -290,6 +290,51 @@ svg {
 	padding: 0 1rem;
 	max-width: 1000px;
 }
+/* wide screens: the Explore charts (Framing, the Universe) run wider than the text
+   column, clear of the section menu on the right edge */
+@media (min-width: 1181px) {
+	#framing .chart {
+		max-width: min(1240px, calc(100vw - 180px));
+	}
+}
+/* Explore as stacked cards (a Subsections block in the Doc): the stack as wide
+   as the Explore charts, and each chart filling its card rather than the screen */
+#framing .stacked-sections {
+	width: 100vw;
+	margin-left: calc(50% - 50vw);
+}
+/* the Explore header already sticks; with two cards the jump bar can scroll away,
+   and needs no rule under it */
+#framing .stacked-sections nav {
+	position: static;
+	border-bottom: 0;
+}
+/* a link to a card stops it under the Explore header */
+#framing .sheet {
+	scroll-margin-top: 6rem;
+}
+@media (min-width: 1181px) {
+	#framing .stacked-sections .stack {
+		max-width: min(1240px, calc(100vw - 180px));
+	}
+}
+#framing .sheet .chart {
+	max-width: none;
+	padding: 0;
+}
+#framing .sheet .chart.full-bleed {
+	width: auto;
+	margin-left: 0;
+	transform: none;
+}
+/* the charts' own cards would sit inside the stack's */
+#framing .sheet .netmap.still,
+#framing .sheet .swarm {
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
 
 /* inline colour in the Doc's text, as the kids-book copy does with he/she:
    <span class="fox">4.5x more</span> in the dot plot's Fox navy,

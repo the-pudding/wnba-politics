@@ -41,8 +41,14 @@
 	// ---------------------------------------------------------------------
 
 	const PAGE = 25; // headlines drawn at first, and again each time the list is scrolled near its end
-	const RADIUS = { desktop: [14, 46], phone: [11, 33] }; // smallest and largest face
+	const RADIUS = { desktop: [17, 56], phone: [12, 36] }; // smallest and largest face
 	const PHONE_CHART = 560; // a chart narrower than this (px) stands upright
+	// on the tone tab, faces ringed red (harsher) or green (warmer); within this much
+	// of zero they keep the plain ring, as neutral
+	const NEUTRAL_BAND = 0.02;
+	// the labelled faces show their number beside the name (−0.06, 12%) when true;
+	// the tooltip has it either way
+	const LABEL_VALUES = false;
 	// always labelled for reference, when there's room
 	const ANCHORS = {
 		desktop: ["Caitlin Clark", "Angel Reese"],
@@ -423,6 +429,11 @@
 			gAxis.selectAll("*").remove();
 			const { W, H, narrow, scale, ticks, share } = L;
 			const [lo, hi] = ENDS[tab];
+			// on the tone tab the ends take the harsh and warm colours
+			const loClass = tab === "tone" ? "dir harsh" : "dir";
+			const hiClass = tab === "tone" ? "dir warm" : "dir";
+			// and so do the gridlines and numbers on either side of zero
+			const side = (t) => (share || t === 0 ? "" : t < 0 ? " harsh" : " warm");
 			const tf = share ? pct : (v) => (v === 0 ? "0" : toneFmt(v));
 			if (!narrow) {
 				const baseY = H - L.bottom;
@@ -430,35 +441,45 @@
 					const x = scale(t);
 					gAxis
 						.append("line")
-						.attr("class", t === 0 && !share ? "zero" : "grid")
+						.attr("class", (t === 0 && !share ? "zero" : "grid") + side(t))
 						.attr("x1", x)
 						.attr("x2", x)
 						.attr("y1", L.top - 6)
 						.attr("y2", baseY);
 					gAxis
 						.append("text")
-						.attr("class", "tick")
+						.attr("class", "tick" + side(t))
 						.attr("x", x)
 						.attr("y", baseY + 17)
 						.attr("text-anchor", "middle")
 						.text(tf(t));
 				}
+				// the baseline splits at zero on the tone tab, harsh to the left, warm to the right
+				const mid = share ? W : scale(0);
 				gAxis
 					.append("line")
-					.attr("class", "base")
+					.attr("class", "base" + side(-1))
 					.attr("x1", L.xA)
-					.attr("x2", W)
+					.attr("x2", mid)
 					.attr("y1", baseY)
 					.attr("y2", baseY);
+				if (!share)
+					gAxis
+						.append("line")
+						.attr("class", "base" + side(1))
+						.attr("x1", mid)
+						.attr("x2", W)
+						.attr("y1", baseY)
+						.attr("y2", baseY);
 				gAxis
 					.append("text")
-					.attr("class", "dir")
+					.attr("class", loClass)
 					.attr("x", L.xA)
 					.attr("y", 14)
 					.text(`← ${lo}`);
 				gAxis
 					.append("text")
-					.attr("class", "dir")
+					.attr("class", hiClass)
 					.attr("x", W)
 					.attr("y", 14)
 					.attr("text-anchor", "end")
@@ -492,14 +513,14 @@
 					const y = scale(t);
 					gAxis
 						.append("line")
-						.attr("class", t === 0 && !share ? "zero" : "grid")
+						.attr("class", (t === 0 && !share ? "zero" : "grid") + side(t))
 						.attr("x1", L.gutter)
 						.attr("x2", W)
 						.attr("y1", y)
 						.attr("y2", y);
 					gAxis
 						.append("text")
-						.attr("class", "tick")
+						.attr("class", "tick" + side(t))
 						.attr("x", L.gutter - 5)
 						.attr("y", y + 4)
 						.attr("text-anchor", "end")
@@ -507,13 +528,13 @@
 				}
 				gAxis
 					.append("text")
-					.attr("class", "dir")
+					.attr("class", hiClass)
 					.attr("x", 0)
 					.attr("y", 12)
 					.text(`↑ ${hi}`);
 				gAxis
 					.append("text")
-					.attr("class", "dir")
+					.attr("class", loClass)
 					.attr("x", 0)
 					.attr("y", L.top + L.PH + 30)
 					.text(`↓ ${lo}`);
@@ -565,7 +586,11 @@
 				t.append("tspan")
 					.attr("class", "n")
 					.text(curly(narrow ? surname(name) : name));
-				t.append("tspan").attr("class", "v").attr("dx", 5).text(valueText(d.p));
+				if (LABEL_VALUES)
+					t.append("tspan")
+						.attr("class", "v")
+						.attr("dx", 5)
+						.text(valueText(d.p));
 				const w = t.node().getBBox().width,
 					h = 14;
 				const cands = [
@@ -675,7 +700,13 @@
 				.classed("picked", (p) => p.name === picked)
 				.classed(
 					"neg",
-					(p) => tab === "tone" && on.has(p.name) && p[basis].tone < 0
+					(p) =>
+						tab === "tone" && on.has(p.name) && p[basis].tone < -NEUTRAL_BAND
+				)
+				.classed(
+					"pos",
+					(p) =>
+						tab === "tone" && on.has(p.name) && p[basis].tone > NEUTRAL_BAND
 				)
 				// read out as her name and where she sits on this tab; faces off
 				// the chart are skipped, by screen readers and the tab key
@@ -746,8 +777,15 @@
 			let html = `<p class="t">${esc(curly(p.name))}</p>`;
 			if (tab === "tone") {
 				html += `<p class="f">Average tone <b>${toneFmt(p.tone)}</b> across ${fmt(p.n)} ${u} naming her • ${rankLine(p, L.P)}</p>`;
-				html += `<p class="q h"><span>Harshest ${unit1()}</span>${esc(curly(p.worst))}</p>`;
-				html += `<p class="q w"><span>Warmest</span>${esc(curly(p.best))}</p>`;
+				// the side she leans to first: a warmer-than-neutral player leads with her warmest
+				const harshest = (label) =>
+					`<p class="q h"><span>${label}</span>${esc(curly(p.worst))}</p>`;
+				const warmest = (label) =>
+					`<p class="q w"><span>${label}</span>${esc(curly(p.best))}</p>`;
+				html +=
+					p.tone > 0
+						? warmest(`Warmest ${unit1()}`) + harshest("Harshest")
+						: harshest(`Harshest ${unit1()}`) + warmest("Warmest");
 			} else {
 				html += `<p class="f"><b>${fmt(p[tab + "N"])}</b> of the ${fmt(p.n)} ${u} naming her ${DOES[tab]}: <b>${pct(p[tab])}</b></p>`;
 				html += `<p class="rk">${rankLine(p, L.P)}</p>`;
@@ -1162,7 +1200,7 @@
 		--card: #f7f2e6;
 		--harsh: #c0392b;
 		--warm: #1f7a5a;
-		max-width: 1000px; /* same as the other wide charts, clear of the side menu */
+		max-width: 1000px; /* wider on wide screens, below */
 		margin: 0 auto;
 		padding: 24px 28px 22px;
 		background: var(--sheet);
@@ -1170,6 +1208,12 @@
 		border: 1px solid var(--color-rule);
 		color: var(--ink);
 		font-family: var(--font-sans);
+	}
+	/* wide screens: as wide as the Universe card in Explore, clear of the side menu */
+	@media (min-width: 1181px) {
+		.swarm {
+			max-width: min(1240px, calc(100vw - 180px));
+		}
 	}
 
 	h5 {
@@ -1258,20 +1302,18 @@
 	}
 	.swarm :global(.grid) {
 		stroke: var(--color-fg);
-		stroke-width: 1;
-		stroke-dasharray: 2 2;
-		shape-rendering: crispEdges;
+		stroke-width: 1.5;
+		stroke-dasharray: 3 3;
 	}
 	.swarm :global(.base) {
 		stroke: var(--ink-3);
-		stroke-width: 1;
+		stroke-width: 2;
 		shape-rendering: crispEdges;
 	}
 	.swarm :global(.zero) {
 		stroke: var(--ink);
-		stroke-width: 1;
-		stroke-dasharray: 3 3;
-		shape-rendering: crispEdges;
+		stroke-width: 2;
+		stroke-dasharray: 4 3;
 	}
 	.swarm :global(.bin) {
 		fill: var(--wnba-tan-light);
@@ -1286,6 +1328,30 @@
 		font-size: 12px;
 		font-weight: 700;
 		fill: var(--color-fg);
+	}
+	.swarm :global(.dir.harsh) {
+		fill: var(--harsh);
+	}
+	.swarm :global(.dir.warm) {
+		fill: var(--warm);
+	}
+	.swarm :global(.base.harsh) {
+		stroke: var(--harsh);
+	}
+	.swarm :global(.base.warm) {
+		stroke: var(--warm);
+	}
+	.swarm :global(.grid.harsh) {
+		stroke: var(--harsh);
+	}
+	.swarm :global(.grid.warm) {
+		stroke: var(--warm);
+	}
+	.swarm :global(.tick.harsh) {
+		fill: var(--harsh);
+	}
+	.swarm :global(.tick.warm) {
+		fill: var(--warm);
 	}
 	.swarm :global(.note) {
 		font-size: 12px;
@@ -1313,6 +1379,10 @@
 	}
 	.swarm :global(.node.neg .ring) {
 		stroke: var(--harsh);
+		stroke-width: 3;
+	}
+	.swarm :global(.node.pos .ring) {
+		stroke: var(--warm);
 		stroke-width: 3;
 	}
 	.swarm :global(.node.picked .ring) {
@@ -1401,7 +1471,7 @@
 	.swarm :global(.tip .f) {
 		font: 400 13px/1.45 var(--font-sans);
 		color: var(--color-fg);
-		margin:  0 0 0.75rem 0;
+		margin: 0 0 0.75rem 0;
 		line-height: 1.2;
 	}
 	.swarm :global(.tip .f b) {

@@ -2,6 +2,7 @@
 	// Renders the Doc's [body]. A chart line reads
 	//   chart: name | key: value | ...
 	// — the name picks a component from `components`, the labeled parts become props.
+	import { tick } from "svelte";
 	import { base } from "$app/paths";
 	import FoxBadge from "$components/FoxBadge.svelte";
 	import FaceRow from "$components/FaceRow.svelte";
@@ -144,21 +145,50 @@
 		return out;
 	}
 
+	// a heading's link: "h3: The Universe" can be linked as #the-universe
+	const slug = (text) =>
+		String(text ?? "")
+			.replace(/<[^>]*>/g, "")
+			.toLowerCase()
+			.replace(/&[a-z]+;/g, "")
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-+|-+$/g, "");
+	const isHeading = (b) => /^h[2-4]$/.test(b.type);
+
 	// a section with `collapsible: true` in the Doc (under its `section:` line)
-	// shows only its heading until clicked; a link to it (#methods) opens it
-	const foldable = (section) =>
-		String(section.collapsible ?? "").trim() === "true";
+	// shows only its heading until clicked; a link to it (#methods), or to a
+	// heading inside it (#the-universe), opens it.
+	// `collapsible: open` folds the same way but starts open
+	const foldValue = (section) =>
+		String(section.collapsible ?? "")
+			.trim()
+			.toLowerCase();
+	const foldable = (section) => ["true", "open"].includes(foldValue(section));
 	const splitHeading = (section) => {
 		const content = section.content ?? [];
 		const i = content.findIndex((b) => b.type === "h2");
 		if (i < 0) return [section.section, content];
 		return [content[i].value, content.filter((_, k) => k !== i)];
 	};
-	let opened = $state({});
+	let opened = $state(
+		Object.fromEntries(
+			body.filter((s) => foldValue(s) === "open").map((s) => [s.section, true])
+		)
+	);
 	$effect(() => {
 		const openFromLink = () => {
 			const id = decodeURIComponent(location.hash.slice(1));
-			if (body.some((s) => s.section === id && foldable(s))) opened[id] = true;
+			if (!id) return;
+			const section = body.find(
+				(s) =>
+					foldable(s) &&
+					(s.section === id ||
+						(s.content ?? []).some((b) => isHeading(b) && slug(b.value) === id))
+			);
+			if (!section || opened[section.section]) return;
+			opened[section.section] = true;
+			// once it has opened, go to the heading that was linked
+			tick().then(() => document.getElementById(id)?.scrollIntoView());
 		};
 		openFromLink();
 		addEventListener("hashchange", openFromLink);
@@ -187,7 +217,7 @@
 					<h4 class="chart-title">{@html hl(props.title)}</h4>
 				{/if}
 				<!-- subtitle: a plain line under the title, in the ink colour -->
-				 {#if props.kicker && !SELF_CAPTIONED.has(name)}
+				{#if props.kicker && !SELF_CAPTIONED.has(name)}
 					<p class="kicker">{@html props.kicker}</p>
 				{/if}
 				{#if props.subtitle && !SELF_CAPTIONED.has(name)}
@@ -280,7 +310,9 @@
 				</figure>
 			{/if}
 		{:else}
-			<svelte:element this={b.type}
+			<svelte:element
+				this={b.type}
+				id={isHeading(b) ? slug(b.value) : undefined}
 				>{@html hl(clipPops(faces(b.value, base), base))}</svelte:element
 			>
 		{/if}
@@ -320,6 +352,19 @@
 		max-width: 700px;
 		margin: 0 auto;
 	}
+	/* in a folding section the text lines up with the section's heading, rather
+	   than sitting in the page's centred column */
+	.fold p,
+	.fold ul,
+	.fold ol,
+	.fold .quote,
+	.fold .photo {
+		margin-left: 0;
+	}
+	/* a linked heading (#the-universe) lands below the section's sticky heading */
+	.fold :global(:is(h2, h3, h4)[id]) {
+		scroll-margin-top: 5rem;
+	}
 	/* a collapsible section: the heading is the button, with a chevron */
 	.fold {
 		margin: 28px auto;
@@ -337,6 +382,10 @@
 		z-index: 1000;
 		background: var(--wnba-tan-bg);
 		border-bottom: 1px solid var(--color-rule);
+		/* while it's pinned, its background runs the full width of the screen, so
+		   charts wider than the text column (Explore's) don't show past its ends */
+		box-shadow: 0 0 0 100vmax var(--wnba-tan-bg);
+		clip-path: inset(0 -100vmax);
 	}
 	.fold-head button {
 		display: flex;
@@ -351,6 +400,12 @@
 		color: inherit;
 		text-align: left;
 		cursor: pointer;
+	}
+	/* phones: the arrow keeps clear of the corner sound button (SoundCorner) */
+	@media (max-width: 768px) {
+		.fold-head button {
+			padding-right: 2.75rem;
+		}
 	}
 	.chev {
 		flex: none;

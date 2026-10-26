@@ -9,6 +9,7 @@
 	import ShareBars from "$components/ShareBars.svelte";
 	import ScrollToc from "$components/ScrollToc.svelte";
 	import ReadingBar from "$components/ReadingBar.svelte";
+	import SoundCorner from "$components/SoundCorner.svelte";
 	import GridWall from "$components/GridWall.svelte";
 	import OutletTopicCompare from "$components/OutletTopicCompare.svelte";
 	import FoxVsField from "$components/FoxVsField.svelte";
@@ -109,6 +110,7 @@
 	}}
 >
 	<ScrollToc />
+	<SoundCorner />
 	<!-- <ReadingBar /> -->
 	<article id="story">
 		<CMS {body} {components} />

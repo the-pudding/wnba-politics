@@ -8,7 +8,11 @@
 	//   exploreHead: Explore
 	//   exploreText: Drag the timeline or press play. … The {n} most named through {month}:
 	//   exploreFind: Find anyone on the map…
-	//   source: Source: {headlines} WNBA headlines from Fox News … ({outkick} of them) … {people} people …
+	//   source: Source: {headlines} WNBA headlines from Fox News … ({outkick} of them), {from} to {to} … {people} people …
+	//   still: true (optional: no story steps and nothing pinned while you scroll; the map
+	//          sits in a white card, like the framing chart, at its latest month, with the
+	//          explore panel beside it on wide screens and the timeline to play or drag)
+	//   heading: Who Fox News names together (the still map's title)
 	import { onMount } from "svelte";
 	import { base } from "$app/paths";
 	import * as d3 from "d3";
@@ -24,8 +28,13 @@
 		exploreHead = "",
 		exploreText = "",
 		exploreFind = "",
-		source: sourceText = ""
+		source: sourceText = "",
+		heading: headingText = "",
+		still = false
 	} = $props();
+	const stillOn =
+		still === true || String(still).trim().toLowerCase() === "true";
+	const HEADING = "Who Fox News names together";
 
 	// ---------------------------------------------------------------------
 	// Settings
@@ -90,6 +99,7 @@
 	// that year is always the biggest face; false: one scale for every year
 	const RELATIVE = true;
 	const FACE_BOOST = 1.5; // faces this much bigger than the size that just fills the map
+	const TOP_FACE = 1.35; // RELATIVE: the most named person each month, this much bigger again
 
 	// the words around the map, unless the Doc gives its own
 	const WHEN = "Fox News headlines from {from} through {to}";
@@ -101,7 +111,7 @@
 		"then pick a second face for only the headlines naming both. The {n} most named through {month}:";
 	const SOURCE =
 		"Source: {headlines} WNBA headlines from Fox News and its sports site OutKick ({outkick} of them), " +
-		"April 2019 to September 2026. Each face is one of the {people} people this story tracks, sized by how " +
+		"{from} to {to}. Each face is one of the {people} people this story tracks, sized by how " +
 		"many headlines named them in the 12 months up to the month shown" +
 		(RELATIVE ? ", next to the most named person then" : "") +
 		"; a line joins two people named in the same headline. " +
@@ -115,6 +125,8 @@
 	const MONTHS = DATA.months;
 	const firstMonth = () =>
 		`${MONTH_FULL[+MONTHS[0].slice(5, 7) - 1]} ${MONTHS[0].slice(0, 4)}`;
+	const lastMonth = () =>
+		`${MONTH_FULL[+MONTHS.at(-1).slice(5, 7) - 1]} ${MONTHS.at(-1).slice(0, 4)}`;
 	const M = MONTHS.length;
 	const MI = new Map(MONTHS.map((m, i) => [m, i]));
 	const fmt = d3.format(",");
@@ -323,12 +335,29 @@
 
 	let root = $state(null);
 	const el = (id) => root.querySelector(`[data-id="${id}"]`);
-	// the line over the map: which months it shows
-	const showWhen = (month) =>
-		(el("when").innerHTML = fill(or(whenText, WHEN), {
+	// the line over the map: which months it shows. It keeps the height of its
+	// tallest version, so the map below doesn't jump when a month name wraps it
+	const whenHtml = (month) =>
+		fill(or(whenText, WHEN), {
 			from: esc(firstMonth()),
 			to: `<b>${esc(monthName(month))}</b>`
-		}));
+		});
+	let whenTall = 0, // 0: measure again (after a resize)
+		whenMonth = null;
+	function showWhen(month = whenMonth) {
+		if (!month) return;
+		whenMonth = month;
+		const box = el("when");
+		if (!whenTall) {
+			box.style.minHeight = "";
+			for (const m of MONTHS) {
+				box.innerHTML = whenHtml(m);
+				whenTall = Math.max(whenTall, box.offsetHeight);
+			}
+			box.style.minHeight = `${whenTall}px`;
+		}
+		box.innerHTML = whenHtml(month);
+	}
 
 	onMount(() => {
 		const cleanup = [];
@@ -336,17 +365,19 @@
 		const DUR = REDUCED ? 0 : GROW_MS;
 
 		el("steps").innerHTML =
-			STEPS.map(
-				(s, i) =>
-					`<div class="step" data-i="${i}"><p>${stepHTML(s.text)}</p>` +
-					s.heads
-						.map(
-							(h) =>
-								`<div class="clip"><span class="lab"><img class="logo" src="${base}/logos/square/fox-news.svg" alt="fox news logo" /> Fox News</span><q>${penHTML(h)}</q></div>`
-						)
-						.join("") +
-					`</div>`
-			).join("") +
+			(stillOn ? [] : STEPS)
+				.map(
+					(s, i) =>
+						`<div class="step" data-i="${i}"><p>${stepHTML(s.text)}</p>` +
+						s.heads
+							.map(
+								(h) =>
+									`<div class="clip"><span class="lab"><img class="logo" src="${base}/logos/square/fox-news.svg" alt="fox news logo" /> Fox News</span><q>${penHTML(h)}</q></div>`
+							)
+							.join("") +
+						`</div>`
+				)
+				.join("") +
 			`<div class="explore" data-id="explore"><div class="xp" data-id="xp"></div></div>`;
 
 		const netbox = el("netbox");
@@ -374,7 +405,10 @@
 				else lo = mid;
 			}
 			const k = lo * FACE_BOOST;
-			return (count) => (count > 0 ? rmin + k * Math.sqrt(count) : 0);
+			// (with RELATIVE sizes the month's most named person has an amount of 1)
+			const top = (count) => (RELATIVE && count >= 1 ? TOP_FACE : 1);
+			return (count) =>
+				count > 0 ? (rmin + k * Math.sqrt(count)) * top(count) : 0;
 		}
 
 		// a face's radius in a month (none before they're first named)
@@ -451,6 +485,9 @@
 
 		let nodeSel, edgeSel, groupSel;
 		function build() {
+			// the line over the map first, since its height sets the map's
+			whenTall = 0;
+			showWhen();
 			W = netbox.clientWidth;
 			H = netbox.clientHeight;
 			narrow = W < PHONE_MAP;
@@ -683,7 +720,14 @@
 					named: []
 				};
 			}
-			const s = STEPS[stepIndex];
+			// no story steps (still: true): everyone, at the latest month
+			const s = STEPS[stepIndex] ?? {
+				month: MONTHS[M - 1],
+				focus: [],
+				links: "all",
+				group: false,
+				named: []
+			};
 			return { ...s, month: dragged ?? s.month };
 		}
 
@@ -761,10 +805,11 @@
 			}
 			labelled = labelled.filter((n) => presentSet.has(n));
 
+			// while the timeline plays, each month glides straight into the next
 			const t = d3
 				.transition()
-				.duration(instant ? 0 : DUR)
-				.ease(d3.easeCubicOut);
+				.duration(instant ? 0 : playTimer ? PLAY_MS : DUR)
+				.ease(playTimer ? d3.easeLinear : d3.easeCubicOut);
 
 			nodeSel
 				.classed("off", (n) => !presentSet.has(n.name))
@@ -787,7 +832,18 @@
 			nodeSel
 				.select(".inner")
 				.transition(t)
-				.attr("transform", (n) => `scale(${sizeAt(n, mi) / n.R})`);
+				// tween the number itself: d3 can't ease a transform out of scale(0),
+				// so faces coming and going would snap
+				.tween("grow", function (n) {
+					const grow = d3.interpolateNumber(
+						this.scaleNow ?? 0,
+						sizeAt(n, mi) / n.R
+					);
+					return (u) => {
+						this.scaleNow = grow(u);
+						this.setAttribute("transform", `scale(${this.scaleNow})`);
+					};
+				});
 			nodeSel
 				.filter(function (n) {
 					return lit.has(n.name) && this !== document.activeElement;
@@ -829,13 +885,17 @@
 					labelled.map((n) => byName.get(n)),
 					(n) => n.name
 				)
-				.join((e) =>
-					e
-						.append("text")
-						.attr("class", "nlabel")
-						.style("opacity", 0)
-						.attr("x", (n) => spots.get(n.name).x)
-						.attr("y", (n) => spots.get(n.name).y)
+				.join(
+					(e) =>
+						e
+							.append("text")
+							.attr("class", "nlabel")
+							.style("opacity", 0)
+							.attr("x", (n) => spots.get(n.name).x)
+							.attr("y", (n) => spots.get(n.name).y),
+					(u) => u,
+					// names that drop off fade rather than vanish
+					(x) => x.transition(t).style("opacity", 0).remove()
 				)
 				.attr("text-anchor", (n) => spots.get(n.name).anchor)
 				.text((n) => n.name)
@@ -1245,14 +1305,14 @@
 				// (phones have no explore: the story steps only)
 				const ex =
 					innerWidth > PHONE_SCREEN &&
-					exploreEl.getBoundingClientRect().top < line;
+					(stillOn || exploreEl.getBoundingClientRect().top < line);
 				if (idx === stepIndex && ex === exploring) return;
 				stepIndex = idx;
 				if (ex !== exploring) {
 					exploring = ex;
 					pinned = pinned2 = null;
 					stopPlay();
-					if (ex) exploreMonth = STEPS[STEPS.length - 1].month;
+					if (ex) exploreMonth = STEPS.at(-1)?.month ?? MONTHS[M - 1];
 				}
 				el("scrolly").classList.toggle("exploring", exploring);
 				dragged = tapped = hovered = null;
@@ -1261,6 +1321,8 @@
 			});
 		}
 		addEventListener("scroll", onScroll, { passive: true });
+		// a still map starts in explore straight away, without waiting for a scroll
+		if (stillOn) onScroll();
 		cleanup.push(() => removeEventListener("scroll", onScroll));
 
 		// redo the layout only when the map really changes size (not when a phone's toolbar slides)
@@ -1269,8 +1331,9 @@
 		const ro = new ResizeObserver(() => {
 			const w = netbox.clientWidth,
 				h = netbox.clientHeight;
-			if (Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 60)
-				return render(true);
+			// (a small change leaves the layout as is; redrawing then would cut
+			// short whatever is easing, like the timeline playing)
+			if (Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 60) return;
 			lastW = w;
 			lastH = h;
 			build();
@@ -1278,10 +1341,12 @@
 		ro.observe(netbox);
 		cleanup.push(() => ro.disconnect(), stopPlay);
 
-		showWhen(STEPS[0]?.month ?? MONTHS[0]);
+		showWhen(stillOn ? MONTHS[M - 1] : (STEPS[0]?.month ?? MONTHS[0]));
 		el("source").textContent = fill(or(sourceText, SOURCE), {
 			headlines: fmt(DATA.inRange),
 			outkick: fmt(DATA.outkick),
+			from: firstMonth(),
+			to: lastMonth(),
 			people: nodes.length
 		});
 		onScroll();
@@ -1292,6 +1357,7 @@
 
 <section
 	class="netmap"
+	class:still={stillOn}
 	bind:this={root}
 	style={Object.entries(GROUPS)
 		.map(([k, g]) => `--${k}:${g.color}`)
@@ -1301,6 +1367,7 @@
 		<div class="graphic">
 			<div class="status">
 				<p class="kicker">on the web</p>
+				{#if stillOn}<h4 class="heading">{or(headingText, HEADING)}</h4>{/if}
 				<div class="when" data-id="when"></div>
 			</div>
 			<div class="netbox" data-id="netbox">
@@ -1386,7 +1453,7 @@
 	.netmap :global(.status) {
 		padding-bottom: 8px;
 	}
-	
+
 	.netmap :global(.when) {
 		font-size: 24px;
 		line-height: 1.3;
@@ -1588,7 +1655,7 @@
 		border-bottom: 2px solid var(--wnba-red);
 		line-height: 1.15;
 		padding-bottom: 4px;
-    	margin-bottom: 8px;
+		margin-bottom: 8px;
 	}
 
 	.netmap :global(.clip .lab img) {
@@ -1836,6 +1903,78 @@
 		border-top: 1px solid rgba(42, 21, 3, 0.2);
 		font: 12px/1.5 var(--font-sans);
 		color: rgba(42, 21, 3, 0.7);
+	}
+
+	/* still: nothing pinned; the map and the explore panel sit side by side in a white
+	   card, the same as the framing chart's */
+	.netmap.still {
+		max-width: 1000px; /* wider on wide screens, below */
+		margin: 2rem auto;
+		padding: 24px 28px 22px;
+		background: #fff;
+		border: 1px solid var(--color-rule);
+		border-radius: 4px;
+	}
+	/* wide screens: wider than the text column, clear of the section menu */
+	@media (min-width: 1181px) {
+		.netmap.still {
+			max-width: min(1240px, calc(100vw - 180px));
+		}
+	}
+	/* name labels keep a halo of the card's white, not the page's tan */
+	.netmap.still :global(.nlabel) {
+		stroke: #fff;
+	}
+	/* phones: the card runs edge to edge, as the framing chart's does */
+	@media (max-width: 860px) {
+		.netmap.still {
+			padding: 22px 16px 18px;
+			border-radius: 0;
+		}
+	}
+	.netmap.still :global(.graphic) {
+		position: relative;
+		top: auto;
+		height: 90vh;
+	}
+	.netmap.still :global(.steps) {
+		margin-top: 0;
+		padding-top: 0;
+		padding-bottom: 0;
+	}
+	.netmap.still :global(.explore) {
+		min-height: 0;
+		padding-top: 0;
+	}
+	/* in the card the map comes first and the explore panel sits to its right */
+	.netmap.still :global(.scrolly) {
+		grid-template-columns: minmax(0, 1fr) 260px;
+	}
+	.netmap.still :global(.graphic) {
+		grid-column: 1;
+	}
+	.netmap.still :global(.steps) {
+		grid-column: 2;
+	}
+	/* inside the card the panel is flat, set off from the map by a rule rather than
+	   a second card */
+	.netmap.still :global(.explore .xp) {
+		position: relative;
+		top: auto;
+		height: 90vh;
+		padding: 0 0 0 20px;
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+		border-left: 1px solid var(--color-rule);
+	}
+	/* the dates read as a line under the title */
+	.netmap.still :global(.when) {
+		font-size: 18px;
+	}
+	/* the source note runs the card's full width, rule and all */
+	.netmap.still :global(.source) {
+		max-width: none;
 	}
 
 	/* phones: the map fills the screen, the cards scroll up over it */

@@ -221,6 +221,8 @@
 	// one size for every face; the row spacing follows it
 	// Sized in pixels. 
 	const FACE_R = { phone: 30, desktop: 40 }; // the most a face may be
+	// phones: each name sits beside its face rather than in a column on the left
+	const NAMES_BY_FACE = true;
 	const FACE_OF_ROW = 0.62; // else its radius as a share of the row height
 	let frame = $state({ w: 0, h: 0 });
 	let WIDTH = $derived(frame.w || (narrow ? 375 : 1000));
@@ -234,7 +236,11 @@
 	const BOTTOM = 62;
 	// the names start at the left edge; the plot takes the rest of the width
 	let LEFT = $derived(narrow ? 2 : 6);
-	let NAMES = $derived(LEFT + (narrow ? 90 : 190));
+	let besideFace = $derived(narrow && NAMES_BY_FACE);
+	let NAMES = $derived(LEFT + (besideFace ? 0 : narrow ? 90 : 190));
+	// a name beside its face goes on the side with more room: left of a face in the
+	// right half of the plot, right of one in the left half
+	let nameLeft = $derived((at) => at > NAMES + 24 + PLOT / 2);
 	// on a phone the frame is the screen, so the far Fox end keeps room for a
 	// whole face (Cunningham sits past the edge line)
 	let PLOT = $derived(
@@ -598,15 +604,17 @@
 					role="presentation"
 				>
 					<line class="guide" x1={NAMES + 8} x2={NAMES + PLOT} y1={y} y2={y} />
-					<text
-						class="name"
-						class:short={narrow}
-						x={NAMES}
-						y={y + 4.5}
-						text-anchor="end"
-					>
-						{narrow || pairs ? shortName(person) : person.name}
-					</text>
+					{#if !besideFace}
+						<text
+							class="name"
+							class:short={narrow}
+							x={NAMES}
+							y={y + 4.5}
+							text-anchor="end"
+						>
+							{narrow || pairs ? shortName(person) : person.name}
+						</text>
+					{/if}
 				</g>
 			{/each}
 
@@ -624,6 +632,10 @@
 					centeredSet.has(key(person.name))}
 				<!-- a face the step names grows a third larger than the rest -->
 				{@const grow = on && named && lit.size > 0 && !litAll ? 1.35 : 1}
+				<!-- the ratio tag shows for the players a step names, and on hover -->
+				{@const tagged =
+					on && ((named && lit.size > 0 && !litAll) || hovered === person.name)}
+				{@const toLeft = nameLeft(on ? xOf(person.times) : x(0))}
 				<g
 					class="row"
 					class:lit={hovered === person.name}
@@ -704,7 +716,18 @@
 							<circle cx="0" cy="0" r={r + 1.5} class="veil" />
 						{/if}
 						</g>
-						{#if on && ((named && lit.size > 0 && !litAll) || hovered === person.name)}
+						{#if besideFace && (on || named)}
+							<!-- the name beside the face, with the ratio under it when a step shows one -->
+							<text
+								class="name short beside"
+								x={toLeft ? -r * grow - 6 : r * grow + 6}
+								y={tagged ? -2 : 4.5}
+								text-anchor={toLeft ? "end" : "start"}
+							>
+								{shortName(person)}
+							</text>
+						{/if}
+						{#if tagged}
 							<!-- the tag, for the players a step names (the closing step lights
 							     everyone and needs none). It sits right of the face — on the
 							     "others" side that keeps it clear of her name — unless she is off
@@ -714,11 +737,13 @@
 								xOf(person.times) + r * grow + 9 + label.length * 7.5 <= WIDTH}
 							{@const rightOf =
 								fits && !(person.times >= 0 && beyondAxis(person))}
+							{@const right = besideFace ? !toLeft : rightOf}
+							{@const gap = r * grow + (besideFace ? 6 : 9)}
 							<text
 								class="ratio"
-								x={rightOf ? r * grow + 9 : -r * grow - 9}
-								y="4.5"
-								text-anchor={rightOf ? "start" : "end"}
+								x={right ? gap : -gap}
+								y={besideFace ? 12 : 4.5}
+								text-anchor={right ? "start" : "end"}
 								fill={ringColor(person)}>{label}</text
 							>
 						{/if}
@@ -1073,6 +1098,15 @@
 	}
 	.name.short {
 		font-size: 13.5px;
+	}
+	/* beside its face (phones): kept readable where it crosses a rule or the equal line */
+	.name.beside {
+		font-size: 12.5px;
+		paint-order: stroke;
+		stroke: var(--wnba-tan-bg);
+		stroke-width: 4px;
+		stroke-linejoin: round;
+		pointer-events: none;
 	}
 	/* a phone's axis is short: the direction labels shrink to fit beside each other */
 	.narrow .head {

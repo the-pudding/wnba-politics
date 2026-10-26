@@ -53,6 +53,7 @@
 	const OTHERS = "var(--color-outlets)";
 	const INK = "var(--color-ink)";
 	const WEAK_Z = 1.96; // below this a word's lean is within noise
+	const LOADING = "Loading words…"; // while a comparison's words are still on their way
 
 	let lit = $derived(new Set((highlight ?? []).map((w) => w.toLowerCase())));
 	let anyLit = $derived(lit.size > 0);
@@ -113,6 +114,9 @@
 			.sort((a, b) => Math.abs(b.z) - Math.abs(a.z));
 	let fox = $derived(pick(side(1), 1));
 	let others = $derived(pick(side(-1), -1));
+	// no words yet (their file is still loading): the heads and the note keep the
+	// full width instead of closing up around an empty middle
+	let empty = $derived(!fox.length && !others.length);
 	// with room to spare the chart shows more words rather than taller bars:
 	// as many rows as fit at a comfortable height, up to a ceiling
 	const ROW_COMFY = 32,
@@ -292,6 +296,7 @@
 	// over every page, so the heads and the caption hold still as the reader
 	// pages through (the longest bar is on the first page)
 	let barsReach = $derived.by(() => {
+		if (empty) return WIDTH / 2;
 		let reach = 0;
 		const all = paged ? [...side(1).slice(0, more), ...side(-1).slice(0, more)] : [...fox, ...others];
 		for (const p of all) reach = Math.max(reach, LABEL + Math.max(len(p.z), textWidth(wordCase(p.word)) + 14));
@@ -488,7 +493,11 @@
 			onmouseleave={() => (hovered = null)}
 			role="presentation"
 		>
-			<line class="axis" x1={mid} x2={mid} y1={TOP - 6} y2={height - BOTTOM} />
+			{#if empty}
+				<text class="loading" x={mid} y={TOP + 40} text-anchor="middle">{LOADING}</text>
+			{:else}
+				<line class="axis" x1={mid} x2={mid} y1={TOP - 6} y2={height - BOTTOM} />
+			{/if}
 
 			{#each [[fox, 1], [others, -1]] as [list, sign]}
 				{#if pins.rows && pins[sign].length}
@@ -631,6 +640,11 @@
 </div>
 
 <style>
+	.loading {
+		fill: var(--wnba-tan-dark);
+		font-family: var(--font-sans);
+		font-size: 14px;
+	}
 	.word-bars {
 		width: 100%;
 		max-width: 720px;

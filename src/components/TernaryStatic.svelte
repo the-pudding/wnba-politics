@@ -22,6 +22,8 @@
 		highlightColor = null,
 		// a word to pin the tooltip on (a chip in the scrolly card being hovered)
 		focus = null,
+		// no tooltip (while the scrolly's word suggestions are open over the triangle)
+		quiet = false,
 		// write the lit words on the drawing; the scrolly turns this off, since
 		// its words sit in the card as chips
 		labels = true,
@@ -517,7 +519,9 @@
 	);
 	// a locked word wins, then the hovered one, then the pinned one
 	let shown = $derived(
-		offscreen ? null : (locked ?? hovered ?? (pinGone ? null : focused))
+		offscreen || quiet
+			? null
+			: (locked ?? hovered ?? (pinGone ? null : focused))
 	);
 	// the tooltip beside the dot (the other side near the right edge, under or
 	// over it when neither side fits), kept within the drawing; in px

@@ -1,4 +1,5 @@
 <script>
+    import { tick } from "svelte";
     import CMS from "$components/helpers/CMS.svelte";
     import { hl } from "$utils/clips.js";
 
@@ -10,8 +11,14 @@
         collapsed = false,
         look = "",
         previous = "",
-        next = ""
+        next = "",
+        // the button under a clipped stack (Doc: `more:` / `less:`), e.g.
+        // "Show More" where the stacks are charts rather than reading
+        more = "",
+        less = ""
     } = $props();
+    const MORE = "Read More";
+    const LESS = "Show Less";
 
     const items = $derived(
         (tabs ?? []).filter((t) => t && (t.title || t.content))
@@ -27,8 +34,27 @@
         { section: `thread-${i}`, content: tab.content ?? [] }
     ];
 
-    function toggle(i) {
+    // each stack can be linked by its kicker: "The Universe" is #the-universe
+    const slug = (text) =>
+        String(text ?? "")
+            .replace(/<[^>]*>/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+    const idOf = (tab) => slug(tab.kicker || tab.title) || undefined;
+
+    // Show Less keeps the stack's bottom (where its button is) where it was on
+    // screen: everything above folds away, and the reader would otherwise land
+    // far down the page
+    async function toggle(i) {
+        const sheet = sheets[i];
+        const before = sheet?.getBoundingClientRect().bottom;
         expanded[i] = !expanded[i];
+        if (expanded[i] || before === undefined) return;
+        await tick();
+        // the button is redrawn once the clipped height is measured
+        await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+        scrollBy({ top: sheet.getBoundingClientRect().bottom - before, behavior: "instant" });
     }
 
     // The nav: a button jumps to its stack, opened, just under the sticky nav
@@ -41,12 +67,25 @@
         const sheet = sheets[i];
         if (!sheet) return;
         const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-        const navH = navEl?.offsetHeight ?? 0;
+        // it stops short of the sticky nav by the sheet's scroll-margin-top
+        const room = parseFloat(getComputedStyle(sheet).scrollMarginTop) || 0;
         scrollTo({
-            top: sheet.getBoundingClientRect().top + scrollY - navH - 16,
+            top: sheet.getBoundingClientRect().top + scrollY - room,
             behavior: reduce ? "auto" : "smooth"
         });
     }
+
+    // a link to a stack opens it and goes to it
+    $effect(() => {
+        const openFromLink = () => {
+            const id = decodeURIComponent(location.hash.slice(1));
+            const i = id ? items.findIndex((tab) => idOf(tab) === id) : -1;
+            if (i >= 0) jump(i);
+        };
+        openFromLink();
+        addEventListener("hashchange", openFromLink);
+        return () => removeEventListener("hashchange", openFromLink);
+    });
 
     // The active stack: the last one whose top has passed a line a third of
     // the way down the screen under the nav, while it is still on screen;
@@ -97,8 +136,9 @@
             {@const isExpanded = expanded[i]}
             {@const isOverflowing = (innerHeights[i] ?? 0) > (outerHeights[i] ?? 0) + 2}
             
-            <section class="sheet" bind:this={sheets[i]}>
-                <h4 class="heading">{tab.title}</h4>
+            <section class="sheet" id={idOf(tab)} bind:this={sheets[i]}>
+                <!-- a stack whose chart has its own title can leave this out -->
+                {#if tab.title}<h4 class="heading">{tab.title}</h4>{/if}
 
                 <div
                     class="content-wrapper"
@@ -118,7 +158,7 @@
                 <!-- Show button if content exceeds 100svh or is currently expanded -->
                 {#if isOverflowing || isExpanded}
                     <button class="expand-btn" onclick={() => toggle(i)}>
-                        {isExpanded ? "Show Less" : "Read More"}
+                        {isExpanded ? less || LESS : more || MORE}
                     </button>
                 {/if}
             </section>
@@ -156,7 +196,7 @@
         color: var(--wnba-tan-dark);
         border: 1px solid var(--color-rule);
         font-weight: 400;
-        width: 100px;
+        min-width: 100px;
         text-transform: capitalize;
         cursor: pointer;
         transition:
@@ -194,6 +234,7 @@
     }
 
     .sheet {
+        scroll-margin-top: 4.75rem; /* the sticky nav, and a little room */
         background: #fff;
         border: 1px solid var(--color-rule);
         border-radius: 8px;

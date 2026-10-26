@@ -9,6 +9,8 @@
 	//   bridge           a card that scrolls by during the handoff
 	//   heading, comparedWith, allOutlets, speed  (the dot plot's)
 	//   note             (the triangle's line underneath)
+	//   The find box sits under the triangle on every step; a step with
+	//   `search: true` is a pause with no card, the triangle moved to the middle.
 	//   bands            true/false: shade the triangle's "mostly Fox / CNN /
 	//                    MSNBC" corners (default true); a ternary step's own
 	//                    bands overrides it while that step is up; always
@@ -138,7 +140,6 @@
 		"var(--wnba-purple)",
 		"var(--wnba-navy)"
 	];
-	const foxLeans = (s) => s[0] >= Math.max(s[1], s[2]);
 
 	let terIndex = $state(0);
 	let terLast = $state(0);
@@ -347,7 +348,6 @@
 		.filter((row) => row.total >= MIN_TOTAL)
 		.map((row) => ({ term: row.term, total: row.total }))
 		.sort((a, b) => b.total - a.total);
-	const biggest = vocabulary[0]?.total ?? 100;
 	const MAX_LIT = 30;
 	let query = $state("");
 	let q = $derived(query.trim().toLowerCase());
@@ -400,17 +400,16 @@
 		lastKept = null;
 		focus = null;
 	};
-	let slider = $state(0);
-	let minTotal = $derived(
-		Math.round(MIN_TOTAL * Math.pow(biggest / MIN_TOTAL, slider / 100))
-	);
 	let focus = $state(null);
 	function unpin(event) {
-		if (event.target.closest?.(".chip, .panel")) return;
+		if (event.target.closest?.(".chip, .ter-tools")) return;
 		focus = null;
 		lastKept = null;
 	}
-	let search = $derived(terStep?.search ?? false);
+	// the reader's own words, typed or kept, take over from the step's
+	let search = $derived(
+		Boolean(terStep) && (terStep.search || Boolean(q) || picked.length > 0)
+	);
 	let pinned = $derived(focus ?? (search ? (exact?.term ?? lastKept) : null));
 	let groups = $derived(
 		!terStep
@@ -444,6 +443,87 @@
 
 <svelte:window onclick={unpin} />
 
+<!-- under the triangle on every step: find a word -->
+{#snippet tools()}
+	<div class="ter-tools">
+		<label class="control">
+			<div class="search-box">
+				<input
+					type="search"
+					placeholder="Find a word…"
+					bind:value={query}
+					autocomplete="off"
+					spellcheck="false"
+					onfocus={() => (open = true)}
+					onblur={() => (open = false)}
+					oninput={() => ((open = true), (cursor = -1))}
+					onkeydown={onKey}
+				/>
+				{#if open && q && suggestions.length}
+					<ul class="suggest" role="listbox">
+						{#each suggestions as w, i (w.term)}
+							<li
+								role="option"
+								aria-selected={i === cursor}
+								class:on={i === cursor}
+								onpointerdown={(e) => (
+									e.preventDefault(),
+									choose(w.term)
+								)}
+							>
+								<span class="term">{w.term}</span>
+								<span class="uses">{w.total.toLocaleString()}</span>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</div>
+		</label>
+		<!-- the note and the kept words hang under the box, out of the layout, so
+		     the triangle above doesn't shift as they come and go -->
+		<div class="find-below">
+			{#if q && !exact}
+				<span class="control-note">
+					{#if !partial.length}
+						No word contains “{q}”.
+					{:else if partial.length > MAX_LIT}
+						{partial.length} words contain “{q}”; the {MAX_LIT} most common
+						are lit.
+					{:else}
+						{partial.length}
+						{partial.length === 1 ? "word contains" : "words contain"} “{q}”.
+					{/if}
+				</span>
+			{:else if exact}
+				<span class="control-note"
+					>Press Enter to keep “{exact.term}”.</span
+				>
+			{/if}
+			{#if picked.length}
+				<div class="chips">
+					{#each picked as word (word)}
+						<span
+							class="chip"
+							class:on={pinned === word}
+							role="button"
+							tabindex="0"
+							onpointerenter={() => (focus = word)}
+							onpointerleave={() => (focus = null)}
+						>
+							{word}
+							<button
+								class="x"
+								aria-label="remove {word}"
+								onclick={() => drop(word)}>×</button
+							>
+						</span>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	</div>
+{/snippet}
+
 <section
 	class="gap-ternary"
 	class:handing={phase !== "gap"}
@@ -472,23 +552,27 @@
 
 		<div
 			class="stage ternary"
+			class:centred={terStep?.search}
 			bind:this={terEl}
 			style:opacity={terOpacity}
 			inert={phase !== "ternary"}
 		>
-			<TernaryStatic
-				heading={or(heading, HEADING)}
-				{groups}
-				{note}
-				bare
-				big
-				highlightColor={HIGHLIGHT}
-				enclose={Boolean(terStep) && !search && !holdNames}
-				focus={pinned}
-				minTotal={search ? minTotal : 0}
-				topic={terStep?.topic ?? null}
-				bands={phase === "ternary" && (terStep?.bands ?? flag(bands) ?? true)}
-			/>
+			<div class="ter-col">
+				<TernaryStatic
+					heading={or(heading, HEADING)}
+					{groups}
+					{note}
+					bare
+					big
+					highlightColor={HIGHLIGHT}
+					enclose={Boolean(terStep) && !search && !holdNames}
+					focus={pinned}
+					quiet={open && suggestions.length > 0}
+					topic={terStep?.topic ?? null}
+					bands={phase === "ternary" && (terStep?.bands ?? flag(bands) ?? true)}
+				/>
+				{@render tools()}
+			</div>
 		</div>
 
 		<!-- the faces in flight, from their rows to their words -->
@@ -543,99 +627,7 @@
 					class:active={phase === "ternary" && terLast === i}
 				>
 					{#if step.search}
-						<!-- the explore panel: the last card, and it stays to be played with -->
-						<aside class="card panel">
-							{#if step.title}<h4 class="card-title">{step.title}</h4>{/if}
-							{#if step.html}<p class="card-text">
-									{@html clipPops(faces(step.html, base), base)}
-								</p>{/if}
-							<label class="control">
-								<span class="control-label"
-									>Minimum uses: <b>{minTotal.toLocaleString()}</b></span
-								>
-								<input
-									type="range"
-									min="0"
-									max="100"
-									step="1"
-									bind:value={slider}
-								/>
-								<span class="ends" aria-hidden="true">
-									<span>1</span><span>{biggest.toLocaleString()}</span>
-								</span>
-							</label>
-							<label class="control">
-								<div class="search-box">
-									<input
-										type="search"
-										placeholder="Find a word…"
-										bind:value={query}
-										autocomplete="off"
-										spellcheck="false"
-										onfocus={() => (open = true)}
-										onblur={() => (open = false)}
-										oninput={() => ((open = true), (cursor = -1))}
-										onkeydown={onKey}
-									/>
-									{#if open && q && suggestions.length}
-										<ul class="suggest" role="listbox">
-											{#each suggestions as w, i (w.term)}
-												<li
-													role="option"
-													aria-selected={i === cursor}
-													class:on={i === cursor}
-													onpointerdown={(e) => (
-														e.preventDefault(),
-														choose(w.term)
-													)}
-												>
-													<span class="term">{w.term}</span>
-													<span class="uses">{w.total.toLocaleString()}</span>
-												</li>
-											{/each}
-										</ul>
-									{/if}
-								</div>
-								{#if q && !exact}
-									<span class="control-note">
-										{#if !partial.length}
-											No word contains “{q}”.
-										{:else if partial.length > MAX_LIT}
-											{partial.length} words contain “{q}”; the {MAX_LIT} most common
-											are lit.
-										{:else}
-											{partial.length}
-											{partial.length === 1 ? "word contains" : "words contain"} “{q}”.
-										{/if}
-									</span>
-								{:else if exact}
-									<span class="control-note"
-										>Press Enter to keep “{exact.term}”.</span
-									>
-								{/if}
-							</label>
-							{#if picked.length}
-								<div class="chips">
-									{#each picked as word (word)}
-										<span
-											class="chip"
-											class:on={pinned === word}
-											role="button"
-											tabindex="0"
-											onpointerenter={() => (focus = word)}
-											onpointerleave={() => (focus = null)}
-										>
-											{word}
-											<button
-												class="x"
-												aria-label="remove {word}"
-												onclick={() => drop(word)}>×</button
-											>
-										</span>
-									{/each}
-								</div>
-							{/if}
-						</aside>
+						<!-- a pause with no card: the find box is under the triangle -->
 					{:else}
 						<div class="card">
 							{#if step.title}<h4 class="card-title">{step.title}</h4>{/if}
@@ -672,11 +664,9 @@
 													></span>
 												{/each}
 											</span>
-											<span
-												class="pct"
-												style:color={foxLeans(row.shares)
-													? SHARE_COLORS[0]
-													: SHARE_COLORS[1]}>{pctOf(row.shares[0])}</span
+											<!-- Fox's share, in Fox's colour whichever way the row leans -->
+											<span class="pct" style:color={SHARE_COLORS[0]}
+												>{pctOf(row.shares[0])}</span
 											>
 										</button>
 									{/each}
@@ -719,9 +709,20 @@
 		justify-content: center;
 	}
 
+	/* beside the cards the triangle sits right, 6rem in from the edge; on the
+	   cardless last step it slides to the middle to be explored */
 	.stage.ternary {
-		justify-content: flex-end;
-		margin-right: 6rem;
+		justify-content: center;
+	}
+	.ter-col {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		transform: translateX(calc(50vw - 50% - 6rem));
+		transition: transform 700ms ease;
+	}
+	.stage.ternary.centred .ter-col {
+		transform: none;
 	}
 
 	/* the dot plot, framed as on OutletGapScrolly */
@@ -750,9 +751,41 @@
 		transform: scale(1) !important;
 	}
 
-	/* the triangle, framed as on TernaryScrolly */
+	/* the triangle, framed as on TernaryScrolly, with the find box under it */
 	.ternary :global(svg) {
-		max-height: 82vh;
+		max-height: 74vh;
+	}
+	.ter-tools {
+		position: relative;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		justify-content: center;
+		gap: 6px 28px;
+		width: 100%;
+		max-width: 560px;
+		margin-top: 10px;
+	}
+	.ter-tools .control {
+		flex: 1 1 200px;
+		max-width: 260px;
+	}
+	/* near the bottom of the screen, the suggestions open upward, over the
+	   triangle and its word card */
+	.ter-tools .suggest {
+		top: auto;
+		bottom: calc(100% + 4px);
+		z-index: 6;
+	}
+	.find-below {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		text-align: center;
+	}
+	.find-below .chips {
+		justify-content: center;
 	}
 
 	.flyers {
@@ -893,12 +926,6 @@
 		margin: 0;
 	}
 
-	/* the explore panel: the last card, at the left like the others */
-	.panel {
-		max-width: 460px;
-		box-sizing: border-box;
-		padding: 1rem;
-	}
 	/* it's the last thing the reader meets, so it stays above the triangle */
 	.ter-step.search-step {
 		z-index: 5;
@@ -1044,38 +1071,12 @@
 		display: block;
 		margin-top: 14px;
 	}
-	.control-label {
-		display: block;
-		font-family: var(--font-chart);
-		font-size: 11px;
-		font-weight: 800;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: rgba(42, 21, 3, 0.65);
-		margin-bottom: 6px;
-	}
 	.control-note {
 		display: block;
 		font-size: 12px;
 		line-height: 1.4;
 		color: rgba(42, 21, 3, 0.65);
 		margin-top: 4px;
-	}
-	.control input[type="range"] {
-		width: 100%;
-		accent-color: var(--color-fox);
-		margin: 4px 0 0;
-	}
-	.control-label b {
-		color: var(--color-ink);
-	}
-	.ends {
-		display: flex;
-		justify-content: space-between;
-		font-family: var(--font-chart);
-		font-size: 11px;
-		color: rgba(42, 21, 3, 0.55);
-		margin-top: 2px;
 	}
 	.control input[type="search"] {
 		width: 200px;
@@ -1140,6 +1141,19 @@
 		.linger {
 			height: 70vh;
 		}
+		/* the triangle and its find box centred, inside the page's gutters */
+		.stage.ternary {
+			padding: 0 16px;
+		}
+		.ter-col {
+			transform: none;
+		}
+		.ter-tools {
+			gap: 6px 16px;
+		}
+		.ter-tools .control {
+			flex: 1 1 140px;
+		}
 		.ter-step {
 			flex-direction: column;
 			justify-content: center;
@@ -1151,10 +1165,6 @@
 			width: 84vw;
 			max-height: 40vh;
 		}
-		.panel {
-			max-width: 460px;
-			font-size: 14.5px;
-		}
 		.suggest {
 			position: static;
 			margin-top: 4px;
@@ -1164,6 +1174,9 @@
 	@media (prefers-reduced-motion: reduce) {
 		.flyers {
 			display: none;
+		}
+		.ter-col {
+			transition: none;
 		}
 	}
 	.steps :global(a) {

@@ -4,11 +4,65 @@
 	import Scrolly from "$components/helpers/Scrolly.svelte";
 	import HeadlineClip from "$components/HeadlineClip.svelte";
 	import { fade } from "svelte/transition";
+	import { cubicOut } from "svelte/easing";
 	import { faces, clipPops } from "$utils/clips.js";
+	import { titleCase } from "$utils/titleCase.js";
+	import { sound } from "$utils/sound.svelte.js";
 	import arrowSvg from "$svg/arrow-up-right.svg";
+	// the corner bubble and the sound button's icons, from Lucide (lucide.dev)
+	import MessageCircle from "@lucide/svelte/icons/message-circle";
+	import Volume2 from "@lucide/svelte/icons/volume-2";
+	import VolumeX from "@lucide/svelte/icons/volume-x";
     const copy = getContext("copy");
 
 	let { id = "intro", steps = [], header, highlights, videos } = $props();
+
+	// the announcer's call on the intro title, from the Doc's top section:
+	//   logoCallStyle: corner | bubble | byline | none   (a small bubble in the top-right
+	//                  corner, a speech bubble by the image, or a line over the byline)
+	//   logoCall: You bet! From beyond the logo!
+	//   logoCredit: ESPN’s Ryan Ruocco
+	//   logoCallShort: From the logo!   (the corner bubble's words)
+	//   logoLink: …   (the corner bubble links to the clip)
+	//   logoCallSpot: upper | lower   (the corner bubble in the upper right, its tail
+	//                  pointing up and out, or beside the byline, pointing down and out
+	//                  toward the broadcast table)
+	//   soundNote: Turn on sound   (beside the sound button)
+	const LOGO_CALL = "You bet! From beyond the logo!";
+	const LOGO_CREDIT = "ESPN’s Ryan Ruocco";
+	const LOGO_CALL_SHORT = "From the logo!";
+	const LOGO_LINK = "https://x.com/IndianaFever/status/1919143866818515093";
+	const SOUND_NOTE = "Turn on sound";
+	const SOUND_ON_NOTE = "Sound on";
+	// once the wall comes in, the title drops down onto it, in red, for this many steps:
+	// how big it gets there (share of its size on the title page) and how far from the top
+	const TITLE_STEPS = 1;
+	const TITLE_SCALE = 0.75;
+	const TITLE_TOP = { desktop: 14, phone: 52 }; // px
+	const callStyle = String(copy.meta?.logoCallStyle ?? "corner").trim().toLowerCase();
+	const callText = copy.meta?.logoCall || LOGO_CALL;
+	const callCredit = copy.meta?.logoCredit || LOGO_CREDIT;
+	const callShort = copy.meta?.logoCallShort || LOGO_CALL_SHORT;
+	const callLink = copy.meta?.logoLink || LOGO_LINK;
+	const CALL_SPOT = "upper";
+	const callSpot = String(copy.meta?.logoCallSpot || CALL_SPOT).trim().toLowerCase();
+	const soundNote = copy.meta?.soundNote || SOUND_NOTE;
+
+	// sound: off until the reader turns it on (one switch for the whole page). Turning it
+	// on from the title page plays the call.
+	let callAudio;
+	function toggleSound(playCall) {
+		sound.on = !sound.on;
+		if (!callAudio) return;
+		if (sound.on && playCall) {
+			callAudio.currentTime = 0;
+			callAudio.play().catch(() => {});
+		} else callAudio.pause();
+	}
+	// the switch fades in once the page's code is running: drawn before then, a click on
+	// it would do nothing
+	let soundReady = $state(false);
+	onMount(() => (soundReady = true));
 
 	// The copy doc sets up the wall. Each step can carry its own scene:
 	//   text: …
@@ -17,6 +71,21 @@
 	//   images: gridFox | gridOther (optional, which screenshot folder; a step without
 	//                 one keeps the folder of the step before, starting with gridFox)
 	//   [.videos] or [.highlights] (optional, what this step's pull-out shows)
+	//   players: Angel Reese       (optional, on a text wall: only headlines naming these
+	//                 people, comma-separated, as in the explore table)
+	//   tone: negative             (optional, on a text wall: only headlines of this tone,
+	//                 negative, neutral or positive, as in the explore table)
+	//   transition: wipe | off     (optional, on a step that changes `images:`. wipe: a band
+	//                 of static sweeps across and wipes the wall over to the new screenshots.
+	//                 off: the wall switches off like an old TV, to a line, a dot and black,
+	//                 then switches back on showing the new screenshots. Without it the tiles
+	//                 swap one by one. A step with a transition but no `images:` switches to
+	//                 the next different folder a later step names)
+	//   audio: storm-doppler       (optional, on a step that pulls clips: that clip plays
+	//                 with its sound, from the start, once the reader has turned sound on.
+	//                 Several, comma-separated, take turns in that order: each is heard to
+	//                 its end, then the next starts, then back to the first. The step's
+	//                 card gets a small sound button)
 	// plus `header: true` on the block. [.highlights] / [.videos] on the block itself
 	// are the default for any pulling step that doesn't list its own.
 	// Anything the doc leaves out falls back to WALLS below.
@@ -72,27 +141,58 @@
 	function scenesFromSteps(steps) {
 		let last = "empty";
 		let folder;
-		return steps.map((s) => {
+		return steps.map((s, i) => {
 			const wall = s.wall?.trim() || last;
 			last = wall;
 			const scene = { wall };
 			if (s.pull?.trim()) scene.pull = s.pull.trim();
 			// what this step itself says (blank if it inherits), for the kicker
 			scene.ownImages = s.images?.trim() || "";
+			// a transition is a change of screenshots: a step that asks for one without
+			// naming a folder switches to the next different folder a later step names
+			if (s.transition?.trim() && !scene.ownImages) {
+				const next = steps
+					.slice(i + 1)
+					.map((t) => t.images?.trim())
+					.find((f) => f && f !== folder);
+				if (next) scene.ownImages = next;
+			}
 			folder = scene.ownImages || folder;
 			if (folder) scene.images = folder;
 			const v = list(s.videos);
 			if (v) scene.videos = v;
 			const h = list(s.highlights);
 			if (h) scene.highlights = h;
+			const pool = poolKey(s);
+			if (pool) scene.pool = pool;
+			if (s.transition?.trim()) scene.transition = s.transition.trim().toLowerCase();
+			const audio = String(s.audio ?? "")
+				.split(",")
+				.map((a) => a.trim())
+				.filter(Boolean);
+			if (audio.length) scene.audio = audio;
 			return scene;
 		});
+	}
+
+	// a step's headline filter (players and tone) as one key; "" is every headline
+	function poolKey(s) {
+		const players = String(s.players ?? "")
+			.split(",")
+			.map((p) => p.trim())
+			.filter(Boolean);
+		const tone = String(s.tone ?? "").trim().toLowerCase();
+		return players.length || tone ? `${players.join(",")}|${tone}` : "";
 	}
 
 	let config = $derived.by(() => {
 		const fallback = WALLS[id] ?? WALLS.intro;
 		return {
-			header: header ?? fallback.header,
+			// the doc sends `header: false` as the text "false"
+			header:
+				header === undefined || header === null || header === ""
+					? fallback.header
+					: header !== false && String(header).trim().toLowerCase() !== "false",
 			highlights: list(highlights) ?? fallback.highlights,
 			videos: list(videos) ?? fallback.videos,
 			scenes: steps.some((s) => s.wall?.trim()) ? scenesFromSteps(steps) : fallback.scenes
@@ -111,22 +211,80 @@
 	// last step there stops the header flashing back in.
 	let stepsEl = $state();
 	let beforeSteps = $state(true);
+	// a step with a transition (wipe, off) starts it as soon as its card comes up from
+	// the bottom of the screen, rather than once it's the step most in view
+	const TRANSITION_LINE = 0.9;
+	let early = $state(-1);
+	// how fast the reader is scrolling, in screens a second (smoothed)
+	let scrollSpeed = 0;
+	let lastScroll = { y: 0, t: 0 };
 	function measure() {
+		const now = performance.now();
+		const moved = Math.abs(scrollY - lastScroll.y) / innerHeight;
+		const secs = (now - lastScroll.t) / 1000;
+		if (secs > 0 && secs < 0.5) scrollSpeed = 0.6 * scrollSpeed + 0.4 * (moved / secs);
+		else scrollSpeed = 0;
+		lastScroll = { y: scrollY, t: now };
 		if (stepsEl) beforeSteps = stepsEl.getBoundingClientRect().top > window.innerHeight * 0.5;
+		let e = -1;
+		stepsEl?.querySelectorAll(".step").forEach((el, i) => {
+			if (!config.scenes[i]?.transition) return;
+			const top = (el.querySelector(".card") ?? el).getBoundingClientRect().top;
+			if (top < window.innerHeight * TRANSITION_LINE) e = i;
+		});
+		early = e;
 	}
 	onMount(measure);
 	let shownIndex = $state(undefined);
 	$effect(() => {
 		if (beforeSteps) shownIndex = undefined;
-		else if (stepIndex !== undefined) shownIndex = stepIndex;
+		else if (stepIndex !== undefined || early >= 0) shownIndex = Math.max(stepIndex ?? -1, early);
+	});
+
+	// the title on the wall: each half moves from where it sits on the title page to meet
+	// the other at the top, scaled down, in one line. It stays there (and fades out there)
+	// once the steps start; measured after the page has laid it out for the wall (on
+	// phones its words go onto one line first). offsetLeft/Top ignore the transform.
+	let titleOnWall = $derived(id === "intro" && shownIndex !== undefined);
+	let hedLeftEl = $state(),
+		hedRightEl = $state(),
+		viewW = $state(0);
+	let titleMoves = $state({ left: "", right: "" });
+	$effect(() => {
+		viewW; // again when the window changes size
+		if (!titleOnWall || !hedLeftEl || !hedRightEl) {
+			titleMoves = { left: "", right: "" };
+			return;
+		}
+		const L = hedLeftEl,
+			R = hedRightEl;
+		// a frame later, once the page has laid the words out for the wall
+		const frame = requestAnimationFrame(() => {
+			const W = L.offsetParent.clientWidth;
+			const phone = W <= 600;
+			const both = L.offsetWidth + R.offsetWidth;
+			const k = Math.min(TITLE_SCALE, (W - 2 * (phone ? 16 : 160)) / both);
+			const start = (W - both * k) / 2;
+			const top = phone ? TITLE_TOP.phone : TITLE_TOP.desktop;
+			const move = (el, x) =>
+				`translate(${x - el.offsetLeft}px, ${top - el.offsetTop}px) scale(${k})`;
+			titleMoves = { left: move(L, start), right: move(R, start + L.offsetWidth * k) };
+		});
+		return () => cancelAnimationFrame(frame);
 	});
 
 	// the scene for the step in view
 	let sceneIndex = $derived(
 		shownIndex === undefined ? undefined : Math.min(shownIndex, config.scenes.length - 1)
 	);
+	// with no title card (header: false), the wall shows its first look, without the
+	// pull-out, as it scrolls in, so there's no empty screen before the first step
 	let scene = $derived(
-		sceneIndex === undefined ? { wall: "empty" } : config.scenes[sceneIndex] ?? { wall: "empty" }
+		sceneIndex === undefined
+			? !config.header && config.scenes[0]
+				? { wall: config.scenes[0].wall, images: config.scenes[0].images }
+				: { wall: "empty" }
+			: config.scenes[sceneIndex] ?? { wall: "empty" }
 	);
 
 	// every distinct pull-out on this wall: its kind ("clips" or "heads") and what it
@@ -145,20 +303,127 @@
 	});
 	// the group pulled out right now, or -1
 	let activeGroup = $derived(sceneIndex === undefined ? -1 : pulls.sceneGroup[sceneIndex] ?? -1);
+	// the closing step (wall: cleared): the whole wall fades out together, and whatever
+	// the step before pulled out stays where it is and fades with it
+	let closing = $derived(sceneIndex !== undefined && scene.wall === "cleared");
+	let heldGroup = $derived(closing ? pulls.sceneGroup[sceneIndex - 1] ?? -1 : -1);
+	// the clips the next step pulls out are already lit and playing in their places on
+	// the wall, so that step only has to lift them out. -1 when there are none: the next
+	// step doesn't pull clips, or this one shows no screenshots or pulls out its own.
+	// (i = -1 is before the first step: a wall with no title card already shows then)
+	const readyAt = (i) => {
+		if (CLIPS_EARLY === "off") return -1;
+		const first = config.scenes[0];
+		const now = i < 0 ? !config.header && first && { wall: first.wall } : config.scenes[i],
+			next = config.scenes[i + 1];
+		if (!now || now.pull || now.wall !== "images" || next?.pull !== "clips") return -1;
+		return pulls.sceneGroup[i + 1];
+	};
+	// (only while this wall is on screen, so clips don't play, or talk, from further up
+	// or down the page; the clips below check it too)
+	let wallInView = $state(false);
+	// and whether it's filling the screen (crossing its middle): the section menu on the
+	// right steps aside then, so it doesn't sit over the pulled-out clips
+	let wallFilling = $state(false);
+	function watchView(node) {
+		const io = new IntersectionObserver(([e]) => (wallInView = e.isIntersecting));
+		const middle = new IntersectionObserver(([e]) => (wallFilling = e.isIntersecting), {
+			rootMargin: "-45% 0px -45% 0px"
+		});
+		io.observe(node);
+		middle.observe(node);
+		return {
+			destroy: () => {
+				io.disconnect();
+				middle.disconnect();
+			}
+		};
+	}
+	let readyGroup = $derived(wallInView ? readyAt(sceneIndex ?? -1) : -1);
+	// the pulled-out clips were lit on the step before, so they lift out straight away
+	let liftNow = $derived(
+		CLIPS_EARLY === "lit" && activeGroup >= 0 && readyAt(sceneIndex - 1) === activeGroup
+	);
 	// what the background wall shows, and which tiles (if any) are pulled out
 	let wall = $derived(scene.wall);
 	let pull = $derived(scene.pull);
 	let imageSet = $derived(scene.images ?? DEFAULT_IMAGES);
+	// a wipe runs when the screenshots change on the way into or out of a step that asks
+	// for one; each run gets a new key so the band starts over
+	let wipeKey = $state(0);
+	let wiping = $state(false);
+	// the switch-off: the old screenshots stay up until the screen has gone dark
+	let powerKey = $state(0);
+	let powering = $state(false);
+	let powerTime = $state(0); // this switch-off's length, set as it starts: POWER, or POWER_FAST
+	let poweringNow = false; // (the same as powering, without the effect below watching it)
+	let heldSet = $state(undefined);
+	let shownSet = $derived(heldSet ?? imageSet);
+	let lastSet;
+	let lastIndex;
+	let wipeTimer;
+	let powerTimers = [];
+	$effect(() => {
+		const set = imageSet;
+		const idx = sceneIndex;
+		const kind = [idx, lastIndex].map((i) => config.scenes[i]?.transition).find(Boolean);
+		if (lastSet && set !== lastSet && kind === "wipe") {
+			wiping = true;
+			wipeKey += 1;
+			clearTimeout(wipeTimer);
+			wipeTimer = setTimeout(() => (wiping = false), (WIPE + 0.4) * 1000);
+		}
+		const endPower = () => {
+			powerTimers.forEach(clearTimeout);
+			heldSet = undefined;
+			powering = poweringNow = false;
+		};
+		if (lastSet && set !== lastSet && kind === "off") {
+			powerTimers.forEach(clearTimeout);
+			powerTime = scrollSpeed > FAST_SCROLL ? POWER_FAST : POWER;
+			heldSet = lastSet;
+			powering = poweringNow = true;
+			powerKey += 1;
+			powerTimers = [
+				setTimeout(() => (heldSet = undefined), powerTime * 0.45 * 1000),
+				setTimeout(endPower, (powerTime + 0.1) * 1000)
+			];
+		} else if (poweringNow && idx !== lastIndex) {
+			// scrolled on to another step mid-switch: finish it now
+			endPower();
+		}
+		lastSet = set;
+		lastIndex = idx;
+	});
 	// kicker in the top-left corner: whose coverage the wall is showing. A screenshot wall
 	// follows its folder (carried over or not); a headline wall is Fox unless the step
 	// itself names a folder.
 	const KICKERS = { gridFox: "Fox News", gridOther: "Other outlets" };
 	let kickerSet = $derived(
 		wall === "images"
-			? imageSet
+			? shownSet
 			: ("ownImages" in scene ? scene.ownImages : scene.images) || DEFAULT_IMAGES
 	);
-	let kicker = $derived(KICKERS[kickerSet] ?? KICKERS[DEFAULT_IMAGES]);
+	let kickerNow = $derived(KICKERS[kickerSet] ?? KICKERS[DEFAULT_IMAGES]);
+	// the label waits a moment for the change to settle: on a switch-off the old
+	// screenshots are held only after the step changes, and the label shouldn't flicker
+	let kicker = $state(KICKERS.gridFox);
+	$effect(() => {
+		const next = kickerNow;
+		const wait = setTimeout(() => (kicker = next), 60);
+		return () => clearTimeout(wait);
+	});
+	// when the coverage changes, the old label wipes away into its left edge and the new
+	// one wipes back out of it, like a picture switching off and on (seconds)
+	const KICKER_OUT = 0.25;
+	const KICKER_IN = 0.4;
+	function wipeLabel(node, { delay = 0, duration }) {
+		return {
+			delay: delay * 1000,
+			duration: duration * 1000,
+			css: (t) => `clip-path: inset(0 ${(1 - cubicOut(t)) * 100}% 0 0)`
+		};
+	}
 	// every image folder this wall uses; each tile stacks one screenshot per folder
 	let imageSets = $derived([
 		...new Set([DEFAULT_IMAGES, ...config.scenes.map((s) => s.images).filter(Boolean)])
@@ -181,6 +446,11 @@
 	// headlines for the text tiles, from the same file the swarm uses.
 	// the highlight headlines are taken out of the pool and given to the pull-out tiles instead.
 	let headlines = $state([]);
+	// the pools for steps that filter their headlines, by poolKey()
+	let filteredHeadlines = $state({});
+	// every pool a text wall uses ("" is the full set), and the one showing now
+	let poolKeys = $derived(["", ...new Set(config.scenes.map((s) => s.pool).filter(Boolean))]);
+	let activePool = $derived(scene.pool ?? "");
 	// highlight headlines from every step, keyed by norm(): { text, styled, date }
 	let featuredHeadlines = $state(new Map());
 	onMount(() => {
@@ -189,7 +459,12 @@
 			.then((r) => r.json())
 			.then((D) => {
 				if (!alive) return;
-				const all = D.headlines.map((r) => r[1]);
+				// each tile: the headline in Title Case, with the people it names marked,
+				// and its month for the line above it
+				const tile = (r) => {
+					const text = titleCase(r[1]);
+					return { text, html: markNames(text, r[3].map((n) => D.names[n])), date: shortDate(r[0]) };
+				};
 				const highlights = pulls.groups.filter((g) => g.type === "heads").flatMap((g) => g.items);
 				// the wall tile shows the plain text from the data; the pull-out card shows
 				// the styled version typed in the doc. No date if it isn't found in the data.
@@ -200,16 +475,36 @@
 					found.set(
 						key,
 						row
-							? { text: row[1], styled: h, date: formatDate(row[0]) }
-							: { text: plain(h), styled: h, date: "" }
+							? { tile: tile(row), styled: h, date: formatDate(row[0]) }
+							: { tile: { text: plain(h), html: escape(plain(h)), date: "" }, styled: h, date: "" }
 					);
 				}
 				featuredHeadlines = found;
 				const picked = new Set(found.keys());
-				headlines = shuffle(
-					all.filter((t) => !picked.has(norm(t))),
-					7
-				);
+				const fits = (r) => r[1].length <= HEADLINE_MAX && !picked.has(norm(r[1]));
+				headlines = shuffle(D.headlines.filter(fits).map(tile), 7);
+				// a step that filters its headlines (players: …, tone: …) gets its own pool.
+				// Each row is [date, headline, url, [name index], [topic index], score, tone]
+				const pools = {};
+				for (const key of poolKeys.filter(Boolean)) {
+					const [players, tone] = key.split("|");
+					const want = players
+						.split(",")
+						.filter(Boolean)
+						.map((p) => D.names.indexOf(p));
+					pools[key] = shuffle(
+						D.headlines
+							.filter(
+								(r) =>
+									want.every((n) => r[3].includes(n)) &&
+									(!tone || r[6] === tone) &&
+									fits(r)
+							)
+							.map(tile),
+						11
+					);
+				}
+				filteredHeadlines = pools;
 			});
 		return () => (alive = false);
 	});
@@ -221,6 +516,27 @@
 			year: "numeric",
 			timeZone: "UTC"
 		});
+	}
+
+	// "2025-05-20" -> "May 2025" for the tiles' small date line
+	function shortDate(iso) {
+		return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
+			month: "short",
+			year: "numeric",
+			timeZone: "UTC"
+		});
+	}
+
+	const escape = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	// the people a headline names, in <b>: their full name, or their surname alone
+	function markNames(text, names) {
+		const html = escape(text);
+		if (!names.length) return html;
+		const forms = [...new Set(names.flatMap((n) => [n, n.split(" ").slice(1).join(" ")]))]
+			.filter((f) => f.length > 2)
+			.sort((a, b) => b.length - a.length)
+			.map((f) => escape(f).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+		return html.replace(new RegExp(`\\b(${forms.join("|")})\\b`, "g"), '<b class="name">$1</b>');
 	}
 
 	// seeded shuffle so the wall looks random but stays the same on every visit
@@ -237,12 +553,24 @@
 
 	// how long the whole wall takes to fill in, in seconds
 	const STAGGER = 1.2;
+	// how long a wipe (transition: wipe) takes to cross the wall, in seconds
+	const WIPE = 1.3;
+	// how long the TV switch-off and back on (transition: off) takes, in seconds; the
+	// screenshots change halfway, in the dark
+	const POWER = 1.6;
+	// ...and when the reader is scrolling fast (more than FAST_SCROLL screens a second),
+	// a quicker one, so the wall isn't still switching when they've moved on
+	const POWER_FAST = 0.6;
+	const FAST_SCROLL = 1.2;
+	// a wall without a title card (header: false) ends quickly, so the text after it
+	// comes up soon: how tall its closing blank step is, as a share of the screen
+	const END_SPACE = 0.25;
 
 	// background wall: tiles share the screenshot's shape so they sit edge to edge.
 	// tiles are at most 100px wide, and at least 16 fit across on narrow screens.
 	const TILE_RATIO = 1164 / 2076; // height / width of everything's-racist-fox.png
-	const MAX_TILE_W = 100;
-	const MIN_COLS = 16;
+	const MAX_TILE_W = 180;
+	const MIN_COLS = 6;
 	// screenshots in static/images/<folder>/grid-N.png (how many each folder has),
 	// repeated in order to fill the wall
 	const IMAGE_COUNTS = { gridFox: 41, gridOther: 40 };
@@ -270,20 +598,32 @@
 				t?.type === "heads"
 					? featuredHeadlines.get(norm(pulls.groups[t.g].items[t.k]))
 					: undefined;
+			const headline = pinned
+				? pinned.tile
+				: headlines.length
+					? headlines[i % headlines.length]
+					: null;
 			return {
 				delay: (order / Math.max(1, cols * rows)) * STAGGER,
-				headline: pinned
-					? pinned.text
-					: headlines.length
-						? headlines[i % headlines.length]
-						: "",
+				// how far across the wall the tile sits, for the wipe
+				across: cols > 1 ? (i % cols) / (cols - 1) : 0,
+				headline,
+				// one headline per pool; the wall shows the current step's
+				texts: Object.fromEntries(
+					poolKeys.map((k) => {
+						const pool = k ? filteredHeadlines[k] ?? [] : null;
+						// a tile that lifts out a headline shows that one in every pool
+						if (pinned || !pool) return [k, headline];
+						return [k, pool.length ? pool[i % pool.length] : null];
+					})
+				),
 				styled: pinned?.styled ?? "",
 				date: pinned?.date ?? ""
 			};
 		})
 	);
 
-	// pull-outs: up to three tiles lift out of the wall and grow, one per video or
+	// pull-outs: up to three tiles (five on a step that lists more) lift out of the wall and grow, one per video or
 	// highlight in the step's list. Each step's group gets its own tiles and the next
 	// layout in the list below, so the pull-outs land somewhere new on every step.
 	// Cards are centered and at most 460px wide, so on wide screens they go in the side
@@ -305,18 +645,26 @@
 		[[0.5, "top"], [0.27, "bottom2"], [0.73, "bottom"]],
 		[[0.5, "top"], [0.73, "bottom2"], [0.27, "bottom"]]
 	];
+	// a step with four or five pull-outs: three on one side, two on the other. Narrow
+	// screens have no room for more than three readable cards, so they show the first three
+	const WIDE_LAYOUTS_FIVE = [
+		[["L", 0.2], ["R", 0.33], ["L", 0.5], ["R", 0.67], ["L", 0.8]],
+		[["R", 0.2], ["L", 0.33], ["R", 0.5], ["L", 0.67], ["R", 0.8]]
+	];
 	// tile index -> { g: group, type, k: place in its list, dx, dy, scale }
 	let tiles = $derived.by(() => {
 		const map = new Map();
 		if (!cols || !rows) return map;
 		const gutter = gridW / 2 - CARD_HALF;
 		const wide = gutter >= 160;
-		let w, layouts;
+		let w, layouts, layoutsFive;
 		if (wide) {
 			w = Math.min(320, gutter - 2 * PAD, (gridH * 0.4) / TILE_RATIO);
 			const xL = gutter / 2;
 			const xR = gridW - xL;
-			layouts = WIDE_LAYOUTS.map((l) => l.map(([side, y]) => [side === "L" ? xL : xR, gridH * y]));
+			const place = (l) => l.map(([side, y]) => [side === "L" ? xL : xR, gridH * y]);
+			layouts = WIDE_LAYOUTS.map(place);
+			layoutsFive = WIDE_LAYOUTS_FIVE.map(place);
 		} else {
 			w = Math.min(gridW * 0.44, (gridH * 0.2) / TILE_RATIO);
 			const h = w * TILE_RATIO;
@@ -326,7 +674,8 @@
 				bottom: gridH - PAD - h / 2,
 				bottom2: gridH - PAD - h / 2 - h * 0.35
 			};
-			layouts = NARROW_LAYOUTS.map((l) => l.map(([x, y]) => [gridW * x, Y[y]]));
+			const place = (l) => l.map(([x, y]) => [gridW * x, Y[y]]);
+			layouts = NARROW_LAYOUTS.map(place);
 		}
 		// the grid is centered, so its overflow is split evenly on each side
 		const x0 = (gridW - cols * tileW) / 2;
@@ -335,7 +684,9 @@
 		// one tile per video / highlight headline; a single one takes the middle spot
 		const spotsFor = (list, n) => (n === 1 ? [list[1]] : list.slice(0, n));
 		pulls.groups.forEach((group, g) => {
-			spotsFor(layouts[g % layouts.length], group.items.length).forEach(([tx, ty], k) => {
+			const many = group.items.length > 3 && wide;
+			const spots = many ? layoutsFive[g % layoutsFive.length] : layouts[g % layouts.length];
+			spotsFor(spots, Math.min(group.items.length, spots.length)).forEach(([tx, ty], k) => {
 				// take the tile nearest the spot so it only has a short way to travel,
 				// skipping tiles another group already uses
 				let col = Math.min(cols - 1, Math.max(0, Math.floor((tx - x0) / tileW)));
@@ -355,6 +706,61 @@
 	const videoSrc = (t) => `${base}/video/${videoName(t)}.mp4`;
 	const posterSrc = (t) => `${base}/video/${videoName(t)}.jpg`;
 	const FEATURE_STAGGER = 0.15; // seconds between each pull-out
+	// a clip tile first lights up and starts playing where it sits in the wall, then
+	// lifts out: how long it plays in place, and how long the lift takes (seconds)
+	const CLIP_LIGHT_UP = 0.8;
+	const CLIP_LIFT = 1.1;
+	// on the step before a step that pulls clips (when it shows screenshots), those clips:
+	//   "off"     wait as stills
+	//   "playing" already play in their places, as faint as the rest of the wall
+	//   "lit"     already lit, outlined and playing, so their own step only lifts them out
+	const CLIPS_EARLY = "playing";
+	// pulled-out clips and headlines get an outline: red for Fox News (clips are told
+	// apart by file name; the headlines are all Fox), black for the rest
+	const FOX_CLIPS = /^(fox|watters)-/;
+	const OUTLINE = { fox: "var(--wnba-red)", other: "#000" };
+	const OUTLINE_W = 3; // px, at the clip's pulled-out size
+	// the screenshots in the wall: in colour or gray, and how faintly they show
+	const WALL_COLOR = true;
+	const WALL_OPACITY = 0.15;
+	// the headline tiles: longest headline used (so few get cut off), and whether the
+	// people named in them stand out in bold (Doc: wallNames: true | false)
+	const HEADLINE_MAX = 95; // characters
+	const WALL_NAMES = String(copy.meta?.wallNames ?? "true").trim().toLowerCase() !== "false";
+	const outlineOf = (t) => (FOX_CLIPS.test(videoName(t)) ? OUTLINE.fox : OUTLINE.other);
+
+	// a clip has its sound only while it's pulled out on a step that names it (audio: …),
+	// it's that clip's turn, and the reader has turned sound on; it starts again from the
+	// top when it does. When it loops back round, its turn is over (done).
+	let turn = $state(0);
+	$effect(() => {
+		// each step, and each time sound comes on, starts with the first clip named
+		sceneIndex;
+		sound.on;
+		turn = 0;
+	});
+	let speaking = $derived(scene.audio ? scene.audio[turn % scene.audio.length] : null);
+	// tell the corner sound switch whether this wall can play sound right now
+	$effect(() => {
+		sound.playable[id] = wallInView && !closing && activeGroup >= 0 && !!scene.audio;
+		return () => delete sound.playable[id];
+	});
+	function audible(node, opts) {
+		let { on, done } = opts;
+		let last = 0;
+		const watch = () => {
+			if (on && node.currentTime + 0.3 < last) done();
+			last = node.currentTime;
+		};
+		node.addEventListener("timeupdate", watch);
+		const set = (next) => {
+			if (next.on && node.muted) node.currentTime = last = 0;
+			node.muted = !next.on;
+			({ on, done } = next);
+		};
+		set(opts);
+		return { update: set, destroy: () => node.removeEventListener("timeupdate", watch) };
+	}
 
 	// only play while pulled out, so the hidden clips don't run in the background
 	function playWhen(node, on) {
@@ -383,14 +789,45 @@
 	}));
 </script>
 
-<svelte:window onscroll={measure} onresize={measure} />
+<svelte:window onscroll={measure} onresize={measure} bind:innerWidth={viewW} />
 
-<div class="grid-wall grid-wall-{id}">
+<!-- the sound switch: under the byline, and in the card of any step with audio -->
+{#snippet soundSwitch(playCall)}
+    <span class="sound-line" class:ready={soundReady}>
+        {@html sound.on ? SOUND_ON_NOTE : soundNote}
+        <button
+            class="sound-button"
+            class:on={sound.on}
+            aria-pressed={sound.on}
+            aria-label={sound.on ? "Turn sound off" : "Turn sound on"}
+            onclick={() => toggleSound(playCall)}
+        >
+            {#if sound.on}
+                <Volume2 size={12} strokeWidth={2.25} aria-hidden="true" />
+            {:else}
+                <VolumeX size={12} strokeWidth={2.25} aria-hidden="true" />
+            {/if}
+        </button>
+    </span>
+{/snippet}
+
+<div
+	class="grid-wall grid-wall-{id}"
+	class:no-title={!config.header}
+	class:filling={wallFilling}
+	style="--end-space: {END_SPACE * 100}svh"
+	use:watchView
+>
 	<div class="sticky">
         {#if config.header && id == "intro"}
-        <header class="intro-wall-header" class:off={shownIndex !== undefined}>
+        <header
+            class="intro-wall-header"
+            class:off={shownIndex !== undefined && shownIndex >= TITLE_STEPS}
+            class:title-down={titleOnWall}
+            class:call-in-byline={callStyle === "byline"}
+        >
             <h1>
-                <span class="hedLeft">{copy.meta.hedLeft}</span>
+                <span class="hedLeft"><span class="hed-words" bind:this={hedLeftEl} style:transform={titleMoves.left}>{copy.meta.hedLeft}</span></span>
                 <span class="glitch" style="--src: url({base}/images/cc-combo.png)">
                     <img class="base" src="{base}/images/cc-combo.png" alt="Caitlin Clark shoots over the Fox News logo"/>
                     {#each strips as s}
@@ -403,12 +840,29 @@
                         />
                     {/each}
                     <span class="static" aria-hidden="true"></span>
+                    {#if callStyle === "bubble"}
+                        <span class="call-bubble">
+                            <span class="call-words">{@html callText}</span>
+                            <span class="call-credit">— {@html callCredit}</span>
+                        </span>
+                    {/if}
                 </span>
-                <span class="hedRight">{copy.meta.hedRight}</span>
+                <span class="hedRight"><span class="hed-words" bind:this={hedRightEl} style:transform={titleMoves.right}>{copy.meta.hedRight}</span></span>
             </h1>
+            {#if callStyle === "corner"}
+                <a class="call-corner {callSpot}" href={callLink} target="_blank" rel="noopener">
+                    <MessageCircle strokeWidth={1.25} fill="#fff" aria-hidden="true" />
+                    <span class="call-corner-words">“{@html callShort}”</span>
+                </a>
+            {/if}
             <p class="byline">
+                {#if callStyle === "byline"}
+                    <span class="call-line">“{@html callText}” <span class="call-credit">— {@html callCredit}</span></span>
+                {/if}
                 By {@html copy.meta.byline}, with {@html copy.meta.with}
                 <span class="scroll-hint" aria-hidden="true">{@html arrowSvg}</span>
+                {@render soundSwitch(true)}
+                <audio bind:this={callAudio} src="{base}/audio/logo-call.mp3" preload="none"></audio>
             </p>
         </header>
         {:else if config.header && id == "outro"}
@@ -416,29 +870,68 @@
                 <h2>This coverage matters</h2>
             </div>
         {/if}
-        <p class="kicker" class:off={wall === "empty"} class:other={kicker == "Other outlets"}>{kicker}</p>
+        <div class="kicker-spot" class:off={wall === "empty" || closing}>
+            {#key kicker}
+                <p
+                    class="kicker"
+                    class:other={kicker == "Other outlets"}
+                    in:wipeLabel={{ delay: KICKER_OUT, duration: KICKER_IN }}
+                    out:wipeLabel={{ duration: KICKER_OUT }}
+                >
+                    {kicker}
+                </p>
+            {/key}
+        </div>
+        <!-- the switch-off: a black screen behind the wall, and the bright line and dot -->
+        {#key powerKey}
+            {#if powering}
+                <div class="crt-black" style="--power: {powerTime}s" aria-hidden="true"></div>
+                <div class="crt-line" style="--power: {powerTime}s" aria-hidden="true"></div>
+            {/if}
+        {/key}
+        <!-- the band of static a wipe sends across the wall -->
+        {#key wipeKey}
+            {#if wiping}
+                <div class="wipe-band" style="--wipe: {WIPE}s" aria-hidden="true"></div>
+            {/if}
+        {/key}
         <!-- wall of screenshots / headlines behind the steps -->
         <div
             class="bg-grid"
+            class:wiping
+            class:powering
+            class:closing
+            class:names={WALL_NAMES}
+            class:harsh={activePool.endsWith("|negative")}
             aria-hidden="true"
             bind:clientWidth={gridW}
             bind:clientHeight={gridH}
-            style="--cols: {cols}; --rows: {rows}; --tile-w: {tileW}px; --tile-h: {tileH}px;"
+            style="--cols: {cols}; --rows: {rows}; --tile-w: {tileW}px; --tile-h: {tileH}px; --light-up: {CLIP_LIGHT_UP}s; --lift: {CLIP_LIFT}s; --wipe: {WIPE}s; --power: {powerTime}s; --outline-w: {OUTLINE_W}px; --outline-fox: {OUTLINE.fox}; --wall-filter: {WALL_COLOR ? 'none' : 'grayscale(100%)'}; --wall-opacity: {WALL_OPACITY};"
         >
             {#each gridCells as cell, i (i)}
                 {@const spot = tiles.get(i)}
-                {@const f = spot && spot.g === activeGroup ? spot : undefined}
+                {@const f = spot && (spot.g === activeGroup || spot.g === heldGroup) ? spot : undefined}
+                {@const ready = !!spot && spot.g === readyGroup}
                 <div
                     class="cell {wall}"
                     class:featured={f}
                     class:pull-clips={f?.type === "clips"}
+                    class:ready={ready && CLIPS_EARLY === "lit"}
+                    class:quiet={ready && CLIPS_EARLY === "playing"}
+                    class:lift-now={f?.type === "clips" && liftNow}
                     class:pull-heads={f?.type === "heads"}
                     class:has-clip={!!cell.date}
                     class:quick={featureSeen && !!spot}
-                    style="--d: {cell.delay}s; {spot ? `--s0: ${spot.scale};` : ''} {f ? `--dx: ${f.dx}px; --dy: ${f.dy}px; --s: ${f.scale}; --fd: ${f.k * FEATURE_STAGGER}s;` : ''}"
+                    style="--d: {cell.delay}s; --across: {cell.across}; {spot ? `--s0: ${spot.scale};` : ''} {f ? `--dx: ${f.dx}px; --dy: ${f.dy}px; --s: ${f.scale}; --fd: ${f.k * FEATURE_STAGGER}s;` : ''} {f?.type === 'clips' || ready ? `--outline: ${outlineOf(spot)};` : ''}"
                 >
+                    <!-- a tile that plays a clip shows that clip's own frame in the wall,
+                         so the screenshot comes to life when it lifts out -->
                     {#each imageSets as set (set)}
-                        <img src={imageSrc(set, i)} alt="" class:on={set === imageSet} />
+                        <img
+                            src={spot?.type === "clips" ? posterSrc(spot) : imageSrc(set, i)}
+                            alt=""
+                            class:on={set === shownSet}
+                        />
                     {/each}
                     {#if spot?.type === "clips"}
                         <video
@@ -448,10 +941,33 @@
                             loop
                             playsinline
                             preload="metadata"
-                            use:playWhen={!!f}
+                            use:playWhen={wallInView && ((!!f && !closing) || ready)}
+                            use:audible={{
+                                on: wallInView && !!f && !closing && sound.on && speaking === videoName(spot),
+                                done: () => (turn += 1)
+                            }}
                         ></video>
+                        {#if f && scene.audio?.includes(videoName(spot))}
+                            <!-- which clips have sound, and which one is talking now -->
+                            <span class="clip-sound" class:on={sound.on && speaking === videoName(spot)}>
+                                {#if sound.on && speaking === videoName(spot)}
+                                    <Volume2 strokeWidth={2.25} aria-hidden="true" />
+                                {:else}
+                                    <VolumeX strokeWidth={2.25} aria-hidden="true" />
+                                {/if}
+                            </span>
+                        {/if}
                     {/if}
-                    <p>{cell.headline}</p>
+                    <!-- one headline per pool, stacked; the current step's shows -->
+                    {#each poolKeys as k (k)}
+                        {@const h = cell.texts[k]}
+                        <p class:on={k === activePool}>
+                            {#if h}
+                                <span class="tile-meta">Fox News{#if h.date} · {h.date}{/if}</span>
+                                <span class="tile-head">{@html h.html}</span>
+                            {/if}
+                        </p>
+                    {/each}
                     {#if f?.type === "heads" && cell.date}
                         <!-- mounted on pull-out so the headline's scramble plays as it arrives -->
                         <div
@@ -479,7 +995,10 @@
 			{#each steps as step, i}
 				<div class="step" class:active={stepIndex === i}>
 					{#if step.text?.trim()}
-						<p class="card">{@html clipPops(faces(step.text, base), base)}</p>
+						<p class="card">
+							{@html clipPops(faces(step.text, base), base)}
+							{#if config.scenes[i]?.audio}{@render soundSwitch(false)}{/if}
+						</p>
 					{/if}
 				</div>
 			{/each}
@@ -498,17 +1017,24 @@
         width: 100%;
 		height: 100svh;
 	}
-    /* looks come from the global .kicker in app.css; this only places it */
-    .kicker {
+    /* looks come from the global .kicker in app.css; this only places it. The old and
+       new labels share the spot while one wipes out and the other wipes in */
+    .kicker-spot {
         position: absolute;
         top: 16px;
         left: 16px;
         z-index: 2;
-        margin: 0;
         transition: opacity 300ms ease;
     }
+    .kicker-spot .kicker {
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        white-space: nowrap;
+    }
     /* hidden before the first step, while the header is up */
-    .kicker.off {
+    .kicker-spot.off {
         opacity: 0;
     }
     .kicker.other {
@@ -524,6 +1050,10 @@
         /* center the wall so any clipped overflow is split evenly between edges */
         place-content: center;
         overflow: hidden;
+        transition: opacity 600ms ease;
+    }
+    .bg-grid.closing {
+        opacity: 0;
     }
     /* each tile holds a screenshot and a headline stacked on top of each other;
        the wall state decides which one shows */
@@ -540,6 +1070,14 @@
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
         transition-delay: var(--fd);
     }
+    /* a clip lights up and plays where it sits first (--light-up), then lifts out
+       slowly (--lift) */
+    .cell.featured.pull-clips {
+        transition-duration: var(--lift);
+        transition-delay: calc(var(--fd) + var(--light-up));
+        /* the outline is drawn before the scale-up, so it's thinned to match */
+        box-shadow: 0 0 0 calc(var(--outline-w) / var(--s)) var(--outline);
+    }
     .cell video {
         position: absolute;
         inset: 0;
@@ -551,6 +1089,31 @@
     }
     .cell.pull-clips video {
         opacity: 1;
+        transition: opacity 500ms ease var(--fd);
+    }
+    /* the next step's clips, lit and playing in place, outlined, ahead of their step */
+    .cell.ready {
+        z-index: 1;
+        box-shadow: 0 0 0 var(--outline-w) var(--outline);
+    }
+    .cell.ready video,
+    .cell.images.ready img.on {
+        opacity: 1;
+        filter: none;
+        transition:
+            opacity 500ms ease,
+            filter 500ms ease;
+    }
+    /* playing early but not lit: the clip shows as faintly as the screenshots around it */
+    .cell.quiet video {
+        opacity: var(--wall-opacity);
+        filter: var(--wall-filter);
+    }
+    .cell.images.quiet img.on {
+        opacity: 0;
+    }
+    /* already lit, so they lift out without waiting */
+    .cell.featured.pull-clips.lift-now {
         transition-delay: var(--fd);
     }
     .cell.images.quick img,
@@ -558,13 +1121,17 @@
         transition-delay: 0s;
     }
     /* "heads" pull-out: the pulled-out headline at full strength */
-    .cell.pull-heads p {
+    .cell.pull-heads p.on {
         opacity: 1;
         transition-delay: var(--fd);
     }
+    /* the screenshot comes up to full color in place, as its clip starts */
     .cell.images.pull-clips img.on {
         opacity: 1;
         filter: none;
+        transition:
+            opacity 500ms ease,
+            filter 500ms ease;
         transition-delay: var(--fd);
     }
     /* a pulled-out headline becomes a gallery clipping. It's laid out at its pulled-out
@@ -574,7 +1141,7 @@
         overflow: visible;
         box-shadow: none;
     }
-    .cell.has-clip.pull-heads p {
+    .cell.has-clip.pull-heads p.on {
         opacity: 0;
     }
     .clip-wrap {
@@ -589,6 +1156,9 @@
         flex: 0 0 auto;
         width: calc(100% * var(--s0));
         transform: scale(calc(1 / var(--s0)));
+    }
+    .clip-inner :global(.clip) {
+        border: var(--outline-w) solid var(--outline-fox);
     }
     .cell img,
     .cell p {
@@ -608,34 +1178,189 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        filter: grayscale(100%);
+        filter: var(--wall-filter);
     }
+    /* a headline tile: a small source-and-month line, then the headline, set like a
+       page of clippings with a thin rule above each instead of a box */
     .cell p {
         margin: 0;
-        padding: 0.5em 0.5em;
+        padding: 0.55em 0.7em 0;
         background: var(--wnba-tan-bg);
-        border: 0.5px solid var(--wnba-tan-light);
+        border-top: 1px solid rgba(0, 0, 0, 0.18);
+        font-size: calc(var(--tile-h) / 8.5);
+        overflow: hidden;
+    }
+    .tile-meta {
+        display: block;
+        margin-bottom: 0.35em;
+        font-family: var(--font-sans);
+        font-size: 0.68em;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--wnba-red);
+    }
+    .tile-head {
         font-family: var(--font-serif);
-        font-size: calc(var(--tile-h) / 8);
-        line-height: 1.15;
+        line-height: 1.2;
         display: -webkit-box;
-        -webkit-line-clamp: 4;
-        line-clamp: 4;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
+    .tile-head :global(b.name) {
+        font-weight: inherit;
+    }
+    /* the names version: the people stand out, the rest of the headline sits back */
+    .names .tile-head {
+        color: var(--color-gray-500, #888);
+    }
+    .names .tile-head :global(b.name) {
+        font-weight: 700;
+        color: var(--color-fg);
+    }
+    /* on a step of harsh headlines, the names go red */
+    .names.harsh .tile-head :global(b.name) {
+        color: var(--wnba-red);
+    }
+    /* only the current step's headlines show; when a step filters them (players,
+       tone), each tile swaps over at its own scattered delay */
     .cell.text p {
-        opacity: 0.5;
         transform: none;
         transition-delay: var(--d);
+    }
+    .cell.text p.on {
+        opacity: 0.5;
     }
     /* screenshots sit back faintly. Only the current folder's shows; when the folder
        changes, each tile swaps old for new at its own scattered delay */
     .cell.images img {
         transition-delay: var(--d);
     }
+    /* a wipe: each column swaps as the band of static passes over it, left to right */
+    .bg-grid.wiping .cell.images img {
+        transition-duration: 120ms;
+        transition-delay: calc(var(--across) * var(--wipe));
+    }
+    .wipe-band {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 180px;
+        z-index: 1;
+        pointer-events: none;
+        background:
+            repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.25) 0 1px, transparent 1px 3px),
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+            #bdb6a8;
+        /* soft trailing edge, hard leading edge */
+        mask: linear-gradient(to right, transparent, #000 70%, #000);
+        -webkit-mask: linear-gradient(to right, transparent, #000 70%, #000);
+        box-shadow: 4px 0 0 rgb(255 255 255 / 0.9);
+        animation:
+            wipe-across var(--wipe) linear forwards,
+            wipe-snow 0.12s steps(1) infinite;
+    }
+    @keyframes wipe-across {
+        0% {
+            transform: translateX(-180px);
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateX(calc(100vw + 20px));
+            opacity: 0;
+        }
+    }
+    @keyframes wipe-snow {
+        0% { background-position: 0 0, 0 0, 0 0; }
+        33% { background-position: 0 1px, -40px 30px, 0 0; }
+        66% { background-position: 0 2px, 50px -20px, 0 0; }
+    }
+    /* the switch-off (transition: off): the wall squeezes to a line, the line to a dot,
+       a beat of black, then the same in reverse with the new screenshots */
+    .bg-grid.powering {
+        animation: crt-wall var(--power) ease-in-out forwards;
+    }
+    .bg-grid.powering .cell.images img {
+        transition: none;
+    }
+    /* the next step's clips wait until the wall is back on */
+    .bg-grid.powering .cell.featured,
+    .bg-grid.powering .cell.pull-clips video,
+    .bg-grid.powering .cell.images.pull-clips img.on {
+        transition-delay: calc(var(--power) * 0.9 + var(--fd));
+    }
+    @keyframes crt-wall {
+        0% { transform: scale(1, 1); opacity: 1; filter: brightness(1); }
+        22% { transform: scale(1, 0.004); opacity: 1; filter: brightness(3); }
+        23% { opacity: 0; }
+        70% { transform: scale(1, 0.004); opacity: 0; }
+        71% { opacity: 1; filter: brightness(3); }
+        100% { transform: scale(1, 1); opacity: 1; filter: brightness(1); }
+    }
+    .crt-black {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        background: #0b0b0b;
+        pointer-events: none;
+        animation: crt-black var(--power) ease-in-out forwards;
+    }
+    @keyframes crt-black {
+        0% { opacity: 0; }
+        12% { opacity: 1; }
+        82% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+    .crt-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 3px;
+        margin-top: -1.5px;
+        z-index: 1;
+        background: #fff;
+        border-radius: 3px;
+        box-shadow:
+            0 0 8px 2px rgb(255 255 255 / 0.9),
+            0 0 24px 6px rgb(190 220 255 / 0.6);
+        pointer-events: none;
+        opacity: 0;
+        animation: crt-line var(--power) ease-in-out forwards;
+    }
+    @keyframes crt-line {
+        0%, 20% { opacity: 0; transform: scaleX(1); }
+        22% { opacity: 1; transform: scaleX(1); }
+        34% { opacity: 1; transform: scaleX(0.004); }
+        42% { opacity: 0; transform: scaleX(0.004); }
+        56% { opacity: 0; transform: scaleX(0.004); }
+        60% { opacity: 1; transform: scaleX(0.004); }
+        70% { opacity: 1; transform: scaleX(1); }
+        73%, 100% { opacity: 0; transform: scaleX(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .bg-grid.powering,
+        .crt-black,
+        .crt-line {
+            animation: none;
+        }
+        .crt-line {
+            display: none;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .wipe-band {
+            display: none;
+        }
+    }
     .cell.images img.on {
-        opacity: 0.15;
+        opacity: var(--wall-opacity);
         transform: none;
     }
     /* step 2: headlines leave in the same scattered order they arrived */
@@ -720,6 +1445,268 @@
         position: relative;
         display: block;
     }
+    /* the announcer's call as a speech bubble, popping in beside the image; its tail
+       points off the right edge, toward the broadcast booth, not at Clark */
+    .call-bubble {
+        position: absolute;
+        top: 6%;
+        left: 58%;
+        z-index: 2;
+        width: max-content;
+        max-width: 15em;
+        padding: 0.55em 0.8em 0.5em;
+        background: #fff;
+        border: 2px solid #000;
+        border-radius: 1.2em;
+        font-family: var(--font-sans);
+        font-size: 1.05rem;
+        font-style: normal;
+        line-height: 1.2;
+        text-align: left;
+        animation: bubble-pop 450ms cubic-bezier(0.2, 1.4, 0.4, 1) 0.9s both;
+    }
+    .call-bubble::after {
+        content: "";
+        position: absolute;
+        right: -14px;
+        bottom: 10px;
+        width: 18px;
+        height: 14px;
+        background: #fff;
+        border: 2px solid #000;
+        border-left: none;
+        border-bottom: none;
+        transform: skewY(-35deg);
+    }
+    .call-words {
+        display: block;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.01em;
+    }
+    .call-bubble .call-credit {
+        display: block;
+        margin-top: 0.3em;
+        font-size: 0.7em;
+        color: var(--color-gray-700, #555);
+    }
+    @keyframes bubble-pop {
+        from {
+            opacity: 0;
+            transform: scale(0.6) rotate(-4deg);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) rotate(-2deg);
+        }
+    }
+    /* the call over the byline takes a line's room: the image gives it up */
+    .call-in-byline h1 {
+        --img-h: 68svh;
+    }
+    /* the call as an epigraph over the byline */
+    .call-line {
+        display: block;
+        margin-bottom: 0.6em;
+        font-family: var(--font-serif);
+        font-style: italic;
+        font-size: 1.1rem;
+    }
+    .call-line .call-credit {
+        font-style: normal;
+        font-family: var(--font-sans);
+        font-size: 0.8em;
+        color: var(--color-gray-700, #555);
+    }
+    /* the short call in a speech bubble in the top-right corner, linking to the clip;
+       its tail points down and left, toward the title */
+    .call-corner {
+        position: absolute;
+        top: 0.75rem;
+        right: 1rem;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+        width: 6.5rem;
+        height: 6.5rem;
+        color: #000;
+        text-decoration: none;
+        animation: bubble-pop 450ms cubic-bezier(0.2, 1.4, 0.4, 1) 0.9s both;
+    }
+    .call-corner :global(svg) {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+    /* the icon's tail is at its lower left: flipped so it points out of the page */
+    /* to the right of the byline, a little above it */
+    .call-corner.lower {
+        top: auto;
+        right: auto;
+        left: 74%;
+        bottom: 9svh;
+    }
+    .call-corner.lower :global(svg) {
+        transform: scaleX(-1);
+    }
+    .call-corner.upper :global(svg) {
+        transform: scale(-1, -1);
+    }
+    /* the line keeps its thin weight however big the bubble is drawn */
+    .call-corner :global(svg path) {
+        vector-effect: non-scaling-stroke;
+    }
+    .call-corner-words {
+        position: relative;
+        max-width: 5.6em;
+        font-family: var(--font-display);
+        font-size: 1.15rem;
+        font-style: italic;
+        font-weight: 400;
+        line-height: 1.05;
+        text-align: center;
+    }
+    .call-corner:hover .call-corner-words {
+        text-decoration: underline;
+    }
+    /* the title dropped down onto the wall: the rest of the title page fades, and the
+       words (moved by titleMoves) turn red on a strip of the page colour. When the steps
+       move on, the whole header fades, the title with it, where it is. */
+    .hed-words {
+        display: inline-block;
+        padding: 0 0.15em;
+        transform-origin: 0 0;
+        transition:
+            transform 700ms cubic-bezier(0.2, 0.9, 0.3, 1),
+            color 500ms ease,
+            background-color 500ms ease;
+    }
+    .title-down .hed-words {
+        color: var(--wnba-red);
+        background-color: var(--wnba-tan-bg);
+    }
+    .intro-wall-header .glitch,
+    .intro-wall-header .byline,
+    .intro-wall-header .call-corner {
+        transition: opacity 300ms ease, filter 300ms ease;
+    }
+    .title-down .glitch,
+    .title-down .byline {
+        opacity: 0;
+        pointer-events: none;
+    }
+    /* (the bubble's pop-in holds its opacity, so it fades with a filter) */
+    .title-down .call-corner {
+        filter: opacity(0);
+        pointer-events: none;
+    }
+    /* phones: the words go onto one line for the wall, so they fade in there rather than
+       slide over from their stacked spot on the title page */
+    @media (max-width: 600px) {
+        .title-down .hed-words {
+            white-space: nowrap;
+            transition: none;
+            animation: title-in 500ms ease 150ms both;
+        }
+    }
+    @keyframes title-in {
+        from {
+            opacity: 0;
+        }
+    }
+    @media (max-width: 600px) {
+        .call-corner {
+            width: 5.5rem;
+            height: 5.5rem;
+        }
+        /* the title fills the lower right on phones, so the bubble always sits up top,
+           its tail pointing up and out */
+        .call-corner.lower {
+            top: 0.75rem;
+            right: 1rem;
+            bottom: auto;
+            left: auto;
+        }
+        .call-corner.lower :global(svg) {
+            transform: scale(-1, -1);
+        }
+        .call-corner-words {
+            font-size: 0.95rem;
+        }
+    }
+    /* a small round sound button after a short note, under the byline */
+    .sound-line {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5em;
+        margin-top: 0.6em;
+        font-size: 0.85rem;
+        color: var(--color-gray-700, #555);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+    }
+    .sound-line.ready {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .sound-button {
+        display: grid;
+        place-items: center;
+        width: 1.6rem;
+        height: 1.6rem;
+        padding: 0;
+        border: 1.5px solid var(--color-fg);
+        border-radius: 50%;
+        background: transparent;
+        color: var(--color-fg);
+        cursor: pointer;
+    }
+    /* in a step's card: under the text, to the left */
+    .card .sound-line {
+        justify-content: flex-start;
+        margin-top: 0.8em;
+    }
+    /* the speaker on the clip that has the sound; drawn at tile size, so it's shrunk by
+       the pull-out's scale to come out the same size on every clip */
+    .clip-sound {
+        position: absolute;
+        right: calc(6px / var(--s, 1));
+        top: calc(6px / var(--s, 1));
+        display: grid;
+        place-items: center;
+        width: calc(22px / var(--s, 1));
+        height: calc(22px / var(--s, 1));
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+    }
+    .clip-sound :global(svg) {
+        width: 62%;
+        height: 62%;
+    }
+    .sound-button.on {
+        background: var(--color-fg);
+        color: var(--wnba-tan-bg, #fff);
+    }
+    /* phones: the bubble keeps inside the image's right edge, a little smaller */
+    @media (max-width: 600px) {
+        .call-bubble {
+            left: auto;
+            right: -4px;
+            top: 1%;
+            max-width: 9.5em;
+            font-size: 0.8rem;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .call-bubble,
+        .call-corner {
+            animation: none;
+        }
+    }
     .strip,
     .static {
         position: absolute;
@@ -783,6 +1770,10 @@
 		margin-top: 0;
 		z-index: 1;
 	}
+	/* no title card to scroll past: the first step comes up over the wall sooner */
+	.no-title .steps {
+		margin-top: -60svh;
+	}
 	.step {
 		min-height: 90svh;
 		display: flex;
@@ -793,15 +1784,20 @@
         opacity: 0;
         pointer-events: none;
     }
+    /* no title card: the closing blank step is short, so the wall clears and lets go
+       of the screen soon after the last card */
+    .no-title .step:last-of-type {
+        min-height: var(--end-space);
+    }
 	.card {
         font-size: 17px;
         line-height: 1.5;
 		max-width: 460px;
 		padding: 14px 18px;
 		background: var(--wnba-tan-bg);
-		border: 1px solid var(--color-rule);
+		/* a black outline, so the card stands clear of the wall */
+		border: 2px solid #000;
         border-radius: 4px;
-		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 		opacity: 0.4;
 		transition: opacity 300ms ease;
 	}

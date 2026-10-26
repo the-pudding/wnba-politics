@@ -75,14 +75,17 @@
 		right: 18px;
 		top: 50%;
 		transform: translateY(-50%);
-		z-index: 1000;
+		/* above the sections' sticky headings (1000), whose background runs the
+		   full width of the screen */
+		z-index: 1002;
 		transition: opacity 250ms ease;
 	}
-	/* out of the way while the Storm TV is in the margin
-	:global(body.tv-beside-on) .scroll-toc {
+	/* out of the way while a TV or headline wall fills the screen (GridWall marks
+	   itself "filling"), so it never sits over the clips that lift out of it */
+	:global(body:has(.grid-wall.filling)) .scroll-toc {
 		opacity: 0;
 		pointer-events: none;
-	} */
+	}
 	/* only where there is room beside the text column */
 	@media (max-width: 1180px) {
 		.scroll-toc {
