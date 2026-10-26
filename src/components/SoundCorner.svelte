@@ -1,13 +1,16 @@
 <script>
-	// A sound switch in the top-right corner, shown only while a clip with sound is on
-	// screen (a step with an `audio:` line, its clips pulled out). It's the same switch
-	// as the ones on the title page and in the step cards.
+	// The page's sound switch, always in the top-right corner. From the title page it
+	// plays the announcer's call (sound.call); on a step with clips that have sound, it
+	// joins the clip that's talking.
+	import { onMount } from "svelte";
 	import { sound, clipSound, toggleSound } from "$utils/sound.svelte.js";
 	import { checks } from "$utils/checks.svelte.js";
 	import Volume2 from "@lucide/svelte/icons/volume-2";
 	import VolumeOff from "@lucide/svelte/icons/volume-off";
 
-	let shown = $derived(Object.values(sound.playable).some(Boolean));
+	// fades in once the page's code is running: drawn before then, a click would do nothing
+	let shown = $state(false);
+	onMount(() => (shown = true));
 	// sound on, and the phone playing it (not waiting for a tap: sound.blocked)
 	let heard = $derived(sound.on && !sound.blocked);
 
@@ -40,7 +43,7 @@
 			: "Turn sound on"}
 	title={sound.blocked ? "Tap for sound" : heard ? "Sound on" : "Sound off"}
 	tabindex={shown ? 0 : -1}
-	onclick={() => toggleSound()}
+	onclick={() => toggleSound(sound.call)}
 >
 	{#if heard}
 		<Volume2 size={19} strokeWidth={1.75} aria-hidden="true" />
@@ -52,27 +55,28 @@
 <style>
 	.sound-corner {
 		position: fixed;
-		top: 14px;
-		right: 14px;
+		top: 0.5rem;
+		right: 0.5rem;
 		/* above the sections' sticky headings (1000) */
 		z-index: 1001;
 		display: grid;
 		place-items: center;
-		width: 2.4rem;
-		height: 2.4rem;
-		padding: 0;
+		width: 2.5rem;
+		height: 2.5rem;
+		padding: 0.5rem;
 		border: 0;
 		border-radius: 50%;
 		/* as the other sound buttons: colours in app.css */
-		background: var(--sound-fill);
-		color: var(--sound-icon);
-		box-shadow:
-			0 0 0 2px var(--wnba-tan-bg),
-			0 0 0 4px var(--sound-ring);
+		background: var(--color-fg);
+		color: var(--color-white);
 		cursor: pointer;
 		opacity: 0;
 		pointer-events: none;
 		transition: opacity 300ms ease;
+	}
+	:global(.sound-corner svg) {
+		width: 100%;
+		height: 100%;
 	}
 	.sound-corner.shown {
 		opacity: 1;

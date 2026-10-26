@@ -9,8 +9,9 @@ import { base } from "$app/paths";
 // `on`: the reader has turned sound on (one switch for the whole page). `playable`:
 // per wall, whether a clip with sound is on screen right now (the corner switch
 // only shows while one is). `blocked`: the phone refused to play, so the switches
-// ask for a tap ("Tap for sound").
-export const sound = $state({ on: false, playable: {}, blocked: false });
+// ask for a tap ("Tap for sound"). `call`: a sound to play as sound comes on, set
+// while the title page is up (the announcer's call).
+export const sound = $state({ on: false, playable: {}, blocked: false, call: null });
 
 const DRIFT = 0.3; // seconds the sound may stray from its picture before it's put back
 const SETTLE = 1000; // ms to leave the sound alone after it's started or put back

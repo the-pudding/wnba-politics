@@ -643,6 +643,8 @@
 										<i style:color={SHARE_COLORS[1]}>CNN</i>
 										<i style:color={SHARE_COLORS[2]}>MSNBC</i>
 									</span>
+									<!-- over the rows' numbers: they're Fox's share -->
+									<span class="head-pct" style:color={SHARE_COLORS[0]}>% Fox</span>
 									{#each step.rows as row (row.key)}
 										<button
 											class="srow"
@@ -692,7 +694,7 @@
 <style>
 	.gap-ternary {
 		position: relative;
-		margin: 24px 0;
+		margin: 3rem 0;
 		/* the triangle's cards at the left: their width and padding, and a gap */
 		--cards: calc(460px + 4rem);
 	}
@@ -1071,7 +1073,9 @@
 	}
 
 	.control {
-		display: block;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		margin-top: 14px;
 	}
 	.control-note {

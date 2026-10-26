@@ -34,8 +34,10 @@
 		display: flex;
 		align-items: stretch;
 		gap: 48px;
+		box-sizing: border-box;
+		width: 100%;
 		margin: 0 auto;
-		padding: 2rem;
+		padding: 2rem 0;
 	}
 	.col {
 		flex: 1 1 0;
@@ -47,6 +49,22 @@
 	}
 	.col :global(.act) {
 		margin: 0;
+	}
+	/* each column fills the row's height, so a FoxVsField chart can grow to match
+	   the block beside it */
+	.col {
+		display: flex;
+		flex-direction: column;
+	}
+	.col > :global(section.act) {
+		flex: 1 1 auto;
+		display: flex;
+		flex-direction: column;
+	}
+	.col :global(.chart:has(> .fvf)) {
+		flex: 1 1 auto;
+		display: flex;
+		flex-direction: column;
 	}
 	@media (max-width: 900px) {
 		.side-by-side {

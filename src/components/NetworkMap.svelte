@@ -1370,6 +1370,20 @@
 				{#if stillOn}<h4 class="heading">{or(headingText, HEADING)}</h4>{/if}
 				<div class="when" data-id="when"></div>
 			</div>
+			<div class="timeline">
+				<div class="tl-row">
+					<button class="play" data-id="play" aria-label="Play">▶</button>
+					<svg
+						class="scrub"
+						data-id="scrub"
+						role="slider"
+						tabindex="0"
+						aria-label="Month shown"
+						aria-valuenow="0"
+					></svg>
+				</div>
+				<p class="key">{or(keyText, KEY)}</p>
+			</div>
 			<div class="netbox" data-id="netbox">
 				<!-- a group, not an image: screen readers then reach the faces inside -->
 				<svg
@@ -1390,20 +1404,6 @@
 					<g data-id="g-nodes"></g>
 					<g data-id="g-labels"></g>
 				</svg>
-			</div>
-			<div class="timeline">
-				<div class="tl-row">
-					<button class="play" data-id="play" aria-label="Play">▶</button>
-					<svg
-						class="scrub"
-						data-id="scrub"
-						role="slider"
-						tabindex="0"
-						aria-label="Month shown"
-						aria-valuenow="0"
-					></svg>
-				</div>
-				<p class="key">{or(keyText, KEY)}</p>
 			</div>
 		</div>
 		<div class="steps" data-id="steps"></div>

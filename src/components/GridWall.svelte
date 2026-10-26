@@ -27,15 +27,10 @@
 	//   logoCallSpot: upper | lower   (the corner bubble in the upper right, its tail
 	//                  pointing up and out, or beside the byline, pointing down and out
 	//                  toward the broadcast table)
-	//   soundNote: Turn on sound   (beside the sound button)
-	//   soundOnNote: Turn off sound   (beside it once sound is on)
 	const LOGO_CALL = "You bet! From beyond the logo!";
 	const LOGO_CREDIT = "ESPN’s Ryan Ruocco";
 	const LOGO_CALL_SHORT = "From the logo!";
 	const LOGO_LINK = "https://x.com/IndianaFever/status/1919143866818515093";
-	const SOUND_NOTE = "Turn on sound";
-	const SOUND_ON_NOTE = "Turn off sound";
-	const SOUND_BLOCKED_NOTE = "Tap for sound"; // a phone that wants a fresh tap for a clip's sound
 	// once the wall comes in, the title drops down onto it, in red, for this many steps:
 	// how big it gets there (share of its size on the title page) and how far from the top
 	const TITLE_STEPS = 1;
@@ -48,19 +43,13 @@
 	const callLink = copy.meta?.logoLink || LOGO_LINK;
 	const CALL_SPOT = "upper";
 	const callSpot = String(copy.meta?.logoCallSpot || CALL_SPOT).trim().toLowerCase();
-	const soundNote = copy.meta?.soundNote || SOUND_NOTE;
-	const soundOnNote = copy.meta?.soundOnNote || SOUND_ON_NOTE;
 
 	// sound: off until the reader turns it on (one switch for the whole page, see
 	// utils/sound.svelte.js). Turning it on from the title page plays the call.
 	const CALL = `${base}/audio/logo-call.mp3`;
-	// the switch fades in once the page's code is running: drawn before then, a click on
-	// it would do nothing
-	let soundReady = $state(false);
 	onMount(() => {
-		soundReady = true;
 		// fetched now so it plays the moment the switch is tapped
-		if (config.header) preloadSound(CALL);
+		if (config.header && id === "intro") preloadSound(CALL);
 	});
 
 	// The copy doc sets up the wall. Each step can carry its own scene:
@@ -83,8 +72,8 @@
 	//   audio: storm-doppler       (optional, on a step that pulls clips: that clip plays
 	//                 with its sound, from the start, once the reader has turned sound on.
 	//                 Several, comma-separated, take turns in that order: each is heard to
-	//                 its end, then the next starts, then back to the first. The step's
-	//                 card gets a small sound button)
+	//                 its end, then the next starts, then back to the first. The page’s
+	//                 one sound switch sits in the top-right corner)
 	// plus `header: true` on the block. [.highlights] / [.videos] on the block itself
 	// are the default for any pulling step that doesn't list its own.
 	// Anything the doc leaves out falls back to WALLS below.
@@ -267,7 +256,12 @@
 			const top = phone ? TITLE_TOP.phone : TITLE_TOP.desktop;
 			const move = (el, x) =>
 				`translate(${x - el.offsetLeft}px, ${top - el.offsetTop}px) scale(${k})`;
-			titleMoves = { left: move(L, start), right: move(R, start + L.offsetWidth * k) };
+			// the right half tucks a pixel under the left's edge, so no sliver of wall shows
+			// between them (their widths are whole pixels, scaled to fractions)
+			titleMoves = {
+				left: move(L, start),
+				right: move(R, start + L.offsetWidth * k - 1)
+			};
 		});
 		return () => cancelAnimationFrame(frame);
 	});
@@ -720,14 +714,18 @@
 	//   "off"     wait as stills
 	//   "playing" already play in their places, as faint as the rest of the wall
 	//   "lit"     already lit, outlined and playing, so their own step only lifts them out
-	const CLIPS_EARLY = "playing";
+	const CLIPS_EARLY = "off";
 	// pulled-out clips and headlines get an outline: red for Fox News (clips are told
 	// apart by file name; the headlines are all Fox), black for the rest
 	const FOX_CLIPS = /^(fox|watters)-/;
 	const OUTLINE = { fox: "var(--wnba-red)", other: "#000" };
 	const OUTLINE_W = 3; // px, at the clip's pulled-out size
+	// the clip being heard: a thicker outline in its own colour, set off by a thin white gap
+	const ACTIVE_OUTLINE = "var(--wnba-orange)";
+	const ACTIVE_OUTLINE_W = 5; // px
+	const ACTIVE_GAP = 2; // px of white between the clip and its outline
 	// the screenshots in the wall: in colour or gray, and how faintly they show
-	const WALL_COLOR = true;
+	const WALL_COLOR = false;
 	const WALL_OPACITY = 0.15;
 	// the headline tiles: longest headline used (so few get cut off), and whether the
 	// people named in them stand out in bold (Doc: wallNames: true | false)
@@ -741,29 +739,67 @@
 	// loops back round, its turn is over (done). The video stays muted: its sound comes
 	// from the page's one audio player (clipSound).
 	let turn = $state(0);
+	// a clip the reader clicked, heard in place of the step's own turns until it ends
+	let picked = $state(null);
 	$effect(() => {
 		// each step starts with the first clip named
 		sceneIndex;
 		turn = 0;
+		picked = null;
 	});
 	// the clips the step names for sound that are actually pulled out (a phone shows only
 	// the first three), so the turn never passes to a clip that isn't on screen
-	let voices = $derived.by(() => {
-		if (!scene.audio) return [];
-		const shown = new Set(
-			[...tiles.values()].filter((t) => t.g === activeGroup && t.type === "clips").map(videoName)
-		);
-		return scene.audio.filter((name) => shown.has(name));
-	});
-	let speaking = $derived(voices.length ? voices[turn % voices.length] : null);
+	let shownClips = $derived(
+		new Set([...tiles.values()].filter((t) => t.g === activeGroup && t.type === "clips").map(videoName))
+	);
+	let voices = $derived(scene.audio ? scene.audio.filter((name) => shownClips.has(name)) : []);
+	let speaking = $derived(picked ?? (voices.length ? voices[turn % voices.length] : null));
+	// a clip's turn is over: after a clicked clip, the step's turns carry on from it (from
+	// the next named clip, or where they left off); with none named, the clicked clip
+	// keeps playing
+	function nextTurn() {
+		if (!picked) return (turn += 1);
+		if (!voices.length) return;
+		const i = voices.indexOf(picked);
+		if (i >= 0) turn = i + 1;
+		picked = null;
+	}
+	// a click on any pulled-out clip makes it the one heard, from the top. If sound is
+	// off, the click turns it on too (inside the tap, so a phone allows it).
+	function pickClip(name, cell) {
+		if (closing) return;
+		const soundOff = !sound.on || sound.blocked;
+		if (speaking === name && !soundOff) return;
+		const i = voices.indexOf(name);
+		if (i >= 0) {
+			turn = i;
+			picked = null;
+		} else picked = name;
+		const video = cell.querySelector("video");
+		if (video && soundOff) {
+			video.currentTime = 0;
+			clipSound.play(name, video);
+			toggleSound();
+		}
+	}
 	// fetch the wall's soundtracks once it's on screen, so each starts on time
 	$effect(() => {
 		if (!wallInView) return;
 		for (const s of config.scenes) for (const name of s.audio ?? []) clipSound.preload(name);
 	});
+	// and the pulled-out clips' own, in case one is clicked
+	$effect(() => {
+		if (wallInView) for (const name of shownClips) clipSound.preload(name);
+	});
+	// while the title page is up, the corner sound switch plays the call
+	$effect(() => {
+		if (!(config.header && id === "intro" && wallInView && shownIndex === undefined)) return;
+		sound.call = CALL;
+		return () => (sound.call = null);
+	});
 	// tell the corner sound switch whether this wall can play sound right now
 	$effect(() => {
-		sound.playable[id] = wallInView && !closing && activeGroup >= 0 && !!scene.audio;
+		sound.playable[id] = wallInView && !closing && activeGroup >= 0 && (!!scene.audio || !!picked);
 		return () => delete sound.playable[id];
 	});
 	// `on`: it's this clip's turn to be heard (whether or not sound is on, so a tap on
@@ -829,26 +865,6 @@
 
 <svelte:window onscroll={measure} onresize={measure} bind:innerWidth={viewW} />
 
-<!-- the sound switch: under the byline, and in the card of any step with audio -->
-{#snippet soundSwitch(playCall)}
-    <span class="sound-line" class:ready={soundReady}>
-        {@html sound.blocked ? SOUND_BLOCKED_NOTE : sound.on ? soundOnNote : soundNote}
-        <button
-            class="sound-button"
-            class:on={sound.on && !sound.blocked}
-            aria-pressed={sound.on && !sound.blocked}
-            aria-label={sound.blocked ? SOUND_BLOCKED_NOTE : sound.on ? "Turn sound off" : "Turn sound on"}
-            onclick={() => toggleSound(playCall ? CALL : null)}
-        >
-            {#if sound.on && !sound.blocked}
-                <Volume2 size={16} strokeWidth={1.75} aria-hidden="true" />
-            {:else}
-                <VolumeOff size={16} strokeWidth={1.75} aria-hidden="true" />
-            {/if}
-        </button>
-    </span>
-{/snippet}
-
 <div
 	class="grid-wall grid-wall-{id}"
 	class:no-title={!config.header}
@@ -899,7 +915,6 @@
                 {/if}
                 By {@html copy.meta.byline}, with {@html copy.meta.with}
                 <span class="scroll-hint" aria-hidden="true">{@html arrowSvg}</span>
-                {@render soundSwitch(true)}
             </p>
         </header>
         {:else if config.header && id == "outro"}
@@ -915,7 +930,7 @@
                     in:wipeLabel={{ delay: KICKER_OUT, duration: KICKER_IN }}
                     out:wipeLabel={{ duration: KICKER_OUT }}
                 >
-                    {kicker}
+                    <span class="live-dot" aria-hidden="true"></span>Now Playing {kicker}
                 </p>
             {/key}
         </div>
@@ -943,15 +958,48 @@
             aria-hidden="true"
             bind:clientWidth={gridW}
             bind:clientHeight={gridH}
-            style="--cols: {cols}; --rows: {rows}; --tile-w: {tileW}px; --tile-h: {tileH}px; --light-up: {CLIP_LIGHT_UP}s; --lift: {CLIP_LIFT}s; --wipe: {WIPE}s; --power: {powerTime}s; --outline-w: {OUTLINE_W}px; --outline-fox: {OUTLINE.fox}; --wall-filter: {WALL_COLOR ? 'none' : 'grayscale(100%)'}; --wall-opacity: {WALL_OPACITY};"
+            style="--cols: {cols}; --rows: {rows}; --tile-w: {tileW}px; --tile-h: {tileH}px; --light-up: {CLIP_LIGHT_UP}s; --lift: {CLIP_LIFT}s; --wipe: {WIPE}s; --power: {powerTime}s; --outline-w: {OUTLINE_W}px; --active-outline: {ACTIVE_OUTLINE}; --active-outline-w: {ACTIVE_OUTLINE_W}px; --active-gap: {ACTIVE_GAP}px; --outline-fox: {OUTLINE.fox}; --wall-filter: {WALL_COLOR ? 'none' : 'grayscale(100%)'}; --wall-opacity: {WALL_OPACITY};"
         >
             {#each gridCells as cell, i (i)}
                 {@const spot = tiles.get(i)}
                 {@const f = spot && (spot.g === activeGroup || spot.g === heldGroup) ? spot : undefined}
                 {@const ready = !!spot && spot.g === readyGroup}
+                {@const pickable = f?.type === "clips" && !closing}
+                <!-- each grid spot. A tile that pulls out leaves a copy of itself behind
+                     (the stand-in), so the wall keeps no gap where it was -->
+                <div class="slot">
+                {#if spot}
+                    <div
+                        class="cell {wall} stand-in"
+                        class:hidden={ready && CLIPS_EARLY === "playing"}
+                        style="--d: {cell.delay}s; --across: {cell.across};"
+                    >
+                        {#each imageSets as set (set)}
+                            <img
+                                src={spot.type === "clips" ? posterSrc(spot) : imageSrc(set, i)}
+                                alt=""
+                                class:on={set === shownSet}
+                            />
+                        {/each}
+                        {#each poolKeys as k (k)}
+                            {@const h = cell.texts[k]}
+                            <p class:on={k === activePool}>
+                                {#if h}
+                                    <span class="tile-meta">Fox News{#if h.date} · {h.date}{/if}</span>
+                                    <span class="tile-head">{@html h.html}</span>
+                                {/if}
+                            </p>
+                        {/each}
+                    </div>
+                {/if}
+                <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
                 <div
                     class="cell {wall}"
+                    class:lifter={!!spot}
                     class:featured={f}
+                    class:pickable
+                    class:speaking={f?.type === "clips" && !closing && sound.on && speaking === videoName(spot)}
+                    onclick={pickable ? (e) => pickClip(videoName(spot), e.currentTarget) : undefined}
                     class:pull-clips={f?.type === "clips"}
                     class:ready={ready && CLIPS_EARLY === "lit"}
                     class:quiet={ready && CLIPS_EARLY === "playing"}
@@ -983,19 +1031,9 @@
                             use:audible={{
                                 on: wallInView && !!f && !closing && speaking === videoName(spot),
                                 name: videoName(spot),
-                                done: () => (turn += 1)
+                                done: nextTurn
                             }}
                         ></video>
-                        {#if f && scene.audio?.includes(videoName(spot))}
-                            <!-- which clips have sound, and which one is talking now -->
-                            <span class="clip-sound" class:on={sound.on && speaking === videoName(spot)}>
-                                {#if sound.on && speaking === videoName(spot)}
-                                    <Volume2 strokeWidth={2.25} aria-hidden="true" />
-                                {:else}
-                                    <VolumeOff strokeWidth={2.25} aria-hidden="true" />
-                                {/if}
-                            </span>
-                        {/if}
                     {/if}
                     <!-- one headline per pool, stacked; the current step's shows -->
                     {#each poolKeys as k (k)}
@@ -1025,6 +1063,7 @@
                         </div>
                     {/if}
                 </div>
+                </div>
             {/each}
         </div>
 	</div>
@@ -1036,7 +1075,6 @@
 					{#if step.text?.trim()}
 						<p class="card">
 							{@html clipPops(faces(step.text, base), base)}
-							{#if config.scenes[i]?.audio}{@render soundSwitch(false)}{/if}
 						</p>
 					{/if}
 				</div>
@@ -1079,6 +1117,26 @@
     .kicker.other {
         background-color: var(--color-fg);
     }
+    /* blinking "live" dot before the label */
+    .live-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin-right: 5px;
+        border-radius: 50%;
+        background: #fff;
+        vertical-align: 1px;
+        animation: live-blink 1.2s ease-in-out infinite;
+    }
+    @keyframes live-blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.15; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .live-dot {
+            animation: none;
+        }
+    }
     .bg-grid {
         position: absolute;
         inset: 0;
@@ -1093,16 +1151,41 @@
         place-content: center;
         overflow: hidden;
         transition: opacity 600ms ease;
+        /* nothing in the wall can be highlighted or dragged, even by a drag that starts
+           outside it */
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
     }
-    .bg-grid.closing {
-        opacity: 0;
+    .bg-grid :is(img, video) {
+        -webkit-user-drag: none;
     }
     /* each tile holds a screenshot and a headline stacked on top of each other;
        the wall state decides which one shows */
     .cell {
         position: relative;
         overflow: hidden;
-        transition: transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
+        transition:
+            transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1),
+            opacity 400ms ease;
+    }
+    /* a grid spot: the tile, and (for a tile that pulls out) its stand-in under it */
+    .slot {
+        position: relative;
+        pointer-events: none;
+    }
+    .slot > .cell {
+        position: absolute;
+        inset: 0;
+    }
+    /* the copy that stays in the wall while its tile is pulled out */
+    .stand-in.hidden {
+        visibility: hidden;
+    }
+    /* a tile that pulls out shows nothing of its own while it sits in the wall (its
+       stand-in shows the wall there), only once it lights up or lifts out */
+    .bg-grid .cell.lifter:not(.featured):not(.ready) :is(img, p) {
+        opacity: 0;
     }
     /* step 1: lifted out of the wall, moved to its spot and scaled up */
     /* pull-outs go one after another (--fd); going back they all return at once */
@@ -1118,7 +1201,7 @@
         transition-duration: var(--lift);
         transition-delay: calc(var(--fd) + var(--light-up));
         /* the outline is drawn before the scale-up, so it's thinned to match */
-        box-shadow: 0 0 0 calc(var(--outline-w) / var(--s)) var(--outline);
+        box-shadow: 0 0 0 calc(var(--outline-w) / var(--s)) var(--color-fg);
     }
     .cell video {
         position: absolute;
@@ -1154,9 +1237,35 @@
     .cell.images.quiet img.on {
         opacity: 0;
     }
+    /* the clip being heard: its own thicker outline, past a thin white gap, above the
+       other clips (drawn before the scale-up, so thinned to match) */
+    .cell.featured.pull-clips.speaking {
+        z-index: 2;
+        box-shadow:
+            0 0 0 calc(var(--active-gap) / var(--s)) #fff,
+            0 0 0 calc((var(--active-gap) + var(--active-outline-w)) / var(--s)) var(--active-outline);
+    }
+    /* the wall's tiles don't catch the pointer (no text cursor, no selecting the
+       hidden headlines); only a pulled-out clip does: click it to hear it */
+    .cell {
+        pointer-events: none;
+    }
+    .cell.pickable {
+        pointer-events: auto;
+        cursor: pointer;
+    }
+    .cell.pickable :is(img, p) {
+        pointer-events: none;
+    }
     /* already lit, so they lift out without waiting */
     .cell.featured.pull-clips.lift-now {
         transition-delay: var(--fd);
+    }
+    /* the closing step (wall: cleared): the tiles fade out one by one, each at its own
+       scattered delay (--d), the pulled-out ones along with the rest */
+    .bg-grid.closing .slot > .cell {
+        opacity: 0;
+        transition: opacity 500ms ease var(--d);
     }
     .cell.images.quick img,
     .cell.text.quick p {
@@ -1214,7 +1323,7 @@
         transform: scale(calc(1 / var(--s0)));
     }
     .clip-inner :global(.clip) {
-        border: var(--outline-w) solid var(--outline-fox);
+        border: 2px solid var(--color-fg);
     }
     .cell img,
     .cell p {
@@ -1278,7 +1387,7 @@
     }
     /* on a step of harsh headlines, the names go red */
     .names.harsh .tile-head :global(b.name) {
-        color: var(--wnba-red);
+        color: var(--color-fg);
     }
     /* only the current step's headlines show; when a step filters them (players,
        tone), each tile swaps over at its own scattered delay */
@@ -1363,7 +1472,7 @@
         position: absolute;
         inset: 0;
         z-index: 0;
-        background: #0b0b0b;
+        background: var(--color-fg);
         pointer-events: none;
         animation: crt-black var(--power) ease-in-out forwards;
     }
@@ -1423,7 +1532,7 @@
     .cell.cleared p {
         transition-delay: var(--d);
     }
-    header {
+    .intro-wall-header {
         position: relative;
         z-index: 1;
         width: 100%;
@@ -1433,7 +1542,7 @@
             visibility 0s;
     }
     /* a plain fade; visibility flips after the fade so it can't be clicked or read once gone */
-    header.off {
+    .intro-wall-header.off {
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
@@ -1576,10 +1685,11 @@
     }
     /* the short call in a speech bubble in the top-right corner, linking to the clip;
        its tail points down and left, toward the title */
+    /* (kept left of the corner sound button) */
     .call-corner {
-        position: absolute;
-        top: 0.75rem;
-        right: 1rem;
+        position: fixed;
+        top: 2.5rem;
+        right: 2.5rem;
         z-index: 2;
         display: grid;
         place-items: center;
@@ -1639,7 +1749,7 @@
             background-color 500ms ease;
     }
     .title-down .hed-words {
-        color: var(--wnba-red);
+        color: var(--color-fg);
         background-color: var(--wnba-tan-bg);
     }
     .intro-wall-header .glitch,
@@ -1673,6 +1783,7 @@
     }
     @media (max-width: 600px) {
         .call-corner {
+            right: 3.5rem;
             width: 5.5rem;
             height: 5.5rem;
         }
@@ -1680,7 +1791,7 @@
            its tail pointing up and out */
         .call-corner.lower {
             top: 0.75rem;
-            right: 1rem;
+            right: 3.5rem;
             bottom: auto;
             left: auto;
         }
@@ -1690,62 +1801,6 @@
         .call-corner-words {
             font-size: 0.95rem;
         }
-    }
-    /* a small round sound button after a short note, under the byline */
-    .sound-line {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5em;
-        margin-top: 0.6em;
-        font-size: 0.85rem;
-        color: var(--color-gray-700, #555);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.4s;
-    }
-    .sound-line.ready {
-        opacity: 1;
-        pointer-events: auto;
-    }
-    /* a filled circle with a ring set a little apart (colours in app.css); the icon
-       says whether sound is on */
-    .sound-button {
-        display: grid;
-        place-items: center;
-        width: 2rem;
-        height: 2rem;
-        margin: 4px;
-        padding: 0;
-        border: 0;
-        border-radius: 50%;
-        background: var(--sound-fill);
-        color: var(--sound-icon);
-        box-shadow: 0 0 0 2px var(--wnba-tan-bg), 0 0 0 4px var(--sound-ring);
-        cursor: pointer;
-    }
-    /* in a step's card: under the text, to the left */
-    .card .sound-line {
-        justify-content: flex-start;
-        margin-top: 0.8em;
-    }
-    /* the speaker on the clip that has the sound; drawn at tile size, so it's shrunk by
-       the pull-out's scale to come out the same size on every clip */
-    .clip-sound {
-        position: absolute;
-        right: calc(6px / var(--s, 1));
-        top: calc(6px / var(--s, 1));
-        display: grid;
-        place-items: center;
-        width: calc(22px / var(--s, 1));
-        height: calc(22px / var(--s, 1));
-        border-radius: 50%;
-        background: rgba(0, 0, 0, 0.6);
-        color: #fff;
-    }
-    .clip-sound :global(svg) {
-        width: 62%;
-        height: 62%;
     }
     /* phones: the bubble keeps inside the image's right edge, a little smaller */
     @media (max-width: 600px) {
@@ -1825,6 +1880,7 @@
 		position: relative;
 		margin-top: 0;
 		z-index: 1;
+        pointer-events: none;
 	}
 	/* no title card to scroll past: the first step comes up over the wall sooner */
 	.no-title .steps {
@@ -1835,6 +1891,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+        pointer-events: none;
 	}
     .step:last-of-type {
         opacity: 0;
@@ -1850,12 +1907,15 @@
         line-height: 1.5;
 		max-width: 460px;
 		padding: 14px 18px;
-		background: var(--wnba-tan-bg);
+		background: var(--color-white);
 		/* a black outline, so the card stands clear of the wall */
-		border: 2px solid #000;
+		border: 1px solid var(--color-rule);
         border-radius: 4px;
 		opacity: 0.4;
 		transition: opacity 300ms ease;
+        pointer-events: auto;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+
 	}
 	.step.active .card {
 		opacity: 1;

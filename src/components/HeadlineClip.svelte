@@ -71,7 +71,7 @@
 	class:small
 	class:compact
 	class:blurred
-	style="--rot: {rot}deg"
+	// style="--rot: {rot}deg"
 >
 	{#if compact}
 		<!-- one run of text: badge, then the headline, no date -->

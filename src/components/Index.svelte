@@ -1,5 +1,6 @@
 <script>
 	import { getContext } from "svelte";
+	import Header from "$components/Header.svelte"
 	import { base } from "$app/paths";
 	import Dispersed from "$components/Dispersed.svelte";
 	import CMS from "$components/helpers/CMS.svelte";
@@ -98,6 +99,7 @@
 >
 	<ScrollToc />
 	<SoundCorner />
+	<Header />
 	<!-- <ReadingBar /> -->
 	<article id="story">
 		<CMS {body} {components} />
