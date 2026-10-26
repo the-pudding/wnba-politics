@@ -42,22 +42,20 @@ export const wallClips = {
 		});
 	},
 	// call from the tap itself, after the switch has flipped. Every clip, playing or
-	// not, is started by the tap with its sound on (what lets a phone play it with
-	// sound later), then muted again at once unless it's the one to be heard, and
-	// stopped again if it isn't wanted yet
+	// not, is started by the tap with its sound on and stopped in the same moment, so
+	// nothing is heard: that start is what lets a phone play it, and play it with
+	// sound, later. Then the clips that should be playing start again, only the one
+	// to be heard unmuted.
 	start() {
 		sound.blocked = false;
 		for (const node of clips) {
 			const heard = node === voice && sound.on && wanted.has(node);
 			node.pause();
 			node.muted = false;
-			const started = node.play();
+			node.play().catch(() => {});
+			node.pause();
 			node.muted = !heard;
-			started
-				.then(() => {
-					if (!wanted.has(node)) node.pause();
-				})
-				.catch(() => {});
+			if (wanted.has(node)) node.play().catch(() => {});
 		}
 	}
 };
