@@ -736,8 +736,8 @@
 	// a clip is heard only while it's pulled out on a step that names it (audio: …), it's
 	// that clip's turn, and the reader has turned sound on; it starts again from the top
 	// when its turn comes, and turning sound on joins it wherever it's got to. When it
-	// loops back round, its turn is over (done). The video stays muted: its sound comes
-	// from the page's one audio player (clipSound).
+	// loops back round, its turn is over (done). The video is unmuted for its turn
+	// (clipSound).
 	let turn = $state(0);
 	// a clip the reader clicked, heard in place of the step's own turns until it ends
 	let picked = $state(null);
@@ -810,7 +810,6 @@
 		const watch = () => {
 			if (on && node.currentTime + 0.3 < last) done();
 			last = node.currentTime;
-			if (on) clipSound.sync(node);
 		};
 		node.addEventListener("timeupdate", watch);
 		const start = () => {
