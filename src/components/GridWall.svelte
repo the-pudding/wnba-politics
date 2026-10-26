@@ -7,7 +7,7 @@
 	import { cubicOut } from "svelte/easing";
 	import { faces, clipPops } from "$utils/clips.js";
 	import { titleCase } from "$utils/titleCase.js";
-	import { sound, clipSound, wallVideos, toggleSound } from "$utils/sound.svelte.js";
+	import { sound, clipSound, wallVideos, toggleSound, preloadSound } from "$utils/sound.svelte.js";
 	import arrowSvg from "$svg/arrow-up-right.svg";
 	// the corner bubble and the sound button's icons, from Lucide (lucide.dev)
 	import MessageCircle from "@lucide/svelte/icons/message-circle";
@@ -57,7 +57,11 @@
 	// the switch fades in once the page's code is running: drawn before then, a click on
 	// it would do nothing
 	let soundReady = $state(false);
-	onMount(() => (soundReady = true));
+	onMount(() => {
+		soundReady = true;
+		// fetched now so it plays the moment the switch is tapped
+		if (config.header) preloadSound(CALL);
+	});
 
 	// The copy doc sets up the wall. Each step can carry its own scene:
 	//   text: …
@@ -733,13 +737,13 @@
 
 	// a clip is heard only while it's pulled out on a step that names it (audio: …), it's
 	// that clip's turn, and the reader has turned sound on; it starts again from the top
-	// when its turn comes. When it loops back round, its turn is over (done). The video
-	// stays muted: its sound comes from the page's one audio player (clipSound).
+	// when its turn comes, and turning sound on joins it wherever it's got to. When it
+	// loops back round, its turn is over (done). The video stays muted: its sound comes
+	// from the page's one audio player (clipSound).
 	let turn = $state(0);
 	$effect(() => {
-		// each step, and each time sound comes on, starts with the first clip named
+		// each step starts with the first clip named
 		sceneIndex;
-		sound.on;
 		turn = 0;
 	});
 	// the clips the step names for sound that are actually pulled out (a phone shows only
@@ -752,6 +756,11 @@
 		return scene.audio.filter((name) => shown.has(name));
 	});
 	let speaking = $derived(voices.length ? voices[turn % voices.length] : null);
+	// fetch the wall's soundtracks once it's on screen, so each starts on time
+	$effect(() => {
+		if (!wallInView) return;
+		for (const s of config.scenes) for (const name of s.audio ?? []) clipSound.preload(name);
+	});
 	// tell the corner sound switch whether this wall can play sound right now
 	$effect(() => {
 		sound.playable[id] = wallInView && !closing && activeGroup >= 0 && !!scene.audio;

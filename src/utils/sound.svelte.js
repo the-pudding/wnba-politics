@@ -13,20 +13,35 @@ import { base } from "$app/paths";
 export const sound = $state({ on: false, playable: {}, blocked: false });
 
 const DRIFT = 0.3; // seconds the sound may stray from its picture before it's put back
+const SETTLE = 1000; // ms to leave the sound alone after it's started or put back
 const SILENCE = `${base}/audio/silence.wav`;
 const clipSrc = (name) => `${base}/audio/clips/${name}.m4a`;
 
 let player = null;
 let heard = null; // { src, video }: the clip being heard, and its picture
+let movedAt = 0; // when the sound was last started or put back
+let fixes = 0; // how many times it's been put back, for the ?checks readout
 const getPlayer = () => (player ??= new Audio());
+
+// Sounds fetched ahead (preloadSound), so they play the moment they're asked for
+const ready = new Map();
+export function preloadSound(src) {
+	if (ready.has(src)) return;
+	ready.set(src, null);
+	fetch(src)
+		.then((response) => (response.ok ? response.blob() : null))
+		.then((blob) => blob && ready.set(src, URL.createObjectURL(blob)))
+		.catch(() => {});
+}
 
 function playSrc(src, at = 0) {
 	const p = getPlayer();
 	if (p.dataset.src !== src) {
 		p.dataset.src = src;
-		p.src = src;
+		p.src = ready.get(src) ?? src;
 	}
 	p.currentTime = at;
+	movedAt = performance.now();
 	p.play()
 		.then(() => (sound.blocked = false))
 		.catch((error) => {
@@ -49,6 +64,8 @@ export const wallVideos = {
 };
 
 export const clipSound = {
+	// fetch a clip's soundtrack ahead of its turn
+	preload: (name) => preloadSound(clipSrc(name)),
 	// a clip's turn to be heard: its soundtrack, in step with its video
 	play(name, video) {
 		heard = { src: clipSrc(name), video };
@@ -71,6 +88,7 @@ export const clipSound = {
 			time: player ? player.currentTime.toFixed(1) : "-",
 			clip: name(heard?.src),
 			clipTime: heard ? heard.video.currentTime.toFixed(1) : "-",
+			fixes,
 			// each video that should be playing: time, paused (p) or not, how much is
 			// loaded (readyState 0-4), and any error code
 			videos: [...wanted]
@@ -82,12 +100,18 @@ export const clipSound = {
 		};
 	},
 	// from the video's timeupdate: put the sound back in step if it has strayed,
-	// and start it again when the video loops round
+	// and start it again when the video loops round. Not while either is still
+	// seeking, or just after a start: putting it back again and again stutters.
 	sync(video) {
 		if (!sound.on || sound.blocked || heard?.video !== video || !player) return;
-		const off = Math.abs(player.currentTime - video.currentTime);
-		if (off > DRIFT) player.currentTime = video.currentTime;
-		if (player.paused) playSrc(heard.src, video.currentTime);
+		if (player.paused) return playSrc(heard.src, video.currentTime);
+		if (video.seeking || player.seeking || performance.now() - movedAt < SETTLE)
+			return;
+		if (Math.abs(player.currentTime - video.currentTime) > DRIFT) {
+			player.currentTime = video.currentTime;
+			movedAt = performance.now();
+			fixes += 1;
+		}
 	}
 };
 
@@ -97,12 +121,10 @@ export const clipSound = {
 export function toggleSound(call = null) {
 	if (sound.blocked || !sound.on) {
 		sound.on = true;
-		// start the player inside the tap: the clip that's up (from the top), the
-		// call, or silence
-		if (heard) {
-			heard.video.currentTime = 0;
-			playSrc(heard.src, 0);
-		} else playSrc(call ?? SILENCE);
+		// start the player inside the tap: the clip that's up (joining it wherever
+		// it's got to), the call, or silence
+		if (heard) playSrc(heard.src, heard.video.currentTime);
+		else playSrc(call ?? SILENCE);
 		for (const video of videos) {
 			if (wanted.has(video)) video.play().catch(() => {});
 			else
