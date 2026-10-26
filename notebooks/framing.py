@@ -27,6 +27,10 @@ def load_parser(model=PARSER, disable=("ner",)):
 # Each guarded term is swapped for the narrower pattern wherever the terms are read.
 TERM_GUARDS = {
     "ex": r"ex(?:-(?:boyfriend|girlfriend|husband|wife|fianc[eé]e?|partner|lover)|(?!-))",
+    # "fit" as an outfit ("FIT CHECK", "pregame fit"), never "fit in", "fit the
+    # narrative", "a good fit for", "a hissy fit"
+    "fit": r"(?:fit(?=\s+(?:check|pics?)\b)|(?:(?<=pregame )|(?<=pre-game )|(?<=gameday )|(?<=game-day )"
+           r"|(?<=tunnel )|(?<=draft )|(?<=her ))fit(?!\s+(?:in|into|the|with|for|under|like|our|my)\b))",
 }
 
 
