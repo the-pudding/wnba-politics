@@ -693,6 +693,8 @@
 	.gap-ternary {
 		position: relative;
 		margin: 24px 0;
+		/* the triangle's cards at the left: their width and padding, and a gap */
+		--cards: calc(460px + 4rem);
 	}
 
 	.sticky {
@@ -709,8 +711,9 @@
 		justify-content: center;
 	}
 
-	/* beside the cards the triangle sits right, 6rem in from the edge; on the
-	   cardless last step it slides to the middle to be explored */
+	/* the triangle sits as near the middle as the cards beside it allow (in the
+	   middle on wide screens, nudged right on narrower ones); on the cardless last
+	   step it slides to the middle to be explored */
 	.stage.ternary {
 		justify-content: center;
 	}
@@ -718,7 +721,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		transform: translateX(calc(50vw - 50% - 6rem));
+		transform: translateX(max(0px, calc(var(--cards) - 50vw + 50%)));
 		transition: transform 700ms ease;
 	}
 	.stage.ternary.centred .ter-col {

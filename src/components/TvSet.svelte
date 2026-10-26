@@ -2,8 +2,8 @@
 	// A video player for the Fox clips and the Storm TV: plain, or on a drawn
 	// retro TV (`look: set`).
 	//   {.TvSet}
-	//   src: video/storm-tv.mp4     poster: video/storm-tv.jpg
-	//   cues: video/storm-tv.json   (optional: credits each clip under the set as it plays)
+	//   src: video/wnba-tv.mp4     poster: video/wnba-tv.jpg
+	//   cues: video/wnba-tv.json   (optional: credits each clip under the set as it plays)
 	//   credit: From {source}       (optional: the wording; {source} is the linked "Fox News on YouTube")
 	//   caption: …                  (optional: a fixed line under the set)
 	//   look: set                   (optional: the video on a drawn retro TV)

@@ -5,9 +5,9 @@
 	// that clip's last frame, dimmed.
 	//
 	//   {.TvBeside}
-	//   src: video/storm-tv.mp4
-	//   poster: video/storm-tv.jpg
-	//   cues: video/storm-tv.json   (or `none`: one video that loops)
+	//   src: video/wnba-tv.mp4
+	//   poster: video/wnba-tv.jpg
+	//   cues: video/wnba-tv.json   (or `none`: one video that loops)
 	//   credit: From {source}   (optional: the line under the TV)
 	//   caption: …               (optional: a fixed line under the TV instead)
 	//   noReplay: watters        (optional: clips the TV won't offer to replay)
@@ -25,9 +25,9 @@
 	import TvSet from "$components/TvSet.svelte";
 
 	let {
-		src = "video/storm-tv.mp4",
-		poster = "video/storm-tv.jpg",
-		cues = "video/storm-tv.json",
+		src = "video/wnba-tv.mp4",
+		poster = "video/wnba-tv.jpg",
+		cues = "video/wnba-tv.json",
 		credit = "",
 		// clips a tap shouldn't replay: the Fox intro
 		noReplay = "watters",
