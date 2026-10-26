@@ -782,15 +782,6 @@
 			toggleSound();
 		}
 	}
-	// fetch the wall's soundtracks once it's on screen, so each starts on time
-	$effect(() => {
-		if (!wallInView) return;
-		for (const s of config.scenes) for (const name of s.audio ?? []) clipSound.preload(name);
-	});
-	// and the pulled-out clips' own, in case one is clicked
-	$effect(() => {
-		if (wallInView) for (const name of shownClips) clipSound.preload(name);
-	});
 	// while the title page is up, the corner sound switch plays the call
 	$effect(() => {
 		if (!(config.header && id === "intro" && wallInView && shownIndex === undefined)) return;
