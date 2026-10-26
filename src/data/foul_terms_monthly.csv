@@ -61,12 +61,14 @@ Fox News,punch,2026-05,4
 Fox News,punch,2026-06,13
 Fox News,punch,2026-07,19
 Fox News,punch,2026-08,6
-Fox News,punch,2026-09,1
+Fox News,punch,2026-09,2
+Fox News,punch,2026-10,3
 Fox News,throat,2024-06,5
 Fox News,throat,2026-06,22
 Fox News,throat,2026-07,37
 Fox News,throat,2026-08,4
-Fox News,throat,2026-09,2
+Fox News,throat,2026-09,3
+Fox News,throat,2026-10,3
 ESPN,hip-check,2024-10,1
 ESPN,hip-check,2026-07,1
 ESPN,poke,2019-06,1
@@ -133,7 +135,8 @@ ESPN,punch,2026-03,3
 ESPN,punch,2026-05,2
 ESPN,punch,2026-07,3
 ESPN,punch,2026-08,2
-ESPN,punch,2026-09,6
+ESPN,punch,2026-09,7
+ESPN,punch,2026-10,4
 ESPN,throat,2020-07,2
 ESPN,throat,2020-08,1
 ESPN,throat,2020-12,1
@@ -144,6 +147,7 @@ ESPN,throat,2025-04,1
 ESPN,throat,2025-11,1
 ESPN,throat,2026-06,4
 ESPN,throat,2026-07,12
+ESPN,throat,2026-10,1
 CBS,hip-check,2024-06,1
 CBS,hip-check,2024-12,1
 CBS,hip-check,2026-07,1
@@ -211,6 +215,7 @@ CBS,punch,2026-06,1
 CBS,punch,2026-07,1
 CBS,punch,2026-08,1
 CBS,punch,2026-09,3
+CBS,punch,2026-10,1
 CBS,throat,2022-09,1
 CBS,throat,2024-06,1
 CBS,throat,2024-10,1
@@ -219,6 +224,7 @@ CBS,throat,2026-06,5
 CBS,throat,2026-07,12
 CBS,throat,2026-08,1
 CBS,throat,2026-09,2
+CBS,throat,2026-10,1
 USA Today,hip-check,2026-07,3
 USA Today,poke,2024-02,1
 USA Today,poke,2024-04,2
@@ -266,7 +272,8 @@ USA Today,punch,2026-05,2
 USA Today,punch,2026-06,3
 USA Today,punch,2026-07,4
 USA Today,punch,2026-08,3
-USA Today,punch,2026-09,4
+USA Today,punch,2026-09,5
+USA Today,punch,2026-10,16
 USA Today,throat,2020-04,1
 USA Today,throat,2020-07,1
 USA Today,throat,2025-03,1
@@ -296,10 +303,11 @@ New York Times,poke,2025-05,2
 New York Times,poke,2025-06,6
 New York Times,poke,2025-09,2
 New York Times,poke,2026-04,1
-New York Times,poke,2026-05,2
+New York Times,poke,2026-05,1
 New York Times,poke,2026-06,1
 New York Times,poke,2026-08,1
 New York Times,poke,2026-09,1
+New York Times,poke,2026-10,1
 New York Times,punch,2019-04,1
 New York Times,punch,2019-05,1
 New York Times,punch,2019-06,1
@@ -327,12 +335,12 @@ New York Times,punch,2022-07,1
 New York Times,punch,2022-08,3
 New York Times,punch,2022-09,2
 New York Times,punch,2022-10,2
-New York Times,punch,2022-12,2
+New York Times,punch,2022-12,1
 New York Times,punch,2023-01,2
 New York Times,punch,2023-02,3
 New York Times,punch,2023-03,6
 New York Times,punch,2023-04,4
-New York Times,punch,2023-05,4
+New York Times,punch,2023-05,3
 New York Times,punch,2023-09,1
 New York Times,punch,2023-10,2
 New York Times,punch,2024-01,2
@@ -359,6 +367,7 @@ New York Times,punch,2026-05,2
 New York Times,punch,2026-07,1
 New York Times,punch,2026-08,1
 New York Times,punch,2026-09,1
+New York Times,punch,2026-10,7
 New York Times,throat,2019-05,1
 New York Times,throat,2019-06,1
 New York Times,throat,2019-09,1
@@ -371,6 +380,7 @@ New York Times,throat,2025-05,1
 New York Times,throat,2026-06,7
 New York Times,throat,2026-07,4
 New York Times,throat,2026-08,1
+New York Times,throat,2026-10,1
 AP,hip-check,2026-07,1
 AP,poke,2019-09,1
 AP,poke,2020-07,1
@@ -396,7 +406,7 @@ AP,punch,2022-04,1
 AP,punch,2022-05,1
 AP,punch,2022-06,1
 AP,punch,2022-07,1
-AP,punch,2022-09,2
+AP,punch,2022-09,3
 AP,punch,2022-10,1
 AP,punch,2022-12,1
 AP,punch,2023-01,1
@@ -423,17 +433,16 @@ AP,throat,2023-07,1
 AP,throat,2026-06,4
 AP,throat,2026-07,10
 AP,throat,2026-08,2
+AP,throat,2026-09,1
 Washington Post,hip-check,2026-07,1
 Washington Post,poke,2019-05,1
 Washington Post,poke,2023-07,1
 Washington Post,poke,2023-12,1
-Washington Post,poke,2024-01,1
 Washington Post,poke,2024-08,1
 Washington Post,poke,2024-09,2
 Washington Post,poke,2024-11,1
 Washington Post,poke,2025-04,1
 Washington Post,poke,2025-06,1
-Washington Post,poke,2025-08,1
 Washington Post,poke,2026-07,2
 Washington Post,punch,2019-07,1
 Washington Post,punch,2019-08,2
@@ -462,26 +471,24 @@ Washington Post,punch,2023-10,1
 Washington Post,punch,2023-11,1
 Washington Post,punch,2023-12,1
 Washington Post,punch,2024-01,1
-Washington Post,punch,2024-02,1
 Washington Post,punch,2024-03,1
 Washington Post,punch,2024-04,2
 Washington Post,punch,2024-05,2
 Washington Post,punch,2024-07,1
 Washington Post,punch,2024-08,2
 Washington Post,punch,2024-09,1
-Washington Post,punch,2024-10,2
+Washington Post,punch,2024-10,1
 Washington Post,punch,2025-01,1
-Washington Post,punch,2025-02,3
+Washington Post,punch,2025-02,2
 Washington Post,punch,2025-03,2
 Washington Post,punch,2025-05,1
-Washington Post,punch,2025-07,2
-Washington Post,punch,2025-10,2
+Washington Post,punch,2025-07,1
+Washington Post,punch,2025-10,1
 Washington Post,punch,2025-12,1
 Washington Post,punch,2026-04,1
-Washington Post,punch,2026-05,2
+Washington Post,punch,2026-05,1
 Washington Post,punch,2026-06,1
 Washington Post,punch,2026-07,4
-Washington Post,punch,2026-08,1
 Washington Post,throat,2019-09,1
 Washington Post,throat,2020-07,1
 Washington Post,throat,2020-08,1
@@ -489,6 +496,6 @@ Washington Post,throat,2022-04,1
 Washington Post,throat,2023-07,1
 Washington Post,throat,2024-02,1
 Washington Post,throat,2024-05,1
-Washington Post,throat,2026-06,6
+Washington Post,throat,2026-06,5
 Washington Post,throat,2026-07,11
 Washington Post,throat,2026-08,2

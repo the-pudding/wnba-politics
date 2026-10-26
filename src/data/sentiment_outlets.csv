@@ -1,7 +1,7 @@
 player,outlet,n,mean
 A'ja Wilson,CBS Sports,147,0.1983
 A'ja Wilson,ESPN,142,0.1544
-A'ja Wilson,Fox News,44,0.0557
+A'ja Wilson,Fox News,64,0.0145
 A'ja Wilson,Just Women's Sports,117,0.1705
 A'ja Wilson,The Athletic,86,0.1742
 A'ja Wilson,USA Today,82,0.1693
@@ -22,7 +22,7 @@ Alyssa Thomas,USA Today,23,0.0764
 Alyssa Thomas,Yahoo Sports,210,-0.0015
 Angel Reese,CBS Sports,136,0.1152
 Angel Reese,ESPN,97,0.1014
-Angel Reese,Fox News,580,0.0023
+Angel Reese,Fox News,589,0.0037
 Angel Reese,Just Women's Sports,119,0.1289
 Angel Reese,The Athletic,129,0.0904
 Angel Reese,USA Today,93,0.1103
@@ -34,7 +34,7 @@ Arike Ogunbowale,USA Today,19,0.0267
 Arike Ogunbowale,Yahoo Sports,45,0.0388
 Breanna Stewart,CBS Sports,107,0.1395
 Breanna Stewart,ESPN,129,0.111
-Breanna Stewart,Fox News,28,0.1307
+Breanna Stewart,Fox News,30,0.1305
 Breanna Stewart,Just Women's Sports,79,0.1164
 Breanna Stewart,The Athletic,77,0.1294
 Breanna Stewart,USA Today,40,0.1011
@@ -48,7 +48,7 @@ Brittney Griner,USA Today,121,0.0428
 Brittney Griner,Yahoo Sports,933,0.0239
 Caitlin Clark,CBS Sports,399,0.1132
 Caitlin Clark,ESPN,288,0.0866
-Caitlin Clark,Fox News,1710,0.0534
+Caitlin Clark,Fox News,1727,0.053
 Caitlin Clark,Just Women's Sports,258,0.1463
 Caitlin Clark,The Athletic,481,0.1289
 Caitlin Clark,USA Today,306,0.0855
@@ -111,7 +111,7 @@ Kahleah Copper,Just Women's Sports,23,0.1616
 Kahleah Copper,Yahoo Sports,38,0.1136
 Kelsey Mitchell,CBS Sports,22,0.1245
 Kelsey Mitchell,ESPN,22,0.0899
-Kelsey Mitchell,Fox News,13,0.0602
+Kelsey Mitchell,Fox News,16,0.0489
 Kelsey Mitchell,Just Women's Sports,12,0.1344
 Kelsey Mitchell,USA Today,14,0.1054
 Kelsey Mitchell,Yahoo Sports,317,0.1394
@@ -135,7 +135,7 @@ Napheesa Collier,USA Today,50,0.0994
 Napheesa Collier,Yahoo Sports,530,0.0711
 Natasha Cloud,CBS Sports,12,0.0584
 Natasha Cloud,ESPN,12,0.1267
-Natasha Cloud,Fox News,39,-0.0929
+Natasha Cloud,Fox News,41,-0.0945
 Natasha Cloud,Just Women's Sports,15,0.0324
 Natasha Cloud,Yahoo Sports,51,0.028
 Nneka Ogwumike,CBS Sports,24,0.1396
@@ -160,7 +160,7 @@ Sabrina Ionescu,USA Today,30,0.0922
 Sabrina Ionescu,Yahoo Sports,649,0.1402
 Sophie Cunningham,CBS Sports,26,-0.0484
 Sophie Cunningham,ESPN,26,0.0372
-Sophie Cunningham,Fox News,260,0.0362
+Sophie Cunningham,Fox News,274,0.0339
 Sophie Cunningham,Just Women's Sports,26,0.0694
 Sophie Cunningham,The Athletic,21,-0.0359
 Sophie Cunningham,USA Today,34,0.0361

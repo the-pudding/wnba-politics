@@ -36,12 +36,21 @@ BOILERPLATE = re.compile(r"CLICK HERE[^a-z]*(?=[A-Z][a-z]|$)")
 def clean(t):
     t = html.unescape(str(t or "")).replace("\xa0", " ")
     return re.sub(r"\s+", " ", BOILERPLATE.sub(" ", t)).strip()
+# Fox drops links to its other stories into the text as an all-caps headline with
+# no full stop ("ACES CAPTURE 1ST WNBA CHAMPIONSHIP BEHIND CHELSEA GRAY'S 20 POINTS
+# The thing about it is..."), which joins each one onto the next sentence. They're
+# other articles' headlines, counted with those articles, so they come out
+CAPS_WORD = r"['‘\"“]?[A-Z0-9][A-Z0-9'’.&-]*[,:;?!'’\"”]*"
+LINK_HEADLINE = re.compile(rf"(?<![\w'’])(?:{CAPS_WORD}\s+){{3,}}['‘\"“]?[A-Z0-9][A-Z0-9'’.&-]+[,:;?!'’\"”]*(?![\w'’])")
+def drop_links(t):
+    shouted = lambda m: sum(bool(re.search(r"[A-Z]{2}", w)) for w in m.group(0).split()) >= 3
+    return re.sub(r"\s+", " ", LINK_HEADLINE.sub(lambda m: " " if shouted(m) else m.group(0), t)).strip()
 
 rows = list(csv.DictReader((DATA / "fox_wnba.csv").open()))
 seen, heads, bodies, meta = set(), [], [], []
 for r in rows:
     if r.get("url") in seen: continue
-    seen.add(r.get("url")); heads.append(clean(r.get("headline"))); bodies.append(clean(r.get("body")))
+    seen.add(r.get("url")); heads.append(clean(r.get("headline"))); bodies.append(drop_links(clean(r.get("body"))))
     meta.append((r.get("date", "")[:10], r.get("url", "")))
 sentences = []   # (date, url, text, [names], is_headline)
 # a bare surname someone else shares goes to whoever the article last named in

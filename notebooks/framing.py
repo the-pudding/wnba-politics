@@ -22,11 +22,20 @@ def load_parser(model=PARSER, disable=("ner",)):
     return spacy.load(model, disable=list(disable))
 
 
+# A few words in framing_terms.csv have an everyday sense the hyphen lets through:
+# "ex" (a former partner) also matched "ex-football players", "ex-NBA", "ex-teammate".
+# Each guarded term is swapped for the narrower pattern wherever the terms are read.
+TERM_GUARDS = {
+    "ex": r"ex(?:-(?:boyfriend|girlfriend|husband|wife|fianc[eé]e?|partner|lover)|(?!-))",
+}
+
+
 def load_terms():
     """Read the CSV fresh every call, so edits show up without restarting the kernel."""
     terms = defaultdict(list)
     for row in csv.DictReader(open(TERMS_CSV)):
-        terms[(row["register"], row["kind"])].append(row["term"])
+        term = row["term"]
+        terms[(row["register"], row["kind"])].append(TERM_GUARDS.get(term.strip().lower(), term))
     return terms
 
 
@@ -189,7 +198,29 @@ def attribute(nlp, headlines, groups, register, name_rx=None):
 # "transfer", "transaction". Each guarded term gets the endings it must not have.
 PREFIX_GUARDS = {
     "trans": r"trans(?!ition|fer|act|cript|lat|port|parent|form|mit|it\b|itio|ist|pire|cend|plant|atlantic|continental|lucent|vers|gress|mission|pos|ferr)",
+    # "pride" on its own is everyday ("pride and passion", "take pride in", the
+    # Orlando Pride): only Pride as an LGBTQ event or symbol counts
+    "pride": r"(?:pride(?=\s+(?:month|nights?|games?|flags?|jerseys?|parades?|celebrations?|events?|week(?:end)?|collection|merch|shirts?|t-shirts?|warm-?ups?|festival|fest|day|initiative|partnership)\b)"
+             r"|(?<=lgbtq\s)pride|(?<=lgbtq\+\s)pride|(?<=gay\s)pride|(?<=queer\s)pride|(?<=trans\s)pride)",
 }
+# "rally" in a game story is a comeback ("Fever's late rally", "help Lynx rally,
+# beat Sun"); that sense is left out, and every other rally (supporters, Trump's,
+# "the rally's organizers") counts. The game sense: a game word or a team just
+# before it, or the result just after it.
+_GAME_WORDS = ["late", "furious", "frantic", "comeback", "big", "huge", "final",
+    "first-half", "second-half", "third-quarter", "fourth-quarter", "point", "scoring"]
+_TEAMS = ["aces", "fever", "sky", "liberty", "lynx", "mercury", "storm", "sparks", "dream",
+    "wings", "sun", "mystics", "valkyries", "tempo", "fire", "vegas", "seattle", "lsu", "uconn",
+    "gamecocks", "hawkeyes"]
+_BEFORE = _GAME_WORDS + _TEAMS + [f"{team}'s" for team in _TEAMS] + [f"{team}’s" for team in _TEAMS]
+_RESULT = (r"\s*,?\s*(?:beat|beats|past|to (?:beat|win|stun|top|edge|force|tie|take|pull|claim)"
+    r"|from (?:\d|a |down|behind)|fell short|falls short|came up short|in the (?:first|second|third|fourth|final)"
+    r"|in (?:overtime|ot\b)|and (?:win|beat))")
+_RALLY = ("".join(rf"(?<!{re.escape(w)} )" for w in _BEFORE)
+    + rf"rall(?:y\w*|ies)(?!{_RESULT})")
+PREFIX_GUARDS["rally"] = PREFIX_GUARDS["rallies"] = _RALLY
+
+
 def guard_term(term):
     """The regex for one politicization term, with its false-prefix guard."""
     return PREFIX_GUARDS.get(term.strip().lower(), term)

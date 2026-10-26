@@ -90,7 +90,8 @@ polrace,body,Fox News,2026-05,87,12
 polrace,body,Fox News,2026-06,74,12
 polrace,body,Fox News,2026-07,159,58
 polrace,body,Fox News,2026-08,226,58
-polrace,body,Fox News,2026-09,54,5
+polrace,body,Fox News,2026-09,74,10
+polrace,body,Fox News,2026-10,65,23
 lgbtq,body,Fox News,2019-01,1,0
 lgbtq,body,Fox News,2019-03,2,0
 lgbtq,body,Fox News,2019-04,6,0
@@ -182,7 +183,8 @@ lgbtq,body,Fox News,2026-05,87,3
 lgbtq,body,Fox News,2026-06,74,6
 lgbtq,body,Fox News,2026-07,159,50
 lgbtq,body,Fox News,2026-08,226,161
-lgbtq,body,Fox News,2026-09,54,23
+lgbtq,body,Fox News,2026-09,74,29
+lgbtq,body,Fox News,2026-10,65,23
 fouls,body,Fox News,2019-01,1,0
 fouls,body,Fox News,2019-03,2,0
 fouls,body,Fox News,2019-04,6,1
@@ -274,7 +276,8 @@ fouls,body,Fox News,2026-05,87,5
 fouls,body,Fox News,2026-06,74,26
 fouls,body,Fox News,2026-07,159,42
 fouls,body,Fox News,2026-08,226,12
-fouls,body,Fox News,2026-09,54,2
+fouls,body,Fox News,2026-09,74,4
+fouls,body,Fox News,2026-10,65,5
 protect,body,Fox News,2019-01,1,0
 protect,body,Fox News,2019-03,2,0
 protect,body,Fox News,2019-04,6,0
@@ -366,7 +369,8 @@ protect,body,Fox News,2026-05,87,6
 protect,body,Fox News,2026-06,74,16
 protect,body,Fox News,2026-07,159,46
 protect,body,Fox News,2026-08,226,68
-protect,body,Fox News,2026-09,54,13
+protect,body,Fox News,2026-09,74,16
+protect,body,Fox News,2026-10,65,11
 fouls&protect,body,Fox News,2019-01,1,0
 fouls&protect,body,Fox News,2019-03,2,0
 fouls&protect,body,Fox News,2019-04,6,0
@@ -458,7 +462,8 @@ fouls&protect,body,Fox News,2026-05,87,0
 fouls&protect,body,Fox News,2026-06,74,9
 fouls&protect,body,Fox News,2026-07,159,13
 fouls&protect,body,Fox News,2026-08,226,3
-fouls&protect,body,Fox News,2026-09,54,1
+fouls&protect,body,Fox News,2026-09,74,1
+fouls&protect,body,Fox News,2026-10,65,2
 polrace&lgbtq,body,Fox News,2019-01,1,0
 polrace&lgbtq,body,Fox News,2019-03,2,0
 polrace&lgbtq,body,Fox News,2019-04,6,0
@@ -550,7 +555,8 @@ polrace&lgbtq,body,Fox News,2026-05,87,1
 polrace&lgbtq,body,Fox News,2026-06,74,5
 polrace&lgbtq,body,Fox News,2026-07,159,22
 polrace&lgbtq,body,Fox News,2026-08,226,40
-polrace&lgbtq,body,Fox News,2026-09,54,3
+polrace&lgbtq,body,Fox News,2026-09,74,4
+polrace&lgbtq,body,Fox News,2026-10,65,12
 polrace,body,ESPN,2019-01,11,2
 polrace,body,ESPN,2019-02,11,1
 polrace,body,ESPN,2019-03,4,0
@@ -643,7 +649,8 @@ polrace,body,ESPN,2026-05,92,0
 polrace,body,ESPN,2026-06,85,2
 polrace,body,ESPN,2026-07,112,20
 polrace,body,ESPN,2026-08,102,5
-polrace,body,ESPN,2026-09,81,2
+polrace,body,ESPN,2026-09,91,2
+polrace,body,ESPN,2026-10,73,4
 lgbtq,body,ESPN,2019-01,11,1
 lgbtq,body,ESPN,2019-02,11,1
 lgbtq,body,ESPN,2019-03,4,0
@@ -736,7 +743,8 @@ lgbtq,body,ESPN,2026-05,92,0
 lgbtq,body,ESPN,2026-06,85,0
 lgbtq,body,ESPN,2026-07,112,7
 lgbtq,body,ESPN,2026-08,102,21
-lgbtq,body,ESPN,2026-09,81,8
+lgbtq,body,ESPN,2026-09,91,8
+lgbtq,body,ESPN,2026-10,73,2
 fouls,body,ESPN,2019-01,11,1
 fouls,body,ESPN,2019-02,11,0
 fouls,body,ESPN,2019-03,4,0
@@ -829,7 +837,8 @@ fouls,body,ESPN,2026-05,92,2
 fouls,body,ESPN,2026-06,85,4
 fouls,body,ESPN,2026-07,112,14
 fouls,body,ESPN,2026-08,102,2
-fouls,body,ESPN,2026-09,81,6
+fouls,body,ESPN,2026-09,91,7
+fouls,body,ESPN,2026-10,73,5
 protect,body,ESPN,2019-01,11,0
 protect,body,ESPN,2019-02,11,0
 protect,body,ESPN,2019-03,4,0
@@ -922,7 +931,8 @@ protect,body,ESPN,2026-05,92,1
 protect,body,ESPN,2026-06,85,5
 protect,body,ESPN,2026-07,112,12
 protect,body,ESPN,2026-08,102,12
-protect,body,ESPN,2026-09,81,5
+protect,body,ESPN,2026-09,91,7
+protect,body,ESPN,2026-10,73,2
 fouls&protect,body,ESPN,2019-01,11,0
 fouls&protect,body,ESPN,2019-02,11,0
 fouls&protect,body,ESPN,2019-03,4,0
@@ -1015,7 +1025,8 @@ fouls&protect,body,ESPN,2026-05,92,0
 fouls&protect,body,ESPN,2026-06,85,0
 fouls&protect,body,ESPN,2026-07,112,7
 fouls&protect,body,ESPN,2026-08,102,0
-fouls&protect,body,ESPN,2026-09,81,1
+fouls&protect,body,ESPN,2026-09,91,1
+fouls&protect,body,ESPN,2026-10,73,0
 polrace&lgbtq,body,ESPN,2019-01,11,1
 polrace&lgbtq,body,ESPN,2019-02,11,0
 polrace&lgbtq,body,ESPN,2019-03,4,0
@@ -1108,7 +1119,8 @@ polrace&lgbtq,body,ESPN,2026-05,92,0
 polrace&lgbtq,body,ESPN,2026-06,85,0
 polrace&lgbtq,body,ESPN,2026-07,112,2
 polrace&lgbtq,body,ESPN,2026-08,102,3
-polrace&lgbtq,body,ESPN,2026-09,81,2
+polrace&lgbtq,body,ESPN,2026-09,91,2
+polrace&lgbtq,body,ESPN,2026-10,73,1
 polrace,body,CBS,2019-01,9,1
 polrace,body,CBS,2019-02,6,0
 polrace,body,CBS,2019-03,7,0
@@ -1201,7 +1213,8 @@ polrace,body,CBS,2026-05,145,1
 polrace,body,CBS,2026-06,84,1
 polrace,body,CBS,2026-07,146,15
 polrace,body,CBS,2026-08,182,6
-polrace,body,CBS,2026-09,157,2
+polrace,body,CBS,2026-09,164,2
+polrace,body,CBS,2026-10,62,2
 lgbtq,body,CBS,2019-01,9,1
 lgbtq,body,CBS,2019-02,6,0
 lgbtq,body,CBS,2019-03,7,0
@@ -1294,7 +1307,8 @@ lgbtq,body,CBS,2026-05,145,0
 lgbtq,body,CBS,2026-06,84,0
 lgbtq,body,CBS,2026-07,146,2
 lgbtq,body,CBS,2026-08,182,20
-lgbtq,body,CBS,2026-09,157,5
+lgbtq,body,CBS,2026-09,164,5
+lgbtq,body,CBS,2026-10,62,2
 fouls,body,CBS,2019-01,9,1
 fouls,body,CBS,2019-02,6,0
 fouls,body,CBS,2019-03,7,0
@@ -1387,7 +1401,8 @@ fouls,body,CBS,2026-05,145,2
 fouls,body,CBS,2026-06,84,6
 fouls,body,CBS,2026-07,146,14
 fouls,body,CBS,2026-08,182,2
-fouls,body,CBS,2026-09,157,6
+fouls,body,CBS,2026-09,164,6
+fouls,body,CBS,2026-10,62,2
 protect,body,CBS,2019-01,9,1
 protect,body,CBS,2019-02,6,0
 protect,body,CBS,2019-03,7,0
@@ -1480,7 +1495,8 @@ protect,body,CBS,2026-05,145,3
 protect,body,CBS,2026-06,84,2
 protect,body,CBS,2026-07,146,8
 protect,body,CBS,2026-08,182,11
-protect,body,CBS,2026-09,157,2
+protect,body,CBS,2026-09,164,2
+protect,body,CBS,2026-10,62,2
 fouls&protect,body,CBS,2019-01,9,1
 fouls&protect,body,CBS,2019-02,6,0
 fouls&protect,body,CBS,2019-03,7,0
@@ -1573,7 +1589,8 @@ fouls&protect,body,CBS,2026-05,145,0
 fouls&protect,body,CBS,2026-06,84,1
 fouls&protect,body,CBS,2026-07,146,3
 fouls&protect,body,CBS,2026-08,182,0
-fouls&protect,body,CBS,2026-09,157,0
+fouls&protect,body,CBS,2026-09,164,0
+fouls&protect,body,CBS,2026-10,62,0
 polrace&lgbtq,body,CBS,2019-01,9,1
 polrace&lgbtq,body,CBS,2019-02,6,0
 polrace&lgbtq,body,CBS,2019-03,7,0
@@ -1666,7 +1683,8 @@ polrace&lgbtq,body,CBS,2026-05,145,0
 polrace&lgbtq,body,CBS,2026-06,84,0
 polrace&lgbtq,body,CBS,2026-07,146,1
 polrace&lgbtq,body,CBS,2026-08,182,3
-polrace&lgbtq,body,CBS,2026-09,157,1
+polrace&lgbtq,body,CBS,2026-09,164,1
+polrace&lgbtq,body,CBS,2026-10,62,1
 polrace,body,USA Today,2019-01,10,0
 polrace,body,USA Today,2019-02,9,0
 polrace,body,USA Today,2019-03,4,0
@@ -1759,7 +1777,8 @@ polrace,body,USA Today,2026-05,165,1
 polrace,body,USA Today,2026-06,134,4
 polrace,body,USA Today,2026-07,183,18
 polrace,body,USA Today,2026-08,145,9
-polrace,body,USA Today,2026-09,164,7
+polrace,body,USA Today,2026-09,169,7
+polrace,body,USA Today,2026-10,121,2
 lgbtq,body,USA Today,2019-01,10,0
 lgbtq,body,USA Today,2019-02,9,0
 lgbtq,body,USA Today,2019-03,4,0
@@ -1852,7 +1871,8 @@ lgbtq,body,USA Today,2026-05,165,2
 lgbtq,body,USA Today,2026-06,134,1
 lgbtq,body,USA Today,2026-07,183,5
 lgbtq,body,USA Today,2026-08,145,27
-lgbtq,body,USA Today,2026-09,164,9
+lgbtq,body,USA Today,2026-09,169,9
+lgbtq,body,USA Today,2026-10,121,5
 fouls,body,USA Today,2019-01,10,2
 fouls,body,USA Today,2019-02,9,0
 fouls,body,USA Today,2019-03,4,0
@@ -1945,7 +1965,8 @@ fouls,body,USA Today,2026-05,165,2
 fouls,body,USA Today,2026-06,134,18
 fouls,body,USA Today,2026-07,183,22
 fouls,body,USA Today,2026-08,145,5
-fouls,body,USA Today,2026-09,164,7
+fouls,body,USA Today,2026-09,169,8
+fouls,body,USA Today,2026-10,121,16
 protect,body,USA Today,2019-01,10,1
 protect,body,USA Today,2019-02,9,0
 protect,body,USA Today,2019-03,4,0
@@ -2038,7 +2059,8 @@ protect,body,USA Today,2026-05,165,2
 protect,body,USA Today,2026-06,134,2
 protect,body,USA Today,2026-07,183,10
 protect,body,USA Today,2026-08,145,19
-protect,body,USA Today,2026-09,164,7
+protect,body,USA Today,2026-09,169,7
+protect,body,USA Today,2026-10,121,4
 fouls&protect,body,USA Today,2019-01,10,1
 fouls&protect,body,USA Today,2019-02,9,0
 fouls&protect,body,USA Today,2019-03,4,0
@@ -2131,7 +2153,8 @@ fouls&protect,body,USA Today,2026-05,165,0
 fouls&protect,body,USA Today,2026-06,134,2
 fouls&protect,body,USA Today,2026-07,183,5
 fouls&protect,body,USA Today,2026-08,145,0
-fouls&protect,body,USA Today,2026-09,164,1
+fouls&protect,body,USA Today,2026-09,169,1
+fouls&protect,body,USA Today,2026-10,121,0
 polrace&lgbtq,body,USA Today,2019-01,10,0
 polrace&lgbtq,body,USA Today,2019-02,9,0
 polrace&lgbtq,body,USA Today,2019-03,4,0
@@ -2224,13 +2247,14 @@ polrace&lgbtq,body,USA Today,2026-05,165,0
 polrace&lgbtq,body,USA Today,2026-06,134,0
 polrace&lgbtq,body,USA Today,2026-07,183,3
 polrace&lgbtq,body,USA Today,2026-08,145,4
-polrace&lgbtq,body,USA Today,2026-09,164,4
+polrace&lgbtq,body,USA Today,2026-09,169,4
+polrace&lgbtq,body,USA Today,2026-10,121,1
 polrace,body,New York Times,2019-01,4,0
 polrace,body,New York Times,2019-02,3,0
 polrace,body,New York Times,2019-03,12,0
 polrace,body,New York Times,2019-04,23,1
 polrace,body,New York Times,2019-05,35,0
-polrace,body,New York Times,2019-06,33,3
+polrace,body,New York Times,2019-06,32,2
 polrace,body,New York Times,2019-07,41,3
 polrace,body,New York Times,2019-08,35,0
 polrace,body,New York Times,2019-09,45,2
@@ -2242,10 +2266,10 @@ polrace,body,New York Times,2020-02,13,1
 polrace,body,New York Times,2020-03,19,2
 polrace,body,New York Times,2020-04,38,1
 polrace,body,New York Times,2020-05,8,0
-polrace,body,New York Times,2020-06,24,15
-polrace,body,New York Times,2020-07,41,15
+polrace,body,New York Times,2020-06,23,14
+polrace,body,New York Times,2020-07,38,14
 polrace,body,New York Times,2020-08,41,17
-polrace,body,New York Times,2020-09,65,6
+polrace,body,New York Times,2020-09,64,6
 polrace,body,New York Times,2020-10,27,7
 polrace,body,New York Times,2020-11,11,3
 polrace,body,New York Times,2020-12,23,5
@@ -2253,8 +2277,8 @@ polrace,body,New York Times,2021-01,18,5
 polrace,body,New York Times,2021-02,25,2
 polrace,body,New York Times,2021-03,38,5
 polrace,body,New York Times,2021-04,40,3
-polrace,body,New York Times,2021-05,52,2
-polrace,body,New York Times,2021-06,27,4
+polrace,body,New York Times,2021-05,51,2
+polrace,body,New York Times,2021-06,26,3
 polrace,body,New York Times,2021-07,30,2
 polrace,body,New York Times,2021-08,30,1
 polrace,body,New York Times,2021-09,47,10
@@ -2264,66 +2288,67 @@ polrace,body,New York Times,2021-12,22,0
 polrace,body,New York Times,2022-01,19,0
 polrace,body,New York Times,2022-02,27,2
 polrace,body,New York Times,2022-03,53,2
-polrace,body,New York Times,2022-04,31,5
-polrace,body,New York Times,2022-05,36,4
+polrace,body,New York Times,2022-04,30,5
+polrace,body,New York Times,2022-05,34,3
 polrace,body,New York Times,2022-06,41,2
 polrace,body,New York Times,2022-07,83,7
-polrace,body,New York Times,2022-08,79,4
-polrace,body,New York Times,2022-09,55,7
+polrace,body,New York Times,2022-08,77,4
+polrace,body,New York Times,2022-09,54,7
 polrace,body,New York Times,2022-10,21,1
 polrace,body,New York Times,2022-11,26,0
-polrace,body,New York Times,2022-12,51,15
+polrace,body,New York Times,2022-12,49,13
 polrace,body,New York Times,2023-01,20,1
 polrace,body,New York Times,2023-02,40,2
 polrace,body,New York Times,2023-03,48,3
 polrace,body,New York Times,2023-04,57,7
-polrace,body,New York Times,2023-05,45,2
+polrace,body,New York Times,2023-05,43,2
 polrace,body,New York Times,2023-06,38,0
 polrace,body,New York Times,2023-07,36,0
-polrace,body,New York Times,2023-08,35,0
+polrace,body,New York Times,2023-08,34,0
 polrace,body,New York Times,2023-09,45,1
 polrace,body,New York Times,2023-10,61,4
 polrace,body,New York Times,2023-11,16,0
 polrace,body,New York Times,2023-12,16,0
 polrace,body,New York Times,2024-01,21,0
 polrace,body,New York Times,2024-02,42,1
-polrace,body,New York Times,2024-03,74,2
-polrace,body,New York Times,2024-04,86,6
-polrace,body,New York Times,2024-05,79,5
-polrace,body,New York Times,2024-06,67,5
-polrace,body,New York Times,2024-07,51,3
-polrace,body,New York Times,2024-08,44,0
-polrace,body,New York Times,2024-09,74,11
+polrace,body,New York Times,2024-03,72,2
+polrace,body,New York Times,2024-04,84,6
+polrace,body,New York Times,2024-05,71,4
+polrace,body,New York Times,2024-06,66,5
+polrace,body,New York Times,2024-07,49,3
+polrace,body,New York Times,2024-08,42,0
+polrace,body,New York Times,2024-09,71,11
 polrace,body,New York Times,2024-10,83,3
 polrace,body,New York Times,2024-11,35,0
-polrace,body,New York Times,2024-12,39,1
-polrace,body,New York Times,2025-01,35,0
-polrace,body,New York Times,2025-02,43,0
-polrace,body,New York Times,2025-03,38,0
-polrace,body,New York Times,2025-04,57,2
-polrace,body,New York Times,2025-05,101,5
+polrace,body,New York Times,2024-12,38,1
+polrace,body,New York Times,2025-01,34,0
+polrace,body,New York Times,2025-02,42,0
+polrace,body,New York Times,2025-03,36,0
+polrace,body,New York Times,2025-04,54,2
+polrace,body,New York Times,2025-05,97,4
 polrace,body,New York Times,2025-06,95,0
-polrace,body,New York Times,2025-07,109,0
-polrace,body,New York Times,2025-08,50,0
-polrace,body,New York Times,2025-09,93,1
-polrace,body,New York Times,2025-10,90,5
-polrace,body,New York Times,2025-11,24,0
-polrace,body,New York Times,2025-12,26,3
+polrace,body,New York Times,2025-07,104,0
+polrace,body,New York Times,2025-08,48,0
+polrace,body,New York Times,2025-09,88,1
+polrace,body,New York Times,2025-10,88,5
+polrace,body,New York Times,2025-11,22,0
+polrace,body,New York Times,2025-12,25,3
 polrace,body,New York Times,2026-01,18,0
-polrace,body,New York Times,2026-02,23,1
-polrace,body,New York Times,2026-03,57,1
-polrace,body,New York Times,2026-04,74,3
-polrace,body,New York Times,2026-05,96,1
+polrace,body,New York Times,2026-02,20,1
+polrace,body,New York Times,2026-03,53,1
+polrace,body,New York Times,2026-04,72,2
+polrace,body,New York Times,2026-05,94,1
 polrace,body,New York Times,2026-06,89,4
-polrace,body,New York Times,2026-07,95,13
+polrace,body,New York Times,2026-07,93,13
 polrace,body,New York Times,2026-08,92,6
-polrace,body,New York Times,2026-09,36,1
+polrace,body,New York Times,2026-09,44,1
+polrace,body,New York Times,2026-10,76,6
 lgbtq,body,New York Times,2019-01,4,0
 lgbtq,body,New York Times,2019-02,3,0
 lgbtq,body,New York Times,2019-03,12,2
 lgbtq,body,New York Times,2019-04,23,1
 lgbtq,body,New York Times,2019-05,35,0
-lgbtq,body,New York Times,2019-06,33,3
+lgbtq,body,New York Times,2019-06,32,3
 lgbtq,body,New York Times,2019-07,41,2
 lgbtq,body,New York Times,2019-08,35,1
 lgbtq,body,New York Times,2019-09,45,2
@@ -2335,10 +2360,10 @@ lgbtq,body,New York Times,2020-02,13,0
 lgbtq,body,New York Times,2020-03,19,0
 lgbtq,body,New York Times,2020-04,38,1
 lgbtq,body,New York Times,2020-05,8,0
-lgbtq,body,New York Times,2020-06,24,1
-lgbtq,body,New York Times,2020-07,41,3
+lgbtq,body,New York Times,2020-06,23,1
+lgbtq,body,New York Times,2020-07,38,3
 lgbtq,body,New York Times,2020-08,41,1
-lgbtq,body,New York Times,2020-09,65,2
+lgbtq,body,New York Times,2020-09,64,2
 lgbtq,body,New York Times,2020-10,27,3
 lgbtq,body,New York Times,2020-11,11,1
 lgbtq,body,New York Times,2020-12,23,2
@@ -2346,8 +2371,8 @@ lgbtq,body,New York Times,2021-01,18,1
 lgbtq,body,New York Times,2021-02,25,1
 lgbtq,body,New York Times,2021-03,38,1
 lgbtq,body,New York Times,2021-04,40,0
-lgbtq,body,New York Times,2021-05,52,1
-lgbtq,body,New York Times,2021-06,27,1
+lgbtq,body,New York Times,2021-05,51,1
+lgbtq,body,New York Times,2021-06,26,1
 lgbtq,body,New York Times,2021-07,30,0
 lgbtq,body,New York Times,2021-08,30,2
 lgbtq,body,New York Times,2021-09,47,3
@@ -2357,66 +2382,67 @@ lgbtq,body,New York Times,2021-12,22,0
 lgbtq,body,New York Times,2022-01,19,0
 lgbtq,body,New York Times,2022-02,27,0
 lgbtq,body,New York Times,2022-03,53,3
-lgbtq,body,New York Times,2022-04,31,3
-lgbtq,body,New York Times,2022-05,36,2
+lgbtq,body,New York Times,2022-04,30,2
+lgbtq,body,New York Times,2022-05,34,2
 lgbtq,body,New York Times,2022-06,41,8
 lgbtq,body,New York Times,2022-07,83,11
-lgbtq,body,New York Times,2022-08,79,3
-lgbtq,body,New York Times,2022-09,55,2
+lgbtq,body,New York Times,2022-08,77,3
+lgbtq,body,New York Times,2022-09,54,2
 lgbtq,body,New York Times,2022-10,21,1
 lgbtq,body,New York Times,2022-11,26,1
-lgbtq,body,New York Times,2022-12,51,8
+lgbtq,body,New York Times,2022-12,49,8
 lgbtq,body,New York Times,2023-01,20,0
 lgbtq,body,New York Times,2023-02,40,0
 lgbtq,body,New York Times,2023-03,48,1
 lgbtq,body,New York Times,2023-04,57,3
-lgbtq,body,New York Times,2023-05,45,5
+lgbtq,body,New York Times,2023-05,43,4
 lgbtq,body,New York Times,2023-06,38,0
 lgbtq,body,New York Times,2023-07,36,0
-lgbtq,body,New York Times,2023-08,35,2
+lgbtq,body,New York Times,2023-08,34,2
 lgbtq,body,New York Times,2023-09,45,1
 lgbtq,body,New York Times,2023-10,61,2
 lgbtq,body,New York Times,2023-11,16,0
 lgbtq,body,New York Times,2023-12,16,0
 lgbtq,body,New York Times,2024-01,21,0
 lgbtq,body,New York Times,2024-02,42,0
-lgbtq,body,New York Times,2024-03,74,4
-lgbtq,body,New York Times,2024-04,86,5
-lgbtq,body,New York Times,2024-05,79,2
-lgbtq,body,New York Times,2024-06,67,2
-lgbtq,body,New York Times,2024-07,51,1
-lgbtq,body,New York Times,2024-08,44,2
-lgbtq,body,New York Times,2024-09,74,1
+lgbtq,body,New York Times,2024-03,72,4
+lgbtq,body,New York Times,2024-04,84,5
+lgbtq,body,New York Times,2024-05,71,2
+lgbtq,body,New York Times,2024-06,66,2
+lgbtq,body,New York Times,2024-07,49,0
+lgbtq,body,New York Times,2024-08,42,2
+lgbtq,body,New York Times,2024-09,71,1
 lgbtq,body,New York Times,2024-10,83,2
 lgbtq,body,New York Times,2024-11,35,1
-lgbtq,body,New York Times,2024-12,39,2
-lgbtq,body,New York Times,2025-01,35,0
-lgbtq,body,New York Times,2025-02,43,0
-lgbtq,body,New York Times,2025-03,38,0
-lgbtq,body,New York Times,2025-04,57,0
-lgbtq,body,New York Times,2025-05,101,1
+lgbtq,body,New York Times,2024-12,38,2
+lgbtq,body,New York Times,2025-01,34,0
+lgbtq,body,New York Times,2025-02,42,0
+lgbtq,body,New York Times,2025-03,36,0
+lgbtq,body,New York Times,2025-04,54,0
+lgbtq,body,New York Times,2025-05,97,0
 lgbtq,body,New York Times,2025-06,95,2
-lgbtq,body,New York Times,2025-07,109,2
-lgbtq,body,New York Times,2025-08,50,2
-lgbtq,body,New York Times,2025-09,93,6
-lgbtq,body,New York Times,2025-10,90,6
-lgbtq,body,New York Times,2025-11,24,1
-lgbtq,body,New York Times,2025-12,26,2
+lgbtq,body,New York Times,2025-07,104,2
+lgbtq,body,New York Times,2025-08,48,2
+lgbtq,body,New York Times,2025-09,88,3
+lgbtq,body,New York Times,2025-10,88,6
+lgbtq,body,New York Times,2025-11,22,1
+lgbtq,body,New York Times,2025-12,25,2
 lgbtq,body,New York Times,2026-01,18,0
-lgbtq,body,New York Times,2026-02,23,0
-lgbtq,body,New York Times,2026-03,57,1
-lgbtq,body,New York Times,2026-04,74,0
-lgbtq,body,New York Times,2026-05,96,2
+lgbtq,body,New York Times,2026-02,20,0
+lgbtq,body,New York Times,2026-03,53,1
+lgbtq,body,New York Times,2026-04,72,0
+lgbtq,body,New York Times,2026-05,94,2
 lgbtq,body,New York Times,2026-06,89,1
-lgbtq,body,New York Times,2026-07,95,4
+lgbtq,body,New York Times,2026-07,93,4
 lgbtq,body,New York Times,2026-08,92,20
-lgbtq,body,New York Times,2026-09,36,0
+lgbtq,body,New York Times,2026-09,44,0
+lgbtq,body,New York Times,2026-10,76,6
 fouls,body,New York Times,2019-01,4,0
 fouls,body,New York Times,2019-02,3,0
 fouls,body,New York Times,2019-03,12,0
 fouls,body,New York Times,2019-04,23,2
 fouls,body,New York Times,2019-05,35,2
-fouls,body,New York Times,2019-06,33,2
+fouls,body,New York Times,2019-06,32,2
 fouls,body,New York Times,2019-07,41,3
 fouls,body,New York Times,2019-08,35,3
 fouls,body,New York Times,2019-09,45,3
@@ -2428,10 +2454,10 @@ fouls,body,New York Times,2020-02,13,0
 fouls,body,New York Times,2020-03,19,0
 fouls,body,New York Times,2020-04,38,2
 fouls,body,New York Times,2020-05,8,0
-fouls,body,New York Times,2020-06,24,4
-fouls,body,New York Times,2020-07,41,3
+fouls,body,New York Times,2020-06,23,4
+fouls,body,New York Times,2020-07,38,3
 fouls,body,New York Times,2020-08,41,1
-fouls,body,New York Times,2020-09,65,2
+fouls,body,New York Times,2020-09,64,2
 fouls,body,New York Times,2020-10,27,1
 fouls,body,New York Times,2020-11,11,1
 fouls,body,New York Times,2020-12,23,1
@@ -2439,8 +2465,8 @@ fouls,body,New York Times,2021-01,18,1
 fouls,body,New York Times,2021-02,25,0
 fouls,body,New York Times,2021-03,38,2
 fouls,body,New York Times,2021-04,40,2
-fouls,body,New York Times,2021-05,52,1
-fouls,body,New York Times,2021-06,27,0
+fouls,body,New York Times,2021-05,51,1
+fouls,body,New York Times,2021-06,26,0
 fouls,body,New York Times,2021-07,30,1
 fouls,body,New York Times,2021-08,30,1
 fouls,body,New York Times,2021-09,47,2
@@ -2450,66 +2476,67 @@ fouls,body,New York Times,2021-12,22,0
 fouls,body,New York Times,2022-01,19,0
 fouls,body,New York Times,2022-02,27,0
 fouls,body,New York Times,2022-03,53,3
-fouls,body,New York Times,2022-04,31,0
-fouls,body,New York Times,2022-05,36,4
+fouls,body,New York Times,2022-04,30,0
+fouls,body,New York Times,2022-05,34,4
 fouls,body,New York Times,2022-06,41,0
 fouls,body,New York Times,2022-07,83,2
-fouls,body,New York Times,2022-08,79,3
-fouls,body,New York Times,2022-09,55,2
+fouls,body,New York Times,2022-08,77,3
+fouls,body,New York Times,2022-09,54,2
 fouls,body,New York Times,2022-10,21,2
 fouls,body,New York Times,2022-11,26,0
-fouls,body,New York Times,2022-12,51,2
+fouls,body,New York Times,2022-12,49,1
 fouls,body,New York Times,2023-01,20,2
 fouls,body,New York Times,2023-02,40,3
 fouls,body,New York Times,2023-03,48,6
 fouls,body,New York Times,2023-04,57,5
-fouls,body,New York Times,2023-05,45,4
+fouls,body,New York Times,2023-05,43,3
 fouls,body,New York Times,2023-06,38,0
 fouls,body,New York Times,2023-07,36,1
-fouls,body,New York Times,2023-08,35,0
+fouls,body,New York Times,2023-08,34,0
 fouls,body,New York Times,2023-09,45,1
 fouls,body,New York Times,2023-10,61,2
 fouls,body,New York Times,2023-11,16,1
 fouls,body,New York Times,2023-12,16,0
 fouls,body,New York Times,2024-01,21,2
 fouls,body,New York Times,2024-02,42,0
-fouls,body,New York Times,2024-03,74,0
-fouls,body,New York Times,2024-04,86,3
-fouls,body,New York Times,2024-05,79,4
-fouls,body,New York Times,2024-06,67,4
-fouls,body,New York Times,2024-07,51,2
-fouls,body,New York Times,2024-08,44,1
-fouls,body,New York Times,2024-09,74,7
+fouls,body,New York Times,2024-03,72,0
+fouls,body,New York Times,2024-04,84,3
+fouls,body,New York Times,2024-05,71,4
+fouls,body,New York Times,2024-06,66,4
+fouls,body,New York Times,2024-07,49,2
+fouls,body,New York Times,2024-08,42,1
+fouls,body,New York Times,2024-09,71,7
 fouls,body,New York Times,2024-10,83,5
 fouls,body,New York Times,2024-11,35,0
-fouls,body,New York Times,2024-12,39,1
-fouls,body,New York Times,2025-01,35,2
-fouls,body,New York Times,2025-02,43,0
-fouls,body,New York Times,2025-03,38,1
-fouls,body,New York Times,2025-04,57,2
-fouls,body,New York Times,2025-05,101,5
+fouls,body,New York Times,2024-12,38,1
+fouls,body,New York Times,2025-01,34,2
+fouls,body,New York Times,2025-02,42,0
+fouls,body,New York Times,2025-03,36,1
+fouls,body,New York Times,2025-04,54,2
+fouls,body,New York Times,2025-05,97,5
 fouls,body,New York Times,2025-06,95,12
-fouls,body,New York Times,2025-07,109,0
-fouls,body,New York Times,2025-08,50,0
-fouls,body,New York Times,2025-09,93,5
-fouls,body,New York Times,2025-10,90,1
-fouls,body,New York Times,2025-11,24,0
-fouls,body,New York Times,2025-12,26,1
+fouls,body,New York Times,2025-07,104,0
+fouls,body,New York Times,2025-08,48,0
+fouls,body,New York Times,2025-09,88,5
+fouls,body,New York Times,2025-10,88,1
+fouls,body,New York Times,2025-11,22,0
+fouls,body,New York Times,2025-12,25,1
 fouls,body,New York Times,2026-01,18,1
-fouls,body,New York Times,2026-02,23,0
-fouls,body,New York Times,2026-03,57,1
-fouls,body,New York Times,2026-04,74,3
-fouls,body,New York Times,2026-05,96,4
+fouls,body,New York Times,2026-02,20,0
+fouls,body,New York Times,2026-03,53,1
+fouls,body,New York Times,2026-04,72,3
+fouls,body,New York Times,2026-05,94,3
 fouls,body,New York Times,2026-06,89,8
-fouls,body,New York Times,2026-07,95,5
+fouls,body,New York Times,2026-07,93,5
 fouls,body,New York Times,2026-08,92,3
-fouls,body,New York Times,2026-09,36,2
+fouls,body,New York Times,2026-09,44,2
+fouls,body,New York Times,2026-10,76,9
 protect,body,New York Times,2019-01,4,0
 protect,body,New York Times,2019-02,3,1
 protect,body,New York Times,2019-03,12,0
 protect,body,New York Times,2019-04,23,0
 protect,body,New York Times,2019-05,35,1
-protect,body,New York Times,2019-06,33,3
+protect,body,New York Times,2019-06,32,3
 protect,body,New York Times,2019-07,41,1
 protect,body,New York Times,2019-08,35,6
 protect,body,New York Times,2019-09,45,2
@@ -2521,10 +2548,10 @@ protect,body,New York Times,2020-02,13,1
 protect,body,New York Times,2020-03,19,0
 protect,body,New York Times,2020-04,38,1
 protect,body,New York Times,2020-05,8,0
-protect,body,New York Times,2020-06,24,3
-protect,body,New York Times,2020-07,41,3
+protect,body,New York Times,2020-06,23,3
+protect,body,New York Times,2020-07,38,3
 protect,body,New York Times,2020-08,41,6
-protect,body,New York Times,2020-09,65,4
+protect,body,New York Times,2020-09,64,4
 protect,body,New York Times,2020-10,27,1
 protect,body,New York Times,2020-11,11,0
 protect,body,New York Times,2020-12,23,1
@@ -2532,8 +2559,8 @@ protect,body,New York Times,2021-01,18,1
 protect,body,New York Times,2021-02,25,0
 protect,body,New York Times,2021-03,38,1
 protect,body,New York Times,2021-04,40,1
-protect,body,New York Times,2021-05,52,1
-protect,body,New York Times,2021-06,27,0
+protect,body,New York Times,2021-05,51,1
+protect,body,New York Times,2021-06,26,0
 protect,body,New York Times,2021-07,30,1
 protect,body,New York Times,2021-08,30,1
 protect,body,New York Times,2021-09,47,3
@@ -2543,66 +2570,67 @@ protect,body,New York Times,2021-12,22,0
 protect,body,New York Times,2022-01,19,0
 protect,body,New York Times,2022-02,27,0
 protect,body,New York Times,2022-03,53,1
-protect,body,New York Times,2022-04,31,0
-protect,body,New York Times,2022-05,36,1
+protect,body,New York Times,2022-04,30,0
+protect,body,New York Times,2022-05,34,1
 protect,body,New York Times,2022-06,41,2
 protect,body,New York Times,2022-07,83,1
-protect,body,New York Times,2022-08,79,1
-protect,body,New York Times,2022-09,55,3
+protect,body,New York Times,2022-08,77,1
+protect,body,New York Times,2022-09,54,3
 protect,body,New York Times,2022-10,21,0
 protect,body,New York Times,2022-11,26,1
-protect,body,New York Times,2022-12,51,1
+protect,body,New York Times,2022-12,49,1
 protect,body,New York Times,2023-01,20,0
 protect,body,New York Times,2023-02,40,1
 protect,body,New York Times,2023-03,48,1
 protect,body,New York Times,2023-04,57,1
-protect,body,New York Times,2023-05,45,2
+protect,body,New York Times,2023-05,43,2
 protect,body,New York Times,2023-06,38,3
 protect,body,New York Times,2023-07,36,0
-protect,body,New York Times,2023-08,35,1
+protect,body,New York Times,2023-08,34,1
 protect,body,New York Times,2023-09,45,0
 protect,body,New York Times,2023-10,61,3
 protect,body,New York Times,2023-11,16,1
 protect,body,New York Times,2023-12,16,1
 protect,body,New York Times,2024-01,21,0
 protect,body,New York Times,2024-02,42,1
-protect,body,New York Times,2024-03,74,0
-protect,body,New York Times,2024-04,86,5
-protect,body,New York Times,2024-05,79,5
-protect,body,New York Times,2024-06,67,1
-protect,body,New York Times,2024-07,51,2
-protect,body,New York Times,2024-08,44,2
-protect,body,New York Times,2024-09,74,4
+protect,body,New York Times,2024-03,72,0
+protect,body,New York Times,2024-04,84,5
+protect,body,New York Times,2024-05,71,4
+protect,body,New York Times,2024-06,66,1
+protect,body,New York Times,2024-07,49,1
+protect,body,New York Times,2024-08,42,2
+protect,body,New York Times,2024-09,71,4
 protect,body,New York Times,2024-10,83,4
 protect,body,New York Times,2024-11,35,1
-protect,body,New York Times,2024-12,39,4
-protect,body,New York Times,2025-01,35,0
-protect,body,New York Times,2025-02,43,1
-protect,body,New York Times,2025-03,38,1
-protect,body,New York Times,2025-04,57,2
-protect,body,New York Times,2025-05,101,2
+protect,body,New York Times,2024-12,38,4
+protect,body,New York Times,2025-01,34,0
+protect,body,New York Times,2025-02,42,1
+protect,body,New York Times,2025-03,36,1
+protect,body,New York Times,2025-04,54,2
+protect,body,New York Times,2025-05,97,2
 protect,body,New York Times,2025-06,95,3
-protect,body,New York Times,2025-07,109,4
-protect,body,New York Times,2025-08,50,4
-protect,body,New York Times,2025-09,93,4
-protect,body,New York Times,2025-10,90,8
-protect,body,New York Times,2025-11,24,1
-protect,body,New York Times,2025-12,26,1
+protect,body,New York Times,2025-07,104,4
+protect,body,New York Times,2025-08,48,4
+protect,body,New York Times,2025-09,88,4
+protect,body,New York Times,2025-10,88,8
+protect,body,New York Times,2025-11,22,1
+protect,body,New York Times,2025-12,25,1
 protect,body,New York Times,2026-01,18,1
-protect,body,New York Times,2026-02,23,2
-protect,body,New York Times,2026-03,57,6
-protect,body,New York Times,2026-04,74,6
-protect,body,New York Times,2026-05,96,8
+protect,body,New York Times,2026-02,20,2
+protect,body,New York Times,2026-03,53,4
+protect,body,New York Times,2026-04,72,6
+protect,body,New York Times,2026-05,94,7
 protect,body,New York Times,2026-06,89,6
-protect,body,New York Times,2026-07,95,7
+protect,body,New York Times,2026-07,93,7
 protect,body,New York Times,2026-08,92,10
-protect,body,New York Times,2026-09,36,2
+protect,body,New York Times,2026-09,44,2
+protect,body,New York Times,2026-10,76,3
 fouls&protect,body,New York Times,2019-01,4,0
 fouls&protect,body,New York Times,2019-02,3,0
 fouls&protect,body,New York Times,2019-03,12,0
 fouls&protect,body,New York Times,2019-04,23,0
 fouls&protect,body,New York Times,2019-05,35,0
-fouls&protect,body,New York Times,2019-06,33,0
+fouls&protect,body,New York Times,2019-06,32,0
 fouls&protect,body,New York Times,2019-07,41,0
 fouls&protect,body,New York Times,2019-08,35,2
 fouls&protect,body,New York Times,2019-09,45,0
@@ -2614,10 +2642,10 @@ fouls&protect,body,New York Times,2020-02,13,0
 fouls&protect,body,New York Times,2020-03,19,0
 fouls&protect,body,New York Times,2020-04,38,0
 fouls&protect,body,New York Times,2020-05,8,0
-fouls&protect,body,New York Times,2020-06,24,1
-fouls&protect,body,New York Times,2020-07,41,1
+fouls&protect,body,New York Times,2020-06,23,1
+fouls&protect,body,New York Times,2020-07,38,1
 fouls&protect,body,New York Times,2020-08,41,0
-fouls&protect,body,New York Times,2020-09,65,0
+fouls&protect,body,New York Times,2020-09,64,0
 fouls&protect,body,New York Times,2020-10,27,0
 fouls&protect,body,New York Times,2020-11,11,0
 fouls&protect,body,New York Times,2020-12,23,0
@@ -2625,8 +2653,8 @@ fouls&protect,body,New York Times,2021-01,18,0
 fouls&protect,body,New York Times,2021-02,25,0
 fouls&protect,body,New York Times,2021-03,38,0
 fouls&protect,body,New York Times,2021-04,40,0
-fouls&protect,body,New York Times,2021-05,52,0
-fouls&protect,body,New York Times,2021-06,27,0
+fouls&protect,body,New York Times,2021-05,51,0
+fouls&protect,body,New York Times,2021-06,26,0
 fouls&protect,body,New York Times,2021-07,30,0
 fouls&protect,body,New York Times,2021-08,30,0
 fouls&protect,body,New York Times,2021-09,47,0
@@ -2636,66 +2664,67 @@ fouls&protect,body,New York Times,2021-12,22,0
 fouls&protect,body,New York Times,2022-01,19,0
 fouls&protect,body,New York Times,2022-02,27,0
 fouls&protect,body,New York Times,2022-03,53,0
-fouls&protect,body,New York Times,2022-04,31,0
-fouls&protect,body,New York Times,2022-05,36,0
+fouls&protect,body,New York Times,2022-04,30,0
+fouls&protect,body,New York Times,2022-05,34,0
 fouls&protect,body,New York Times,2022-06,41,0
 fouls&protect,body,New York Times,2022-07,83,0
-fouls&protect,body,New York Times,2022-08,79,0
-fouls&protect,body,New York Times,2022-09,55,0
+fouls&protect,body,New York Times,2022-08,77,0
+fouls&protect,body,New York Times,2022-09,54,0
 fouls&protect,body,New York Times,2022-10,21,0
 fouls&protect,body,New York Times,2022-11,26,0
-fouls&protect,body,New York Times,2022-12,51,0
+fouls&protect,body,New York Times,2022-12,49,0
 fouls&protect,body,New York Times,2023-01,20,0
 fouls&protect,body,New York Times,2023-02,40,0
 fouls&protect,body,New York Times,2023-03,48,0
 fouls&protect,body,New York Times,2023-04,57,0
-fouls&protect,body,New York Times,2023-05,45,0
+fouls&protect,body,New York Times,2023-05,43,0
 fouls&protect,body,New York Times,2023-06,38,0
 fouls&protect,body,New York Times,2023-07,36,0
-fouls&protect,body,New York Times,2023-08,35,0
+fouls&protect,body,New York Times,2023-08,34,0
 fouls&protect,body,New York Times,2023-09,45,0
 fouls&protect,body,New York Times,2023-10,61,1
 fouls&protect,body,New York Times,2023-11,16,0
 fouls&protect,body,New York Times,2023-12,16,0
 fouls&protect,body,New York Times,2024-01,21,0
 fouls&protect,body,New York Times,2024-02,42,0
-fouls&protect,body,New York Times,2024-03,74,0
-fouls&protect,body,New York Times,2024-04,86,2
-fouls&protect,body,New York Times,2024-05,79,0
-fouls&protect,body,New York Times,2024-06,67,0
-fouls&protect,body,New York Times,2024-07,51,0
-fouls&protect,body,New York Times,2024-08,44,0
-fouls&protect,body,New York Times,2024-09,74,1
+fouls&protect,body,New York Times,2024-03,72,0
+fouls&protect,body,New York Times,2024-04,84,2
+fouls&protect,body,New York Times,2024-05,71,0
+fouls&protect,body,New York Times,2024-06,66,0
+fouls&protect,body,New York Times,2024-07,49,0
+fouls&protect,body,New York Times,2024-08,42,0
+fouls&protect,body,New York Times,2024-09,71,1
 fouls&protect,body,New York Times,2024-10,83,1
 fouls&protect,body,New York Times,2024-11,35,0
-fouls&protect,body,New York Times,2024-12,39,0
-fouls&protect,body,New York Times,2025-01,35,0
-fouls&protect,body,New York Times,2025-02,43,0
-fouls&protect,body,New York Times,2025-03,38,0
-fouls&protect,body,New York Times,2025-04,57,0
-fouls&protect,body,New York Times,2025-05,101,0
+fouls&protect,body,New York Times,2024-12,38,0
+fouls&protect,body,New York Times,2025-01,34,0
+fouls&protect,body,New York Times,2025-02,42,0
+fouls&protect,body,New York Times,2025-03,36,0
+fouls&protect,body,New York Times,2025-04,54,0
+fouls&protect,body,New York Times,2025-05,97,0
 fouls&protect,body,New York Times,2025-06,95,1
-fouls&protect,body,New York Times,2025-07,109,0
-fouls&protect,body,New York Times,2025-08,50,0
-fouls&protect,body,New York Times,2025-09,93,0
-fouls&protect,body,New York Times,2025-10,90,0
-fouls&protect,body,New York Times,2025-11,24,0
-fouls&protect,body,New York Times,2025-12,26,0
+fouls&protect,body,New York Times,2025-07,104,0
+fouls&protect,body,New York Times,2025-08,48,0
+fouls&protect,body,New York Times,2025-09,88,0
+fouls&protect,body,New York Times,2025-10,88,0
+fouls&protect,body,New York Times,2025-11,22,0
+fouls&protect,body,New York Times,2025-12,25,0
 fouls&protect,body,New York Times,2026-01,18,1
-fouls&protect,body,New York Times,2026-02,23,0
-fouls&protect,body,New York Times,2026-03,57,0
-fouls&protect,body,New York Times,2026-04,74,0
-fouls&protect,body,New York Times,2026-05,96,0
+fouls&protect,body,New York Times,2026-02,20,0
+fouls&protect,body,New York Times,2026-03,53,0
+fouls&protect,body,New York Times,2026-04,72,0
+fouls&protect,body,New York Times,2026-05,94,0
 fouls&protect,body,New York Times,2026-06,89,3
-fouls&protect,body,New York Times,2026-07,95,1
+fouls&protect,body,New York Times,2026-07,93,1
 fouls&protect,body,New York Times,2026-08,92,2
-fouls&protect,body,New York Times,2026-09,36,0
+fouls&protect,body,New York Times,2026-09,44,0
+fouls&protect,body,New York Times,2026-10,76,0
 polrace&lgbtq,body,New York Times,2019-01,4,0
 polrace&lgbtq,body,New York Times,2019-02,3,0
 polrace&lgbtq,body,New York Times,2019-03,12,0
 polrace&lgbtq,body,New York Times,2019-04,23,1
 polrace&lgbtq,body,New York Times,2019-05,35,0
-polrace&lgbtq,body,New York Times,2019-06,33,1
+polrace&lgbtq,body,New York Times,2019-06,32,1
 polrace&lgbtq,body,New York Times,2019-07,41,0
 polrace&lgbtq,body,New York Times,2019-08,35,0
 polrace&lgbtq,body,New York Times,2019-09,45,2
@@ -2707,10 +2736,10 @@ polrace&lgbtq,body,New York Times,2020-02,13,0
 polrace&lgbtq,body,New York Times,2020-03,19,0
 polrace&lgbtq,body,New York Times,2020-04,38,0
 polrace&lgbtq,body,New York Times,2020-05,8,0
-polrace&lgbtq,body,New York Times,2020-06,24,1
-polrace&lgbtq,body,New York Times,2020-07,41,3
+polrace&lgbtq,body,New York Times,2020-06,23,1
+polrace&lgbtq,body,New York Times,2020-07,38,3
 polrace&lgbtq,body,New York Times,2020-08,41,1
-polrace&lgbtq,body,New York Times,2020-09,65,2
+polrace&lgbtq,body,New York Times,2020-09,64,2
 polrace&lgbtq,body,New York Times,2020-10,27,3
 polrace&lgbtq,body,New York Times,2020-11,11,1
 polrace&lgbtq,body,New York Times,2020-12,23,0
@@ -2718,8 +2747,8 @@ polrace&lgbtq,body,New York Times,2021-01,18,1
 polrace&lgbtq,body,New York Times,2021-02,25,0
 polrace&lgbtq,body,New York Times,2021-03,38,0
 polrace&lgbtq,body,New York Times,2021-04,40,0
-polrace&lgbtq,body,New York Times,2021-05,52,1
-polrace&lgbtq,body,New York Times,2021-06,27,0
+polrace&lgbtq,body,New York Times,2021-05,51,1
+polrace&lgbtq,body,New York Times,2021-06,26,0
 polrace&lgbtq,body,New York Times,2021-07,30,0
 polrace&lgbtq,body,New York Times,2021-08,30,1
 polrace&lgbtq,body,New York Times,2021-09,47,3
@@ -2729,60 +2758,61 @@ polrace&lgbtq,body,New York Times,2021-12,22,0
 polrace&lgbtq,body,New York Times,2022-01,19,0
 polrace&lgbtq,body,New York Times,2022-02,27,0
 polrace&lgbtq,body,New York Times,2022-03,53,0
-polrace&lgbtq,body,New York Times,2022-04,31,0
-polrace&lgbtq,body,New York Times,2022-05,36,1
+polrace&lgbtq,body,New York Times,2022-04,30,0
+polrace&lgbtq,body,New York Times,2022-05,34,1
 polrace&lgbtq,body,New York Times,2022-06,41,2
 polrace&lgbtq,body,New York Times,2022-07,83,3
-polrace&lgbtq,body,New York Times,2022-08,79,2
-polrace&lgbtq,body,New York Times,2022-09,55,2
+polrace&lgbtq,body,New York Times,2022-08,77,2
+polrace&lgbtq,body,New York Times,2022-09,54,2
 polrace&lgbtq,body,New York Times,2022-10,21,0
 polrace&lgbtq,body,New York Times,2022-11,26,0
-polrace&lgbtq,body,New York Times,2022-12,51,5
+polrace&lgbtq,body,New York Times,2022-12,49,5
 polrace&lgbtq,body,New York Times,2023-01,20,0
 polrace&lgbtq,body,New York Times,2023-02,40,0
 polrace&lgbtq,body,New York Times,2023-03,48,0
 polrace&lgbtq,body,New York Times,2023-04,57,0
-polrace&lgbtq,body,New York Times,2023-05,45,2
+polrace&lgbtq,body,New York Times,2023-05,43,2
 polrace&lgbtq,body,New York Times,2023-06,38,0
 polrace&lgbtq,body,New York Times,2023-07,36,0
-polrace&lgbtq,body,New York Times,2023-08,35,0
+polrace&lgbtq,body,New York Times,2023-08,34,0
 polrace&lgbtq,body,New York Times,2023-09,45,0
 polrace&lgbtq,body,New York Times,2023-10,61,0
 polrace&lgbtq,body,New York Times,2023-11,16,0
 polrace&lgbtq,body,New York Times,2023-12,16,0
 polrace&lgbtq,body,New York Times,2024-01,21,0
 polrace&lgbtq,body,New York Times,2024-02,42,0
-polrace&lgbtq,body,New York Times,2024-03,74,1
-polrace&lgbtq,body,New York Times,2024-04,86,2
-polrace&lgbtq,body,New York Times,2024-05,79,2
-polrace&lgbtq,body,New York Times,2024-06,67,1
-polrace&lgbtq,body,New York Times,2024-07,51,0
-polrace&lgbtq,body,New York Times,2024-08,44,0
-polrace&lgbtq,body,New York Times,2024-09,74,1
+polrace&lgbtq,body,New York Times,2024-03,72,1
+polrace&lgbtq,body,New York Times,2024-04,84,2
+polrace&lgbtq,body,New York Times,2024-05,71,2
+polrace&lgbtq,body,New York Times,2024-06,66,1
+polrace&lgbtq,body,New York Times,2024-07,49,0
+polrace&lgbtq,body,New York Times,2024-08,42,0
+polrace&lgbtq,body,New York Times,2024-09,71,1
 polrace&lgbtq,body,New York Times,2024-10,83,1
 polrace&lgbtq,body,New York Times,2024-11,35,0
-polrace&lgbtq,body,New York Times,2024-12,39,0
-polrace&lgbtq,body,New York Times,2025-01,35,0
-polrace&lgbtq,body,New York Times,2025-02,43,0
-polrace&lgbtq,body,New York Times,2025-03,38,0
-polrace&lgbtq,body,New York Times,2025-04,57,0
-polrace&lgbtq,body,New York Times,2025-05,101,1
+polrace&lgbtq,body,New York Times,2024-12,38,0
+polrace&lgbtq,body,New York Times,2025-01,34,0
+polrace&lgbtq,body,New York Times,2025-02,42,0
+polrace&lgbtq,body,New York Times,2025-03,36,0
+polrace&lgbtq,body,New York Times,2025-04,54,0
+polrace&lgbtq,body,New York Times,2025-05,97,0
 polrace&lgbtq,body,New York Times,2025-06,95,0
-polrace&lgbtq,body,New York Times,2025-07,109,0
-polrace&lgbtq,body,New York Times,2025-08,50,0
-polrace&lgbtq,body,New York Times,2025-09,93,0
-polrace&lgbtq,body,New York Times,2025-10,90,3
-polrace&lgbtq,body,New York Times,2025-11,24,0
-polrace&lgbtq,body,New York Times,2025-12,26,1
+polrace&lgbtq,body,New York Times,2025-07,104,0
+polrace&lgbtq,body,New York Times,2025-08,48,0
+polrace&lgbtq,body,New York Times,2025-09,88,0
+polrace&lgbtq,body,New York Times,2025-10,88,3
+polrace&lgbtq,body,New York Times,2025-11,22,0
+polrace&lgbtq,body,New York Times,2025-12,25,1
 polrace&lgbtq,body,New York Times,2026-01,18,0
-polrace&lgbtq,body,New York Times,2026-02,23,0
-polrace&lgbtq,body,New York Times,2026-03,57,0
-polrace&lgbtq,body,New York Times,2026-04,74,0
-polrace&lgbtq,body,New York Times,2026-05,96,0
+polrace&lgbtq,body,New York Times,2026-02,20,0
+polrace&lgbtq,body,New York Times,2026-03,53,0
+polrace&lgbtq,body,New York Times,2026-04,72,0
+polrace&lgbtq,body,New York Times,2026-05,94,0
 polrace&lgbtq,body,New York Times,2026-06,89,0
-polrace&lgbtq,body,New York Times,2026-07,95,1
+polrace&lgbtq,body,New York Times,2026-07,93,1
 polrace&lgbtq,body,New York Times,2026-08,92,6
-polrace&lgbtq,body,New York Times,2026-09,36,0
+polrace&lgbtq,body,New York Times,2026-09,44,0
+polrace&lgbtq,body,New York Times,2026-10,76,2
 polrace,body,AP,2019-02,2,0
 polrace,body,AP,2019-04,1,0
 polrace,body,AP,2019-05,2,0
@@ -2814,16 +2844,16 @@ polrace,body,AP,2021-08,54,1
 polrace,body,AP,2021-09,50,1
 polrace,body,AP,2021-10,42,3
 polrace,body,AP,2021-11,17,1
-polrace,body,AP,2021-12,22,1
+polrace,body,AP,2021-12,23,1
 polrace,body,AP,2022-01,28,0
 polrace,body,AP,2022-02,44,2
 polrace,body,AP,2022-03,39,0
 polrace,body,AP,2022-04,24,1
-polrace,body,AP,2022-05,70,1
+polrace,body,AP,2022-05,71,1
 polrace,body,AP,2022-06,80,6
 polrace,body,AP,2022-07,101,3
-polrace,body,AP,2022-08,81,4
-polrace,body,AP,2022-09,54,3
+polrace,body,AP,2022-08,85,4
+polrace,body,AP,2022-09,55,4
 polrace,body,AP,2022-10,32,0
 polrace,body,AP,2022-11,30,0
 polrace,body,AP,2022-12,34,7
@@ -2836,12 +2866,12 @@ polrace,body,AP,2023-06,99,0
 polrace,body,AP,2023-07,89,0
 polrace,body,AP,2023-08,83,0
 polrace,body,AP,2023-09,72,0
-polrace,body,AP,2023-10,47,0
+polrace,body,AP,2023-10,48,0
 polrace,body,AP,2023-11,23,0
 polrace,body,AP,2023-12,18,0
 polrace,body,AP,2024-01,23,1
-polrace,body,AP,2024-02,57,2
-polrace,body,AP,2024-03,48,0
+polrace,body,AP,2024-02,58,2
+polrace,body,AP,2024-03,50,0
 polrace,body,AP,2024-04,70,1
 polrace,body,AP,2024-05,116,3
 polrace,body,AP,2024-06,112,1
@@ -2871,7 +2901,8 @@ polrace,body,AP,2026-05,182,0
 polrace,body,AP,2026-06,207,1
 polrace,body,AP,2026-07,202,10
 polrace,body,AP,2026-08,245,10
-polrace,body,AP,2026-09,101,0
+polrace,body,AP,2026-09,146,1
+polrace,body,AP,2026-10,69,3
 lgbtq,body,AP,2019-02,2,0
 lgbtq,body,AP,2019-04,1,0
 lgbtq,body,AP,2019-05,2,0
@@ -2903,16 +2934,16 @@ lgbtq,body,AP,2021-08,54,2
 lgbtq,body,AP,2021-09,50,2
 lgbtq,body,AP,2021-10,42,1
 lgbtq,body,AP,2021-11,17,0
-lgbtq,body,AP,2021-12,22,0
+lgbtq,body,AP,2021-12,23,0
 lgbtq,body,AP,2022-01,28,0
 lgbtq,body,AP,2022-02,44,0
 lgbtq,body,AP,2022-03,39,0
 lgbtq,body,AP,2022-04,24,1
-lgbtq,body,AP,2022-05,70,0
+lgbtq,body,AP,2022-05,71,0
 lgbtq,body,AP,2022-06,80,2
 lgbtq,body,AP,2022-07,101,1
-lgbtq,body,AP,2022-08,81,2
-lgbtq,body,AP,2022-09,54,2
+lgbtq,body,AP,2022-08,85,2
+lgbtq,body,AP,2022-09,55,2
 lgbtq,body,AP,2022-10,32,0
 lgbtq,body,AP,2022-11,30,1
 lgbtq,body,AP,2022-12,34,7
@@ -2925,12 +2956,12 @@ lgbtq,body,AP,2023-06,99,2
 lgbtq,body,AP,2023-07,89,1
 lgbtq,body,AP,2023-08,83,3
 lgbtq,body,AP,2023-09,72,1
-lgbtq,body,AP,2023-10,47,1
+lgbtq,body,AP,2023-10,48,1
 lgbtq,body,AP,2023-11,23,0
 lgbtq,body,AP,2023-12,18,0
 lgbtq,body,AP,2024-01,23,0
-lgbtq,body,AP,2024-02,57,0
-lgbtq,body,AP,2024-03,48,1
+lgbtq,body,AP,2024-02,58,0
+lgbtq,body,AP,2024-03,50,1
 lgbtq,body,AP,2024-04,70,0
 lgbtq,body,AP,2024-05,116,1
 lgbtq,body,AP,2024-06,112,1
@@ -2960,7 +2991,8 @@ lgbtq,body,AP,2026-05,182,0
 lgbtq,body,AP,2026-06,207,0
 lgbtq,body,AP,2026-07,202,4
 lgbtq,body,AP,2026-08,245,22
-lgbtq,body,AP,2026-09,101,3
+lgbtq,body,AP,2026-09,146,4
+lgbtq,body,AP,2026-10,69,3
 fouls,body,AP,2019-02,2,0
 fouls,body,AP,2019-04,1,0
 fouls,body,AP,2019-05,2,0
@@ -2992,16 +3024,16 @@ fouls,body,AP,2021-08,54,1
 fouls,body,AP,2021-09,50,0
 fouls,body,AP,2021-10,42,1
 fouls,body,AP,2021-11,17,2
-fouls,body,AP,2021-12,22,0
+fouls,body,AP,2021-12,23,0
 fouls,body,AP,2022-01,28,2
 fouls,body,AP,2022-02,44,0
 fouls,body,AP,2022-03,39,1
 fouls,body,AP,2022-04,24,1
-fouls,body,AP,2022-05,70,1
+fouls,body,AP,2022-05,71,1
 fouls,body,AP,2022-06,80,1
 fouls,body,AP,2022-07,101,2
-fouls,body,AP,2022-08,81,0
-fouls,body,AP,2022-09,54,2
+fouls,body,AP,2022-08,85,0
+fouls,body,AP,2022-09,55,3
 fouls,body,AP,2022-10,32,1
 fouls,body,AP,2022-11,30,0
 fouls,body,AP,2022-12,34,1
@@ -3014,12 +3046,12 @@ fouls,body,AP,2023-06,99,1
 fouls,body,AP,2023-07,89,1
 fouls,body,AP,2023-08,83,0
 fouls,body,AP,2023-09,72,3
-fouls,body,AP,2023-10,47,0
+fouls,body,AP,2023-10,48,0
 fouls,body,AP,2023-11,23,0
 fouls,body,AP,2023-12,18,1
 fouls,body,AP,2024-01,23,0
-fouls,body,AP,2024-02,57,0
-fouls,body,AP,2024-03,48,0
+fouls,body,AP,2024-02,58,0
+fouls,body,AP,2024-03,50,0
 fouls,body,AP,2024-04,70,1
 fouls,body,AP,2024-05,116,3
 fouls,body,AP,2024-06,112,1
@@ -3049,7 +3081,8 @@ fouls,body,AP,2026-05,182,2
 fouls,body,AP,2026-06,207,4
 fouls,body,AP,2026-07,202,12
 fouls,body,AP,2026-08,245,2
-fouls,body,AP,2026-09,101,0
+fouls,body,AP,2026-09,146,1
+fouls,body,AP,2026-10,69,0
 protect,body,AP,2019-02,2,0
 protect,body,AP,2019-04,1,0
 protect,body,AP,2019-05,2,0
@@ -3081,16 +3114,16 @@ protect,body,AP,2021-08,54,0
 protect,body,AP,2021-09,50,0
 protect,body,AP,2021-10,42,1
 protect,body,AP,2021-11,17,0
-protect,body,AP,2021-12,22,0
+protect,body,AP,2021-12,23,0
 protect,body,AP,2022-01,28,0
 protect,body,AP,2022-02,44,0
 protect,body,AP,2022-03,39,0
 protect,body,AP,2022-04,24,0
-protect,body,AP,2022-05,70,0
+protect,body,AP,2022-05,71,0
 protect,body,AP,2022-06,80,0
 protect,body,AP,2022-07,101,3
-protect,body,AP,2022-08,81,0
-protect,body,AP,2022-09,54,1
+protect,body,AP,2022-08,85,0
+protect,body,AP,2022-09,55,1
 protect,body,AP,2022-10,32,0
 protect,body,AP,2022-11,30,0
 protect,body,AP,2022-12,34,1
@@ -3103,12 +3136,12 @@ protect,body,AP,2023-06,99,5
 protect,body,AP,2023-07,89,0
 protect,body,AP,2023-08,83,0
 protect,body,AP,2023-09,72,0
-protect,body,AP,2023-10,47,3
+protect,body,AP,2023-10,48,3
 protect,body,AP,2023-11,23,0
 protect,body,AP,2023-12,18,0
 protect,body,AP,2024-01,23,1
-protect,body,AP,2024-02,57,0
-protect,body,AP,2024-03,48,0
+protect,body,AP,2024-02,58,0
+protect,body,AP,2024-03,50,0
 protect,body,AP,2024-04,70,0
 protect,body,AP,2024-05,116,2
 protect,body,AP,2024-06,112,1
@@ -3138,7 +3171,8 @@ protect,body,AP,2026-05,182,0
 protect,body,AP,2026-06,207,1
 protect,body,AP,2026-07,202,7
 protect,body,AP,2026-08,245,9
-protect,body,AP,2026-09,101,1
+protect,body,AP,2026-09,146,2
+protect,body,AP,2026-10,69,0
 fouls&protect,body,AP,2019-02,2,0
 fouls&protect,body,AP,2019-04,1,0
 fouls&protect,body,AP,2019-05,2,0
@@ -3170,16 +3204,16 @@ fouls&protect,body,AP,2021-08,54,0
 fouls&protect,body,AP,2021-09,50,0
 fouls&protect,body,AP,2021-10,42,0
 fouls&protect,body,AP,2021-11,17,0
-fouls&protect,body,AP,2021-12,22,0
+fouls&protect,body,AP,2021-12,23,0
 fouls&protect,body,AP,2022-01,28,0
 fouls&protect,body,AP,2022-02,44,0
 fouls&protect,body,AP,2022-03,39,0
 fouls&protect,body,AP,2022-04,24,0
-fouls&protect,body,AP,2022-05,70,0
+fouls&protect,body,AP,2022-05,71,0
 fouls&protect,body,AP,2022-06,80,0
 fouls&protect,body,AP,2022-07,101,0
-fouls&protect,body,AP,2022-08,81,0
-fouls&protect,body,AP,2022-09,54,0
+fouls&protect,body,AP,2022-08,85,0
+fouls&protect,body,AP,2022-09,55,0
 fouls&protect,body,AP,2022-10,32,0
 fouls&protect,body,AP,2022-11,30,0
 fouls&protect,body,AP,2022-12,34,0
@@ -3192,12 +3226,12 @@ fouls&protect,body,AP,2023-06,99,0
 fouls&protect,body,AP,2023-07,89,0
 fouls&protect,body,AP,2023-08,83,0
 fouls&protect,body,AP,2023-09,72,0
-fouls&protect,body,AP,2023-10,47,0
+fouls&protect,body,AP,2023-10,48,0
 fouls&protect,body,AP,2023-11,23,0
 fouls&protect,body,AP,2023-12,18,0
 fouls&protect,body,AP,2024-01,23,0
-fouls&protect,body,AP,2024-02,57,0
-fouls&protect,body,AP,2024-03,48,0
+fouls&protect,body,AP,2024-02,58,0
+fouls&protect,body,AP,2024-03,50,0
 fouls&protect,body,AP,2024-04,70,0
 fouls&protect,body,AP,2024-05,116,0
 fouls&protect,body,AP,2024-06,112,0
@@ -3227,7 +3261,8 @@ fouls&protect,body,AP,2026-05,182,0
 fouls&protect,body,AP,2026-06,207,1
 fouls&protect,body,AP,2026-07,202,5
 fouls&protect,body,AP,2026-08,245,1
-fouls&protect,body,AP,2026-09,101,0
+fouls&protect,body,AP,2026-09,146,0
+fouls&protect,body,AP,2026-10,69,0
 polrace&lgbtq,body,AP,2019-02,2,0
 polrace&lgbtq,body,AP,2019-04,1,0
 polrace&lgbtq,body,AP,2019-05,2,0
@@ -3259,16 +3294,16 @@ polrace&lgbtq,body,AP,2021-08,54,0
 polrace&lgbtq,body,AP,2021-09,50,0
 polrace&lgbtq,body,AP,2021-10,42,0
 polrace&lgbtq,body,AP,2021-11,17,0
-polrace&lgbtq,body,AP,2021-12,22,0
+polrace&lgbtq,body,AP,2021-12,23,0
 polrace&lgbtq,body,AP,2022-01,28,0
 polrace&lgbtq,body,AP,2022-02,44,0
 polrace&lgbtq,body,AP,2022-03,39,0
 polrace&lgbtq,body,AP,2022-04,24,1
-polrace&lgbtq,body,AP,2022-05,70,0
+polrace&lgbtq,body,AP,2022-05,71,0
 polrace&lgbtq,body,AP,2022-06,80,2
 polrace&lgbtq,body,AP,2022-07,101,0
-polrace&lgbtq,body,AP,2022-08,81,1
-polrace&lgbtq,body,AP,2022-09,54,1
+polrace&lgbtq,body,AP,2022-08,85,1
+polrace&lgbtq,body,AP,2022-09,55,1
 polrace&lgbtq,body,AP,2022-10,32,0
 polrace&lgbtq,body,AP,2022-11,30,0
 polrace&lgbtq,body,AP,2022-12,34,5
@@ -3281,12 +3316,12 @@ polrace&lgbtq,body,AP,2023-06,99,0
 polrace&lgbtq,body,AP,2023-07,89,0
 polrace&lgbtq,body,AP,2023-08,83,0
 polrace&lgbtq,body,AP,2023-09,72,0
-polrace&lgbtq,body,AP,2023-10,47,0
+polrace&lgbtq,body,AP,2023-10,48,0
 polrace&lgbtq,body,AP,2023-11,23,0
 polrace&lgbtq,body,AP,2023-12,18,0
 polrace&lgbtq,body,AP,2024-01,23,0
-polrace&lgbtq,body,AP,2024-02,57,0
-polrace&lgbtq,body,AP,2024-03,48,0
+polrace&lgbtq,body,AP,2024-02,58,0
+polrace&lgbtq,body,AP,2024-03,50,0
 polrace&lgbtq,body,AP,2024-04,70,0
 polrace&lgbtq,body,AP,2024-05,116,0
 polrace&lgbtq,body,AP,2024-06,112,1
@@ -3316,7 +3351,8 @@ polrace&lgbtq,body,AP,2026-05,182,0
 polrace&lgbtq,body,AP,2026-06,207,0
 polrace&lgbtq,body,AP,2026-07,202,1
 polrace&lgbtq,body,AP,2026-08,245,3
-polrace&lgbtq,body,AP,2026-09,101,0
+polrace&lgbtq,body,AP,2026-09,146,1
+polrace&lgbtq,body,AP,2026-10,69,2
 polrace,body,Washington Post,2019-01,1,0
 polrace,body,Washington Post,2019-02,2,0
 polrace,body,Washington Post,2019-03,2,0
@@ -3377,39 +3413,40 @@ polrace,body,Washington Post,2023-09,14,0
 polrace,body,Washington Post,2023-10,15,1
 polrace,body,Washington Post,2023-11,12,3
 polrace,body,Washington Post,2023-12,10,0
-polrace,body,Washington Post,2024-01,12,0
-polrace,body,Washington Post,2024-02,33,2
-polrace,body,Washington Post,2024-03,35,1
-polrace,body,Washington Post,2024-04,49,1
-polrace,body,Washington Post,2024-05,65,5
-polrace,body,Washington Post,2024-06,74,8
-polrace,body,Washington Post,2024-07,51,0
-polrace,body,Washington Post,2024-08,47,1
-polrace,body,Washington Post,2024-09,58,6
-polrace,body,Washington Post,2024-10,42,5
-polrace,body,Washington Post,2024-11,14,0
-polrace,body,Washington Post,2024-12,15,1
-polrace,body,Washington Post,2025-01,16,0
-polrace,body,Washington Post,2025-02,15,1
-polrace,body,Washington Post,2025-03,31,0
-polrace,body,Washington Post,2025-04,27,1
-polrace,body,Washington Post,2025-05,34,5
-polrace,body,Washington Post,2025-06,48,0
-polrace,body,Washington Post,2025-07,54,6
-polrace,body,Washington Post,2025-08,44,0
-polrace,body,Washington Post,2025-09,45,4
-polrace,body,Washington Post,2025-10,27,4
-polrace,body,Washington Post,2025-11,11,2
-polrace,body,Washington Post,2025-12,11,0
-polrace,body,Washington Post,2026-01,9,1
-polrace,body,Washington Post,2026-02,4,0
-polrace,body,Washington Post,2026-03,13,0
-polrace,body,Washington Post,2026-04,50,0
-polrace,body,Washington Post,2026-05,172,2
-polrace,body,Washington Post,2026-06,178,1
-polrace,body,Washington Post,2026-07,177,14
-polrace,body,Washington Post,2026-08,213,12
-polrace,body,Washington Post,2026-09,133,0
+polrace,body,Washington Post,2024-01,8,0
+polrace,body,Washington Post,2024-02,27,1
+polrace,body,Washington Post,2024-03,30,1
+polrace,body,Washington Post,2024-04,42,1
+polrace,body,Washington Post,2024-05,49,3
+polrace,body,Washington Post,2024-06,52,6
+polrace,body,Washington Post,2024-07,37,0
+polrace,body,Washington Post,2024-08,32,1
+polrace,body,Washington Post,2024-09,47,5
+polrace,body,Washington Post,2024-10,31,4
+polrace,body,Washington Post,2024-11,10,0
+polrace,body,Washington Post,2024-12,11,1
+polrace,body,Washington Post,2025-01,12,0
+polrace,body,Washington Post,2025-02,13,1
+polrace,body,Washington Post,2025-03,26,0
+polrace,body,Washington Post,2025-04,21,1
+polrace,body,Washington Post,2025-05,24,4
+polrace,body,Washington Post,2025-06,34,0
+polrace,body,Washington Post,2025-07,43,6
+polrace,body,Washington Post,2025-08,31,0
+polrace,body,Washington Post,2025-09,29,3
+polrace,body,Washington Post,2025-10,18,3
+polrace,body,Washington Post,2025-11,10,2
+polrace,body,Washington Post,2025-12,9,0
+polrace,body,Washington Post,2026-01,7,1
+polrace,body,Washington Post,2026-02,3,0
+polrace,body,Washington Post,2026-03,10,0
+polrace,body,Washington Post,2026-04,39,0
+polrace,body,Washington Post,2026-05,137,1
+polrace,body,Washington Post,2026-06,148,1
+polrace,body,Washington Post,2026-07,149,12
+polrace,body,Washington Post,2026-08,192,10
+polrace,body,Washington Post,2026-09,121,0
+polrace,body,Washington Post,2026-10,3,0
 lgbtq,body,Washington Post,2019-01,1,0
 lgbtq,body,Washington Post,2019-02,2,0
 lgbtq,body,Washington Post,2019-03,2,0
@@ -3470,39 +3507,40 @@ lgbtq,body,Washington Post,2023-09,14,0
 lgbtq,body,Washington Post,2023-10,15,0
 lgbtq,body,Washington Post,2023-11,12,1
 lgbtq,body,Washington Post,2023-12,10,2
-lgbtq,body,Washington Post,2024-01,12,0
-lgbtq,body,Washington Post,2024-02,33,1
-lgbtq,body,Washington Post,2024-03,35,1
-lgbtq,body,Washington Post,2024-04,49,3
-lgbtq,body,Washington Post,2024-05,65,2
-lgbtq,body,Washington Post,2024-06,74,4
-lgbtq,body,Washington Post,2024-07,51,0
-lgbtq,body,Washington Post,2024-08,47,1
-lgbtq,body,Washington Post,2024-09,58,4
-lgbtq,body,Washington Post,2024-10,42,2
-lgbtq,body,Washington Post,2024-11,14,1
-lgbtq,body,Washington Post,2024-12,15,2
-lgbtq,body,Washington Post,2025-01,16,0
-lgbtq,body,Washington Post,2025-02,15,0
-lgbtq,body,Washington Post,2025-03,31,0
-lgbtq,body,Washington Post,2025-04,27,1
-lgbtq,body,Washington Post,2025-05,34,1
-lgbtq,body,Washington Post,2025-06,48,1
-lgbtq,body,Washington Post,2025-07,54,4
-lgbtq,body,Washington Post,2025-08,44,0
-lgbtq,body,Washington Post,2025-09,45,3
-lgbtq,body,Washington Post,2025-10,27,0
-lgbtq,body,Washington Post,2025-11,11,0
-lgbtq,body,Washington Post,2025-12,11,0
-lgbtq,body,Washington Post,2026-01,9,0
-lgbtq,body,Washington Post,2026-02,4,0
-lgbtq,body,Washington Post,2026-03,13,0
-lgbtq,body,Washington Post,2026-04,50,1
-lgbtq,body,Washington Post,2026-05,172,2
-lgbtq,body,Washington Post,2026-06,178,1
-lgbtq,body,Washington Post,2026-07,177,9
-lgbtq,body,Washington Post,2026-08,213,29
-lgbtq,body,Washington Post,2026-09,133,4
+lgbtq,body,Washington Post,2024-01,8,0
+lgbtq,body,Washington Post,2024-02,27,1
+lgbtq,body,Washington Post,2024-03,30,1
+lgbtq,body,Washington Post,2024-04,42,3
+lgbtq,body,Washington Post,2024-05,49,1
+lgbtq,body,Washington Post,2024-06,52,2
+lgbtq,body,Washington Post,2024-07,37,0
+lgbtq,body,Washington Post,2024-08,32,1
+lgbtq,body,Washington Post,2024-09,47,3
+lgbtq,body,Washington Post,2024-10,31,1
+lgbtq,body,Washington Post,2024-11,10,1
+lgbtq,body,Washington Post,2024-12,11,1
+lgbtq,body,Washington Post,2025-01,12,0
+lgbtq,body,Washington Post,2025-02,13,0
+lgbtq,body,Washington Post,2025-03,26,0
+lgbtq,body,Washington Post,2025-04,21,1
+lgbtq,body,Washington Post,2025-05,24,1
+lgbtq,body,Washington Post,2025-06,34,0
+lgbtq,body,Washington Post,2025-07,43,4
+lgbtq,body,Washington Post,2025-08,31,0
+lgbtq,body,Washington Post,2025-09,29,1
+lgbtq,body,Washington Post,2025-10,18,0
+lgbtq,body,Washington Post,2025-11,10,0
+lgbtq,body,Washington Post,2025-12,9,0
+lgbtq,body,Washington Post,2026-01,7,0
+lgbtq,body,Washington Post,2026-02,3,0
+lgbtq,body,Washington Post,2026-03,10,0
+lgbtq,body,Washington Post,2026-04,39,1
+lgbtq,body,Washington Post,2026-05,137,1
+lgbtq,body,Washington Post,2026-06,148,0
+lgbtq,body,Washington Post,2026-07,149,7
+lgbtq,body,Washington Post,2026-08,192,24
+lgbtq,body,Washington Post,2026-09,121,4
+lgbtq,body,Washington Post,2026-10,3,0
 fouls,body,Washington Post,2019-01,1,0
 fouls,body,Washington Post,2019-02,2,0
 fouls,body,Washington Post,2019-03,2,0
@@ -3563,39 +3601,40 @@ fouls,body,Washington Post,2023-09,14,1
 fouls,body,Washington Post,2023-10,15,1
 fouls,body,Washington Post,2023-11,12,1
 fouls,body,Washington Post,2023-12,10,2
-fouls,body,Washington Post,2024-01,12,2
-fouls,body,Washington Post,2024-02,33,2
-fouls,body,Washington Post,2024-03,35,1
-fouls,body,Washington Post,2024-04,49,2
-fouls,body,Washington Post,2024-05,65,3
-fouls,body,Washington Post,2024-06,74,0
-fouls,body,Washington Post,2024-07,51,1
-fouls,body,Washington Post,2024-08,47,3
-fouls,body,Washington Post,2024-09,58,3
-fouls,body,Washington Post,2024-10,42,2
-fouls,body,Washington Post,2024-11,14,1
-fouls,body,Washington Post,2024-12,15,0
-fouls,body,Washington Post,2025-01,16,1
-fouls,body,Washington Post,2025-02,15,3
-fouls,body,Washington Post,2025-03,31,2
-fouls,body,Washington Post,2025-04,27,1
-fouls,body,Washington Post,2025-05,34,1
-fouls,body,Washington Post,2025-06,48,1
-fouls,body,Washington Post,2025-07,54,2
-fouls,body,Washington Post,2025-08,44,1
-fouls,body,Washington Post,2025-09,45,0
-fouls,body,Washington Post,2025-10,27,2
-fouls,body,Washington Post,2025-11,11,0
-fouls,body,Washington Post,2025-12,11,1
-fouls,body,Washington Post,2026-01,9,0
-fouls,body,Washington Post,2026-02,4,0
-fouls,body,Washington Post,2026-03,13,0
-fouls,body,Washington Post,2026-04,50,1
-fouls,body,Washington Post,2026-05,172,2
-fouls,body,Washington Post,2026-06,178,7
-fouls,body,Washington Post,2026-07,177,14
-fouls,body,Washington Post,2026-08,213,3
-fouls,body,Washington Post,2026-09,133,0
+fouls,body,Washington Post,2024-01,8,1
+fouls,body,Washington Post,2024-02,27,1
+fouls,body,Washington Post,2024-03,30,1
+fouls,body,Washington Post,2024-04,42,2
+fouls,body,Washington Post,2024-05,49,3
+fouls,body,Washington Post,2024-06,52,0
+fouls,body,Washington Post,2024-07,37,1
+fouls,body,Washington Post,2024-08,32,3
+fouls,body,Washington Post,2024-09,47,3
+fouls,body,Washington Post,2024-10,31,1
+fouls,body,Washington Post,2024-11,10,1
+fouls,body,Washington Post,2024-12,11,0
+fouls,body,Washington Post,2025-01,12,1
+fouls,body,Washington Post,2025-02,13,2
+fouls,body,Washington Post,2025-03,26,2
+fouls,body,Washington Post,2025-04,21,1
+fouls,body,Washington Post,2025-05,24,1
+fouls,body,Washington Post,2025-06,34,1
+fouls,body,Washington Post,2025-07,43,1
+fouls,body,Washington Post,2025-08,31,0
+fouls,body,Washington Post,2025-09,29,0
+fouls,body,Washington Post,2025-10,18,1
+fouls,body,Washington Post,2025-11,10,0
+fouls,body,Washington Post,2025-12,9,1
+fouls,body,Washington Post,2026-01,7,0
+fouls,body,Washington Post,2026-02,3,0
+fouls,body,Washington Post,2026-03,10,0
+fouls,body,Washington Post,2026-04,39,1
+fouls,body,Washington Post,2026-05,137,1
+fouls,body,Washington Post,2026-06,148,6
+fouls,body,Washington Post,2026-07,149,14
+fouls,body,Washington Post,2026-08,192,2
+fouls,body,Washington Post,2026-09,121,0
+fouls,body,Washington Post,2026-10,3,0
 protect,body,Washington Post,2019-01,1,0
 protect,body,Washington Post,2019-02,2,0
 protect,body,Washington Post,2019-03,2,0
@@ -3656,39 +3695,40 @@ protect,body,Washington Post,2023-09,14,1
 protect,body,Washington Post,2023-10,15,0
 protect,body,Washington Post,2023-11,12,3
 protect,body,Washington Post,2023-12,10,0
-protect,body,Washington Post,2024-01,12,0
-protect,body,Washington Post,2024-02,33,1
-protect,body,Washington Post,2024-03,35,1
-protect,body,Washington Post,2024-04,49,2
-protect,body,Washington Post,2024-05,65,0
-protect,body,Washington Post,2024-06,74,9
-protect,body,Washington Post,2024-07,51,3
-protect,body,Washington Post,2024-08,47,0
-protect,body,Washington Post,2024-09,58,2
-protect,body,Washington Post,2024-10,42,1
-protect,body,Washington Post,2024-11,14,2
-protect,body,Washington Post,2024-12,15,1
-protect,body,Washington Post,2025-01,16,0
-protect,body,Washington Post,2025-02,15,0
-protect,body,Washington Post,2025-03,31,1
-protect,body,Washington Post,2025-04,27,3
-protect,body,Washington Post,2025-05,34,1
-protect,body,Washington Post,2025-06,48,0
-protect,body,Washington Post,2025-07,54,2
-protect,body,Washington Post,2025-08,44,0
-protect,body,Washington Post,2025-09,45,4
-protect,body,Washington Post,2025-10,27,4
-protect,body,Washington Post,2025-11,11,1
-protect,body,Washington Post,2025-12,11,0
-protect,body,Washington Post,2026-01,9,0
-protect,body,Washington Post,2026-02,4,0
-protect,body,Washington Post,2026-03,13,1
-protect,body,Washington Post,2026-04,50,1
-protect,body,Washington Post,2026-05,172,0
-protect,body,Washington Post,2026-06,178,1
-protect,body,Washington Post,2026-07,177,13
-protect,body,Washington Post,2026-08,213,13
-protect,body,Washington Post,2026-09,133,3
+protect,body,Washington Post,2024-01,8,0
+protect,body,Washington Post,2024-02,27,0
+protect,body,Washington Post,2024-03,30,1
+protect,body,Washington Post,2024-04,42,2
+protect,body,Washington Post,2024-05,49,0
+protect,body,Washington Post,2024-06,52,7
+protect,body,Washington Post,2024-07,37,2
+protect,body,Washington Post,2024-08,32,0
+protect,body,Washington Post,2024-09,47,2
+protect,body,Washington Post,2024-10,31,1
+protect,body,Washington Post,2024-11,10,1
+protect,body,Washington Post,2024-12,11,1
+protect,body,Washington Post,2025-01,12,0
+protect,body,Washington Post,2025-02,13,0
+protect,body,Washington Post,2025-03,26,1
+protect,body,Washington Post,2025-04,21,2
+protect,body,Washington Post,2025-05,24,1
+protect,body,Washington Post,2025-06,34,0
+protect,body,Washington Post,2025-07,43,1
+protect,body,Washington Post,2025-08,31,0
+protect,body,Washington Post,2025-09,29,2
+protect,body,Washington Post,2025-10,18,1
+protect,body,Washington Post,2025-11,10,1
+protect,body,Washington Post,2025-12,9,0
+protect,body,Washington Post,2026-01,7,0
+protect,body,Washington Post,2026-02,3,0
+protect,body,Washington Post,2026-03,10,0
+protect,body,Washington Post,2026-04,39,1
+protect,body,Washington Post,2026-05,137,0
+protect,body,Washington Post,2026-06,148,1
+protect,body,Washington Post,2026-07,149,10
+protect,body,Washington Post,2026-08,192,12
+protect,body,Washington Post,2026-09,121,3
+protect,body,Washington Post,2026-10,3,0
 fouls&protect,body,Washington Post,2019-01,1,0
 fouls&protect,body,Washington Post,2019-02,2,0
 fouls&protect,body,Washington Post,2019-03,2,0
@@ -3749,39 +3789,40 @@ fouls&protect,body,Washington Post,2023-09,14,0
 fouls&protect,body,Washington Post,2023-10,15,0
 fouls&protect,body,Washington Post,2023-11,12,1
 fouls&protect,body,Washington Post,2023-12,10,0
-fouls&protect,body,Washington Post,2024-01,12,0
-fouls&protect,body,Washington Post,2024-02,33,0
-fouls&protect,body,Washington Post,2024-03,35,0
-fouls&protect,body,Washington Post,2024-04,49,0
-fouls&protect,body,Washington Post,2024-05,65,0
-fouls&protect,body,Washington Post,2024-06,74,0
-fouls&protect,body,Washington Post,2024-07,51,0
-fouls&protect,body,Washington Post,2024-08,47,0
-fouls&protect,body,Washington Post,2024-09,58,1
-fouls&protect,body,Washington Post,2024-10,42,0
-fouls&protect,body,Washington Post,2024-11,14,0
-fouls&protect,body,Washington Post,2024-12,15,0
-fouls&protect,body,Washington Post,2025-01,16,0
-fouls&protect,body,Washington Post,2025-02,15,0
-fouls&protect,body,Washington Post,2025-03,31,0
-fouls&protect,body,Washington Post,2025-04,27,0
-fouls&protect,body,Washington Post,2025-05,34,0
-fouls&protect,body,Washington Post,2025-06,48,0
-fouls&protect,body,Washington Post,2025-07,54,0
-fouls&protect,body,Washington Post,2025-08,44,0
-fouls&protect,body,Washington Post,2025-09,45,0
-fouls&protect,body,Washington Post,2025-10,27,2
-fouls&protect,body,Washington Post,2025-11,11,0
-fouls&protect,body,Washington Post,2025-12,11,0
-fouls&protect,body,Washington Post,2026-01,9,0
-fouls&protect,body,Washington Post,2026-02,4,0
-fouls&protect,body,Washington Post,2026-03,13,0
-fouls&protect,body,Washington Post,2026-04,50,0
-fouls&protect,body,Washington Post,2026-05,172,0
-fouls&protect,body,Washington Post,2026-06,178,1
-fouls&protect,body,Washington Post,2026-07,177,6
-fouls&protect,body,Washington Post,2026-08,213,1
-fouls&protect,body,Washington Post,2026-09,133,0
+fouls&protect,body,Washington Post,2024-01,8,0
+fouls&protect,body,Washington Post,2024-02,27,0
+fouls&protect,body,Washington Post,2024-03,30,0
+fouls&protect,body,Washington Post,2024-04,42,0
+fouls&protect,body,Washington Post,2024-05,49,0
+fouls&protect,body,Washington Post,2024-06,52,0
+fouls&protect,body,Washington Post,2024-07,37,0
+fouls&protect,body,Washington Post,2024-08,32,0
+fouls&protect,body,Washington Post,2024-09,47,1
+fouls&protect,body,Washington Post,2024-10,31,0
+fouls&protect,body,Washington Post,2024-11,10,0
+fouls&protect,body,Washington Post,2024-12,11,0
+fouls&protect,body,Washington Post,2025-01,12,0
+fouls&protect,body,Washington Post,2025-02,13,0
+fouls&protect,body,Washington Post,2025-03,26,0
+fouls&protect,body,Washington Post,2025-04,21,0
+fouls&protect,body,Washington Post,2025-05,24,0
+fouls&protect,body,Washington Post,2025-06,34,0
+fouls&protect,body,Washington Post,2025-07,43,0
+fouls&protect,body,Washington Post,2025-08,31,0
+fouls&protect,body,Washington Post,2025-09,29,0
+fouls&protect,body,Washington Post,2025-10,18,1
+fouls&protect,body,Washington Post,2025-11,10,0
+fouls&protect,body,Washington Post,2025-12,9,0
+fouls&protect,body,Washington Post,2026-01,7,0
+fouls&protect,body,Washington Post,2026-02,3,0
+fouls&protect,body,Washington Post,2026-03,10,0
+fouls&protect,body,Washington Post,2026-04,39,0
+fouls&protect,body,Washington Post,2026-05,137,0
+fouls&protect,body,Washington Post,2026-06,148,1
+fouls&protect,body,Washington Post,2026-07,149,6
+fouls&protect,body,Washington Post,2026-08,192,1
+fouls&protect,body,Washington Post,2026-09,121,0
+fouls&protect,body,Washington Post,2026-10,3,0
 polrace&lgbtq,body,Washington Post,2019-01,1,0
 polrace&lgbtq,body,Washington Post,2019-02,2,0
 polrace&lgbtq,body,Washington Post,2019-03,2,0
@@ -3842,36 +3883,37 @@ polrace&lgbtq,body,Washington Post,2023-09,14,0
 polrace&lgbtq,body,Washington Post,2023-10,15,0
 polrace&lgbtq,body,Washington Post,2023-11,12,1
 polrace&lgbtq,body,Washington Post,2023-12,10,0
-polrace&lgbtq,body,Washington Post,2024-01,12,0
-polrace&lgbtq,body,Washington Post,2024-02,33,0
-polrace&lgbtq,body,Washington Post,2024-03,35,0
-polrace&lgbtq,body,Washington Post,2024-04,49,0
-polrace&lgbtq,body,Washington Post,2024-05,65,2
-polrace&lgbtq,body,Washington Post,2024-06,74,3
-polrace&lgbtq,body,Washington Post,2024-07,51,0
-polrace&lgbtq,body,Washington Post,2024-08,47,1
-polrace&lgbtq,body,Washington Post,2024-09,58,2
-polrace&lgbtq,body,Washington Post,2024-10,42,2
-polrace&lgbtq,body,Washington Post,2024-11,14,0
-polrace&lgbtq,body,Washington Post,2024-12,15,1
-polrace&lgbtq,body,Washington Post,2025-01,16,0
-polrace&lgbtq,body,Washington Post,2025-02,15,0
-polrace&lgbtq,body,Washington Post,2025-03,31,0
-polrace&lgbtq,body,Washington Post,2025-04,27,0
-polrace&lgbtq,body,Washington Post,2025-05,34,1
-polrace&lgbtq,body,Washington Post,2025-06,48,0
-polrace&lgbtq,body,Washington Post,2025-07,54,1
-polrace&lgbtq,body,Washington Post,2025-08,44,0
-polrace&lgbtq,body,Washington Post,2025-09,45,0
-polrace&lgbtq,body,Washington Post,2025-10,27,0
-polrace&lgbtq,body,Washington Post,2025-11,11,0
-polrace&lgbtq,body,Washington Post,2025-12,11,0
-polrace&lgbtq,body,Washington Post,2026-01,9,0
-polrace&lgbtq,body,Washington Post,2026-02,4,0
-polrace&lgbtq,body,Washington Post,2026-03,13,0
-polrace&lgbtq,body,Washington Post,2026-04,50,0
-polrace&lgbtq,body,Washington Post,2026-05,172,0
-polrace&lgbtq,body,Washington Post,2026-06,178,0
-polrace&lgbtq,body,Washington Post,2026-07,177,1
-polrace&lgbtq,body,Washington Post,2026-08,213,5
-polrace&lgbtq,body,Washington Post,2026-09,133,0
+polrace&lgbtq,body,Washington Post,2024-01,8,0
+polrace&lgbtq,body,Washington Post,2024-02,27,0
+polrace&lgbtq,body,Washington Post,2024-03,30,0
+polrace&lgbtq,body,Washington Post,2024-04,42,0
+polrace&lgbtq,body,Washington Post,2024-05,49,1
+polrace&lgbtq,body,Washington Post,2024-06,52,2
+polrace&lgbtq,body,Washington Post,2024-07,37,0
+polrace&lgbtq,body,Washington Post,2024-08,32,1
+polrace&lgbtq,body,Washington Post,2024-09,47,1
+polrace&lgbtq,body,Washington Post,2024-10,31,1
+polrace&lgbtq,body,Washington Post,2024-11,10,0
+polrace&lgbtq,body,Washington Post,2024-12,11,1
+polrace&lgbtq,body,Washington Post,2025-01,12,0
+polrace&lgbtq,body,Washington Post,2025-02,13,0
+polrace&lgbtq,body,Washington Post,2025-03,26,0
+polrace&lgbtq,body,Washington Post,2025-04,21,0
+polrace&lgbtq,body,Washington Post,2025-05,24,1
+polrace&lgbtq,body,Washington Post,2025-06,34,0
+polrace&lgbtq,body,Washington Post,2025-07,43,1
+polrace&lgbtq,body,Washington Post,2025-08,31,0
+polrace&lgbtq,body,Washington Post,2025-09,29,0
+polrace&lgbtq,body,Washington Post,2025-10,18,0
+polrace&lgbtq,body,Washington Post,2025-11,10,0
+polrace&lgbtq,body,Washington Post,2025-12,9,0
+polrace&lgbtq,body,Washington Post,2026-01,7,0
+polrace&lgbtq,body,Washington Post,2026-02,3,0
+polrace&lgbtq,body,Washington Post,2026-03,10,0
+polrace&lgbtq,body,Washington Post,2026-04,39,0
+polrace&lgbtq,body,Washington Post,2026-05,137,0
+polrace&lgbtq,body,Washington Post,2026-06,148,0
+polrace&lgbtq,body,Washington Post,2026-07,149,1
+polrace&lgbtq,body,Washington Post,2026-08,192,4
+polrace&lgbtq,body,Washington Post,2026-09,121,0
+polrace&lgbtq,body,Washington Post,2026-10,3,0

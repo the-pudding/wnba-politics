@@ -132,7 +132,8 @@ out = {
     "months": months,
     "total": {m: total.get(m, 0) for m in months},
     "inRange": len(rows),
-    "outkick": sum(1 for r in rows if "outkick.com" in r["url"]),
+    # OutKick's own site, and its sections on foxnews.com since the move there
+    "outkick": sum(1 for r in rows if re.search(r"outkick\.com|foxnews\.com/outkick-", r["url"])),
     "nodes": nodes,
     "edges": edges,
 }

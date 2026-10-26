@@ -6,7 +6,7 @@ polrace,body,Fox News,2022,402,16
 polrace,body,Fox News,2023,317,21
 polrace,body,Fox News,2024,1416,241
 polrace,body,Fox News,2025,972,153
-polrace,body,Fox News,2026,739,154
+polrace,body,Fox News,2026,824,182
 polrace,body,ESPN,2019,275,14
 polrace,body,ESPN,2020,343,65
 polrace,body,ESPN,2021,346,32
@@ -14,7 +14,7 @@ polrace,body,ESPN,2022,479,27
 polrace,body,ESPN,2023,508,22
 polrace,body,ESPN,2024,761,66
 polrace,body,ESPN,2025,920,36
-polrace,body,ESPN,2026,715,39
+polrace,body,ESPN,2026,798,43
 polrace,body,CBS,2019,241,5
 polrace,body,CBS,2020,304,35
 polrace,body,CBS,2021,394,14
@@ -22,7 +22,7 @@ polrace,body,CBS,2022,670,10
 polrace,body,CBS,2023,618,8
 polrace,body,CBS,2024,1246,30
 polrace,body,CBS,2025,1608,14
-polrace,body,CBS,2026,921,26
+polrace,body,CBS,2026,990,28
 polrace,body,USA Today,2019,368,9
 polrace,body,USA Today,2020,217,36
 polrace,body,USA Today,2021,289,28
@@ -30,31 +30,31 @@ polrace,body,USA Today,2022,362,20
 polrace,body,USA Today,2023,254,12
 polrace,body,USA Today,2024,848,53
 polrace,body,USA Today,2025,1181,24
-polrace,body,USA Today,2026,1310,46
-polrace,body,New York Times,2019,280,10
-polrace,body,New York Times,2020,325,73
-polrace,body,New York Times,2021,394,41
-polrace,body,New York Times,2022,522,49
-polrace,body,New York Times,2023,457,20
-polrace,body,New York Times,2024,695,37
-polrace,body,New York Times,2025,761,16
-polrace,body,New York Times,2026,580,30
+polrace,body,USA Today,2026,1436,48
+polrace,body,New York Times,2019,279,9
+polrace,body,New York Times,2020,320,71
+polrace,body,New York Times,2021,392,40
+polrace,body,New York Times,2022,514,46
+polrace,body,New York Times,2023,454,20
+polrace,body,New York Times,2024,674,36
+polrace,body,New York Times,2025,733,15
+polrace,body,New York Times,2026,651,35
 polrace,body,AP,2019,69,4
 polrace,body,AP,2020,92,15
-polrace,body,AP,2021,378,21
-polrace,body,AP,2022,617,27
-polrace,body,AP,2023,623,11
-polrace,body,AP,2024,872,17
+polrace,body,AP,2021,379,21
+polrace,body,AP,2022,623,28
+polrace,body,AP,2023,624,11
+polrace,body,AP,2024,875,17
 polrace,body,AP,2025,1229,20
-polrace,body,AP,2026,1098,22
+polrace,body,AP,2026,1212,26
 polrace,body,Washington Post,2019,132,5
 polrace,body,Washington Post,2020,232,51
 polrace,body,Washington Post,2021,116,16
 polrace,body,Washington Post,2022,277,32
 polrace,body,Washington Post,2023,198,16
-polrace,body,Washington Post,2024,495,30
-polrace,body,Washington Post,2025,363,23
-polrace,body,Washington Post,2026,949,30
+polrace,body,Washington Post,2024,376,23
+polrace,body,Washington Post,2025,270,20
+polrace,body,Washington Post,2026,809,25
 polrace,body,Yahoo Sports (syndicated pool),2019,67,3
 polrace,body,Yahoo Sports (syndicated pool),2020,235,57
 polrace,body,Yahoo Sports (syndicated pool),2021,391,24
@@ -78,7 +78,7 @@ polrace,headline,Fox News,2022,404,3
 polrace,headline,Fox News,2023,317,3
 polrace,headline,Fox News,2024,1416,48
 polrace,headline,Fox News,2025,972,27
-polrace,headline,Fox News,2026,739,25
+polrace,headline,Fox News,2026,824,27
 polrace,headline,ESPN,2019,279,3
 polrace,headline,ESPN,2020,347,0
 polrace,headline,ESPN,2021,348,6
@@ -86,7 +86,7 @@ polrace,headline,ESPN,2022,482,4
 polrace,headline,ESPN,2023,512,3
 polrace,headline,ESPN,2024,765,6
 polrace,headline,ESPN,2025,921,5
-polrace,headline,ESPN,2026,716,6
+polrace,headline,ESPN,2026,802,6
 polrace,headline,CBS,2019,243,1
 polrace,headline,CBS,2020,307,5
 polrace,headline,CBS,2021,405,2
@@ -94,7 +94,7 @@ polrace,headline,CBS,2022,689,1
 polrace,headline,CBS,2023,638,0
 polrace,headline,CBS,2024,1290,3
 polrace,headline,CBS,2025,1635,5
-polrace,headline,CBS,2026,933,5
+polrace,headline,CBS,2026,1003,5
 polrace,headline,USA Today,2019,522,3
 polrace,headline,USA Today,2020,478,5
 polrace,headline,USA Today,2021,412,6
@@ -102,31 +102,31 @@ polrace,headline,USA Today,2022,575,3
 polrace,headline,USA Today,2023,305,0
 polrace,headline,USA Today,2024,862,7
 polrace,headline,USA Today,2025,1183,1
-polrace,headline,USA Today,2026,1312,6
-polrace,headline,New York Times,2019,288,0
-polrace,headline,New York Times,2020,337,1
-polrace,headline,New York Times,2021,398,1
-polrace,headline,New York Times,2022,528,0
-polrace,headline,New York Times,2023,461,0
-polrace,headline,New York Times,2024,700,2
-polrace,headline,New York Times,2025,778,1
-polrace,headline,New York Times,2026,730,3
+polrace,headline,USA Today,2026,1440,7
+polrace,headline,New York Times,2019,287,0
+polrace,headline,New York Times,2020,332,1
+polrace,headline,New York Times,2021,396,1
+polrace,headline,New York Times,2022,520,0
+polrace,headline,New York Times,2023,458,0
+polrace,headline,New York Times,2024,679,2
+polrace,headline,New York Times,2025,750,1
+polrace,headline,New York Times,2026,806,4
 polrace,headline,AP,2019,69,0
 polrace,headline,AP,2020,92,4
-polrace,headline,AP,2021,379,3
-polrace,headline,AP,2022,617,1
-polrace,headline,AP,2023,624,0
-polrace,headline,AP,2024,872,3
+polrace,headline,AP,2021,380,3
+polrace,headline,AP,2022,623,1
+polrace,headline,AP,2023,625,0
+polrace,headline,AP,2024,875,3
 polrace,headline,AP,2025,1231,5
-polrace,headline,AP,2026,1113,3
+polrace,headline,AP,2026,1228,3
 polrace,headline,Washington Post,2019,133,0
 polrace,headline,Washington Post,2020,233,2
 polrace,headline,Washington Post,2021,116,0
 polrace,headline,Washington Post,2022,278,2
 polrace,headline,Washington Post,2023,200,0
-polrace,headline,Washington Post,2024,509,2
-polrace,headline,Washington Post,2025,385,3
-polrace,headline,Washington Post,2026,955,3
+polrace,headline,Washington Post,2024,390,2
+polrace,headline,Washington Post,2025,292,2
+polrace,headline,Washington Post,2026,815,3
 polrace,headline,Yahoo Sports (syndicated pool),2019,69,1
 polrace,headline,Yahoo Sports (syndicated pool),2020,250,3
 polrace,headline,Yahoo Sports (syndicated pool),2021,475,3
@@ -150,7 +150,7 @@ lgbtq,body,Fox News,2022,402,18
 lgbtq,body,Fox News,2023,317,42
 lgbtq,body,Fox News,2024,1416,67
 lgbtq,body,Fox News,2025,972,52
-lgbtq,body,Fox News,2026,739,249
+lgbtq,body,Fox News,2026,824,278
 lgbtq,body,ESPN,2019,275,8
 lgbtq,body,ESPN,2020,343,21
 lgbtq,body,ESPN,2021,346,11
@@ -158,7 +158,7 @@ lgbtq,body,ESPN,2022,479,18
 lgbtq,body,ESPN,2023,508,9
 lgbtq,body,ESPN,2024,761,13
 lgbtq,body,ESPN,2025,920,8
-lgbtq,body,ESPN,2026,715,38
+lgbtq,body,ESPN,2026,798,40
 lgbtq,body,CBS,2019,241,3
 lgbtq,body,CBS,2020,304,5
 lgbtq,body,CBS,2021,394,3
@@ -166,7 +166,7 @@ lgbtq,body,CBS,2022,670,16
 lgbtq,body,CBS,2023,618,5
 lgbtq,body,CBS,2024,1246,8
 lgbtq,body,CBS,2025,1608,5
-lgbtq,body,CBS,2026,921,29
+lgbtq,body,CBS,2026,990,31
 lgbtq,body,USA Today,2019,368,4
 lgbtq,body,USA Today,2020,217,12
 lgbtq,body,USA Today,2021,289,13
@@ -174,31 +174,31 @@ lgbtq,body,USA Today,2022,362,19
 lgbtq,body,USA Today,2023,254,6
 lgbtq,body,USA Today,2024,848,18
 lgbtq,body,USA Today,2025,1181,6
-lgbtq,body,USA Today,2026,1310,46
-lgbtq,body,New York Times,2019,280,15
-lgbtq,body,New York Times,2020,325,15
-lgbtq,body,New York Times,2021,394,11
-lgbtq,body,New York Times,2022,522,42
-lgbtq,body,New York Times,2023,457,14
-lgbtq,body,New York Times,2024,695,22
-lgbtq,body,New York Times,2025,761,22
-lgbtq,body,New York Times,2026,580,28
+lgbtq,body,USA Today,2026,1436,51
+lgbtq,body,New York Times,2019,279,15
+lgbtq,body,New York Times,2020,320,15
+lgbtq,body,New York Times,2021,392,11
+lgbtq,body,New York Times,2022,514,41
+lgbtq,body,New York Times,2023,454,13
+lgbtq,body,New York Times,2024,674,21
+lgbtq,body,New York Times,2025,733,18
+lgbtq,body,New York Times,2026,651,34
 lgbtq,body,AP,2019,69,2
 lgbtq,body,AP,2020,92,4
-lgbtq,body,AP,2021,378,7
-lgbtq,body,AP,2022,617,16
-lgbtq,body,AP,2023,623,18
-lgbtq,body,AP,2024,872,8
+lgbtq,body,AP,2021,379,7
+lgbtq,body,AP,2022,623,16
+lgbtq,body,AP,2023,624,18
+lgbtq,body,AP,2024,875,8
 lgbtq,body,AP,2025,1229,6
-lgbtq,body,AP,2026,1098,29
+lgbtq,body,AP,2026,1212,33
 lgbtq,body,Washington Post,2019,132,6
 lgbtq,body,Washington Post,2020,232,7
 lgbtq,body,Washington Post,2021,116,7
 lgbtq,body,Washington Post,2022,277,28
 lgbtq,body,Washington Post,2023,198,9
-lgbtq,body,Washington Post,2024,495,21
-lgbtq,body,Washington Post,2025,363,10
-lgbtq,body,Washington Post,2026,949,46
+lgbtq,body,Washington Post,2024,376,15
+lgbtq,body,Washington Post,2025,270,7
+lgbtq,body,Washington Post,2026,809,37
 lgbtq,body,Yahoo Sports (syndicated pool),2019,67,1
 lgbtq,body,Yahoo Sports (syndicated pool),2020,235,19
 lgbtq,body,Yahoo Sports (syndicated pool),2021,391,12
@@ -222,7 +222,7 @@ lgbtq,headline,Fox News,2022,404,2
 lgbtq,headline,Fox News,2023,317,10
 lgbtq,headline,Fox News,2024,1416,13
 lgbtq,headline,Fox News,2025,972,12
-lgbtq,headline,Fox News,2026,739,66
+lgbtq,headline,Fox News,2026,824,68
 lgbtq,headline,ESPN,2019,279,0
 lgbtq,headline,ESPN,2020,347,0
 lgbtq,headline,ESPN,2021,348,0
@@ -230,7 +230,7 @@ lgbtq,headline,ESPN,2022,482,1
 lgbtq,headline,ESPN,2023,512,1
 lgbtq,headline,ESPN,2024,765,3
 lgbtq,headline,ESPN,2025,921,0
-lgbtq,headline,ESPN,2026,716,6
+lgbtq,headline,ESPN,2026,802,6
 lgbtq,headline,CBS,2019,243,0
 lgbtq,headline,CBS,2020,307,0
 lgbtq,headline,CBS,2021,405,0
@@ -238,7 +238,7 @@ lgbtq,headline,CBS,2022,689,1
 lgbtq,headline,CBS,2023,638,0
 lgbtq,headline,CBS,2024,1290,2
 lgbtq,headline,CBS,2025,1635,0
-lgbtq,headline,CBS,2026,933,5
+lgbtq,headline,CBS,2026,1003,5
 lgbtq,headline,USA Today,2019,522,0
 lgbtq,headline,USA Today,2020,478,0
 lgbtq,headline,USA Today,2021,412,0
@@ -246,31 +246,31 @@ lgbtq,headline,USA Today,2022,575,1
 lgbtq,headline,USA Today,2023,305,1
 lgbtq,headline,USA Today,2024,862,2
 lgbtq,headline,USA Today,2025,1183,1
-lgbtq,headline,USA Today,2026,1312,7
-lgbtq,headline,New York Times,2019,288,2
-lgbtq,headline,New York Times,2020,337,0
-lgbtq,headline,New York Times,2021,398,0
-lgbtq,headline,New York Times,2022,528,1
-lgbtq,headline,New York Times,2023,461,0
-lgbtq,headline,New York Times,2024,700,1
-lgbtq,headline,New York Times,2025,778,0
-lgbtq,headline,New York Times,2026,730,6
+lgbtq,headline,USA Today,2026,1440,7
+lgbtq,headline,New York Times,2019,287,2
+lgbtq,headline,New York Times,2020,332,0
+lgbtq,headline,New York Times,2021,396,0
+lgbtq,headline,New York Times,2022,520,1
+lgbtq,headline,New York Times,2023,458,0
+lgbtq,headline,New York Times,2024,679,1
+lgbtq,headline,New York Times,2025,750,0
+lgbtq,headline,New York Times,2026,806,7
 lgbtq,headline,AP,2019,69,0
 lgbtq,headline,AP,2020,92,0
-lgbtq,headline,AP,2021,379,0
-lgbtq,headline,AP,2022,617,0
-lgbtq,headline,AP,2023,624,0
-lgbtq,headline,AP,2024,872,0
+lgbtq,headline,AP,2021,380,0
+lgbtq,headline,AP,2022,623,0
+lgbtq,headline,AP,2023,625,0
+lgbtq,headline,AP,2024,875,0
 lgbtq,headline,AP,2025,1231,0
-lgbtq,headline,AP,2026,1113,6
+lgbtq,headline,AP,2026,1228,6
 lgbtq,headline,Washington Post,2019,133,0
 lgbtq,headline,Washington Post,2020,233,0
 lgbtq,headline,Washington Post,2021,116,1
 lgbtq,headline,Washington Post,2022,278,1
 lgbtq,headline,Washington Post,2023,200,0
-lgbtq,headline,Washington Post,2024,509,1
-lgbtq,headline,Washington Post,2025,385,0
-lgbtq,headline,Washington Post,2026,955,11
+lgbtq,headline,Washington Post,2024,390,1
+lgbtq,headline,Washington Post,2025,292,0
+lgbtq,headline,Washington Post,2026,815,9
 lgbtq,headline,Yahoo Sports (syndicated pool),2019,69,0
 lgbtq,headline,Yahoo Sports (syndicated pool),2020,250,0
 lgbtq,headline,Yahoo Sports (syndicated pool),2021,475,0
@@ -294,7 +294,7 @@ fouls,body,Fox News,2022,402,5
 fouls,body,Fox News,2023,317,8
 fouls,body,Fox News,2024,1416,106
 fouls,body,Fox News,2025,972,64
-fouls,body,Fox News,2026,739,96
+fouls,body,Fox News,2026,824,103
 fouls,body,ESPN,2019,275,15
 fouls,body,ESPN,2020,343,6
 fouls,body,ESPN,2021,346,14
@@ -302,7 +302,7 @@ fouls,body,ESPN,2022,479,14
 fouls,body,ESPN,2023,508,14
 fouls,body,ESPN,2024,761,23
 fouls,body,ESPN,2025,920,39
-fouls,body,ESPN,2026,715,31
+fouls,body,ESPN,2026,798,37
 fouls,body,CBS,2019,241,10
 fouls,body,CBS,2020,304,3
 fouls,body,CBS,2021,394,9
@@ -310,7 +310,7 @@ fouls,body,CBS,2022,670,9
 fouls,body,CBS,2023,618,10
 fouls,body,CBS,2024,1246,37
 fouls,body,CBS,2025,1608,36
-fouls,body,CBS,2026,921,36
+fouls,body,CBS,2026,990,38
 fouls,body,USA Today,2019,368,10
 fouls,body,USA Today,2020,217,3
 fouls,body,USA Today,2021,289,6
@@ -318,31 +318,31 @@ fouls,body,USA Today,2022,362,3
 fouls,body,USA Today,2023,254,3
 fouls,body,USA Today,2024,848,17
 fouls,body,USA Today,2025,1181,34
-fouls,body,USA Today,2026,1310,83
-fouls,body,New York Times,2019,280,16
-fouls,body,New York Times,2020,325,16
-fouls,body,New York Times,2021,394,13
-fouls,body,New York Times,2022,522,18
-fouls,body,New York Times,2023,457,25
-fouls,body,New York Times,2024,695,29
-fouls,body,New York Times,2025,761,29
-fouls,body,New York Times,2026,580,27
+fouls,body,USA Today,2026,1436,100
+fouls,body,New York Times,2019,279,16
+fouls,body,New York Times,2020,320,16
+fouls,body,New York Times,2021,392,13
+fouls,body,New York Times,2022,514,17
+fouls,body,New York Times,2023,454,24
+fouls,body,New York Times,2024,674,29
+fouls,body,New York Times,2025,733,29
+fouls,body,New York Times,2026,651,35
 fouls,body,AP,2019,69,3
 fouls,body,AP,2020,92,3
-fouls,body,AP,2021,378,5
-fouls,body,AP,2022,617,12
-fouls,body,AP,2023,623,10
-fouls,body,AP,2024,872,17
+fouls,body,AP,2021,379,5
+fouls,body,AP,2022,623,13
+fouls,body,AP,2023,624,10
+fouls,body,AP,2024,875,17
 fouls,body,AP,2025,1229,9
-fouls,body,AP,2026,1098,22
+fouls,body,AP,2026,1212,23
 fouls,body,Washington Post,2019,132,8
 fouls,body,Washington Post,2020,232,6
 fouls,body,Washington Post,2021,116,4
 fouls,body,Washington Post,2022,277,9
 fouls,body,Washington Post,2023,198,14
-fouls,body,Washington Post,2024,495,20
-fouls,body,Washington Post,2025,363,15
-fouls,body,Washington Post,2026,949,27
+fouls,body,Washington Post,2024,376,17
+fouls,body,Washington Post,2025,270,11
+fouls,body,Washington Post,2026,809,24
 fouls,body,Yahoo Sports (syndicated pool),2019,67,5
 fouls,body,Yahoo Sports (syndicated pool),2020,235,1
 fouls,body,Yahoo Sports (syndicated pool),2021,391,13
@@ -366,7 +366,7 @@ fouls,headline,Fox News,2022,404,1
 fouls,headline,Fox News,2023,317,3
 fouls,headline,Fox News,2024,1416,12
 fouls,headline,Fox News,2025,972,5
-fouls,headline,Fox News,2026,739,8
+fouls,headline,Fox News,2026,824,8
 fouls,headline,ESPN,2019,279,0
 fouls,headline,ESPN,2020,347,0
 fouls,headline,ESPN,2021,348,1
@@ -374,7 +374,7 @@ fouls,headline,ESPN,2022,482,1
 fouls,headline,ESPN,2023,512,0
 fouls,headline,ESPN,2024,765,1
 fouls,headline,ESPN,2025,921,0
-fouls,headline,ESPN,2026,716,2
+fouls,headline,ESPN,2026,802,2
 fouls,headline,CBS,2019,243,0
 fouls,headline,CBS,2020,307,0
 fouls,headline,CBS,2021,405,0
@@ -382,7 +382,7 @@ fouls,headline,CBS,2022,689,0
 fouls,headline,CBS,2023,638,0
 fouls,headline,CBS,2024,1290,1
 fouls,headline,CBS,2025,1635,4
-fouls,headline,CBS,2026,933,4
+fouls,headline,CBS,2026,1003,4
 fouls,headline,USA Today,2019,522,0
 fouls,headline,USA Today,2020,478,0
 fouls,headline,USA Today,2021,412,0
@@ -390,31 +390,31 @@ fouls,headline,USA Today,2022,575,0
 fouls,headline,USA Today,2023,305,0
 fouls,headline,USA Today,2024,862,1
 fouls,headline,USA Today,2025,1183,1
-fouls,headline,USA Today,2026,1312,1
-fouls,headline,New York Times,2019,288,0
-fouls,headline,New York Times,2020,337,0
-fouls,headline,New York Times,2021,398,0
-fouls,headline,New York Times,2022,528,0
-fouls,headline,New York Times,2023,461,1
-fouls,headline,New York Times,2024,700,1
-fouls,headline,New York Times,2025,778,1
-fouls,headline,New York Times,2026,730,0
+fouls,headline,USA Today,2026,1440,2
+fouls,headline,New York Times,2019,287,0
+fouls,headline,New York Times,2020,332,0
+fouls,headline,New York Times,2021,396,0
+fouls,headline,New York Times,2022,520,0
+fouls,headline,New York Times,2023,458,1
+fouls,headline,New York Times,2024,679,1
+fouls,headline,New York Times,2025,750,1
+fouls,headline,New York Times,2026,806,0
 fouls,headline,AP,2019,69,0
 fouls,headline,AP,2020,92,0
-fouls,headline,AP,2021,379,0
-fouls,headline,AP,2022,617,0
-fouls,headline,AP,2023,624,0
-fouls,headline,AP,2024,872,0
+fouls,headline,AP,2021,380,0
+fouls,headline,AP,2022,623,0
+fouls,headline,AP,2023,625,0
+fouls,headline,AP,2024,875,0
 fouls,headline,AP,2025,1231,0
-fouls,headline,AP,2026,1113,2
+fouls,headline,AP,2026,1228,2
 fouls,headline,Washington Post,2019,133,0
 fouls,headline,Washington Post,2020,233,0
 fouls,headline,Washington Post,2021,116,0
 fouls,headline,Washington Post,2022,278,0
 fouls,headline,Washington Post,2023,200,1
-fouls,headline,Washington Post,2024,509,1
-fouls,headline,Washington Post,2025,385,1
-fouls,headline,Washington Post,2026,955,2
+fouls,headline,Washington Post,2024,390,1
+fouls,headline,Washington Post,2025,292,0
+fouls,headline,Washington Post,2026,815,1
 fouls,headline,Yahoo Sports (syndicated pool),2019,69,0
 fouls,headline,Yahoo Sports (syndicated pool),2020,250,0
 fouls,headline,Yahoo Sports (syndicated pool),2021,475,1
@@ -438,7 +438,7 @@ protect,body,Fox News,2022,402,7
 protect,body,Fox News,2023,317,14
 protect,body,Fox News,2024,1416,46
 protect,body,Fox News,2025,972,62
-protect,body,Fox News,2026,739,154
+protect,body,Fox News,2026,824,168
 protect,body,ESPN,2019,275,7
 protect,body,ESPN,2020,343,10
 protect,body,ESPN,2021,346,10
@@ -446,7 +446,7 @@ protect,body,ESPN,2022,479,6
 protect,body,ESPN,2023,508,17
 protect,body,ESPN,2024,761,30
 protect,body,ESPN,2025,920,14
-protect,body,ESPN,2026,715,46
+protect,body,ESPN,2026,798,50
 protect,body,CBS,2019,241,4
 protect,body,CBS,2020,304,4
 protect,body,CBS,2021,394,6
@@ -454,7 +454,7 @@ protect,body,CBS,2022,670,3
 protect,body,CBS,2023,618,17
 protect,body,CBS,2024,1246,22
 protect,body,CBS,2025,1608,26
-protect,body,CBS,2026,921,32
+protect,body,CBS,2026,990,34
 protect,body,USA Today,2019,368,2
 protect,body,USA Today,2020,217,4
 protect,body,USA Today,2021,289,1
@@ -462,31 +462,31 @@ protect,body,USA Today,2022,362,6
 protect,body,USA Today,2023,254,5
 protect,body,USA Today,2024,848,17
 protect,body,USA Today,2025,1181,13
-protect,body,USA Today,2026,1310,48
-protect,body,New York Times,2019,280,14
-protect,body,New York Times,2020,325,20
-protect,body,New York Times,2021,394,9
-protect,body,New York Times,2022,522,11
-protect,body,New York Times,2023,457,14
-protect,body,New York Times,2024,695,29
-protect,body,New York Times,2025,761,31
-protect,body,New York Times,2026,580,48
+protect,body,USA Today,2026,1436,52
+protect,body,New York Times,2019,279,14
+protect,body,New York Times,2020,320,20
+protect,body,New York Times,2021,392,9
+protect,body,New York Times,2022,514,11
+protect,body,New York Times,2023,454,14
+protect,body,New York Times,2024,674,27
+protect,body,New York Times,2025,733,31
+protect,body,New York Times,2026,651,48
 protect,body,AP,2019,69,1
 protect,body,AP,2020,92,1
-protect,body,AP,2021,378,2
-protect,body,AP,2022,617,5
-protect,body,AP,2023,623,12
-protect,body,AP,2024,872,15
+protect,body,AP,2021,379,2
+protect,body,AP,2022,623,5
+protect,body,AP,2023,624,12
+protect,body,AP,2024,875,15
 protect,body,AP,2025,1229,12
-protect,body,AP,2026,1098,24
+protect,body,AP,2026,1212,25
 protect,body,Washington Post,2019,132,6
 protect,body,Washington Post,2020,232,15
 protect,body,Washington Post,2021,116,2
 protect,body,Washington Post,2022,277,17
 protect,body,Washington Post,2023,198,8
-protect,body,Washington Post,2024,495,22
-protect,body,Washington Post,2025,363,16
-protect,body,Washington Post,2026,949,32
+protect,body,Washington Post,2024,376,17
+protect,body,Washington Post,2025,270,9
+protect,body,Washington Post,2026,809,27
 protect,body,Yahoo Sports (syndicated pool),2019,67,4
 protect,body,Yahoo Sports (syndicated pool),2020,235,4
 protect,body,Yahoo Sports (syndicated pool),2021,391,4
@@ -510,7 +510,7 @@ protect,headline,Fox News,2022,404,0
 protect,headline,Fox News,2023,317,0
 protect,headline,Fox News,2024,1416,8
 protect,headline,Fox News,2025,972,3
-protect,headline,Fox News,2026,739,9
+protect,headline,Fox News,2026,824,9
 protect,headline,ESPN,2019,279,0
 protect,headline,ESPN,2020,347,0
 protect,headline,ESPN,2021,348,0
@@ -518,7 +518,7 @@ protect,headline,ESPN,2022,482,0
 protect,headline,ESPN,2023,512,0
 protect,headline,ESPN,2024,765,0
 protect,headline,ESPN,2025,921,0
-protect,headline,ESPN,2026,716,1
+protect,headline,ESPN,2026,802,1
 protect,headline,CBS,2019,243,0
 protect,headline,CBS,2020,307,0
 protect,headline,CBS,2021,405,0
@@ -526,7 +526,7 @@ protect,headline,CBS,2022,689,0
 protect,headline,CBS,2023,638,0
 protect,headline,CBS,2024,1290,2
 protect,headline,CBS,2025,1635,0
-protect,headline,CBS,2026,933,1
+protect,headline,CBS,2026,1003,1
 protect,headline,USA Today,2019,522,0
 protect,headline,USA Today,2020,478,0
 protect,headline,USA Today,2021,412,0
@@ -534,31 +534,31 @@ protect,headline,USA Today,2022,575,0
 protect,headline,USA Today,2023,305,0
 protect,headline,USA Today,2024,862,0
 protect,headline,USA Today,2025,1183,0
-protect,headline,USA Today,2026,1312,5
-protect,headline,New York Times,2019,288,1
-protect,headline,New York Times,2020,337,0
-protect,headline,New York Times,2021,398,1
-protect,headline,New York Times,2022,528,0
-protect,headline,New York Times,2023,461,0
-protect,headline,New York Times,2024,700,0
-protect,headline,New York Times,2025,778,0
-protect,headline,New York Times,2026,730,1
+protect,headline,USA Today,2026,1440,5
+protect,headline,New York Times,2019,287,1
+protect,headline,New York Times,2020,332,0
+protect,headline,New York Times,2021,396,1
+protect,headline,New York Times,2022,520,0
+protect,headline,New York Times,2023,458,0
+protect,headline,New York Times,2024,679,0
+protect,headline,New York Times,2025,750,0
+protect,headline,New York Times,2026,806,1
 protect,headline,AP,2019,69,0
 protect,headline,AP,2020,92,0
-protect,headline,AP,2021,379,0
-protect,headline,AP,2022,617,0
-protect,headline,AP,2023,624,0
-protect,headline,AP,2024,872,1
+protect,headline,AP,2021,380,0
+protect,headline,AP,2022,623,0
+protect,headline,AP,2023,625,0
+protect,headline,AP,2024,875,1
 protect,headline,AP,2025,1231,1
-protect,headline,AP,2026,1113,1
+protect,headline,AP,2026,1228,1
 protect,headline,Washington Post,2019,133,0
 protect,headline,Washington Post,2020,233,0
 protect,headline,Washington Post,2021,116,0
 protect,headline,Washington Post,2022,278,0
 protect,headline,Washington Post,2023,200,0
-protect,headline,Washington Post,2024,509,0
-protect,headline,Washington Post,2025,385,0
-protect,headline,Washington Post,2026,955,1
+protect,headline,Washington Post,2024,390,0
+protect,headline,Washington Post,2025,292,0
+protect,headline,Washington Post,2026,815,1
 protect,headline,Yahoo Sports (syndicated pool),2019,69,0
 protect,headline,Yahoo Sports (syndicated pool),2020,250,0
 protect,headline,Yahoo Sports (syndicated pool),2021,475,0

@@ -8,6 +8,7 @@ run python3 notebooks/outlet_corpus_filter.py
 run python3 notebooks/bundle_outlets.py
 run nb 03-full-corpus-csv.ipynb
 run nb 07-headline-networks.ipynb
+run python3 notebooks/network_map.py
 run nb 01-player-framing.ipynb
 run python3 tasks/review_sheet.py push
 run nb 02-headline-sentiment.ipynb
@@ -19,6 +20,7 @@ run python3 notebooks/player_sentences.py
 rm -f notebooks/.cache/fox_parsed.json notebooks/.cache/others_parsed.json
 run nb 09-player-words.ipynb
 run python3 notebooks/sentence_framing.py
+run python3 notebooks/framing_swarm.py
 run python3 notebooks/cast_gap.py
 run python3 notebooks/pair_gap.py
 run python3 notebooks/word_timeline.py

@@ -61,7 +61,6 @@ celebrity,noun,wedding
 celebrity,noun,marriage
 celebrity,noun,honeymoon
 celebrity,noun,breakup
-celebrity,noun,split
 celebrity,noun,divorce
 celebrity,noun,ex
 celebrity,noun,baby
@@ -93,8 +92,10 @@ celebrity,verb,pokes fun
 celebrity,verb,marries
 celebrity,verb,married
 celebrity,verb,engaged
-celebrity,verb,split
-celebrity,verb,splits
+celebrity,verb,split up
+celebrity,verb,splitting up
+celebrity,verb,split from (?!the\b)
+celebrity,verb,split (?:with|from) (?:her|his|their) (?:husband|wife|boyfriend|girlfriend|fianc\w*|partner)
 celebrity,verb,divorce
 celebrity,verb,divorced
 celebrity,verb,expecting
