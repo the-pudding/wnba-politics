@@ -80,18 +80,13 @@ body {
 	}
 }
 
+#intro {
+	margin-top: 0;
+}
+
 h1 {
 	font-size: var(--48px, 48px);
 	font-family: var(--font-display);
-}
-
-h1::after {
-	content: "";
-	display: block;
-	width: 100px;
-	height: 10px;
-	background: var(--color-fox-navy);
-	margin-top: 2rem;
 }
 
 h2 {
@@ -289,6 +284,11 @@ svg {
 	line-height: 1.4;
 	color: rgba(42, 21, 3, 0.7);
 	padding: 6px 4px 2px;
+}
+
+#framing .chart {
+	padding: 0 1rem;
+	max-width: 1000px;
 }
 
 /* inline colour in the Doc's text, as the kids-book copy does with he/she:

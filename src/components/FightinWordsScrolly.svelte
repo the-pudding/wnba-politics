@@ -112,10 +112,11 @@
 		align-items: center;
 		justify-content: flex-start;
 		pointer-events: none;
+		padding: 0 2rem;
 	}
 	.card {
 		/* wider only where the screen leaves a margin beside the 1000px chart */
-		max-width: clamp(300px, calc((100vw - 1000px) / 2 - 24px), 380px);
+		max-width: 460px;		
 		margin: 0;
 		background: var(--wnba-tan-bg);
 		padding: 14px 16px;
@@ -145,9 +146,6 @@
 		}
 		.steps {
 			margin-top: -100vh;
-		}
-		.card {
-			max-width: 84vw;
 		}
 	}
 	/* the step cards let the pointer through to the chart behind them, but a

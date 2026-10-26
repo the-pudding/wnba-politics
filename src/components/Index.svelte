@@ -9,6 +9,7 @@
 	import ShareBars from "$components/ShareBars.svelte";
 	import ScrollToc from "$components/ScrollToc.svelte";
 	import ReadingBar from "$components/ReadingBar.svelte";
+	import GridWall from "$components/GridWall.svelte";
 	import OutletTopicCompare from "$components/OutletTopicCompare.svelte";
 	import FoxVsField from "$components/FoxVsField.svelte";
 	import TernaryStatic from "$components/TernaryStatic.svelte";
@@ -45,6 +46,7 @@
 	// Doc `chart:` names -> components
 	const components = {
 		Toc,
+		GridWall,
 		SimpleBars,
 		ShareBars,
 		OutletTopicCompare,
@@ -109,26 +111,12 @@
 	<ScrollToc />
 	<!-- <ReadingBar /> -->
 	<article id="story">
-		<header class="story-header">
-			<Dispersed under="{base}/images/cc-fox-logo.png" over="{base}/images/cc-solo.png" alt="caitlin clark shoots a three over the fox news logo" />
-			<!-- <img class="from-the-logo" src="{base}/images/cc-fox-logo.png" alt="caitlin clark shoots a three over the fox news logo" /> -->
-			<div class="text-wrapper">
-				<h1>{meta.hed}</h1>
-				<p class="story-dek">{meta.dek}</p>
-				<p class="byline">By {@html meta.byline}, with {@html meta.with}</p>
-			</div>
-			
-		</header>
-
 		<CMS {body} {components} />
 	</article>
 	<Footer />
 </svelte:boundary>
 
 <style>
-	#story {
-		padding: 1rem;
-	}
 	.story-header {
 		display: flex;
 		flex-direction: row;
@@ -152,7 +140,7 @@
 		font-family: var(--font-sans);
 		font-size: var(--24px);
 		line-height: 1.5;
-		max-width: 400px;
+		max-width: 460px;
 	}
 	.byline {
 		font-size: 14px;

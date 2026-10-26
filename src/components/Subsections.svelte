@@ -190,6 +190,7 @@
         gap: 40px;
         max-width: 1200px;
         margin: 2rem auto;
+        padding: 0 1rem;
     }
 
     .sheet {
@@ -220,7 +221,7 @@
     /* Outer wrapper caps height to 100svh */
     .content-wrapper {
         position: relative;
-        max-height: 130svh;
+        max-height: 70svh;
         overflow: hidden;
     }
 

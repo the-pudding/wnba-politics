@@ -602,6 +602,7 @@
 	.words-scrolly {
 		position: relative;
 		margin: 24px 0;
+		padding: 0 1rem;
 	}
 
 	.sticky {
@@ -936,10 +937,11 @@
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
+		padding: 0 2rem;
 	}
 	.card {
 		/* wider only where the screen leaves a margin beside the 900px chart */
-		max-width: clamp(300px, calc((100vw - 900px) / 2 - 24px), 380px);
+		max-width: 460px;
 		margin: 0;
 		background: rgba(255, 253, 248, 0.94);
 		padding: 14px 16px;
@@ -969,11 +971,6 @@
 		box-sizing: border-box;
 	}
 
-	@media (max-width: 860px) {
-		.card {
-			max-width: 84vw;
-		}
-	}
 	/* the step cards let the pointer through to the chart behind them, but a
 	   link in a step's text must still be clickable */
 	.steps :global(a) {

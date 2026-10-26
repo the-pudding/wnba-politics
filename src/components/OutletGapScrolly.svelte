@@ -135,12 +135,6 @@
 		color: var(--color-ink);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 	}
-
-	@media (max-width: 860px) {
-		.stack {
-			max-width: 84vw;
-		}
-	}
 	/* the step cards let the pointer through to the chart behind them, but a
 	   link in a step's text must still be clickable */
 	.steps :global(a) {

@@ -18,6 +18,7 @@
 
 	// scrollytelling charts take the full viewport width
 	const FULL_BLEED = new Set([
+		"GridWall",
 		"NetworkScrolly",
 		"NetworkMap",
 		"NetworkScrollyOld",
@@ -71,8 +72,8 @@
 	function chartProps(value) {
 		if (typeof value === "string")
 			return parseChart(value ? "_ | " + value : "_").props;
-		const pairs = Object.entries(value ?? {}).filter(([k]) => k !== "id");
-		return pairsToProps(pairs);
+		// here the type names the component, so `id` is free to pass through (GridWall uses it)
+		return pairsToProps(Object.entries(value ?? {}));
 	}
 
 	function parseChart(value) {
@@ -310,6 +311,10 @@
 	.act {
 		margin: 56px 0;
 	}
+	/* the opening section starts flush with the top of the page (the intro wall) */
+	.act:first-of-type {
+		margin-top: 0;
+	}
 
 	p {
 		max-width: 700px;
@@ -319,6 +324,7 @@
 	.fold {
 		margin: 28px auto;
 		max-width: 1000px;
+		padding: 0 1rem;
 	}
 	.fold + .fold {
 		margin-top: -28px;
@@ -367,7 +373,8 @@
 		font-size: 17px;
 		line-height: 1.65;
 		margin-bottom: 1em;
-		color: var(--color-ink);
+		color: var(--color-fg);
+		padding: 0 1rem;
 	}
 	.kicker {
 		background: var(--wnba-red);
@@ -407,7 +414,7 @@
 		width: 100vw;
 		margin-left: 50%;
 		transform: translateX(-50%);
-		padding: 0 2rem;
+		padding: 0;
 	}
 	.chart-title {
 		font-size: 19px;
@@ -422,6 +429,7 @@
 		font-size: 18px;
 		font-family: var(--font-sans);
 		margin: 0 0 12px;
+		padding: 0;
 		line-height: 1.15;
 		font-weight: 700;
 		color: var(--color-gray-950);
@@ -503,6 +511,7 @@
 	.photo {
 		margin: 3rem auto;
 		max-width: 700px;
+		padding: 1rem;
 	}
 	.photo img {
 		display: block;
