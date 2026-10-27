@@ -1145,15 +1145,23 @@
 			playBtn.textContent = "▶";
 			playBtn.setAttribute("aria-label", "Play");
 		}
+		// play moves whichever month the map shows: explore's, or the story step's
+		const shownMonth = (m) => {
+			if (exploring) exploreMonth = m;
+			else dragged = m;
+		};
 		playBtn.addEventListener("click", () => {
 			if (playTimer) return stopPlay();
-			if (exploreMonth >= MONTHS[M - 1]) exploreMonth = MONTHS[0];
+			if (MI.get(currentState().month) >= M - 1) {
+				shownMonth(MONTHS[0]);
+				render(true);
+			}
 			playBtn.textContent = "❚❚";
 			playBtn.setAttribute("aria-label", "Pause");
 			playTimer = setInterval(() => {
-				const i = MI.get(exploreMonth);
+				const i = MI.get(currentState().month) ?? M - 1;
 				if (i >= M - 1) return stopPlay();
-				exploreMonth = MONTHS[i + 1];
+				shownMonth(MONTHS[i + 1]);
 				render(false);
 			}, PLAY_MS);
 		});
@@ -1307,6 +1315,8 @@
 					innerWidth > PHONE_SCREEN &&
 					(stillOn || exploreEl.getBoundingClientRect().top < line);
 				if (idx === stepIndex && ex === exploring) return;
+				// a new step shows its own month, so playing stops
+				if (idx !== stepIndex) stopPlay();
 				stepIndex = idx;
 				if (ex !== exploring) {
 					exploring = ex;
@@ -1546,7 +1556,7 @@
 
 	/* the timeline */
 	.netmap :global(.timeline) {
-		padding-top: 6px;
+		padding: 0.5rem 0 1rem 0;
 	}
 	.netmap :global(.tl-row) {
 		display: flex;
@@ -1970,7 +1980,7 @@
 	}
 	/* the dates read as a line under the title */
 	.netmap.still :global(.when) {
-		font-size: 18px;
+		font-size: 16px;
 	}
 	/* the source note runs the card's full width, rule and all */
 	.netmap.still :global(.source) {
@@ -1988,7 +1998,6 @@
 			z-index: 0;
 			top: 0;
 			height: 100svh;
-			padding: 8px 12px;
 			border-radius: 0;
 			box-shadow: none;
 		}

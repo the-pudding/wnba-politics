@@ -354,7 +354,7 @@
 				const gutter = 34,
 					top = 26,
 					bottom = 22;
-				const PH = Math.max(400, Math.min(540, innerHeight * 0.64));
+				const PH = Math.max(300, Math.min(420, innerHeight * 0.5));
 				const cx = gutter + (W - gutter) / 2;
 				scale = d3
 					.scaleLinear()

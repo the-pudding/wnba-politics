@@ -35,7 +35,7 @@
 	// how big it gets there (share of its size on the title page) and how far from the top
 	const TITLE_STEPS = 1;
 	const TITLE_SCALE = 0.75;
-	const TITLE_TOP = { desktop: 14, phone: 52 }; // px
+	const TITLE_TOP = 14; // px
 	const callStyle = String(copy.meta?.logoCallStyle ?? "corner").trim().toLowerCase();
 	const callText = copy.meta?.logoCall || LOGO_CALL;
 	const callCredit = copy.meta?.logoCredit || LOGO_CREDIT;
@@ -231,8 +231,8 @@
 
 	// the title on the wall: each half moves from where it sits on the title page to meet
 	// the other at the top, scaled down, in one line. It stays there (and fades out there)
-	// once the steps start; measured after the page has laid it out for the wall (on
-	// phones its words go onto one line first). offsetLeft/Top ignore the transform.
+	// once the steps start; measured after the page has laid it out for the wall.
+	// offsetLeft/Top ignore the transform. Wide screens only.
 	let titleOnWall = $derived(id === "intro" && shownIndex !== undefined);
 	let hedLeftEl = $state(),
 		hedRightEl = $state(),
@@ -240,7 +240,8 @@
 	let titleMoves = $state({ left: "", right: "" });
 	$effect(() => {
 		viewW; // again when the window changes size
-		if (!titleOnWall || !hedLeftEl || !hedRightEl) {
+		// on smaller screens the title fades out instead (see the CSS)
+		if (!titleOnWall || !hedLeftEl || !hedRightEl || viewW <= 900) {
 			titleMoves = { left: "", right: "" };
 			return;
 		}
@@ -249,13 +250,11 @@
 		// a frame later, once the page has laid the words out for the wall
 		const frame = requestAnimationFrame(() => {
 			const W = L.offsetParent.clientWidth;
-			const phone = W <= 600;
 			const both = L.offsetWidth + R.offsetWidth;
-			const k = Math.min(TITLE_SCALE, (W - 2 * (phone ? 16 : 160)) / both);
+			const k = Math.min(TITLE_SCALE, (W - 2 * 160) / both);
 			const start = (W - both * k) / 2;
-			const top = phone ? TITLE_TOP.phone : TITLE_TOP.desktop;
 			const move = (el, x) =>
-				`translate(${x - el.offsetLeft}px, ${top - el.offsetTop}px) scale(${k})`;
+				`translate(${x - el.offsetLeft}px, ${TITLE_TOP - el.offsetTop}px) scale(${k})`;
 			// the right half tucks a pixel under the left's edge, so no sliver of wall shows
 			// between them (their widths are whole pixels, scaled to fractions)
 			titleMoves = {
@@ -628,6 +627,7 @@
 	// top and bottom.
 	const CARD_HALF = 460 / 2 + 32; // half the card plus breathing room
 	const PAD = 16;
+	const TOP_CLEAR = 5; // rem kept clear at the top of the screen
 	// wide screens: [side, height as a share of the screen] for up to three pull-outs
 	const WIDE_LAYOUTS = [
 		[["L", 0.27], ["R", 0.5], ["L", 0.73]],
@@ -655,20 +655,27 @@
 		const gutter = gridW / 2 - CARD_HALF;
 		const wide = gutter >= 160;
 		const H = stickyH || gridH;
+		// pull-outs stay out of the top 5rem of the screen
+		const remPx =
+			typeof document === "undefined"
+				? 16
+				: parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+		const top = TOP_CLEAR * remPx;
 		let w, layouts, layoutsFive;
 		if (wide) {
 			w = Math.min(320, gutter - 2 * PAD, (H * 0.4) / TILE_RATIO);
 			const xL = gutter / 2;
 			const xR = gridW - xL;
-			const place = (l) => l.map(([side, y]) => [side === "L" ? xL : xR, H * y]);
+			// heights are shares of the screen below the top band
+			const place = (l) => l.map(([side, y]) => [side === "L" ? xL : xR, top + (H - top) * y]);
 			layouts = WIDE_LAYOUTS.map(place);
 			layoutsFive = WIDE_LAYOUTS_FIVE.map(place);
 		} else {
 			w = Math.min(gridW * 0.44, (H * 0.2) / TILE_RATIO);
 			const h = w * TILE_RATIO;
 			const Y = {
-				top: PAD + h / 2,
-				top2: PAD + h / 2 + h * 0.35,
+				top: top + h / 2,
+				top2: top + h / 2 + h * 0.35,
 				bottom: H - PAD - h / 2,
 				bottom2: H - PAD - h / 2 - h * 0.35
 			};
@@ -679,12 +686,15 @@
 		const x0 = (gridW - cols * tileW) / 2;
 		const y0 = (gridH - rows * tileH) / 2;
 		const scale = w / tileW;
+		// a big card on a short screen could still reach the band: nudge it down
+		const minY = top + (w * TILE_RATIO) / 2;
 		// one tile per video / highlight headline; a single one takes the middle spot
 		const spotsFor = (list, n) => (n === 1 ? [list[1]] : list.slice(0, n));
 		pulls.groups.forEach((group, g) => {
 			const many = group.items.length > 3 && wide;
 			const spots = many ? layoutsFive[g % layoutsFive.length] : layouts[g % layouts.length];
-			spotsFor(spots, Math.min(group.items.length, spots.length)).forEach(([tx, ty], k) => {
+			spotsFor(spots, Math.min(group.items.length, spots.length)).forEach(([tx, spotY], k) => {
+				const ty = Math.max(spotY, minY);
 				// take the tile nearest the spot so it only has a short way to travel,
 				// skipping tiles another group already uses
 				let col = Math.min(cols - 1, Math.max(0, Math.floor((tx - x0) / tileW)));
@@ -899,13 +909,15 @@
                     <span class="call-corner-words">“{@html callShort}”</span>
                 </a>
             {/if}
-            <p class="byline">
-                {#if callStyle === "byline"}
-                    <span class="call-line">“{@html callText}” <span class="call-credit">— {@html callCredit}</span></span>
-                {/if}
-                By {@html copy.meta.byline}, with {@html copy.meta.with}
-                <span class="scroll-hint" aria-hidden="true">{@html arrowSvg}</span>
-            </p>
+            <div class="byline">
+                <p>
+                    {#if callStyle === "byline"}
+                        <span class="call-line">“{@html callText}” <span class="call-credit">— {@html callCredit}</span></span>
+                    {/if}
+                    By {@html copy.meta.byline}, with {@html copy.meta.with}
+                    <span class="scroll-hint" aria-hidden="true">{@html arrowSvg}</span>
+                </p>
+            </div>
         </header>
         {:else if config.header && id == "outro"}
             <div class="outro-header" class:off={shownIndex !== undefined}>
@@ -998,7 +1010,7 @@
                     class:low={f?.low}
                     class:has-clip={!!cell.date}
                     class:quick={featureSeen && !!spot}
-                    style="--d: {cell.delay}s; --across: {cell.across}; {spot ? `--s0: ${spot.scale};` : ''} {f ? `--dx: ${f.dx}px; --dy: ${f.dy}px; --s: ${f.scale}; --fd: ${f.k * FEATURE_STAGGER}s;` : ''} {f?.type === 'clips' || ready ? `--outline: ${outlineOf(spot)};` : ''}"
+                    style="--d: {cell.delay}s; --across: {cell.across}; {f ? `--dx: ${f.dx}px; --dy: ${f.dy}px; --s: ${f.scale}; --fd: ${f.k * FEATURE_STAGGER}s;` : ''} {f?.type === 'clips' || ready ? `--outline: ${outlineOf(spot)};` : ''}"
                 >
                     <!-- a tile that plays a clip shows that clip's own frame in the wall,
                          so the screenshot comes to life when it lifts out -->
@@ -1035,12 +1047,19 @@
                             {/if}
                         </p>
                     {/each}
-                    {#if f?.type === "heads" && cell.date}
-                        <!-- mounted on pull-out so the headline's scramble plays as it arrives -->
-                        <div
-                            class="clip-wrap"
-                            transition:fade={{ duration: 300, delay: (spot?.k ?? 0) * FEATURE_STAGGER * 1000 }}
-                        >
+                </div>
+                {#if f?.type === "heads" && cell.date}
+                    <!-- the headline card sits outside the tile, at its pulled-out size, so
+                         it isn't scaled up (Safari would blur it). It flies out from the
+                         tile and ends with no transform. Mounted on pull-out so the
+                         headline's scramble plays as it arrives. -->
+                    <div
+                        class="clip-out"
+                        class:low={spot?.low}
+                        style="--dx: {spot?.dx ?? 0}px; --dy: {spot?.dy ?? 0}px; --s: {spot?.scale ?? 1}; --fd: {(spot?.k ?? 0) * FEATURE_STAGGER}s; --d: {cell.delay}s; --w: {tileW * (spot?.scale ?? 1)}px; --h: {tileH * (spot?.scale ?? 1)}px;"
+                        transition:fade={{ duration: 300, delay: (spot?.k ?? 0) * FEATURE_STAGGER * 1000 }}
+                    >
+                        <div class="clip-wrap">
                             <div class="clip-inner">
                                 <HeadlineClip
                                     clip={{ date: cell.date, title: cell.styled }}
@@ -1051,8 +1070,8 @@
                                 />
                             </div>
                         </div>
-                    {/if}
-                </div>
+                    </div>
+                {/if}
                 </div>
             {/each}
         </div>
@@ -1275,9 +1294,8 @@
             filter 500ms ease;
         transition-delay: var(--fd);
     }
-    /* a pulled-out headline becomes a gallery clipping. It's laid out at its pulled-out
-       width and shrunk by 1/--s0 to fit the tile, so the cell's scale-up brings it back to
-       full size and sharp. */
+    /* a pulled-out headline becomes a gallery clipping (.clip-out, below); the tile
+       itself lifts out empty underneath it */
     .cell.has-clip.pull-heads {
         overflow: visible;
         box-shadow: none;
@@ -1285,32 +1303,43 @@
     .cell.has-clip.pull-heads p.on {
         opacity: 0;
     }
+    /* the headline card's box: where the pulled-out tile ends up, at that size,
+       placed without a transform so the text stays sharp */
+    .clip-out {
+        position: absolute;
+        z-index: 2;
+        left: calc(50% + var(--dx) - var(--w) / 2);
+        top: calc(50% + var(--dy) - var(--h) / 2);
+        width: var(--w);
+        height: var(--h);
+        pointer-events: none;
+    }
+    .bg-grid.closing .clip-out {
+        opacity: 0;
+        transition: opacity 500ms ease var(--d);
+    }
+    /* a headline card is taller than its tile: it hangs from the tile's top edge, or in
+       the lower half of the screen stands on its bottom edge, so it stays on screen */
     .clip-wrap {
         position: absolute;
         inset: 0;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none;
-    }
-    /* a headline card is taller than its tile: it hangs from the tile's top edge, or in
-       the lower half of the screen stands on its bottom edge, so it stays on screen */
-    .pull-heads .clip-wrap {
         align-items: flex-start;
+        justify-content: center;
+        /* flies out from the tile, like the clips, and ends with no transform */
+        animation: clip-fly 600ms cubic-bezier(0.2, 0.7, 0.2, 1) var(--fd) backwards;
     }
-    .pull-heads.low .clip-wrap {
+    .clip-out.low .clip-wrap {
         align-items: flex-end;
     }
-    .pull-heads .clip-inner {
-        transform-origin: top center;
-    }
-    .pull-heads.low .clip-inner {
-        transform-origin: bottom center;
+    @keyframes clip-fly {
+        from {
+            transform: translate(calc(var(--dx) * -1), calc(var(--dy) * -1)) scale(calc(1 / var(--s)));
+        }
     }
     .clip-inner {
         flex: 0 0 auto;
-        width: calc(100% * var(--s0));
-        transform: scale(calc(1 / var(--s0)));
+        width: 100%;
     }
     .clip-inner :global(.clip) {
         border: 2px solid var(--color-fg);
@@ -1544,6 +1573,11 @@
         color: var(--color-fg);
         font-family: var(--font-sans);
         position: absolute;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
         bottom: 0;
         left: 50%;
         transform: translate(-50%, 0);
@@ -1590,6 +1624,38 @@
         width: 100%;
         height: 100%;
     }
+
+    @media (max-width: 900px) {
+		h1 {
+            --img-h: 60svh;
+            --img-w: calc(var(--img-h) * 494 / 1200);
+			font-size: 2rem;
+            margin-left: 3%;
+		}
+        /* a max-width stops grid items stretching, so pin each one to the image side */
+        .hedLeft {
+            max-width: 120px;
+            justify-self: end;
+        }
+        .hedRight {
+            max-width: 200px;
+            justify-self: start;
+        }
+        .hedLeft,
+        .hedRight {
+            text-wrap: balance;
+        }
+	}
+
+    @media (max-width: 550px) {
+		h1 {
+			font-size: 1.5rem;
+            --img-h: 40svh;
+            --img-w: calc(var(--img-h) * 494 / 1200);
+            margin-left: 5%;
+		}
+	}
+
     h1 img {
         display: block;
         height: var(--img-h);
@@ -1757,23 +1823,25 @@
         filter: opacity(0);
         pointer-events: none;
     }
-    /* phones: the words go onto one line for the wall, so they fade in there rather than
-       slide over from their stacked spot on the title page */
-    @media (max-width: 600px) {
+    /* smaller screens: the title doesn't move onto the wall, it fades out with the rest
+       of the title page (titleMoves stays empty at this width) */
+    @media (max-width: 900px) {
         .title-down .hed-words {
-            white-space: nowrap;
-            transition: none;
-            animation: title-in 500ms ease 150ms both;
+            color: inherit;
+            background-color: transparent;
         }
-    }
-    @keyframes title-in {
-        from {
+        .intro-wall-header .hedLeft,
+        .intro-wall-header .hedRight {
+            transition: opacity 300ms ease;
+        }
+        .title-down .hedLeft,
+        .title-down .hedRight {
             opacity: 0;
         }
     }
     @media (max-width: 600px) {
         .call-corner {
-            right: 3.5rem;
+            right: 2.5rem;
             width: 5.5rem;
             height: 5.5rem;
         }
@@ -1893,7 +1961,7 @@
         min-height: var(--end-space);
     }
 	.card {
-        font-size: 17px;
+        font-size: 18px;
         line-height: 1.5;
 		max-width: 460px;
 		padding: 14px 18px;
@@ -1911,7 +1979,10 @@
 		opacity: 1;
 	}
 	/* phones: the cards keep 2rem clear of the screen's edges, as the other scrollies' do */
-	@media (max-width: 600px) {
+	@media (max-width: 640px) {
+        .card {
+            font-size: 16px;
+        }
 		.step {
 			padding: 0 2rem;
 		}

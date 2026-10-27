@@ -378,6 +378,7 @@
 		width: 100%;
 		font-weight: 700;
 		margin: 0 0 1rem 0;
+		height: 4.5rem;
 		position: sticky;
 		top: 0;
 		z-index: 1000;
@@ -405,7 +406,7 @@
 	/* phones: the arrow keeps clear of the corner sound button (SoundCorner) */
 	@media (max-width: 768px) {
 		.fold-head button {
-			padding-right: 2.75rem;
+			padding-right: 3.5rem;
 		}
 	}
 	.chev {
@@ -426,11 +427,16 @@
 		outline-offset: 4px;
 	}
 	p {
-		font-size: 17px;
+		font-size: 18px;
 		line-height: 1.65;
 		margin-bottom: 1em;
 		color: var(--color-fg);
 		padding: 0 1rem;
+	}
+	@media(max-width: 640px) {
+		p {
+			font-size: 16px;
+		}
 	}
 	.kicker {
 		background: var(--wnba-red);

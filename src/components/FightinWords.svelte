@@ -1292,7 +1292,7 @@
 	}
 	@media (max-width: 640px) {
 		.heading {
-			font-size: 20px;
+			font-size: 28px;
 		}
 		.subheading,
 		.subheading :global(.logo-select .current) {

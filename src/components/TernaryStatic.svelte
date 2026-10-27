@@ -822,7 +822,7 @@
 
 	@media (max-width: 640px) {
 		.heading {
-			font-size: 20px;
+			font-size: 28px;
 		}
 	}
 	.ternary-static {

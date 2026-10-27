@@ -100,6 +100,7 @@ h2 {
 	margin: 6rem auto 3rem auto;
 	font-family: var(--font-display);
 	text-align: center;
+	padding: 0 1rem;
 }
 
 h2::before {
@@ -110,6 +111,18 @@ h2::before {
 	height: 10px;
 	background: var(--color-fox-navy);
 	margin-bottom: 1rem;
+}
+
+@media(max-width: 860px) {
+	h2 {
+		font-size: var(--56px);
+	}
+}
+
+@media(max-width: 460px) {
+	h2 {
+		font-size: var(--48px);
+	}
 }
 
 h3 {
@@ -140,6 +153,11 @@ h6 {
 	line-height: 1.22;
 	text-wrap: pretty;
 	color: var(--color-fg);
+}
+@media(max-width: 640px) {
+	.heading {
+		font-size: 24px;
+	}
 }
 
 .kicker {
@@ -403,4 +421,5 @@ mark.pen {
 	text-decoration-color: var(--wnba-orange);
 	text-decoration-thickness: 2px;
 	text-underline-offset: 3px;
+	font-weight: 700;
 }

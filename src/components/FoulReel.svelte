@@ -538,7 +538,8 @@
 <style>
 	.foul-reel {
 		max-width: 1000px;
-		margin: 1rem auto;
+		margin: 0 auto;
+		padding: 1rem;
 		font-family: var(--font-chart);
 	}
 	.note,

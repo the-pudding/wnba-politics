@@ -124,7 +124,7 @@ function tipHTML(t) {
 // ---------------------------------------------------------------------------
 
 export class Tern {
-	// opts: maxSide (px), maxHeight() (px)
+	// opts: maxSide (px), maxHeight() (px), litOnly (only highlighted words take a hover or tooltip)
 	constructor(host, data, opts = {}) {
 		this.host = host;
 		this.data = data;
@@ -634,6 +634,7 @@ export class Tern {
 			bd = Infinity;
 		const lit = this.state.lit;
 		for (const t of this.visible()) {
+			if (this.opts.litOnly && !lit.has(t.term)) continue;
 			// lit words win ties within a few pixels, so the story's words are easy to hit
 			const d = Math.hypot(t.x - px, t.y - py) - (lit.has(t.term) ? 8 : 0);
 			if (d < bd) {

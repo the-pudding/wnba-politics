@@ -499,7 +499,7 @@
 		const list = (D.topics[topic] ?? [])
 			.map((w) => D.BY.get(w))
 			.filter(Boolean);
-		const tern = new Tern(el("tern"), D, { maxSide: 420 });
+		const tern = new Tern(el("tern"), D, { maxSide: 420, litOnly: true });
 		cleanup.terns = [tern];
 		cleanup.push(() => tern.destroy());
 		const labelled = list

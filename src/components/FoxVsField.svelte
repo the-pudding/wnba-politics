@@ -311,7 +311,9 @@
 	const narrow = $derived(width < 520);
 	// the chart's height: at least this, and taller when its box is stretched
 	// (beside a taller triangle in a SideBySide, it fills the column)
-	const MIN_H = $derived(narrow ? 300 : 340);
+	let viewportW = $state(1024);
+	const small = $derived(viewportW <= 640);
+	const MIN_H = $derived(small ? 220 : narrow ? 300 : 340);
 	let boxH = $state(0);
 	const H = $derived(Math.max(MIN_H, Math.round(boxH)));
 	const M = $derived({
@@ -485,6 +487,8 @@
 		grey: '<span class="sw grey"></span>'
 	}));
 </script>
+
+<svelte:window bind:innerWidth={viewportW} />
 
 <figure class="fvf" bind:clientWidth={width}>
 	<!-- <p class="kicker" style:color={COLOR[topic]}>{kicker || T.kicker || ""}</p> -->

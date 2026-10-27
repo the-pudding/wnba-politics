@@ -130,7 +130,7 @@
 	$effect(() => {
 		against = start;
 	});
-	let them = $derived(against === ALL ? "everybody else" : (POOL_LABEL[against] ?? against));
+	let them = $derived(against === ALL ? "other outlets" : (POOL_LABEL[against] ?? against));
 	const topName = "Fox News";
 	const topShort = "Fox";
 	// the Doc types A’ja with a curly apostrophe, the data with a straight one
@@ -603,7 +603,8 @@
 					onmouseleave={() => (hovered = null)}
 					role="presentation"
 				>
-					<line class="guide" x1={NAMES + 8} x2={NAMES + PLOT} y1={y} y2={y} />
+					<!-- with no names on the left, the row line starts at the left edge line -->
+					<line class="guide" x1={besideFace ? NAMES + 24 : NAMES + 8} x2={NAMES + PLOT} y1={y} y2={y} />
 					{#if !besideFace}
 						<text
 							class="name"
@@ -924,7 +925,7 @@
 			padding: 0 12px;
 		}
 		.heading {
-			font-size: 20px;
+			font-size: 28px;
 		}
 		.subheading,
 		.subheading :global(.logo-select .current) {
@@ -1062,7 +1063,6 @@
 	}
 	.edge {
 		stroke-width: 3;
-		stroke-linecap: round;
 	}
 	.guide {
 		stroke: var(--color-fg);
