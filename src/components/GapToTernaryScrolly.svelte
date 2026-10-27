@@ -898,7 +898,9 @@
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 	}
 	@media(max-width: 640px) {
-		font-size: 16px;
+		.gap-card {
+			font-size: 16px;
+		}
 	}
 
 	/* the triangle's cards: at the left */
