@@ -221,77 +221,77 @@
 	"Chiney Ogwumike": {
 		"group": "media",
 		"rx": "\\bchiney\\b",
-		"face": "chiney-ogwumike.jpg",
+		"face": "chiney-ogwumike.png",
 		"bio": "Chinenye Joy \"Chiney\" Ogwumike is an American professional basketball player who last played for the Los Angeles Sparks of the Women's National Basketball Association (WNBA).",
 		"slug": "chiney-ogwumike"
 	},
 	"Megan Rapinoe": {
 		"group": "media",
 		"rx": "rapinoe",
-		"face": "megan-rapinoe.jpg",
+		"face": "megan-rapinoe.png",
 		"bio": "Megan Anna Rapinoe is an American former professional soccer player who played as a midfielder and winger. She spent most of her career playing for Seattle Reign FC of the National Women's Soccer League (NWSL) and the United States national team.",
 		"slug": "megan-rapinoe"
 	},
 	"Cathy Engelbert": {
 		"group": "league",
 		"rx": "engelbert",
-		"face": "cathy-engelbert.jpg",
+		"face": "cathy-engelbert.png",
 		"bio": "Catherine M. Engelbert is an American businesswoman who has served as the commissioner of the Women's National Basketball Association (WNBA) since 2019. She previously served as the first female CEO of Deloitte.",
 		"slug": "cathy-engelbert"
 	},
 	"Donald Trump": {
 		"group": "politics",
 		"rx": "\\btrump\\b",
-		"face": "donald-trump.jpg",
+		"face": "donald-trump.png",
 		"bio": "Donald John Trump is an American politician, media personality, and businessman who is the 47th president of the United States. A member of the Republican Party, he served as the 45th president from 2017 to 2021.",
 		"slug": "donald-trump"
 	},
 	"Joe Biden": {
 		"group": "politics",
 		"rx": "\\bbiden\\b",
-		"face": "joe-biden.jpg",
+		"face": "joe-biden.png",
 		"bio": "Joseph Robinette Biden Jr. is an American former politician who was the 46th president of the United States from 2021 to 2025.",
 		"slug": "joe-biden"
 	},
 	"J.D. Vance": {
 		"group": "politics",
 		"rx": "jd vance|j\\.d\\. vance",
-		"face": "j-d-vance.jpg",
+		"face": "j-d-vance.png",
 		"bio": "James David Vance is an American politician, author, and venture capitalist serving as the 50th vice president of the United States. A member of the Republican Party, he represented the state of Ohio in the United States Senate from 2023 to 2025.",
 		"slug": "j-d-vance"
 	},
 	"Kelly Loeffler": {
 		"group": "politics",
 		"rx": "loeffler",
-		"face": "kelly-loeffler.jpg",
+		"face": "kelly-loeffler.png",
 		"bio": "Kelly Lynn Loeffler is an American businesswoman and politician who has served as the 28th administrator of the Small Business Administration since February 2025.",
 		"slug": "kelly-loeffler"
 	},
 	"Barack Obama": {
 		"group": "politics",
 		"rx": "\\bobama\\b",
-		"face": "barack-obama.jpg",
+		"face": "barack-obama.png",
 		"bio": "Barack Hussein Obama II is an American former politician who served as the 44th president of the United States from 2009 to 2017. A member of the Democratic Party, he was the first African American to serve as president.",
 		"slug": "barack-obama"
 	},
 	"Michelle Obama": {
 		"group": "media",
 		"rx": "michelle obama",
-		"face": "michelle-obama.jpg",
+		"face": "michelle-obama.png",
 		"bio": "Michelle LaVaughn Robinson Obama is an American attorney and author who served as First Lady of the United States from 2009 to 2017 as the wife of Barack Obama, the 44th president of the United States.",
 		"slug": "michelle-obama"
 	},
 	"Kamala Harris": {
 		"group": "politics",
 		"rx": "kamala harris|\\bkamala\\b",
-		"face": "kamala-harris.jpg",
+		"face": "kamala-harris.png",
 		"bio": "Kamala Devi Harris is an American politician and attorney who served as the 49th vice president of the United States from 2021 to 2025 under President Joe Biden.",
 		"slug": "kamala-harris"
 	},
 	"Adam Silver": {
 		"group": "league",
 		"rx": "adam silver",
-		"face": "adam-silver.jpg",
+		"face": "adam-silver.png",
 		"bio": "Adam Silver is an American lawyer and sports executive who is serving as the fifth and current commissioner of the National Basketball Association (NBA).",
 		"slug": "adam-silver",
 		"network": false
@@ -299,63 +299,63 @@
 	"Morgan Wallen": {
 		"group": "media",
 		"rx": "morgan wallen|\\bwallen\\b",
-		"face": "morgan-wallen.jpg",
+		"face": "morgan-wallen.png",
 		"bio": "Morgan Cole Wallen is an American country pop singer from Sneedville, Tennessee.",
 		"slug": "morgan-wallen"
 	},
 	"Sheryl Swoopes": {
 		"group": "media",
 		"rx": "swoopes",
-		"face": "sheryl-swoopes.jpg",
+		"face": "sheryl-swoopes.png",
 		"bio": "Sheryl Denise Swoopes is an American former professional basketball player.",
 		"slug": "sheryl-swoopes"
 	},
 	"Paul Whelan": {
 		"group": "politics",
 		"rx": "whelan",
-		"face": "paul-whelan.jpg",
+		"face": "paul-whelan.png",
 		"bio": "Paul Nicholas Whelan is a Canadian-born United States Marine veteran who was arrested in Russia on December 28, 2018, and accused of spying. On June 15, 2020, he received a 16-year prison sentence.",
 		"slug": "paul-whelan"
 	},
 	"Viktor Bout": {
 		"group": "politics",
 		"rx": "viktor bout",
-		"face": "viktor-bout.jpg",
+		"face": "viktor-bout.png",
 		"bio": "Viktor Anatolyevich Bout is a Russian arms dealer and politician. A weapons manufacturer and former Soviet military translator, he used his companies to smuggle arms from Eastern Europe to Africa and the Middle East during the 1990s and early 2000s.",
 		"slug": "viktor-bout"
 	},
 	"Riley Gaines": {
 		"group": "media",
 		"rx": "riley gaines",
-		"face": "riley-gaines.jpg",
+		"face": "riley-gaines.png",
 		"bio": "Riley Marie Gaines Barker is an American conservative political activist and former collegiate swimmer known for campaigning against the participation of trans women in women's sports and against public acceptance of transgender people more widely.",
 		"slug": "riley-gaines"
 	},
 	"Dave Portnoy": {
 		"group": "media",
 		"rx": "portnoy",
-		"face": "dave-portnoy.jpg",
+		"face": "dave-portnoy.png",
 		"bio": "David Scott Portnoy is an American businessman and social media personality. He is the founder and owner of sports and popular culture company Barstool Sports.",
 		"slug": "dave-portnoy"
 	},
 	"Enes Kanter Freedom": {
 		"group": "media",
 		"rx": "enes kanter|kanter freedom|enes freedom",
-		"face": "enes-kanter-freedom.jpg",
+		"face": "enes-kanter-freedom.png",
 		"bio": "Enes Kanter Freedom is a Turkish and American human rights activist, New York Times bestselling author, 2022 Nobel Peace Prize nominee, and former professional basketball player who played 11 seasons in the National Basketball Association (NBA).",
 		"slug": "enes-kanter-freedom"
 	},
 	"Jemele Hill": {
 		"group": "media",
 		"rx": "jemele hill",
-		"face": "jemele-hill.jpg",
+		"face": "jemele-hill.png",
 		"bio": "Jemele Juanita Hill is an American sports journalist. She worked for the Raleigh News & Observer, the Detroit Free Press, and the Orlando Sentinel.",
 		"slug": "jemele-hill"
 	},
 	"Stephen A. Smith": {
 		"group": "media",
 		"rx": "stephen a\\.? smith",
-		"face": "stephen-a-smith.jpg",
+		"face": "stephen-a-smith.png",
 		"bio": "Stephen Anthony Smith is an American television personality, radio host, sports analyst, political commentator, and actor. He makes frequent appearances as an NBA analyst for ESPN on SportsCenter, NBA Countdown, and the network's NBA broadcasts.",
 		"slug": "stephen-a-smith"
 	},
@@ -369,28 +369,28 @@
 	"Sunny Hostin": {
 		"group": "media",
 		"rx": "\\bhostin\\b",
-		"face": "sunny-hostin.jpg",
+		"face": "sunny-hostin.png",
 		"bio": "Asunción  \"Sunny\"  Cummings Hostin is an American lawyer, author, and television host.",
 		"slug": "sunny-hostin"
 	},
 	"Charlie Kirk": {
 		"group": "media",
 		"rx": "charlie kirk",
-		"face": "charlie-kirk.jpg",
+		"face": "charlie-kirk.png",
 		"bio": "Charles James Kirk was an American right-wing political activist, entrepreneur, and media personality.",
 		"slug": "charlie-kirk"
 	},
 	"J.K. Rowling": {
 		"group": "media",
 		"rx": "rowling",
-		"face": "j-k-rowling.jpg",
+		"face": "j-k-rowling.png",
 		"bio": "Joanne Rowling, better known by her pen name J. K. Rowling, is a British author, philanthropist, producer, and screenwriter.",
 		"slug": "j-k-rowling"
 	},
 	"Lia Thomas": {
 		"group": "media",
 		"rx": "lia thomas",
-		"face": "lia-thomas.jpg",
+		"face": "lia-thomas.png",
 		"bio": "Lia Catherine Thomas is an American swimmer and the first openly transgender athlete to win an NCAA Division I national championship, having won the women's 500-yard freestyle event in 2022, before being barred from competing in women's events by World Aquatic…",
 		"slug": "lia-thomas"
 	},
@@ -404,49 +404,49 @@
 	"Stephanie White": {
 		"group": "league",
 		"rx": "stephanie white",
-		"face": "stephanie-white.jpg",
+		"face": "stephanie-white.png",
 		"bio": "Stephanie Joanne White is an American professional basketball coach, analyst, and former player who is the head coach of the Indiana Fever of the Women's National Basketball Association (WNBA).",
 		"slug": "stephanie-white"
 	},
 	"Taylor Swift": {
 		"group": "media",
 		"rx": "taylor swift",
-		"face": "taylor-swift.jpg",
+		"face": "taylor-swift.png",
 		"bio": "Taylor Alison Swift is an American singer-songwriter.",
 		"slug": "taylor-swift"
 	},
 	"Dawn Staley": {
 		"group": "league",
 		"rx": "\\bstaley\\b",
-		"face": "dawn-staley.jpg",
+		"face": "dawn-staley.png",
 		"bio": "Dawn Michelle Staley is an American basketball coach and former player who is the head coach for the South Carolina Gamecocks women's basketball team. A point guard, she played college basketball for the Virginia Cavaliers and spent eight s",
 		"slug": "dawn-staley"
 	},
 	"Becky Hammon": {
 		"group": "league",
 		"rx": "\\bhammon\\b",
-		"face": "becky-hammon.jpg",
+		"face": "becky-hammon.png",
 		"bio": "Rebecca Lynn Hammon is an American-Russian professional basketball coach and former player who is the head coach of the Las Vegas Aces of the Women's National Basketball Association (WNBA). She is considered one of the greatest players and ",
 		"slug": "becky-hammon"
 	},
 	"Cheryl Reeve": {
 		"group": "league",
 		"rx": "\\breeve\\b",
-		"face": "cheryl-reeve.jpg",
+		"face": "cheryl-reeve.png",
 		"bio": "Cheryl Ann Reeve is an American basketball head coach and President of Basketball Operations for the Minnesota Lynx of the WNBA. Reeve has coached the Lynx to four league championships. In WNBA history, she is first in career wins including",
 		"slug": "cheryl-reeve"
 	},
 	"Geno Auriemma": {
 		"group": "league",
 		"rx": "auriemma",
-		"face": "geno-auriemma.jpg",
+		"face": "geno-auriemma.png",
 		"bio": "Luigi \"Geno\" Auriemma is an Italian-born American basketball coach who is the head coach of the UConn Huskies women's basketball team. He holds the NCAA basketball records for wins and winning percentage with a minimum of 10 seasons. Auriem",
 		"slug": "geno-auriemma"
 	},
 	"Kim Mulkey": {
 		"group": "league",
 		"rx": "mulkey",
-		"face": "kim-mulkey.jpg",
+		"face": "kim-mulkey.png",
 		"bio": "Kimberly Duane Mulkey is an American college basketball coach and former player. Since 2021, she has been the head coach for Louisiana State University's LSU women's basketball team. A Pan-American gold medalist in 1983 and Olympic gold med",
 		"slug": "kim-mulkey",
 		"network": false
