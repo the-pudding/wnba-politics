@@ -893,7 +893,7 @@
 			font-size: 10px;
 		}
 		.heading {
-			font-size: 20px;
+			font-size: 28px;
 		}
 		.subheading,
 		.subheading :global(.logo-select .current) {

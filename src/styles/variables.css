@@ -110,10 +110,10 @@
 
 /* scrolly step cards: the essay's desktop text size on desktop */
 :root {
-  --step-text: 15.5px;
+  --step-text: 16px;
 }
 @media (min-width: 769px) {
   :root {
-    --step-text: 17px;
+    --step-text: 18px;
   }
 }

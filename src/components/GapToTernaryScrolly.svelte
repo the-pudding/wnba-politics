@@ -116,6 +116,11 @@
 				{ name, face: `${base}/net/${p.face}` }
 			])
 	);
+	// "A'ja Wilson" → "A. Wilson": first initial, then the rest of the name
+	const initialName = (name) => {
+		const [first, ...rest] = name.trim().split(/\s+/);
+		return rest.length ? `${first[0]}. ${rest.join(" ")}` : first;
+	};
 	const shareRow = (group) => {
 		const pts = group.map((w) => COUNTS.get(w.toLowerCase())).filter(Boolean);
 		if (!pts.length) return null;
@@ -128,6 +133,8 @@
 		return {
 			key: group.join(","),
 			label: person ? person.name : group.join(", "),
+			// narrow screens show the shorter name
+			short: person ? initialName(person.name) : group.join(", "),
 			face: person?.face ?? null,
 			shares: rates.map((r) => r / sum),
 			// hovering the row pins the group's most-used word on the triangle
@@ -369,6 +376,12 @@
 	let cursor = $state(-1);
 	let picked = $state([]);
 	let lastKept = $state(null);
+	// on a touch screen, once a word is picked the keyboard closes so the triangle
+	// shows again (on desktop the box keeps focus, for the next word)
+	let inputEl = $state(null);
+	const doneTyping = () => {
+		if (window.matchMedia("(pointer: coarse)").matches) inputEl?.blur();
+	};
 	const choose = (word) => {
 		if (!picked.includes(word)) picked = [...picked, word];
 		lastKept = word;
@@ -391,6 +404,7 @@
 		} else if (e.key === "Enter") {
 			if (cursor >= 0 && suggestions[cursor]) choose(suggestions[cursor].term);
 			else keep();
+			doneTyping();
 		} else if (e.key === "Escape") {
 			open = false;
 		}
@@ -450,6 +464,8 @@
 			<div class="search-box">
 				<input
 					type="search"
+					bind:this={inputEl}
+					enterkeyhint="search"
 					placeholder="Find a word…"
 					bind:value={query}
 					autocomplete="off"
@@ -468,7 +484,8 @@
 								class:on={i === cursor}
 								onpointerdown={(e) => (
 									e.preventDefault(),
-									choose(w.term)
+									choose(w.term),
+									doneTyping()
 								)}
 							>
 								<span class="term">{w.term}</span>
@@ -644,7 +661,7 @@
 										<i style:color={SHARE_COLORS[2]}>MSNBC</i>
 									</span>
 									<!-- over the rows' numbers: they're Fox's share -->
-									<span class="head-pct" style:color={SHARE_COLORS[0]}>% Fox</span>
+									<span class="head-pct" style:color={SHARE_COLORS[0]}>Fox%</span>
 									{#each step.rows as row (row.key)}
 										<button
 											class="srow"
@@ -656,7 +673,8 @@
 										>
 											<span class="who">
 												{#if row.face}<img src={row.face} alt="" />{/if}
-												<span>{row.label}</span>
+												<span class="full">{row.label}</span>
+												<span class="short">{row.short}</span>
 											</span>
 											<span class="sbar">
 												{#each row.shares as v, i}
@@ -869,7 +887,7 @@
 	}
 	.gap-card {
 		max-width: 460px;
-		font-size: 17px;
+		font-size: 18px;
 		margin: 0;
 		background: var(--wnba-tan-bg);
 		padding: 14px 18px;
@@ -878,6 +896,9 @@
 		line-height: 1.5;
 		color: var(--color-ink);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
+	}
+	@media(max-width: 640px) {
+		font-size: 16px;
 	}
 
 	/* the triangle's cards: at the left */
@@ -927,8 +948,13 @@
 		line-height: 1.2;
 	}
 	.card-text {
-		font-size: 17px;
+		font-size: 18px;
 		margin: 0;
+	}
+	@media(max-width: 640px) {
+		.card-text {
+			font-size: 16px;
+		}
 	}
 
 	/* it's the last thing the reader meets, so it stays above the triangle */
@@ -996,6 +1022,9 @@
 	.srow .who span {
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+	.srow .who .short {
+		display: none;
 	}
 	.srow .who img {
 		flex: 0 0 auto;
@@ -1164,6 +1193,21 @@
 		}
 		.ter-tools .control {
 			flex: 1 1 140px;
+		}
+		/* the share rows' players as "A. Wilson" */
+		.srow .who .full {
+			display: none;
+		}
+		.srow .who .short {
+			display: inline;
+		}
+		/* the bridge card and the triangle's cards centred, with the triangle */
+		.bridge,
+		.ter-step {
+			margin-inline: auto;
+		}
+		.bridge {
+			justify-content: center;
 		}
 		.ter-step {
 			flex-direction: column;

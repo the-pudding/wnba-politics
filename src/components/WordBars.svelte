@@ -62,6 +62,11 @@
 	let el = $state(null);
 	let frame = $state({ w: 0 });
 	let narrow = $derived(frame.w > 0 && frame.w < 640);
+	// on a small screen "Other outlets use more" shortens to "Others use more"
+	let innerWidth = $state(1024);
+	let bottomHead = $derived(
+		innerWidth < 640 ? (source?.bottomHead ?? "").replace(/^other outlets\b/i, "Others") : source?.bottomHead
+	);
 	let WIDTH = $derived(frame.w || 900);
 	// fill: the scrolly asks the rows to stretch down the viewport, so a
 	// chart with fifteen bars uses the screen instead of a strip of it
@@ -423,7 +428,7 @@
 	});
 </script>
 
-<svelte:window onclick={clickAway} />
+<svelte:window onclick={clickAway} bind:innerWidth />
 
 <div class="word-bars" bind:this={el}>
 	{#if source}
@@ -432,15 +437,15 @@
 			{#if source.topHead}
 				<!-- heads at the bars' outer edges, saying what each side means:
 				     "← Other outlets use more" · "Fox News uses more →" -->
-				{@const oneLine = textWidth(source.bottomHead) + textWidth(source.topHead) + 60 < 2 * barsReach}
+				{@const oneLine = textWidth(bottomHead) + textWidth(source.topHead) + 60 < 2 * barsReach}
 				{#if oneLine}
-					<text class="head edge others" x={0} y="10" text-anchor="start">← {source.bottomHead}</text>
+					<text class="head edge others" x={0} y="10" text-anchor="start">← {bottomHead}</text>
 					<text class="head edge fox" x={WIDTH} y="10" text-anchor="end">{source.topHead} →</text>
 				{:else}
 					<!-- too narrow for both on one line: each breaks before "use(s) more" -->
 					{@const split = (t) => { const i = t.search(/ uses? more$/); return i > 0 ? [t.slice(0, i), t.slice(i + 1)] : [t, ""]; }}
 					<text class="head edge narrow others" x={mid - barsReach} y="11" text-anchor="start"
-						><tspan x={mid - barsReach}>← {split(source.bottomHead)[0]}</tspan><tspan x={mid - barsReach} dy="13">{split(source.bottomHead)[1]}</tspan></text
+						><tspan x={mid - barsReach}>← {split(bottomHead)[0]}</tspan><tspan x={mid - barsReach} dy="13">{split(bottomHead)[1]}</tspan></text
 					>
 					<text class="head edge narrow fox" x={mid + barsReach} y="11" text-anchor="end"
 						><tspan x={mid + barsReach}>{split(source.topHead)[0]} →</tspan><tspan x={mid + barsReach} dy="13">{split(source.topHead)[1]}</tspan></text

@@ -110,9 +110,14 @@
 
 <style>
 	.box-score {
-		margin: 22px auto 28px;
+		margin: 1rem auto 0 auto;
 		max-width: 460px;
 		font-family: var(--font-chart);
+	}
+	@media(max-width: 640px) {
+		.box-score {
+
+		}
 	}
 	.scroll {
 		overflow-x: auto;
@@ -177,9 +182,14 @@
 		font-size: 12px;
 		line-height: 1.5;
 		color: var(--wnba-tan-dark);
-		margin: 1rem 0 0 0;
+		margin: 0.5rem 0 2rem 0;
 	}
 	@media (max-width: 640px) {
+		.box-score {
+			width: 100%;
+			max-width: none;
+			padding: 0 1rem;
+		}
 		table {
 			font-size: 12.5px;
 		}

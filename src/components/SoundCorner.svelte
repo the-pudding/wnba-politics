@@ -57,8 +57,8 @@
 <style>
 	.sound-corner {
 		position: fixed;
-		top: 0.5rem;
-		right: 0.5rem;
+		top: 0.75rem;
+		right: 0.75rem;
 		/* above the sections' sticky headings (1000) */
 		z-index: 1001;
 		display: grid;

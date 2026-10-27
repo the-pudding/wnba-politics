@@ -129,6 +129,11 @@
 		transition: opacity 250ms ease;
 		pointer-events: auto;
 	}
+	@media(max-width: 640px) {
+		.card {
+			margin: 0 auto;
+		}
+	}
 	.step.active .card {
 		opacity: 1;
 	}

@@ -182,7 +182,7 @@
         position: sticky;
         top: 0;
         z-index: 100;
-        padding: 1rem 0;
+        padding: 1rem;
         background-color: var(--wnba-tan-bg);
         border-bottom: 1px solid var(--color-rule);
         color: var(--wnba-tan-dark);
@@ -202,6 +202,18 @@
         transition:
             background 150ms ease,
             color 150ms ease;
+    }
+
+    @media(max-width: 640px) {
+        nav {
+            gap: 0.5rem;
+            font-size: 12px;
+            justify-content: flex-start;
+        }
+
+        nav button {
+            min-width: 70px;
+        }
     }
 
     /* the stack in view */
