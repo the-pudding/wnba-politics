@@ -3,12 +3,10 @@
 The same rule as fox_corpus_filter.py, with two allowances for how these
 corpora were gathered:
 
-  * an article whose URL sits in the outlet's WNBA section is kept whatever
-    its text says (CBS Sports and USA Today were harvested from those
-    sections; the section is the outlet's own tag);
-  * an article with no body text is kept — a headline alone cannot show
-    the mentions the rule counts, and these rows came from WNBA sitemaps
-    and feeds.
+  * an article with no body text is kept when its headline has a mention or
+    its URL sits in the outlet's own WNBA section: a headline alone cannot
+    show the mentions the rule counts. An article with text passes the rule
+    like any other, in the WNBA section or not.
 
 What goes is the rest: ESPN's search API returned MLB trade-deadline and
 Formula 1 pieces for "wnba playoffs"; Just Women's Sports' feed carries
@@ -24,7 +22,8 @@ from dedupe import dedupe
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from fox_corpus_filter import reason
+from fox_corpus_filter import reason, mentions
+from corpus_terms import in_window, START, END
 
 HERE = Path(__file__).resolve().parent.parent
 csv.field_size_limit(10 ** 9)
@@ -73,6 +72,8 @@ def print_digest(row):
 
 
 def why_drop(row):
+    if not in_window(row.get("date")):
+        return f"outside the study window ({START} to {END})"
     if print_digest(row):
         return "a print sports digest with a WNBA brief in it"
     if (row.get("url") or "").strip() in DROP_URLS or (row.get("headline") or "").strip() in DROP_HEADLINES:
@@ -81,12 +82,13 @@ def why_drop(row):
         return "not an article: a crossword, podcast, video or lesson page"
     if row.get("outlet") in ("RedState", "Hot Air", "Breitbart", "Gateway Pundit") and ROUNDUP.search(row.get("headline") or ""):
         return "a daily roundup with a WNBA item in it"
-    # the outlet's own WNBA section: a path segment, not any "wnba" inside a
-    # word (Breitbart's Sam Brownback interviews slipped in on "brownback")
-    if WNBA_SECTION.search(row.get("url") or ""):
-        return None
     if not (row.get("body") or "").strip():
-        return None
+        # the outlet's own WNBA section: a path segment, not any "wnba" inside a
+        # word (Breitbart's Sam Brownback interviews slipped in on "brownback")
+        # (a bare nickname doesn't count here: "Liberty Flames play in ASUN")
+        if WNBA_SECTION.search(row.get("url") or "") or mentions(row.get("headline"), anchored=False):
+            return None
+        return "no text, and neither the headline nor the URL names the WNBA world"
     return reason(row)
 
 

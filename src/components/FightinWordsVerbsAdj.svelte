@@ -2,6 +2,7 @@
 	// Verb-and-adjective scatter walked through
 	// Each step takes: who, rel, vs, pair, words, text
 	import Scrolly from "$components/helpers/Scrolly.svelte";
+	import { untrack } from "svelte";
 	import FightinWords from "$components/FightinWords.svelte";
 	import WordBars from "$components/WordBars.svelte";
 	import {
@@ -100,7 +101,16 @@
 	$effect(() => {
 		if (index !== undefined && index !== null) last = index;
 	});
-	let current = $derived(STEPS[last] ?? STEPS[0]);
+	// past the last card (the cardless final beat, and below it) the chart goes
+	// back to its default view for the player it's on: "Described as", no words
+	// picked out, so the reader starts exploring from a clean chart. The player
+	// is read once, on the way in (untrack), so picking another one there
+	// doesn't reset the tab
+	let current = $derived(
+		last >= STEPS.length
+			? { who: untrack(() => pickedWho), rel: "describe", vs: "outlets", pair: null, words: [], title: "", explore: true, html: "" }
+			: (STEPS[last] ?? STEPS[0])
+	);
 
 	// the relations as tabs, each with the plain-language heading
 	// it gives the chart
