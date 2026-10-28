@@ -307,6 +307,8 @@
 				measure();
 		};
 		const queue = () => {
+			// a scroll takes a head's tooltip away
+			headTerm = null;
 			if (frame === null) frame = requestAnimationFrame(update);
 		};
 		update();
@@ -326,6 +328,8 @@
 		STAGGER = 0.25,
 		ARC = 50, // px the path bows upward at its middle
 		HEAD_MIN = 10; // px: the smallest a head lands, so the face still reads
+	// the dot plot's heads stay hoverable into the bridge, until they start to fly
+	let flying = $derived(t >= FLY_FROM);
 	let gapOpacity = $derived(1 - clamp((t - 0.05) / 0.35));
 	let terOpacity = $derived(clamp((t - 0.4) / 0.45));
 	const lerp = (a, b, p) => a + (b - a) * p;
@@ -345,7 +349,8 @@
 			ring: f.end
 				? `color-mix(in srgb, ${f.end.color} ${Math.round(clamp((p - 0.3) / 0.5) * 100)}%, ${f.ring})`
 				: f.ring,
-			opacity: f.end ? 1 : 1 - p
+			opacity: f.end ? 1 : 1 - p,
+			landed: Boolean(f.end) && p >= 1
 		};
 	}
 
@@ -415,16 +420,26 @@
 		focus = null;
 	};
 	let focus = $state(null);
+	// a landed head shows its word's tooltip: on hover with a mouse or pen, on
+	// a tap on touch (a finger "leaves" the moment it lifts)
+	let headTerm = $state(null);
+	const hovers = (event) => event.pointerType !== "touch";
 	function unpin(event) {
-		if (event.target.closest?.(".chip, .ter-tools")) return;
+		if (event.target.closest?.(".chip, .ter-tools, .flyer")) return;
 		focus = null;
+		headTerm = null;
 		lastKept = null;
 	}
 	// the reader's own words, typed or kept, take over from the step's
-	let search = $derived(
-		Boolean(terStep) && (terStep.search || Boolean(q) || picked.length > 0)
+	// the find box is out (and its words count) only on the triangle's last step
+	let findStep = $derived(
+		phase === "ternary" && TER.length > 0 && terLast === TER.length - 1
 	);
-	let pinned = $derived(focus ?? (search ? (exact?.term ?? lastKept) : null));
+	let search = $derived(
+		Boolean(terStep) &&
+			(terStep.search || (findStep && (Boolean(q) || picked.length > 0)))
+	);
+	let pinned = $derived(focus ?? (headsOn ? headTerm : null) ?? (search ? (exact?.term ?? lastKept) : null));
 	let groups = $derived(
 		!terStep
 			? bridgeWords.length
@@ -459,7 +474,7 @@
 
 <!-- under the triangle on every step: find a word -->
 {#snippet tools()}
-	<div class="ter-tools">
+	<div class="ter-tools" class:off={!findStep} inert={!findStep}>
 		<label class="control">
 			<div class="search-box">
 				<input
@@ -544,6 +559,7 @@
 <section
 	class="gap-ternary"
 	class:handing={phase !== "gap"}
+	class:flying
 >
 	<div class="sticky" bind:this={stageEl}>
 		<div
@@ -551,11 +567,12 @@
 			bind:this={gapEl}
 			style:opacity={gapOpacity}
 			style:visibility={gapOpacity > 0 ? null : "hidden"}
-			inert={phase !== "gap"}
+			inert={flying}
 		>
 			<OutletGapDotPlot
 				highlight={gapStep?.explore ? null : gapStep?.names}
 				bare={!gapStep?.explore}
+				picker={gapStep === GAP.at(-1)}
 				placed={gapStep?.placed ?? null}
 				centered={gapStep?.center}
 				{speed}
@@ -584,7 +601,7 @@
 					highlightColor={HIGHLIGHT}
 					enclose={Boolean(terStep) && !search && !holdNames}
 					focus={pinned}
-					quiet={open && suggestions.length > 0}
+					quiet={findStep && open && suggestions.length > 0}
 					topic={terStep?.topic ?? null}
 					bands={phase === "ternary" && (terStep?.bands ?? flag(bands) ?? true)}
 				/>
@@ -593,7 +610,7 @@
 		</div>
 
 		<!-- the faces in flight, from their rows to their words -->
-		{#if phase !== "gap"}
+		{#if flying}
 			<div class="flyers" aria-hidden="true" style:opacity={headsOn ? 1 : 0}>
 				{#each flyers as f, i (f.slug)}
 					{@const at = flight(f, i, flyers.length)}
@@ -603,6 +620,11 @@
 						style:height="{at.r * 2}px"
 						style:transform="translate({at.x - at.r}px, {at.y - at.r}px)"
 						style:opacity={at.opacity}
+						class:live={headsOn && at.landed}
+						onpointerenter={(e) => hovers(e) && (headTerm = f.term)}
+						onpointerleave={(e) => hovers(e) && (headTerm = null)}
+						onclick={() => (headTerm = headTerm === f.term ? null : f.term)}
+						role="presentation"
 					>
 						{#if f.img}<img src={f.img} alt="" />{/if}
 						<span class="ring" style:border-color={at.ring}></span>
@@ -736,12 +758,23 @@
 	   step it slides to the middle to be explored */
 	.stage.ternary {
 		justify-content: center;
+		/* the triangle measures its room against the frame (cqw), not the window */
+		container-type: inline-size;
 	}
+	/* moved right only as far as it clears the cards, and never so far that it
+	   runs off the right edge (16px clear); never wider than the frame */
 	.ter-col {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		transform: translateX(max(0px, calc(var(--cards) - 50vw + 50%)));
+		max-width: calc(100cqw - 32px);
+		transform: translateX(
+			clamp(
+				0px,
+				calc(var(--cards) - 50cqw + 50%),
+				calc(50cqw - 50% - 16px)
+			)
+		);
 		transition: transform 700ms ease;
 	}
 	.stage.ternary.centred .ter-col {
@@ -765,11 +798,13 @@
 		height: auto;
 		display: block;
 	}
-	/* once the handoff starts the faces in flight stand in for the faces */
-	.handing .gap :global(.face-mark) {
+	/* once the heads start to fly the faces in flight stand in for the faces;
+	   until then the faces stay put, and hoverable */
+	.flying .gap :global(.face-mark) {
 		opacity: 0;
 	}
-	/* and the named faces settle back to size, so every head leaves the same */
+	/* from the start of the handoff the named faces settle back to size, so
+	   every head leaves the same */
 	.handing .gap :global(.face-scale) {
 		transform: scale(1) !important;
 	}
@@ -777,6 +812,10 @@
 	/* the triangle, framed as on TernaryScrolly, with the find box under it */
 	.ternary :global(svg) {
 		max-height: 74vh;
+	}
+	/* hidden but holding its room before the last step, so the triangle stays put */
+	.ter-tools.off {
+		visibility: hidden;
 	}
 	.ter-tools {
 		position: relative;
@@ -828,6 +867,11 @@
 		will-change: transform;
 	}
 	/* the photo framed as the dot plot frames it: a little large, a little low */
+	/* landed on its word, a head can be hovered for the word's tooltip */
+	.flyer.live {
+		pointer-events: auto;
+		cursor: pointer;
+	}
 	.flyer img {
 		position: absolute;
 		width: 120%;
@@ -1185,7 +1229,8 @@
 		}
 		/* the triangle and its find box centred, inside the page's gutters */
 		.stage.ternary {
-			padding: 0 16px;
+			padding: 3rem 16px 0 16px;
+			align-items: flex-start;
 		}
 		.ter-col {
 			transform: none;

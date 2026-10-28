@@ -38,7 +38,8 @@
 		<FightinWords
 			highlight={index >= STEPS.length ? [] : current.words}
 			bare
-			controls={current.explore}
+			controls
+			live={index >= STEPS.length}
 			mode="articles"
 			{chart}
 			{labels}

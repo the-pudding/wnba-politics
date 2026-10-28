@@ -1622,30 +1622,48 @@
         grid-template-columns: 1fr auto 1fr;
         align-items: center;
         column-gap: var(--gap);
-        font-size: 2.5rem;
+        font-size: 2.25rem;
         width: 100%;
         height: 100%;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 860px) {
 		h1 {
             --img-h: 60svh;
             --img-w: calc(var(--img-h) * 494 / 1200);
 			font-size: 2rem;
-            margin-left: 3%;
+            /* two columns: the image on the left, both halves of the title stacked on
+               the right, level with the image's middle. The empty first and last rows
+               split the rest of the image's height, centring the words. */
+            grid-template-columns: auto minmax(0, 220px);
+            grid-template-rows: 1fr auto auto 1fr;
+            justify-content: center;
+            align-items: end;
+            row-gap: 0;
+            height: auto;
 		}
-        /* a max-width stops grid items stretching, so pin each one to the image side */
-        .hedLeft {
-            max-width: 120px;
-            justify-self: end;
+        /* the header centres the title up and down now that it's only as tall as the image */
+        .intro-wall-header {
+            display: flex;
+            align-items: center;
         }
-        .hedRight {
-            max-width: 200px;
+        h1 .glitch {
+            grid-column: 1;
+            grid-row: 1 / -1;
+        }
+        h1 .hedLeft,
+        h1 .hedRight {
+            grid-column: 2;
             justify-self: start;
-        }
-        .hedLeft,
-        .hedRight {
+            text-align: left;
+            margin-left: 0;
             text-wrap: balance;
+        }
+        h1 .hedLeft {
+            grid-row: 2;
+        }
+        h1 .hedRight {
+            grid-row: 3;
         }
 	}
 

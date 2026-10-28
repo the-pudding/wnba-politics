@@ -423,3 +423,13 @@ mark.pen {
 	text-underline-offset: 3px;
 	font-weight: 700;
 }
+
+/* iOS Safari zooms the page in when a field with text under 16px gets focus,
+   and doesn't zoom back out: on touch screens every field's text is 16px */
+@media (pointer: coarse) {
+	input,
+	select,
+	textarea {
+		font-size: 16px !important;
+	}
+}

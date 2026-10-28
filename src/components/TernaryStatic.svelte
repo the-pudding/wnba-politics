@@ -526,6 +526,25 @@
 	// the tooltip beside the dot (the other side near the right edge, under or
 	// over it when neither side fits), kept within the drawing; in px
 	let tipPos = $state(null);
+	// on phones the tooltip moves to <body>, so no transformed or contained
+	// parent (the scrolly's) can stop it being fixed to the screen
+	function toBody(node, on) {
+		const home = node.parentNode,
+			mark = document.createComment("");
+		home.insertBefore(mark, node);
+		const place = (to) => {
+			if (to) document.body.appendChild(node);
+			else if (mark.parentNode) mark.parentNode.insertBefore(node, mark);
+		};
+		place(on);
+		return {
+			update: place,
+			destroy() {
+				node.remove();
+				mark.remove();
+			}
+		};
+	}
 	$effect(() => {
 		const t = shown;
 		if (!t || !tipEl || !svgEl || !hostEl) return (tipPos = null);
@@ -542,6 +561,14 @@
 			y1 = box.bottom - host.top;
 		const tw = tipEl.offsetWidth,
 			th = tipEl.offsetHeight;
+		// phones: the tooltip is pinned at the foot of the screen by CSS (fixed);
+		// it only needs to know whether the dot is down there, to go up top
+		if (narrow) {
+			const r = radius(t.total) * ctm.a;
+			const footTop = window.innerHeight - 12 - th;
+			tipPos = { pinned: at.y + r + 8 > footTop ? "top" : "bottom" };
+			return;
+		}
 		let left = x + 16,
 			top = y - th / 2;
 		if (left + tw > x1) left = x - tw - 16;
@@ -783,9 +810,12 @@
 	{#if shown}
 		<div
 			class="tip"
+			class:pinned-top={tipPos?.pinned === "top"}
+			class:pinned-bottom={tipPos?.pinned === "bottom"}
 			bind:this={tipEl}
-			style:left="{tipPos?.left ?? 0}px"
-			style:top="{tipPos?.top ?? 0}px"
+			use:toBody={narrow}
+			style:left={tipPos?.pinned ? null : `${tipPos?.left ?? 0}px`}
+			style:top={tipPos?.pinned ? null : `${tipPos?.top ?? 0}px`}
 			style:visibility={tipPos ? null : "hidden"}
 		>
 			<div class="w">
@@ -988,6 +1018,24 @@
 		color: var(--color-fg);
 		font-size: 12.5px;
 		pointer-events: none;
+	}
+	@media (max-width: 640px) {
+		/* pinned at the foot of the screen (the top when the dot is down
+		   there), centred, the width of it */
+		.tip {
+			position: fixed;
+			left: 50%;
+			transform: translateX(-50%);
+			z-index: 50;
+			width: min(360px, calc(100vw - 24px));
+			box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+		}
+		.tip.pinned-bottom {
+			bottom: 12px;
+		}
+		.tip.pinned-top {
+			top: 12px;
+		}
 	}
 	.tip .w {
 		display: flex;

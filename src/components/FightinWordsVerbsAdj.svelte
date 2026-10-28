@@ -101,6 +101,9 @@
 		if (index !== undefined && index !== null) last = index;
 	});
 	let current = $derived(STEPS[last] ?? STEPS[0]);
+	// the reader's controls work only once the cards are gone (step-open);
+	// before that the faces and tabs show but are locked, and the menu is hidden
+	let live = $derived(index >= STEPS.length);
 
 	// the relations as tabs, each with the plain-language heading
 	// it gives the chart
@@ -199,11 +202,15 @@
 	// an outlet's name: Fox against that outlet alone, to see what each one
 	// contributes to the pooled picture
 	let pickedOutlet = $state("all");
+	// each step sets the player and the tab; scrolling back up from step-open
+	// puts the step's own back and lets go of the reader's outlet and unit
 	$effect(() => {
 		const step = current;
+		if (live) return;
 		if (step.who && PEOPLE.includes(step.who)) pickedWho = step.who;
 		if (step.rel) pickedRel = step.rel;
 		pickedOutlet = "all";
+		unit = "words";
 	});
 	// the outlets with enough of this player's words, in this relation, to
 	// stand alone; the rest grey out
@@ -386,6 +393,7 @@
 			<!-- the players as faces in a row, one tap each -->
 			<div
 				class="players"
+				inert={!live}
 				role="radiogroup"
 				aria-label="Player"
 				bind:clientWidth={rowW}
@@ -470,7 +478,7 @@
 				{/if}
 				{#if shown.vs === "outlets" && (narrow || !shown.title)}
 					<!-- a div, not a p: the menu inside renders block elements -->
-					<div class="subheading">
+					<div class="subheading" class:off={!live} inert={!live}>
 						<span
 							>{narrow
 								? or(phoneVs, "vs.")
@@ -532,7 +540,7 @@
 					>
 				</div>
 			{/snippet}
-			<div class="tabrow">
+			<div class="tabrow" inert={!live}>
 				<div class="rel-tabs" role="tablist" aria-label="Kind of word">
 					{#each RELATIONS as [rel, label] (rel)}
 						<button
@@ -812,6 +820,14 @@
 		right: 0;
 	}
 	/* phones: words / phrases at the right end of the "vs." line */
+	/* hidden but holding its room before step-open; on a phone the unit switch
+	   inside it still shows (locked), as the tabs do */
+	.subheading.off {
+		visibility: hidden;
+	}
+	.subheading.off .unit-switch {
+		visibility: visible;
+	}
 	.subheading .unit-switch {
 		margin-left: auto;
 		padding-left: 10px;
