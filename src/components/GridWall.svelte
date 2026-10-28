@@ -567,7 +567,7 @@
 	// repeated in order to fill the wall
 	const IMAGE_COUNTS = { gridFox: 40, gridOther: 40 };
 	const DEFAULT_IMAGES = "gridFox";
-	const imageSrc = (set, i) => `${base}/images/${set}/grid-${i % (IMAGE_COUNTS[set] ?? 40)}.png`;
+	const imageSrc = (set, i) => `${base}/images/${set}/grid-${i % (IMAGE_COUNTS[set] ?? 40)}.avif`;
 
 	let gridW = $state(0);
 	let gridH = $state(0);
@@ -883,11 +883,11 @@
             <h1>
                 <span class="hedLeft"><span class="hed-words" bind:this={hedLeftEl} style:transform={titleMoves.left}>{copy.meta.hedLeft}</span></span>
                 <span class="glitch" style="--src: url({base}/images/cc-combo.png)">
-                    <img class="base" src="{base}/images/cc-combo.png" width="494" height="1200" alt="Caitlin Clark shoots over the Fox News logo"/>
+                    <img class="base" src="{base}/images/cc-combo.avif" width="494" height="1200" alt="Caitlin Clark shoots over the Fox News logo"/>
                     {#each strips as s}
                         <img
                             class="strip"
-                            src="{base}/images/cc-combo.png"
+                            src="{base}/images/cc-combo.avif"
                             width="494"
                             height="1200"
                             alt=""

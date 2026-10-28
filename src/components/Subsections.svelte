@@ -138,7 +138,7 @@
             
             <section class="sheet" id={idOf(tab)} bind:this={sheets[i]}>
                 <!-- a stack whose chart has its own title can leave this out -->
-                {#if tab.title}<h4 class="heading">{tab.title}</h4>{/if}
+                {#if tab.title}<h3 class="heading">{tab.title}</h3>{/if}
 
                 <div
                     class="content-wrapper"

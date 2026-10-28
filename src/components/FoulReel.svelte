@@ -400,14 +400,16 @@
 		{#if gallery}
 			<div class="gallery-wrap">
 				<button class="arrow prev" aria-label="Previous" disabled={slide === 0} onclick={() => goSlide(slide - 1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
-				<div class="gallery" bind:this={galleryEl} onscroll={onGalleryScroll} tabindex="0" role="list" aria-label="Incidents"
+				<!-- focusable on purpose: a keyboard user can scroll the gallery and page it with the arrow keys -->
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
+				<div class="gallery" bind:this={galleryEl} onscroll={onGalleryScroll} tabindex="0" role="region" aria-roledescription="carousel" aria-label="Incidents"
 					onkeydown={(e) => {
 						if (e.key === "ArrowRight") (e.preventDefault(), goSlide(slide + 1));
 						if (e.key === "ArrowLeft") (e.preventDefault(), goSlide(slide - 1));
 					}}
 				>
 					{#each pairs as pr, i (i + pr.d)}
-						<div class="slide" role="listitem">
+						<div class="slide" role="group" aria-roledescription="slide" aria-label={`Incident ${i + 1} of ${pairs.length}`}>
 							<span class="vs" aria-hidden="true">vs.</span>
 							{#each [["oth", pr.oth], ["fox", pr.fox]] as [sideKey, r] (sideKey)}
 								{@const fox = sideKey === "fox"}
@@ -441,9 +443,9 @@
 				</div>
 				<button class="arrow next" aria-label="Next" disabled={slide >= pairs.length - 1} onclick={() => goSlide(slide + 1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
 			</div>
-			<div class="dots" role="tablist">
+			<div class="dots" role="group" aria-label="Choose incident">
 				{#each pairs as _, i (i)}
-					<button class="dot-btn" class:on={i === slide} aria-label={`Incident ${i + 1}`} onclick={() => goSlide(i)}></button>
+					<button class="dot-btn" class:on={i === slide} aria-label={`Incident ${i + 1}`} aria-current={i === slide ? 'true' : undefined} onclick={() => goSlide(i)}></button>
 				{/each}
 			</div>
 		{:else}
@@ -684,8 +686,7 @@
 	} */
 	.clip .mast .logo {
 		height: 24px;
-		width: auto;
-		max-width: 90px;
+		width: 24px;
 		object-fit: contain;
 		vertical-align: middle;
 		margin-right: 7px;
@@ -784,19 +785,29 @@
 	.dots {
 		display: flex;
 		justify-content: center;
-		gap: 6px;
+		gap: 0;
 		margin-top: 2px;
 	}
+	/* a 24px tap target (WCAG 2.5.8) around the small visible dot */
 	.dot-btn {
+		width: 24px;
+		height: 24px;
+		border: 0;
+		background: none;
+		padding: 0;
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.dot-btn::before {
+		content: "";
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
-		border: 0;
 		background: var(--color-rule);
-		padding: 0;
-		cursor: pointer;
 	}
-	.dot-btn.on {
+	.dot-btn.on::before {
 		background: var(--color-fg);
 	}
 	@media (max-width: 640px) {
