@@ -943,12 +943,12 @@
 		/* wider only where the screen leaves a margin beside the 900px chart */
 		max-width: 460px;
 		margin: 0;
-		background: rgba(255, 253, 248, 0.94);
+		background: var(--color-white);
 		padding: 14px 16px;
 		border-radius: 3px;
 		font-size: var(--step-text);
 		line-height: 1.5;
-		color: var(--color-ink);
+		color: var(--color-fg);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 		opacity: 0.3;
 		transition: opacity 250ms ease;

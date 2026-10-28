@@ -1601,7 +1601,8 @@
 		align-items: center;
 	}
 	.card {
-		background: var(--color-paper);
+		background: var(--color-white);
+		color: var(--color-fg);
 		border: 1px solid var(--color-rule);
 		border-radius: 6px;
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
