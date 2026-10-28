@@ -293,6 +293,14 @@
 		font-size: var(--14px);
 	}
 
+	/* a 24px tall tap target (WCAG 2.5.8) for each footer link */
+	.links li a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 24px;
+		padding: 2px 0;
+	}
+
 	.text-wrapper {
 		width: 100%;
 	}

@@ -307,6 +307,11 @@
 	}
 	const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 	const when = (d) => (d ? `${MONTHS[+d.slice(5, 7) - 1]} ${+d.slice(8, 10)}, ${d.slice(0, 4)}` : "");
+	// each "Article ↗" link names its outlet and date, so screen readers can tell them apart
+	const articleLabel = (r) => {
+		const date = r.dateText || when(r.d);
+		return `Article: ${r.o}${date ? `, ${date}` : ""} (opens in a new tab)`;
+	};
 
 	// --- the reel: the line nearest the middle is the open one --------------
 	let reelEl = $state(null);
@@ -431,7 +436,7 @@
 											</p>
 										{/if}
 										<p class="dateline">
-											{r.dateText || when(r.d)}{#if r.h}&nbsp;· <span class="badge">headline</span>{/if}{#if r.u}&nbsp;· <a href={r.u} target="_blank" rel="noopener">Article ↗</a>{/if}
+											{r.dateText || when(r.d)}{#if r.h}&nbsp;· <span class="badge">headline</span>{/if}{#if r.u}&nbsp;· <a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>Article ↗</a>{/if}
 										</p>
 									</figure>
 								{:else}
@@ -482,7 +487,7 @@
 										<span class="dot">·</span>
 										{when(r.d)}
 										{#if r.h}<span class="dot">·</span><span class="badge">headline</span>{/if}
-										{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener">article ↗</a>{/if}
+										{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>article ↗</a>{/if}
 									</p>
 								{:else}
 									{@const c = cut(r)}
@@ -519,7 +524,7 @@
 							<span class="dot">·</span>
 							{when(r.d)}
 							{#if r.h}<span class="dot">·</span><span class="badge">headline</span>{/if}
-							{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener">article ↗</a>{/if}
+							{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>article ↗</a>{/if}
 						</p>
 					{:else}
 						{@const c = cut(r)}
