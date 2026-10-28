@@ -1969,6 +1969,7 @@
 		max-width: 460px;
 		padding: 14px 18px;
 		background: var(--color-white);
+        color: var(--color-fg);
 		/* a black outline, so the card stands clear of the wall */
 		border: 1px solid var(--color-rule);
         border-radius: 4px;
