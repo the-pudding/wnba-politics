@@ -880,9 +880,9 @@
             class:title-down={titleOnWall}
             class:call-in-byline={callStyle === "byline"}
         >
-            <h1>
-                <span class="hedLeft"><span class="hed-words" bind:this={hedLeftEl} style:transform={titleMoves.left}>{copy.meta.hedLeft}</span></span>
-                <span class="glitch" style="--src: url({base}/images/cc-combo.png)">
+            <h1 aria-label="Why is Fox News obsessed with the WNBA?">
+                <span class="hedLeft" aria-hidden="true"><span class="hed-words" bind:this={hedLeftEl} style:transform={titleMoves.left}>{copy.meta.hedLeft}</span></span>
+                <span class="glitch" aria-hidden="true" style="--src: url({base}/images/cc-combo.png)">
                     <img class="base" src="{base}/images/cc-combo.avif" width="494" height="1200" alt="Caitlin Clark shoots over the Fox News logo"/>
                     {#each strips as s}
                         <img
@@ -903,13 +903,13 @@
                         </span>
                     {/if}
                 </span>
-                <span class="hedRight"><span class="hed-words" bind:this={hedRightEl} style:transform={titleMoves.right}>{copy.meta.hedRight}</span></span>
+                <span class="hedRight" aria-hidden="true"><span class="hed-words" bind:this={hedRightEl} style:transform={titleMoves.right}>{copy.meta.hedRight}</span></span>
             </h1>
             {#if callStyle === "corner"}
-                <a class="call-corner {callSpot}" href={callLink} target="_blank" rel="noopener">
+                <p class="call-corner {callSpot}">
                     <MessageCircle strokeWidth={1.25} fill="#fff" aria-hidden="true" />
                     <span class="call-corner-words">“{@html callShort}”</span>
-                </a>
+                </p>
             {/if}
             <div class="byline">
                 <p>
@@ -1810,9 +1810,6 @@
         font-weight: 400;
         line-height: 1.05;
         text-align: center;
-    }
-    .call-corner:hover .call-corner-words {
-        text-decoration: underline;
     }
     /* the title dropped down onto the wall: the rest of the title page fades, and the
        words (moved by titleMoves) turn red on a strip of the page colour. When the steps

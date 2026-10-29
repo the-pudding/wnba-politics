@@ -104,7 +104,7 @@ export const faces = (html, base = "") =>
 			const name = raw.trim();
 			const person = byName.get(key(name));
 			if (!person?.face) return name;
-			const img = `<img class="face-inline" src="${base}/net/${person.face}" alt="${name}" loading="lazy" />`;
+			const img = `<img class="face-inline" src="${base}/net/${person.face}" alt="" loading="lazy" />`;
 			return only ? img : `<span class="face-name">${img}${name}</span>`;
 		}
 	);

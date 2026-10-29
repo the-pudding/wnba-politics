@@ -424,9 +424,20 @@
 	// a tap on touch (a finger "leaves" the moment it lifts)
 	let headTerm = $state(null);
 	const hovers = (event) => event.pointerType !== "touch";
+	// a share row's tooltip: hover lights it with a mouse; a click or tap pins
+	// it until that row is clicked again (or anywhere else on the page). Touch
+	// skips the hover events, so a tap doesn't light, unlight and relight.
+	let rowPin = $state(null);
+	function tapRow(event, lead) {
+		rowPin = rowPin === lead ? null : lead;
+		// a mouse still over the row keeps it lit after unpinning; a finger or
+		// the keyboard (pointerType "") leaves only what's pinned
+		focus = rowPin ?? (event.pointerType === "mouse" ? lead : null);
+	}
 	function unpin(event) {
-		if (event.target.closest?.(".chip, .ter-tools, .flyer")) return;
+		if (event.target.closest?.(".chip, .ter-tools, .flyer, .srow")) return;
 		focus = null;
+		rowPin = null;
 		headTerm = null;
 		lastKept = null;
 	}
@@ -674,44 +685,67 @@
 								</p>{/if}
 							<!-- one stacked bar per word group: Fox | CNN | MSNBC, then Fox's share -->
 							{#if step.rows.length}
-								<div class="shares">
-									<span></span>
-									<span class="legend">
-										<i style:color={SHARE_COLORS[0]}>Fox</i>
-										<i style:color={SHARE_COLORS[1]}>CNN</i>
-										<i style:color={SHARE_COLORS[2]}>MSNBC</i>
-									</span>
-									<!-- over the rows' numbers: they're Fox's share -->
-									<span class="head-pct" style:color={SHARE_COLORS[0]}>Fox%</span>
-									{#each step.rows as row (row.key)}
-										<button
-											class="srow"
-											class:on={focus === row.lead}
-											onpointerenter={() => (focus = row.lead)}
-											onpointerleave={() => (focus = null)}
-											onclick={() =>
-												(focus = focus === row.lead ? null : row.lead)}
-										>
-											<span class="who">
-												{#if row.face}<img src={row.face} alt="" />{/if}
-												<span class="full">{row.label}</span>
-												<span class="short">{row.short}</span>
-											</span>
-											<span class="sbar">
-												{#each row.shares as v, i}
-													<span
-														style:width="{(v * 100).toFixed(2)}%"
-														style:background={SHARE_COLORS[i]}
-													></span>
-												{/each}
-											</span>
-											<!-- Fox's share, in Fox's colour whichever way the row leans -->
-											<span class="pct" style:color={SHARE_COLORS[0]}
-												>{pctOf(row.shares[0])}</span
+								<table class="shares">
+									<thead>
+										<tr>
+											<th scope="col"><span class="sr-only">Player</span></th>
+											<th scope="col" class="legend">
+												<i style:color={SHARE_COLORS[0]}>Fox</i>
+												<i style:color={SHARE_COLORS[1]}>CNN</i>
+												<i style:color={SHARE_COLORS[2]}>MSNBC</i>
+											</th>
+											<!-- over the rows' numbers: they're Fox's share -->
+											<th scope="col" class="head-pct" style:color={SHARE_COLORS[0]}
+												>Fox%</th
 											>
-										</button>
-									{/each}
-								</div>
+										</tr>
+									</thead>
+									<tbody>
+										{#each step.rows as row (row.key)}
+											<!-- the whole row lights the player on the triangle; the
+											     name's button gives it a keyboard stop -->
+											<tr
+												class="srow"
+												class:on={focus === row.lead}
+												onpointerenter={(e) => hovers(e) && (focus = row.lead)}
+												onpointerleave={(e) => hovers(e) && (focus = rowPin)}
+												onclick={(e) => tapRow(e, row.lead)}
+											>
+												<th scope="row">
+													<!-- Enter/Space click this, and the click bubbles to the row -->
+													<button
+														class="who"
+														aria-pressed={rowPin === row.lead}
+													>
+														{#if row.face}<img src={row.face} alt="" />{/if}
+														<span class="full">{row.label}</span>
+														<span class="short">{row.short}</span>
+													</button>
+												</th>
+												<td>
+													<span
+														class="sbar"
+														role="img"
+														aria-label="Fox {pctOf(row.shares[0])}, CNN {pctOf(
+															row.shares[1]
+														)}, MSNBC {pctOf(row.shares[2])}"
+													>
+														{#each row.shares as v, i}
+															<span
+																style:width="{(v * 100).toFixed(2)}%"
+																style:background={SHARE_COLORS[i]}
+															></span>
+														{/each}
+													</span>
+												</td>
+												<!-- Fox's share, in Fox's colour whichever way the row leans -->
+												<td class="pct" style:color={SHARE_COLORS[0]}
+													>{pctOf(row.shares[0])}</td
+												>
+											</tr>
+										{/each}
+									</tbody>
+								</table>
 							{/if}
 							{#if step.img}
 								<img
@@ -1007,62 +1041,103 @@
 		z-index: 5;
 	}
 
-	/* the share bars: one grid, so every row's bar starts at the same place */
+	/* the share bars as a table: name | stacked bar | Fox's share */
 	.shares {
-		display: grid;
-		grid-template-columns: minmax(0, max-content) minmax(70px, 1fr) auto;
-		column-gap: 8px;
-		align-items: center;
+		width: 100%;
+		/* reset.css fixes every table's layout; this one sizes to its names */
+		table-layout: auto;
+		border-collapse: collapse;
 		margin-top: 12px;
 		font-family: var(--font-chart);
 		font-size: 13px;
 	}
-	.shares > span {
+	.shares th,
+	.shares td {
+		padding: 0 4px;
+		vertical-align: middle;
+	}
+	.shares thead th {
 		font-size: 11.5px;
 		font-weight: 700;
 		color: rgba(42, 21, 3, 0.6);
-		margin-bottom: 2px;
-	}
-	.shares .legend {
-		display: flex;
-		gap: 7px;
+		text-align: left;
+		padding-bottom: 2px;
 		white-space: nowrap;
 	}
 	.shares .legend i {
 		font-style: normal;
+		margin-right: 7px;
 	}
 	.shares .head-pct {
 		text-align: right;
+		width: 1%;
 	}
-	/* a row is a button spanning the three columns */
-	.srow {
-		grid-column: 1 / -1;
-		display: grid;
-		grid-template-columns: subgrid;
-		align-items: center;
-		height: 28px;
-		padding: 0;
-		border: 0;
-		border-radius: 3px;
-		background: none;
-		font: inherit;
-		color: var(--color-ink);
+	/* the name column as wide as its longest name, the bar takes the rest */
+	.shares tbody th {
+		width: 1%;
 		text-align: left;
+	}
+	/* the % column only as wide as its numbers, never wrapping */
+	.shares .pct,
+	.shares .head-pct {
+		width: 1%;
+		white-space: nowrap;
+	}
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+	/* each row works as a button */
+	.srow {
+		height: 28px;
+		color: var(--color-ink);
 		cursor: pointer;
 	}
-	.srow:hover,
-	.srow.on {
+	.srow > * {
+		transition: background 120ms ease;
+	}
+	.srow.on > * {
 		background: rgba(42, 21, 3, 0.06);
+	}
+	/* touch screens keep :hover stuck after a tap, so only real hovers shade */
+	@media (hover: hover) {
+		.srow:hover > * {
+			background: rgba(42, 21, 3, 0.06);
+		}
+	}
+	.srow > :first-child {
+		border-radius: 3px 0 0 3px;
+	}
+	.srow > :last-child {
+		border-radius: 0 3px 3px 0;
 	}
 	.srow .who {
 		display: flex;
 		align-items: center;
 		gap: 6px;
 		min-width: 0;
+		/* table cells ignore max-width, so the cap lives on the button: a
+		   long name ellipses rather than pushing the % off the card */
+		max-width: min(170px, 40vw);
+		padding: 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		color: inherit;
 		font-weight: 700;
+		text-align: left;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		cursor: pointer;
+	}
+	.srow .who:focus-visible {
+		outline: 2px solid var(--color-ink-dark);
+		outline-offset: 1px;
 	}
 	.srow .who span {
 		overflow: hidden;
@@ -1098,6 +1173,7 @@
 		text-align: right;
 		font-weight: 700;
 		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
 	}
 
 	.chips {

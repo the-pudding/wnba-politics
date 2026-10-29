@@ -61,6 +61,8 @@
 	const numeric = (v) =>
 		/^[\s$€£%+\-−–.,\d]+[kKmM%]?$/.test(String(v ?? "").trim());
 	const isTotal = (r) => /^total/i.test(r.outlet ?? "");
+	const bodyRows = clean.filter((r) => !isTotal(r));
+	const totalRows = clean.filter(isTotal);
 	const logoOf = (r) => LOGOS[(r.outlet ?? "").trim().toLowerCase()];
 	const showName = (r) => names || !logoOf(r) || !WORDMARK.has(logoOf(r));
 	const numericCol = (col) => {
@@ -72,6 +74,22 @@
 		);
 	};
 </script>
+
+{#snippet rowCells(row)}
+	<td class="who">
+		{#if logoOf(row)}
+			<img
+				src="{base}/logos/square/{logoOf(row)}"
+				alt={showName(row) ? "" : row.outlet}
+				class:square={logoOf(row).endsWith(".png")}
+			/>
+		{/if}
+		{row.outlet}
+	</td>
+	{#each columns as col}
+		<td class:num={numericCol(col)}>{short(row[col]) || "—"}</td>
+	{/each}
+{/snippet}
 
 <figure class="box-score">
 	<div class="scroll">
@@ -85,24 +103,17 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each clean as row}
-					<tr class:total={isTotal(row)}>
-						<td class="who">
-							{#if logoOf(row)}
-								<img
-									src="{base}/logos/square/{logoOf(row)}"
-									alt={showName(row) ? "" : row.outlet}
-									class:square={logoOf(row).endsWith(".png")}
-								/>
-							{/if}
-							{row.outlet}
-						</td>
-						{#each columns as col}
-							<td class:num={numericCol(col)}>{short(row[col]) || "—"}</td>
-						{/each}
-					</tr>
+				{#each bodyRows as row}
+					<tr>{@render rowCells(row)}</tr>
 				{/each}
 			</tbody>
+			{#if totalRows.length}
+				<tfoot>
+					{#each totalRows as row}
+						<tr class="total">{@render rowCells(row)}</tr>
+					{/each}
+				</tfoot>
+			{/if}
 		</table>
 	</div>
 	{#if caption}<p class="note">{@html caption}</p>{/if}
