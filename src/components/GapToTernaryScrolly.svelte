@@ -48,7 +48,7 @@
 	};
 
 	// the triangle's title when the Doc gives none (the dot plot's own)
-	const HEADING = "The words used in Fox News television chyrons";
+	const HEADING = "The words used in television chyrons";
 
 	// --- the dot plot's steps -----------------------------------------------
 	const GAP = $derived(stageSteps(steps));
@@ -586,7 +586,6 @@
 
 		<div
 			class="stage ternary"
-			class:centred={terStep?.search}
 			bind:this={terEl}
 			style:opacity={terOpacity}
 			inert={phase !== "ternary"}

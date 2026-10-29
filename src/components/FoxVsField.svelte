@@ -56,7 +56,7 @@
 			fieldAt: "2022"
 		},
 		fouls: {
-			color: "#B91C1C",
+			color: "#FA4D00",
 			kicker: "Fouls",
 			name: "hip-check, poke, punch or throat",
 			notes: [],

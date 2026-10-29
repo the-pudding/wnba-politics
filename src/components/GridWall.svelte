@@ -1002,7 +1002,7 @@
                     class:lifter={!!spot}
                     class:featured={f}
                     class:pickable
-                    class:speaking={f?.type === "clips" && !closing && sound.on && speaking === videoName(spot)}
+                    class:speaking={f?.type === "clips" && !closing && speaking === videoName(spot)}
                     onclick={pickable ? (e) => pickClip(videoName(spot), e.currentTarget) : undefined}
                     class:pull-clips={f?.type === "clips"}
                     class:ready={ready && CLIPS_EARLY === "lit"}
@@ -1248,7 +1248,7 @@
     .cell.images.quiet img.on {
         opacity: 0;
     }
-    /* the clip being heard: its own thicker outline, past a thin white gap, above the
+    /* the clip whose turn it is (heard if sound is on): its own thicker outline, past a thin white gap, above the
        other clips (drawn before the scale-up, so thinned to match) */
     .cell.featured.pull-clips.speaking {
         z-index: 2;
@@ -1629,13 +1629,13 @@
 
     @media (max-width: 860px) {
 		h1 {
-            --img-h: 60svh;
+            --img-h: 70svh;
             --img-w: calc(var(--img-h) * 494 / 1200);
-			font-size: 2rem;
+			font-size: 3rem;
             /* two columns: the image on the left, both halves of the title stacked on
                the right, level with the image's middle. The empty first and last rows
                split the rest of the image's height, centring the words. */
-            grid-template-columns: auto minmax(0, 220px);
+            grid-template-columns: auto minmax(0, 320px);
             grid-template-rows: 1fr auto auto 1fr;
             justify-content: center;
             align-items: end;
@@ -1669,10 +1669,11 @@
 
     @media (max-width: 550px) {
 		h1 {
-			font-size: 1.5rem;
-            --img-h: 40svh;
+			font-size: 2rem;
+            --img-h: 45svh;
             --img-w: calc(var(--img-h) * 494 / 1200);
             margin-left: 5%;
+            grid-template-columns: auto minmax(0, 220px);
 		}
 	}
 
