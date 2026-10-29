@@ -77,7 +77,7 @@
 	};
 	// the ends of the axis
 	const ENDS = {
-		tone: ["Harsher", "Warmer"],
+		tone: ["More critical", "More favorable"],
 		political: ["Less political", "More political"],
 		appearance: ["Less about looks", "More about looks"],
 		celebrity: ["Less celebrity", "More celebrity"],
@@ -279,17 +279,17 @@
 			});
 		let L = null; // the current layout
 
-		function layout() {
+		function layout(t = tab, b = basis) {
 			const W = plot.clientWidth;
 			const narrow = W < PHONE_CHART;
-			const P = people();
+			const P = PLAYERS.filter((p) => p[b]).map((p) => ({ ...p, ...p[b] }));
 			const maxN = d3.max(P, (p) => p.n);
 			const [r0, r1] = narrow ? RADIUS.phone : RADIUS.desktop;
 			const rad = (p) => r0 + (r1 - r0) * Math.sqrt(p.n / maxN);
-			const share = tab !== "tone";
-			const zeros = share ? P.filter((p) => p[tab] === 0) : [];
+			const share = t !== "tone";
+			const zeros = share ? P.filter((p) => p[t] === 0) : [];
 			const main = P.filter((p) => !zeros.includes(p));
-			const vals = main.map((p) => p[tab]);
+			const vals = main.map((p) => p[t]);
 			const dom = share
 				? [0, d3.max(vals)]
 				: [Math.min(0, d3.min(vals)), Math.max(0, d3.max(vals))];
@@ -315,11 +315,11 @@
 					.range([xA + 16, W - 16]);
 				ticks = scale.ticks(6);
 				for (const d of mn) {
-					d.x = scale(d.p[tab]);
+					d.x = scale(d.p[t]);
 					d.y = 0;
 				}
 				d3.forceSimulation(mn)
-					.force("x", d3.forceX((d) => scale(d.p[tab])).strength(1))
+					.force("x", d3.forceX((d) => scale(d.p[t])).strength(1))
 					.force("y", d3.forceY(0).strength(0.06))
 					.force("c", d3.forceCollide((d) => d.r + pad).iterations(3))
 					.stop()
@@ -363,12 +363,12 @@
 					.range([top + PH, top + 10]);
 				ticks = scale.ticks(5);
 				for (const d of mn) {
-					d.y = scale(d.p[tab]);
+					d.y = scale(d.p[t]);
 					d.x = cx;
 				}
 				const s = d3
 					.forceSimulation(mn)
-					.force("y", d3.forceY((d) => scale(d.p[tab])).strength(1))
+					.force("y", d3.forceY((d) => scale(d.p[t])).strength(1))
 					.force("x", d3.forceX(cx).strength(0.05))
 					.force("c", d3.forceCollide((d) => d.r + pad).iterations(3))
 					.stop();
@@ -689,9 +689,28 @@
 			}
 		}
 
+		let maxH = { key: "", H: 0 };
+		function fixedH() {
+			const key = `${plot.clientWidth}x${innerHeight}`;
+			if (maxH.key !== key) {
+				let H = 0;
+				for (const t of TABS.map((x) => x.key))
+					for (const b of ["s", "h"]) H = Math.max(H, layout(t, b).H);
+				maxH = { key, H };
+			}
+			return maxH.H;
+		}
+
 		function draw(animate) {
 			if (!animate) plot.classList.add("no-anim");
 			L = layout();
+			// keep the frame the same height on every tab and count: the tallest
+			// of them all at this width, with the swarm centred in the extra room
+			const H = fixedH();
+			if (H > L.H) {
+				if (!L.narrow) for (const d of L.nodes) d.y += (H - L.H) / 2;
+				L.H = H;
+			}
 			svg.attr("viewBox", `0 0 ${L.W} ${L.H}`).attr("height", L.H);
 			drawAxis();
 			const on = new Set(L.P.map((p) => p.name));

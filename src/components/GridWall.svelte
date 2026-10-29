@@ -567,7 +567,7 @@
 	// repeated in order to fill the wall
 	const IMAGE_COUNTS = { gridFox: 40, gridOther: 40 };
 	const DEFAULT_IMAGES = "gridFox";
-	const imageSrc = (set, i) => `${base}/images/${set}/grid-${i % (IMAGE_COUNTS[set] ?? 40)}.png`;
+	const imageSrc = (set, i) => `${base}/images/${set}/grid-${i % (IMAGE_COUNTS[set] ?? 40)}.avif`;
 
 	let gridW = $state(0);
 	let gridH = $state(0);
@@ -883,11 +883,11 @@
             <h1>
                 <span class="hedLeft"><span class="hed-words" bind:this={hedLeftEl} style:transform={titleMoves.left}>{copy.meta.hedLeft}</span></span>
                 <span class="glitch" style="--src: url({base}/images/cc-combo.png)">
-                    <img class="base" src="{base}/images/cc-combo.png" width="494" height="1200" alt="Caitlin Clark shoots over the Fox News logo"/>
+                    <img class="base" src="{base}/images/cc-combo.avif" width="494" height="1200" alt="Caitlin Clark shoots over the Fox News logo"/>
                     {#each strips as s}
                         <img
                             class="strip"
-                            src="{base}/images/cc-combo.png"
+                            src="{base}/images/cc-combo.avif"
                             width="494"
                             height="1200"
                             alt=""
@@ -1002,7 +1002,7 @@
                     class:lifter={!!spot}
                     class:featured={f}
                     class:pickable
-                    class:speaking={f?.type === "clips" && !closing && sound.on && speaking === videoName(spot)}
+                    class:speaking={f?.type === "clips" && !closing && speaking === videoName(spot)}
                     onclick={pickable ? (e) => pickClip(videoName(spot), e.currentTarget) : undefined}
                     class:pull-clips={f?.type === "clips"}
                     class:ready={ready && CLIPS_EARLY === "lit"}
@@ -1248,7 +1248,7 @@
     .cell.images.quiet img.on {
         opacity: 0;
     }
-    /* the clip being heard: its own thicker outline, past a thin white gap, above the
+    /* the clip whose turn it is (heard if sound is on): its own thicker outline, past a thin white gap, above the
        other clips (drawn before the scale-up, so thinned to match) */
     .cell.featured.pull-clips.speaking {
         z-index: 2;
@@ -1622,39 +1622,58 @@
         grid-template-columns: 1fr auto 1fr;
         align-items: center;
         column-gap: var(--gap);
-        font-size: 2.5rem;
+        font-size: 2.25rem;
         width: 100%;
         height: 100%;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 860px) {
 		h1 {
-            --img-h: 60svh;
+            --img-h: 70svh;
             --img-w: calc(var(--img-h) * 494 / 1200);
-			font-size: 2rem;
-            margin-left: 3%;
+			font-size: 3rem;
+            /* two columns: the image on the left, both halves of the title stacked on
+               the right, level with the image's middle. The empty first and last rows
+               split the rest of the image's height, centring the words. */
+            grid-template-columns: auto minmax(0, 320px);
+            grid-template-rows: 1fr auto auto 1fr;
+            justify-content: center;
+            align-items: end;
+            row-gap: 0;
+            height: auto;
 		}
-        /* a max-width stops grid items stretching, so pin each one to the image side */
-        .hedLeft {
-            max-width: 120px;
-            justify-self: end;
+        /* the header centres the title up and down now that it's only as tall as the image */
+        .intro-wall-header {
+            display: flex;
+            align-items: center;
         }
-        .hedRight {
-            max-width: 200px;
+        h1 .glitch {
+            grid-column: 1;
+            grid-row: 1 / -1;
+        }
+        h1 .hedLeft,
+        h1 .hedRight {
+            grid-column: 2;
             justify-self: start;
-        }
-        .hedLeft,
-        .hedRight {
+            text-align: left;
+            margin-left: 0;
             text-wrap: balance;
+        }
+        h1 .hedLeft {
+            grid-row: 2;
+        }
+        h1 .hedRight {
+            grid-row: 3;
         }
 	}
 
     @media (max-width: 550px) {
 		h1 {
-			font-size: 1.5rem;
-            --img-h: 40svh;
+			font-size: 2rem;
+            --img-h: 45svh;
             --img-w: calc(var(--img-h) * 494 / 1200);
             margin-left: 5%;
+            grid-template-columns: auto minmax(0, 220px);
 		}
 	}
 
@@ -1969,6 +1988,7 @@
 		max-width: 460px;
 		padding: 14px 18px;
 		background: var(--color-white);
+        color: var(--color-fg);
 		/* a black outline, so the card stands clear of the wall */
 		border: 1px solid var(--color-rule);
         border-radius: 4px;

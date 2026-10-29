@@ -57,6 +57,9 @@
 		highlight = null,
 		bare = false,
 		against: start = ALL,
+		// picker: the "Compared with" menu is out and live; off, it's hidden
+		// (holding its room) and the chart compares with `against`
+		picker = true,
 		placed = null,
 		// speed: milliseconds for a face's slide into place (3500 by default)
 		speed = 3500,
@@ -126,10 +129,12 @@
 	// set it with `speed:` in milliseconds on the scrolly block
 	let SLIDE_MS = $derived(Math.max(100, +speed || 3500));
 
-	let against = $state(start);
+	// the reader's pick, kept while the menu is away and back when it returns
+	let chosen = $state(start);
 	$effect(() => {
-		against = start;
+		chosen = start;
 	});
+	let against = $derived(picker ? chosen : start);
 	let them = $derived(against === ALL ? "other outlets" : (POOL_LABEL[against] ?? against));
 	const topName = "Fox News";
 	const topShort = "Fox";
@@ -459,6 +464,9 @@
 		};
 	}
 	const hideFace = () => (tooltip = null);
+	// hover is for a mouse or pen: a finger "leaves" the moment it lifts, so on
+	// touch the tooltip would flash; there a tap shows it instead
+	const hovers = (event) => event.pointerType !== "touch";
 	// a tap shows a face's tooltip and nothing hides it on touch: a click
 	// anywhere else takes it away
 	function clickAway(event) {
@@ -466,7 +474,8 @@
 	}
 </script>
 
-<svelte:window onclick={clickAway} />
+<!-- a scroll takes the tooltip away too (a moving mouse brings it back) -->
+<svelte:window onclick={clickAway} onscroll={() => tooltip && hideFace()} />
 
 <div
 	class="outlet-gap"
@@ -474,7 +483,7 @@
 	style:transform={shift ? `translateX(${shift}px)` : undefined}
 	style:--slide="{SLIDE_MS}ms"
 >
-	<!-- on screen and live for the whole scrolly, so the reader can switch at any step -->
+	<!-- the menu is out and live while `picker` is on (the scrolly: its last step) -->
 	<!-- the title over the axis, end to end; the menu switches who Fox is compared with -->
 	<div
 		class="titles"
@@ -484,11 +493,11 @@
 		<p class="kicker">on the web</p>
 		<p class="heading">{or(heading, HEADING)}</p>
 		<!-- a div, not a p: the menu inside renders block elements -->
-		<div class="subheading">
+		<div class="subheading" class:off={!picker} inert={!picker}>
 			<span>{or(comparedWith, "Compared with")}</span>
 			<LogoSelect
 				options={[...AGGREGATES, ...outlets]}
-				bind:value={against}
+				bind:value={chosen}
 				logoOf={(o) => LOGO[o] ?? null}
 				nameOf={againstName}
 				label="Compared with"
@@ -649,9 +658,10 @@
 					<g
 						class="face-mark"
 						style:transform="translate({on ? xOf(person.times) : x(0)}px, {y}px)"
-						onpointerenter={(e) => on && showFace(e, person)}
-						onpointermove={(e) => on && showFace(e, person)}
-						onpointerleave={hideFace}
+						onpointerenter={(e) => on && hovers(e) && showFace(e, person)}
+						onpointermove={(e) => on && hovers(e) && showFace(e, person)}
+						onpointerleave={(e) => hovers(e) && hideFace()}
+						onclick={(e) => on && showFace(e, person)}
 						role="presentation"
 					>
 						<g class="face-scale" style:transform="scale({grow})">
@@ -868,6 +878,9 @@
 
 	.college-pick {
 		margin-top: 6px;
+	}
+	.subheading.off {
+		visibility: hidden;
 	}
 	.picker {
 		display: flex;

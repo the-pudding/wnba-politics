@@ -101,6 +101,12 @@
 		// pager: Previous / Next under the bars (a scrolly holds it back until
 		// its last card)
 		pager: showPager = true,
+		// live: the "Compared with" menu and the find box are out and working,
+		// and the unit tabs can be clicked; off (a scrolly's earlier steps), the
+		// menu and box are hidden, holding their room, the tabs show but are
+		// disabled, and the chart shows its defaults (the reader's picks return
+		// when it's live again)
+		live = true,
 		mode = null,
 		source = null,
 		// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
@@ -167,7 +173,8 @@
 
 	const ALL = "all coverage";
 	let text = $state(mode ?? "headlines");
-	let against = $state(data.outlets[0]);
+	// the reader's pick; the chart compares with the default while not live
+	let chosen = $state(data.outlets[0]);
 	let player = $state(ALL);
 	const topName = "Fox";
 	const bottomName = "others";
@@ -383,7 +390,7 @@
 		);
 		return [...starts, ...inside].slice(0, 8);
 	});
-	let searchLit = $derived(found ? [found] : []);
+	let searchLit = $derived(live && found ? [found] : []);
 	let open = $state(false);
 	let cursor = $state(-1);
 	const choose = (word) => {
@@ -438,8 +445,11 @@
 	);
 
 	$effect(() => {
-		if (!outletsHere.includes(against)) against = outletsHere[0];
+		if (!outletsHere.includes(chosen)) chosen = outletsHere[0];
 	});
+	let against = $derived(
+		live && outletsHere.includes(chosen) ? chosen : outletsHere[0]
+	);
 
 	let viewportWidth = $state(
 		typeof window === "undefined" ? 1200 : window.innerWidth
@@ -835,11 +845,11 @@
 						: `headlines naming ${player}`}{/if}
 			</p>
 			<!-- a div, not a p: the menu inside renders block elements -->
-			<div class="subheading">
+			<div class="subheading" class:off={!live} inert={!live}>
 				<span>{or(comparedWith, "Compared with")}</span>
 				<LogoSelect
 					options={outletsHere}
-					bind:value={against}
+					bind:value={chosen}
 					logoOf={(o) => PILL_LOGO[o] ?? null}
 					nameOf={outletOption}
 					label="Compared with"
@@ -849,7 +859,7 @@
 	{/if}
 	{#if !source}
 		<!-- the checks, when they're on -->
-		{#if checks.on && controls}
+		{#if checks.on && controls && live}
 			<div class="controls filterbar">
 				<div class="field">
 					<span class="field-label">Leave out</span>
@@ -885,7 +895,7 @@
 			<!-- the unit as tabs on a rule, the search at the rule's right end -->
 			<div class="unit-row">
 				{#if bodyMode}
-					<div class="unit-tabs" role="tablist" aria-label="Words at a time">
+					<div class="unit-tabs" inert={!live} role="tablist" aria-label="Words at a time">
 						{#each [1, 2, 3].map((n) => [n, unitName(n)]) as [n, label] (n)}
 							<button
 								type="button"
@@ -897,7 +907,7 @@
 						{/each}
 					</div>
 				{/if}
-				<div class="find">
+				<div class="find" class:off={!live} inert={!live}>
 					<input
 						type="search"
 						placeholder={or(search, "Find a word…")}
@@ -1329,6 +1339,11 @@
 		font-size: 14px;
 		font-weight: 700;
 		cursor: pointer;
+	}
+	/* hidden but holding their room, so nothing shifts when they come out */
+	.subheading.off,
+	.find.off {
+		visibility: hidden;
 	}
 	.unit-tabs button:hover {
 		color: var(--color-ink-dark);

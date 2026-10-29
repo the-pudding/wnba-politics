@@ -132,7 +132,7 @@
 		border-radius: 4px;
 		font-size: var(--step-text);
 		line-height: 1.5;
-		color: var(--color-ink);
+		color: var(--color-fg);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 	}
 	/* the step cards let the pointer through to the chart behind them, but a

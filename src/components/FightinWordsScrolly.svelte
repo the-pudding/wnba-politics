@@ -38,7 +38,8 @@
 		<FightinWords
 			highlight={index >= STEPS.length ? [] : current.words}
 			bare
-			controls={current.explore}
+			controls
+			live={index >= STEPS.length}
 			mode="articles"
 			{chart}
 			{labels}
@@ -118,12 +119,12 @@
 		/* wider only where the screen leaves a margin beside the 1000px chart */
 		max-width: 460px;		
 		margin: 0;
-		background: var(--wnba-tan-bg);
+		background: var(--color-white);
 		padding: 14px 16px;
 		border-radius: 3px;
 		font-size: var(--step-text);
 		line-height: 1.5;
-		color: var(--color-ink);
+		color: var(--color-fg);
 		box-shadow: 0 4px 18px rgba(42, 21, 3, 0.14);
 		opacity: 0.35;
 		transition: opacity 250ms ease;

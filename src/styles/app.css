@@ -362,7 +362,12 @@ svg {
 /* inline colour in the Doc's text, as the kids-book copy does with he/she:
    <span class="fox">4.5x more</span> in the dot plot's Fox navy,
    <span class="others">1.3x less</span> in its other-outlets purple */
-span.fox {
+span.orange {
+	color: var(--wnba-orange);
+	font-weight: 700;
+}
+
+   span.fox {
 	color: var(--color-fox-navy);
 	font-weight: 700;
 }
@@ -422,4 +427,14 @@ mark.pen {
 	text-decoration-thickness: 2px;
 	text-underline-offset: 3px;
 	font-weight: 700;
+}
+
+/* iOS Safari zooms the page in when a field with text under 16px gets focus,
+   and doesn't zoom back out: on touch screens every field's text is 16px */
+@media (pointer: coarse) {
+	input,
+	select,
+	textarea {
+		font-size: 16px !important;
+	}
 }

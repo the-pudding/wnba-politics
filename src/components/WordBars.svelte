@@ -590,15 +590,15 @@
 				{/each}
 			{/each}
 		</svg>
-		{#if paged && pages > 1 && pager}
-			<div class="pager" bind:this={pagerEl}>
-				<button type="button" disabled={page === 0} onclick={() => (page -= 1)}>{or(previous, "← Previous")}</button>
-				<span class="pager-range"
-					>{fillIn(or(range, "{from}–{to} of {total}"), { from: page * topN + 1, to: Math.min(ranked, (page + 1) * topN), total: ranked })}</span
-				>
-				<button type="button" disabled={page >= pages - 1} onclick={() => (page += 1)}>{or(next, "Next →")}</button>
-			</div>
-		{/if}
+		<!-- always laid out, so the chart keeps its height; shown only when there are pages -->
+		{@const showPager = paged && pages > 1 && pager}
+		<div class="pager" class:off={!showPager} aria-hidden={!showPager} bind:this={pagerEl}>
+			<button type="button" disabled={page === 0} onclick={() => (page -= 1)}>{or(previous, "← Previous")}</button>
+			<span class="pager-range"
+				>{fillIn(or(range, "{from}–{to} of {total}"), { from: page * topN + 1, to: Math.min(ranked, (page + 1) * topN), total: ranked })}</span
+			>
+			<button type="button" disabled={page >= pages - 1} onclick={() => (page += 1)}>{or(next, "Next →")}</button>
+		</div>
 
 		{#if tip}
 			{@const color = tip.sign > 0 ? FOX : OTHERS}
@@ -670,6 +670,10 @@
 		font-family: var(--font-chart);
 		font-size: 12px;
 		color: var(--color-fg);
+	}
+	/* kept in place but unseen (and out of the tab order) when there's one page */
+	.pager.off {
+		visibility: hidden;
 	}
 	.pager button {
 		appearance: none;

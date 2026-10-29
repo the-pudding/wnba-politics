@@ -307,6 +307,11 @@
 	}
 	const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 	const when = (d) => (d ? `${MONTHS[+d.slice(5, 7) - 1]} ${+d.slice(8, 10)}, ${d.slice(0, 4)}` : "");
+	// each "Article ↗" link names its outlet and date, so screen readers can tell them apart
+	const articleLabel = (r) => {
+		const date = r.dateText || when(r.d);
+		return `Article: ${r.o}${date ? `, ${date}` : ""} (opens in a new tab)`;
+	};
 
 	// --- the reel: the line nearest the middle is the open one --------------
 	let reelEl = $state(null);
@@ -400,14 +405,16 @@
 		{#if gallery}
 			<div class="gallery-wrap">
 				<button class="arrow prev" aria-label="Previous" disabled={slide === 0} onclick={() => goSlide(slide - 1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
-				<div class="gallery" bind:this={galleryEl} onscroll={onGalleryScroll} tabindex="0" role="list" aria-label="Incidents"
+				<!-- focusable on purpose: a keyboard user can scroll the gallery and page it with the arrow keys -->
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
+				<div class="gallery" bind:this={galleryEl} onscroll={onGalleryScroll} tabindex="0" role="region" aria-roledescription="carousel" aria-label="Incidents"
 					onkeydown={(e) => {
 						if (e.key === "ArrowRight") (e.preventDefault(), goSlide(slide + 1));
 						if (e.key === "ArrowLeft") (e.preventDefault(), goSlide(slide - 1));
 					}}
 				>
 					{#each pairs as pr, i (i + pr.d)}
-						<div class="slide" role="listitem">
+						<div class="slide" role="group" aria-roledescription="slide" aria-label={`Incident ${i + 1} of ${pairs.length}`}>
 							<span class="vs" aria-hidden="true">vs.</span>
 							{#each [["oth", pr.oth], ["fox", pr.fox]] as [sideKey, r] (sideKey)}
 								{@const fox = sideKey === "fox"}
@@ -429,7 +436,7 @@
 											</p>
 										{/if}
 										<p class="dateline">
-											{r.dateText || when(r.d)}{#if r.h}&nbsp;· <span class="badge">headline</span>{/if}{#if r.u}&nbsp;· <a href={r.u} target="_blank" rel="noopener">Article ↗</a>{/if}
+											{r.dateText || when(r.d)}{#if r.h}&nbsp;· <span class="badge">headline</span>{/if}{#if r.u}&nbsp;· <a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>Article ↗</a>{/if}
 										</p>
 									</figure>
 								{:else}
@@ -441,9 +448,9 @@
 				</div>
 				<button class="arrow next" aria-label="Next" disabled={slide >= pairs.length - 1} onclick={() => goSlide(slide + 1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
 			</div>
-			<div class="dots" role="tablist">
+			<div class="dots" role="group" aria-label="Choose incident">
 				{#each pairs as _, i (i)}
-					<button class="dot-btn" class:on={i === slide} aria-label={`Incident ${i + 1}`} onclick={() => goSlide(i)}></button>
+					<button class="dot-btn" class:on={i === slide} aria-label={`Incident ${i + 1}`} aria-current={i === slide ? 'true' : undefined} onclick={() => goSlide(i)}></button>
 				{/each}
 			</div>
 		{:else}
@@ -480,7 +487,7 @@
 										<span class="dot">·</span>
 										{when(r.d)}
 										{#if r.h}<span class="dot">·</span><span class="badge">headline</span>{/if}
-										{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener">article ↗</a>{/if}
+										{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>article ↗</a>{/if}
 									</p>
 								{:else}
 									{@const c = cut(r)}
@@ -517,7 +524,7 @@
 							<span class="dot">·</span>
 							{when(r.d)}
 							{#if r.h}<span class="dot">·</span><span class="badge">headline</span>{/if}
-							{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener">article ↗</a>{/if}
+							{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>article ↗</a>{/if}
 						</p>
 					{:else}
 						{@const c = cut(r)}
@@ -684,8 +691,7 @@
 	} */
 	.clip .mast .logo {
 		height: 24px;
-		width: auto;
-		max-width: 90px;
+		width: 24px;
 		object-fit: contain;
 		vertical-align: middle;
 		margin-right: 7px;
@@ -784,19 +790,29 @@
 	.dots {
 		display: flex;
 		justify-content: center;
-		gap: 6px;
+		gap: 0;
 		margin-top: 2px;
 	}
+	/* a 24px tap target (WCAG 2.5.8) around the small visible dot */
 	.dot-btn {
+		width: 24px;
+		height: 24px;
+		border: 0;
+		background: none;
+		padding: 0;
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.dot-btn::before {
+		content: "";
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
-		border: 0;
 		background: var(--color-rule);
-		padding: 0;
-		cursor: pointer;
 	}
-	.dot-btn.on {
+	.dot-btn.on::before {
 		background: var(--color-fg);
 	}
 	@media (max-width: 640px) {

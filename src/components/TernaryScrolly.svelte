@@ -377,7 +377,8 @@
 	.card {
 		max-width: 300px;
 		margin: 0;
-		background: rgba(255, 253, 248, 0.94);
+		background: var(--color-white);
+		color: var(--color-fg);
 		padding: 14px 16px 15px;
 		border-radius: 3px;
 		font-size: var(--step-text);
