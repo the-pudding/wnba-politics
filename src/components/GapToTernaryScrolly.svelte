@@ -614,6 +614,7 @@
 					quiet={findStep && open && suggestions.length > 0}
 					topic={terStep?.topic ?? null}
 					bands={phase === "ternary" && (terStep?.bands ?? flag(bands) ?? true)}
+					tipLayer={stageEl}
 				/>
 				{@render tools()}
 			</div>
@@ -883,6 +884,9 @@
 		justify-content: center;
 	}
 
+	/* the triangle's tooltip is drawn in .sticky (TernaryStatic's tipLayer), out
+	   of the stage's opacity and the column's transform, so its z-index (5)
+	   puts it over the heads */
 	.flyers {
 		position: absolute;
 		inset: 0;

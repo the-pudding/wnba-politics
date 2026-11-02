@@ -439,8 +439,8 @@
 				     "← Other outlets use more" · "Fox News uses more →" -->
 				{@const oneLine = textWidth(bottomHead) + textWidth(source.topHead) + 60 < 2 * barsReach}
 				{#if oneLine}
-					<text class="head edge others" x={0} y="10" text-anchor="start">← {bottomHead}</text>
-					<text class="head edge fox" x={WIDTH} y="10" text-anchor="end">{source.topHead} →</text>
+					<text class="head edge others" x={0} y="10" text-anchor="start">← More distinctive to other outlets</text>
+					<text class="head edge fox" x={WIDTH} y="10" text-anchor="end">More distinctive to Fox News →</text>
 				{:else}
 					<!-- too narrow for both on one line: each breaks before "use(s) more" -->
 					{@const split = (t) => { const i = t.search(/ uses? more$/); return i > 0 ? [t.slice(0, i), t.slice(i + 1)] : [t, ""]; }}

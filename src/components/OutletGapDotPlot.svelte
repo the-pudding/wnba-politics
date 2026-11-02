@@ -91,7 +91,7 @@
 		allOutlets = ""
 	} = $props();
 	// the title spans the axis; the menu names what Fox is compared with
-	const HEADING = "How often Fox News names each player in WNBA headlines";
+	const HEADING = "Which players get an outsized share of Fox News’ attention?";
 	const POOL_NAME = { "all outlets": "six other outlets combined", "sports outlets": "the sports outlets combined", "news outlets": "the news outlets combined" };
 	const againstName = (o) =>
 		o === "all outlets" && allOutlets ? allOutlets : (POOL_NAME[o] ?? o);
@@ -538,14 +538,14 @@
 				x={narrow ? NAMES + 24 + 10 : x(0) - 22}
 				y={TOP - (narrow ? 22 : 0)}
 				text-anchor={narrow ? "start" : "end"}
-				fill={THEM}>← More {narrow ? themShort : them}</text
+				fill={THEM}>← Bigger share {narrow ? themShort : them}</text
 			>
 			<text
 				class="head"
 				x={narrow ? NAMES + PLOT - 10 : x(0) + 22}
 				y={TOP - (narrow ? 22 : 0)}
 				text-anchor={narrow ? "end" : "start"}
-				fill={FOX}>{narrow ? `More ${topShort} →` : `More ${topName} →`}</text
+				fill={FOX}>{narrow ? `Bigger share ${topShort} →` : `Bigger share ${topName} →`}</text
 			>
 			<!-- the ends of the axis, in each side's colour -->
 			<line
@@ -791,14 +791,14 @@
 			<strong>{tooltip.person.name}</strong>
 			<div>
 				<span class="swatch" style="background:{FOX}"></span>
-				{pct(tooltip.person.top.share)} of Fox's WNBA headlines
+				{pct(tooltip.person.top.share)} of Fox's headlines
 				<!-- the raw count beside every share -->
 				<span class="count">({tooltip.person.top.n.toLocaleString()})</span>
 			</div>
 			<div>
 				<span class="swatch" style="background:{THEM}"></span>
 				{pct(tooltip.person.them.share)} of {them === "other outlets"
-					? "the other outlets'"
+					? "others' headlines"
 					: them + "'s"}
 				<span class="count">({tooltip.person.them.n.toLocaleString()})</span>
 			</div>
@@ -838,7 +838,7 @@
 		padding-left: 9px;
 		border-left: 3px solid var(--tip-rule);
 		font: var(--tip-quote);
-		max-width: 260px;
+		max-width: 320px;
 		font-style: italic;
 	}
 	.tip {
@@ -872,7 +872,7 @@
 		width: 10px;
 		height: 10px;
 		border-radius: 2px;
-		margin-right: 5px;
+		margin-right: 2px;
 		vertical-align: -1px;
 	}
 

@@ -48,7 +48,11 @@
 		year = $bindable(null), // null: every year
 		// source: "chyrons" (the banners, 2017–2026) or "captions" (what was
 		// said, from the closed captions, 2017 to Oct 2024)
-		source = "chyrons"
+		source = "chyrons",
+		// an element (positioned) to draw the tooltip in, off phones: a scrolly
+		// with things over the triangle (GapToTernaryScrolly's flying heads)
+		// lifts the tooltip above them; null: the tooltip stays in the chart
+		tipLayer = null
 	} = $props();
 	// fixed for the life of the chart: the Doc sets it
 	const chy = source === "captions" ? capData : chyData;
@@ -527,16 +531,18 @@
 	// over it when neither side fits), kept within the drawing; in px
 	let tipPos = $state(null);
 	// on phones the tooltip moves to <body>, so no transformed or contained
-	// parent (the scrolly's) can stop it being fixed to the screen
-	function toBody(node, on) {
+	// parent (the scrolly's) can stop it being fixed to the screen; elsewhere
+	// it moves to the tipLayer, when there is one
+	let tipHome = $derived(narrow ? document.body : tipLayer);
+	function moveTo(node, to) {
 		const home = node.parentNode,
 			mark = document.createComment("");
 		home.insertBefore(mark, node);
 		const place = (to) => {
-			if (to) document.body.appendChild(node);
+			if (to) to.appendChild(node);
 			else if (mark.parentNode) mark.parentNode.insertBefore(node, mark);
 		};
-		place(on);
+		place(to);
 		return {
 			update: place,
 			destroy() {
@@ -550,7 +556,7 @@
 		if (!t || !tipEl || !svgEl || !hostEl) return (tipPos = null);
 		const ctm = svgEl.getScreenCTM();
 		if (!ctm) return;
-		const host = hostEl.getBoundingClientRect();
+		const host = (tipLayer ?? hostEl).getBoundingClientRect();
 		const box = svgEl.getBoundingClientRect();
 		const at = new DOMPoint(t.px, t.py).matrixTransform(ctm);
 		const x = at.x - host.left,
@@ -813,7 +819,7 @@
 			class:pinned-top={tipPos?.pinned === "top"}
 			class:pinned-bottom={tipPos?.pinned === "bottom"}
 			bind:this={tipEl}
-			use:toBody={narrow}
+			use:moveTo={tipHome}
 			style:left={tipPos?.pinned ? null : `${tipPos?.left ?? 0}px`}
 			style:top={tipPos?.pinned ? null : `${tipPos?.top ?? 0}px`}
 			style:visibility={tipPos ? null : "hidden"}

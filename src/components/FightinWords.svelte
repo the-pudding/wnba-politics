@@ -700,10 +700,10 @@
 			// only Fox's head carries its wordmark; the other side is named in words
 			topLogo: PILL_LOGO["Fox News"] ?? "fox-news.svg",
 			// the heads at the bars' outer edges, saying what each side means
-			topHead: or(foxHead, "Fox News uses more"),
+			topHead: or(foxHead, "More distinctive to Fox News"),
 			bottomHead:
 				against === ALL_OUTLETS
-					? or(othersHead, "Other outlets use more")
+					? or(othersHead, "More distinctive to other outlets")
 					: (() => {
 							const n = AGGREGATES.includes(against)
 								? `the ${against}`
@@ -834,7 +834,7 @@
 			<p class="kicker">on the web</p>
 			<p class="heading">
 				{#if bodyMode && player === ALL}{fillIn(
-						or(headingText, "How Fox News writes about the WNBA"),
+						or(headingText, "The phrases that define Fox News’ coverage"),
 						{ unit: unitName(gram) }
 					)}{:else}{gram === 3
 						? "Three-word phrases"

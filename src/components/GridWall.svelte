@@ -736,7 +736,7 @@
 	const ACTIVE_GAP = 2; // px of white between the clip and its outline
 	// the screenshots in the wall: in colour or gray, and how faintly they show
 	const WALL_COLOR = false;
-	const WALL_OPACITY = 0.15;
+	const WALL_OPACITY = 0.1;
 	// the headline tiles: longest headline used (so few get cut off), and whether the
 	// people named in them stand out in bold (Doc: wallNames: true | false)
 	const HEADLINE_MAX = 95; // characters
@@ -1417,7 +1417,7 @@
         transition-delay: var(--d);
     }
     .cell.text p.on {
-        opacity: 0.5;
+        opacity: 0.3;
     }
     /* screenshots sit back faintly. Only the current folder's shows; when the folder
        changes, each tile swaps old for new at its own scattered delay */
