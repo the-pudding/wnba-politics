@@ -981,6 +981,7 @@
 			{next}
 			{range}
 			{hoverCounts}
+			totals={!source && sample ? { top: sample.fox, bottom: sample.other } : null}
 			example={barExample}
 			onhover={() => {
 				if (!source) ensureExamples();

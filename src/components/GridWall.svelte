@@ -47,6 +47,17 @@
 	// sound: off until the reader turns it on (one switch for the whole page, see
 	// utils/sound.svelte.js). Turning it on from the title page plays the call.
 	const CALL = `${base}/audio/logo-call.mp3`;
+
+	// the reader has asked for less motion: no wipe or switch-off between screenshot
+	// folders (they just swap), and the kicker label fades instead of wiping
+	let reducedMotion = $state(false);
+	onMount(() => {
+		const q = matchMedia("(prefers-reduced-motion: reduce)");
+		reducedMotion = q.matches;
+		const change = (e) => (reducedMotion = e.matches);
+		q.addEventListener("change", change);
+		return () => q.removeEventListener("change", change);
+	});
 	onMount(() => {
 		// fetched now so it plays the moment the switch is tapped
 		if (config.header && id === "intro") preloadSound(CALL);
@@ -358,7 +369,9 @@
 	$effect(() => {
 		const set = imageSet;
 		const idx = sceneIndex;
-		const kind = [idx, lastIndex].map((i) => config.scenes[i]?.transition).find(Boolean);
+		const kind = reducedMotion
+			? undefined
+			: [idx, lastIndex].map((i) => config.scenes[i]?.transition).find(Boolean);
 		if (lastSet && set !== lastSet && kind === "wipe") {
 			wiping = true;
 			wipeKey += 1;
@@ -413,7 +426,8 @@
 		return {
 			delay: delay * 1000,
 			duration: duration * 1000,
-			css: (t) => `clip-path: inset(0 ${(1 - cubicOut(t)) * 100}% 0 0)`
+			css: (t) =>
+				reducedMotion ? `opacity: ${t}` : `clip-path: inset(0 ${(1 - cubicOut(t)) * 100}% 0 0)`
 		};
 	}
 	// every image folder this wall uses; each tile stacks one screenshot per folder
@@ -1336,6 +1350,12 @@
         /* flies out from the tile, like the clips, and ends with no transform */
         animation: clip-fly 600ms cubic-bezier(0.2, 0.7, 0.2, 1) var(--fd) backwards;
     }
+    /* less motion: the card fades in where it lands instead of flying out */
+    @media (prefers-reduced-motion: reduce) {
+        .clip-wrap {
+            animation: none;
+        }
+    }
     .clip-out.low .clip-wrap {
         align-items: flex-end;
     }
@@ -1535,17 +1555,14 @@
         70% { opacity: 1; transform: scaleX(1); }
         73%, 100% { opacity: 0; transform: scaleX(1); }
     }
+    /* less motion: the script skips the wipe and switch-off, the screenshots just swap
+       (these are a backstop, so nothing half-runs if the setting changes mid-switch) */
     @media (prefers-reduced-motion: reduce) {
-        .bg-grid.powering,
-        .crt-black,
-        .crt-line {
+        .bg-grid.powering {
             animation: none;
         }
-        .crt-line {
-            display: none;
-        }
-    }
-    @media (prefers-reduced-motion: reduce) {
+        .crt-black,
+        .crt-line,
         .wipe-band {
             display: none;
         }
@@ -1827,6 +1844,14 @@
             transform 700ms cubic-bezier(0.2, 0.9, 0.3, 1),
             color 500ms ease,
             background-color 500ms ease;
+    }
+    /* less motion: the title jumps to its place on the wall rather than sliding there */
+    @media (prefers-reduced-motion: reduce) {
+        .hed-words {
+            transition:
+                color 500ms ease,
+                background-color 500ms ease;
+        }
     }
     .title-down .hed-words {
         color: var(--color-fg);

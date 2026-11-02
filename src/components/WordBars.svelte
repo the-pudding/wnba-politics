@@ -44,7 +44,10 @@
 		previous = "",
 		next = "",
 		range = "",
-		hoverCounts = ""
+		hoverCounts = "",
+		// each side's total ({ top, bottom }), so the tooltip can show a word's
+		// uses as a percentage; without it, source.counts ({ clark, others })
+		totals = null
 	} = $props();
 	const noteMode = $derived(note === undefined || note === null ? "stock" : String(note).trim() ? "custom" : "none");
 
@@ -295,6 +298,27 @@
 	// a word's count with thousands commas ("1,234"); anything not a number as it came
 	const count = (n) =>
 		n != null && n !== "" && Number.isFinite(+n) ? (+n).toLocaleString("en-US") : n;
+	// a word's uses as a share of its side's total ("1.2%"); the raw count
+	// when there is no total to divide by
+	let sideTotals = $derived({
+		top: +(totals?.top ?? source?.counts?.clark) || 0,
+		bottom: +(totals?.bottom ?? source?.counts?.others) || 0
+	});
+	function pct(n, total) {
+		if (!total || n == null || !Number.isFinite(+n)) return count(n);
+		const p = (100 * +n) / total;
+		if (p === 0) return "0%";
+		if (p < 0.1) return "<0.1%";
+		return (p < 10 ? p.toFixed(1) : Math.round(p)) + "%";
+	}
+	// how far a score is from noise, in words, for the tooltip's {strength}
+	function strength(z) {
+		const a = Math.abs(z);
+		if (a < WEAK_Z) return "within noise";
+		if (a < 3.29) return "moderate";
+		if (a < 6) return "strong";
+		return "very strong";
+	}
 	// the width the bars reach, both sides (the longest bar and its word), so
 	// the note under the chart wraps to the drawing rather than the frame
 	// how far the bars (and their words) reach from the middle, either side,
@@ -617,9 +641,10 @@
 					>{fillIn(or(hoverCounts, "{top} {topCount} · {bottom} {bottomCount} · Score {score}"), {
 						top: topName,
 						bottom: otherName,
-						topCount: count(tip.p.nf),
-						bottomCount: count(tip.p.no),
-						score: fmt(tip.p.z)
+						topCount: pct(tip.p.nf, sideTotals.top),
+						bottomCount: pct(tip.p.no, sideTotals.bottom),
+						score: fmt(tip.p.z),
+						strength: strength(tip.p.z)
 					})}{#if tip.p.pin} · #{tip.p.rank}{/if}</span
 				>
 				{#if tip.eg}

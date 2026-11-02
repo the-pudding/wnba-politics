@@ -63,7 +63,7 @@
 			fieldAt: "2025-01"
 		},
 		protect: {
-			color: "#7C7060",
+			color: "#166534",
 			kicker: "Protect",
 			name: "“protect”",
 			notes: []
