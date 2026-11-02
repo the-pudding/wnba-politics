@@ -6,8 +6,10 @@
 	import { faces, clipPops } from "$utils/clips.js";
 
 	// chart: "scatter" (the quadrant) or "bars" (mirrored top words)
+	// srText: the chart described for screen readers (a step's own srText
+	// describes the chart at that step)
 	// the rest: the Doc's words for the chart (see FightinWords)
-	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false, ngrams = 1, note = undefined, ...words } = $props();
+	let { steps = null, chart = "scatter", labels = "on", scale = "linear", caps = false, scores = false, ngrams = 1, note = undefined, srText = "", ...words } = $props();
 
 	const STEPS = $derived(
 		(steps ?? [])
@@ -21,7 +23,8 @@
 				// a step can switch to two-word phrases (ngrams: 2) or back (ngrams: 1);
 				// unset, the block's own setting carries on
 				ngrams: String(step.ngrams ?? "").trim() || null,
-				html: step.text ?? ""
+				html: step.text ?? "",
+				srText: step.srText ?? ""
 			}))
 	);
 
@@ -59,6 +62,9 @@
 			{#each STEPS as step, i}
 				<div class="step" class:active={index === i}>
 					<p class="card">{@html clipPops(faces(step.html, base), base)}</p>
+					{#if step.srText?.trim()}
+						<p class="sr-only">{@html step.srText}</p>
+					{/if}
 				</div>
 			{/each}
 			<!-- cardless final beat: the chart stays put for another screen and a

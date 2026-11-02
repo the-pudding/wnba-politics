@@ -7,6 +7,8 @@
 	//   [.ternarySteps]  the triangle's steps (as on TernaryScrollyOld); a step's
 	//                    topic (polrace, lgbtq, fouls) shades the triangle's heat
 	//   bridge           a card that scrolls by during the handoff
+	//   srText           the handoff described for screen readers (a step's
+	//                    own srText describes the chart at that step)
 	//   heading, comparedWith, allOutlets, speed  (the dot plot's)
 	//   note             (the triangle's line underneath)
 	//   The find box sits under the triangle on every step; a step with
@@ -37,7 +39,9 @@
 		comparedWith = "",
 		allOutlets = "",
 		note = null,
-		bands = true
+		bands = true,
+		// the handoff, described for screen readers
+		srText = ""
 	} = $props();
 	// the Doc sends "true"/"false" as text; blank means "not set"
 	const flag = (v) => {
@@ -92,7 +96,8 @@
 				search: step.search === true || step.search === "true",
 				bands: flag(step.bands),
 				rows: parseGroups(step).map(shareRow).filter(Boolean),
-				html: step.text ?? ""
+				html: step.text ?? "",
+				srText: step.srText ?? ""
 			}))
 	);
 	// --- the cards' share bars (as on ChyronTriangle) ------------------------
@@ -654,6 +659,11 @@
 							<p class="gap-card">
 								{@html clipPops(faces(step.html, base), base)}
 							</p>
+							{#if step.srText?.trim()}
+								<p class="sr-only">
+									{@html step.srText}
+								</p>
+							{/if}
 						</div>
 					{/if}
 				</div>
@@ -666,6 +676,9 @@
 				<div class="card bridge-card" class:active={phase === "bridge"}>
 					<p class="card-text">{@html clipPops(faces(bridge, base), base)}</p>
 				</div>
+			{/if}
+			{#if srText?.trim()}
+				<p class="sr-only">{@html srText}</p>
 			{/if}
 		</div>
 
@@ -684,6 +697,9 @@
 							{#if step.html}<p class="card-text">
 									{@html clipPops(faces(step.html, base), base)}
 								</p>{/if}
+							{#if step.srText?.trim()}
+								<p class="sr-only">{@html step.srText}</p>
+							{/if}
 							<!-- one stacked bar per word group: Fox | CNN | MSNBC, then Fox's share -->
 							{#if step.rows.length}
 								<table class="shares">

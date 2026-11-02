@@ -1088,6 +1088,11 @@
 							{@html clipPops(faces(step.text, base), base)}
 						</p>
 					{/if}
+                    {#if step.srText?.trim()}
+						<p class="sr-only">
+							{@html step.srText}
+						</p>
+					{/if}
 				</div>
 			{/each}
 		</Scrolly>
