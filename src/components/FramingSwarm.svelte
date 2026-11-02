@@ -969,6 +969,7 @@
 			return safe.replace(rx, (m) => `<mark>${m}</mark>`);
 		}
 		const rowsEl = el("rows"),
+			bodyEl = el("rows-b"),
 			sumEl = el("summary");
 		// the list scrolls in its own box; near its end, the next PAGE are drawn
 		let rowCount = 0;
@@ -1045,7 +1046,7 @@
 			}
 
 			const show = rows.slice(0, T.shown);
-			rowsEl.innerHTML = show.length
+			bodyEl.innerHTML = show.length
 				? show
 						.map(([d, t, u, who, cs, sc, lab]) => {
 							const tagHtml = cs
@@ -1072,10 +1073,10 @@
 								mark(t),
 								who.map((i) => D.names[i])
 							);
-							return `<div class="hr"><div class="hd">${dateName(d)}</div><div class="hh">${u ? `<a href="${esc(u)}" target="_blank" rel="noreferrer">${said}</a>` : said}${meta}</div><div class="ht">${tone}</div></div>`;
+							return `<tr class="hr"><td class="hd">${dateName(d)}</td><td class="hh">${u ? `<a href="${esc(u)}" target="_blank" rel="noreferrer">${said}</a>` : said}${meta}</td><td class="ht"><div class="tone">${tone}</div></td></tr>`;
 						})
 						.join("")
-				: `<div class="empty">Nothing matches those filters. <button class="clearall" data-k="all">Clear them</button></div>`;
+				: `<tr><td colspan="3" class="empty">Nothing matches those filters. <button class="clearall" data-k="all">Clear them</button></td></tr>`;
 			markEnd();
 		}
 		function undo(k) {
@@ -1195,12 +1196,22 @@
 				/>
 			</div>
 		</div>
-		<div class="rows-h" data-id="rows-h">
-			<button data-s="date" class="on">Date ↓</button>
-			<span class="hcol">Headline</span>
-			<button data-s="tone" class="r">Tone</button>
+		<div class="rows" data-id="rows">
+			<table class="htbl">
+				<thead class="rows-h" data-id="rows-h">
+					<tr>
+						<th scope="col"
+							><button data-s="date" class="on">Date ↓</button></th
+						>
+						<th class="hcol" scope="col">Headline</th>
+						<th class="r" scope="col"
+							><button data-s="tone" class="r">Tone</button></th
+						>
+					</tr>
+				</thead>
+				<tbody data-id="rows-b"></tbody>
+			</table>
 		</div>
-		<div class="rows" data-id="rows"></div>
 	</div>
 
 	<p class="source" data-id="source"></p>
@@ -1663,18 +1674,48 @@
 		outline-offset: -2px;
 	}
 
-	.swarm :global(.rows-h),
-	.swarm :global(.hr) {
-		display: grid;
-		grid-template-columns: 104px minmax(0, 1fr) 104px;
-		column-gap: 16px;
+	/* the headlines table: date | headline | tone */
+	.swarm :global(.htbl) {
+		width: 100%;
+		table-layout: fixed;
+		border-collapse: collapse;
 	}
+	.swarm :global(.htbl th),
+	.swarm :global(.htbl td) {
+		box-sizing: border-box;
+		padding: 0;
+		text-align: left;
+	}
+	.swarm :global(.htbl th:first-child),
+	.swarm :global(.htbl td:first-child) {
+		width: 120px;
+		padding-right: 16px;
+	}
+	.swarm :global(.htbl th:last-child),
+	.swarm :global(.htbl td:last-child) {
+		width: 120px;
+		padding-left: 16px;
+	}
+	.swarm :global(.htbl td.empty) {
+		width: auto;
+		padding: 28px 0;
+		text-align: center;
+	}
+	/* the column heads stay put while the rows scroll under them */
 	.swarm :global(.rows-h) {
-		padding: 0 0 6px;
-		border-bottom: 1px solid var(--ink);
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		background: var(--sheet);
 		font-size: 12px;
 		font-weight: 700;
 		color: var(--ink-3);
+	}
+	.swarm :global(.rows-h th) {
+		padding-bottom: 6px;
+		/* a shadow, not a border: collapsed borders don't stick */
+		box-shadow: inset 0 -1px 0 var(--ink);
+		vertical-align: bottom;
 	}
 	.swarm :global(.rows-h button) {
 		appearance: none;
@@ -1693,10 +1734,11 @@
 	.swarm :global(.rows-h .r) {
 		text-align: right;
 	}
-	.swarm :global(.hr) {
-		padding: 10px 0 9px;
+	.swarm :global(.hr td) {
+		padding-top: 10px;
+		padding-bottom: 9px;
 		border-bottom: 1px solid var(--rule);
-		align-items: baseline;
+		vertical-align: baseline;
 	}
 	.swarm :global(.hd) {
 		font-size: 12.5px;
@@ -1749,7 +1791,11 @@
 		text-decoration-thickness: 2px;
 		text-underline-offset: 3px;
 	}
-	.swarm :global(.ht) {
+	.swarm :global(.hr td.ht) {
+		vertical-align: top;
+		padding-top: 14px;
+	}
+	.swarm :global(.ht .tone) {
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
@@ -1757,8 +1803,6 @@
 		font-size: 12.5px;
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
-		align-self: start;
-		padding-top: 4px;
 	}
 	.swarm :global(.meter) {
 		position: relative;
@@ -1804,7 +1848,7 @@
 		max-height: 560px;
 		overflow-y: auto;
 	}
-	.swarm :global(.rows .hr:last-child) {
+	.swarm :global(.rows .hr:last-child td) {
 		border-bottom: 0;
 	}
 	.swarm :global(.rows::after) {
@@ -1882,10 +1926,33 @@
 			min-width: 0;
 			width: 100%;
 		}
-		.swarm :global(.rows-h),
+		/* the table unstacks: each row is a small grid, date and tone over the headline */
+		.swarm :global(.htbl),
+		.swarm :global(.htbl tbody) {
+			display: block;
+		}
+		.swarm :global(.rows-h) {
+			display: block;
+		}
+		.swarm :global(.rows-h tr),
 		.swarm :global(.hr) {
+			display: grid;
 			grid-template-columns: minmax(0, 1fr) auto;
 			column-gap: 10px;
+		}
+		.swarm :global(.rows-h tr) {
+			padding-bottom: 6px;
+			box-shadow: inset 0 -1px 0 var(--ink);
+		}
+		.swarm :global(.htbl th),
+		.swarm :global(.htbl td),
+		.swarm :global(.hr td),
+		.swarm :global(.hr td.ht) {
+			display: block;
+			width: auto;
+			padding: 0;
+			border: 0;
+			box-shadow: none;
 		}
 		.swarm :global(.rows-h .hcol) {
 			display: none;
@@ -1893,14 +1960,22 @@
 		.swarm :global(.hr) {
 			grid-template-areas: "date tone" "head head";
 			padding: 9px 0 10px;
+			border-bottom: 1px solid var(--rule);
+			align-items: baseline;
+		}
+		.swarm :global(.rows .hr:last-child) {
+			border-bottom: 0;
+		}
+		.swarm :global(.htbl td.empty) {
+			padding: 28px 0;
 		}
 		.swarm :global(.hd) {
 			grid-area: date;
 			font-size: 12px;
 		}
-		.swarm :global(.ht) {
+		.swarm :global(.hr td.ht) {
 			grid-area: tone;
-			padding-top: 0;
+			align-self: start;
 		}
 		.swarm :global(.hh) {
 			grid-area: head;
