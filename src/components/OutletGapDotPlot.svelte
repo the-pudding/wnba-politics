@@ -529,7 +529,7 @@
 			width={WIDTH}
 			{height}
 			role="img"
-			aria-label="Whether Fox News or {against} gives each player a larger share of its WNBA headlines"
+			aria-label="Dot plot chart showing whether Fox News has a bigger share of coverage for 13 WNBA players than {against}"
 		>
 			<!-- the Fox half: from the equal line to the end of the axis -->
 			<rect class="fox-half" x={x(0)} y="28" width={NAMES + PLOT - x(0)} height={height - 82} />
@@ -932,6 +932,14 @@
 	}
 	.subheading :global(.logo-select .current::after) {
 		right: 0;
+	}
+	/* the underlined word has no box, so the focus ring rounds its corners and
+	   sits a little clear of the text */
+	.subheading :global(.logo-select .current:focus),
+	.subheading :global(.logo-select .current[aria-expanded="true"]) {
+		outline: 2px solid var(--color-ink);
+		outline-offset: 3px;
+		border-radius: 3px;
 	}
 	@media (max-width: 640px) {
 		.titles {

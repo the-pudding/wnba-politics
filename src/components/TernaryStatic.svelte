@@ -575,13 +575,15 @@
 			tipPos = { pinned: at.y + r + 8 > footTop ? "top" : "bottom" };
 			return;
 		}
-		let left = x + 16,
+		// clear of the dot's edge, not its centre, so a big dot isn't covered
+		const gap = radius(t.total) * ctm.a + 10;
+		let left = x + gap,
 			top = y - th / 2;
-		if (left + tw > x1) left = x - tw - 16;
+		if (left + tw > x1) left = x - tw - gap;
 		if (left < x0) {
 			left = Math.max(x0, Math.min(x1 - tw, x - tw / 2));
-			top = y + 16;
-			if (top + th > y1) top = y - th - 16;
+			top = y + gap;
+			if (top + th > y1) top = y - th - gap;
 		}
 		top = Math.max(y0 - 8, Math.min(y1 - th + 8, top));
 		tipPos = { left, top };

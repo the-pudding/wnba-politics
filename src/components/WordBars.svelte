@@ -433,7 +433,9 @@
 <div class="word-bars" bind:this={el}>
 	{#if source}
 		<!-- the column heads -->
-		<svg width={WIDTH} height={TOP - 24} viewBox="0 0 {WIDTH} {TOP - 24}" role="presentation">
+		<svg width={WIDTH} height={TOP - 24} viewBox="0 0 {WIDTH} {TOP - 24}" 
+			role="presentation"
+			aria-label="Diverging bar chart showing words that are distinctive to {topName} and to {otherName}">
 			{#if source.topHead}
 				<!-- heads at the bars' outer edges, saying what each side means:
 				     "← Other outlets use more" · "Fox News uses more →" -->

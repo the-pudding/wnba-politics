@@ -926,7 +926,7 @@
                 <h2>This coverage matters</h2>
             </div>
         {/if}
-        <div class="kicker-spot" class:off={wall === "empty" || closing}>
+        <div class="kicker-spot" class:off={wall === "empty" || closing} aria-hidden="true">
             {#key kicker}
                 <p
                     class="kicker"
