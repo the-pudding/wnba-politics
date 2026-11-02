@@ -56943,8 +56943,8 @@
 "confidence": 1.0
 },
 "fcf2bab566b4e3fd": {
-"verdict": "yes",
-"answer": "The passage uses it about Chennedy Carter.",
+"verdict": "no",
+"answer": "“A favorite of the press” here is not a description of Carter.",
 "kind": "card",
 "player": "Chennedy Carter",
 "outlet": "Fox News",
@@ -162655,6 +162655,51 @@
 "player": "A'ja Wilson",
 "outlet": "Fox News",
 "relation": "object",
+"confidence": 1.0
+},
+"b31f13369241e317": {
+"verdict": "no",
+"answer": "Clark is on the receiving end: other players' flagrant fouls on her, not her own play.",
+"kind": "play",
+"player": "Caitlin Clark",
+"outlet": "Fox News",
+"relation": "play2",
+"confidence": 1.0
+},
+"148ab0b5ce8b21b9": {
+"verdict": "no",
+"answer": "Clark is on the receiving end: other players' flagrant fouls on her, not her own play.",
+"kind": "card",
+"player": "Caitlin Clark",
+"outlet": "Fox News",
+"relation": "play2",
+"confidence": 1.0
+},
+"3eb79e85c47d3500": {
+"verdict": "no",
+"answer": "The easy layup is Reese's; Clark only made the pass.",
+"kind": "play",
+"player": "Caitlin Clark",
+"outlet": "USA Today",
+"relation": "play2",
+"confidence": 1.0
+},
+"e394dd5c479ecabe": {
+"verdict": "no",
+"answer": "The easy layup is Reese's; Clark only made the pass.",
+"kind": "card",
+"player": "Caitlin Clark",
+"outlet": "USA Today",
+"relation": "play2",
+"confidence": 1.0
+},
+"8e68d782f3935c28": {
+"verdict": "no",
+"answer": "“A favorite of the press” here is not a description of Carter.",
+"kind": "describe",
+"player": "Chennedy Carter",
+"outlet": "Fox News",
+"relation": "describe",
 "confidence": 1.0
 }
 }

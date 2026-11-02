@@ -8,7 +8,8 @@
 	//   exploreHead: Explore
 	//   exploreText: Drag the timeline or press play. … The {n} most named through {month}:
 	//   exploreFind: Find anyone on the map…
-	//   source: Source: {headlines} WNBA headlines from Fox News … ({outkick} of them), {from} to {to} … {people} people …
+	//   source: Source: {headlines} WNBA headlines from Fox News … ({outkick} of them), {from} to {toDate} …
+	//           ({to} is the last month, {toDate} the last headline's date, {people} the people on the map)
 	//   still: true (optional: no story steps and nothing pinned while you scroll; the map
 	//          sits in a white card, like the framing chart, at its latest month, with the
 	//          explore panel beside it on wide screens and the timeline to play or drag)
@@ -111,12 +112,8 @@
 		"then pick a second face for only the headlines naming both. The {n} most named through {month}:";
 	const SOURCE =
 		"Source: {headlines} WNBA headlines from Fox News and its sports site OutKick ({outkick} of them), " +
-		"{from} to {to}. Each face is one of the {people} people this story tracks, sized by how " +
-		"many headlines named them in the 12 months up to the month shown" +
-		(RELATIVE ? ", next to the most named person then" : "") +
-		"; a line joins two people named in the same headline. " +
-		"A headline names someone if it uses the full name or, for most, the surname. Groups are ours: former " +
-		"players now on TV count with the league; Paul Whelan and Viktor Bout, of the Griner prisoner swap, with politics.";
+		"{from} to {toDate}. Each face is sized by how many headlines named them in a given year. " +
+		"A line connects two people named in the same headline.";
 
 	// ---------------------------------------------------------------------
 	// Data: running totals for each person and each pair, month by month
@@ -127,6 +124,11 @@
 		`${MONTH_FULL[+MONTHS[0].slice(5, 7) - 1]} ${MONTHS[0].slice(0, 4)}`;
 	const lastMonth = () =>
 		`${MONTH_FULL[+MONTHS.at(-1).slice(5, 7) - 1]} ${MONTHS.at(-1).slice(0, 4)}`;
+	// "November 1, 2026"
+	const lastDate = () => {
+		const d = DATA.lastDate ?? `${MONTHS.at(-1)}-01`;
+		return `${MONTH_FULL[+d.slice(5, 7) - 1]} ${+d.slice(8, 10)}, ${d.slice(0, 4)}`;
+	};
 	const M = MONTHS.length;
 	const MI = new Map(MONTHS.map((m, i) => [m, i]));
 	const fmt = d3.format(",");
@@ -1357,6 +1359,7 @@
 			outkick: fmt(DATA.outkick),
 			from: firstMonth(),
 			to: lastMonth(),
+			toDate: lastDate(),
 			people: nodes.length
 		});
 		onScroll();

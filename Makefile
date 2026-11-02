@@ -3,8 +3,8 @@ PHONY: github pudding
 github:
 	rm -rf docs
 	cp -r build docs
-	# the no-college check data stays local (see .gitignore)
-	rm -rf docs/data/nocollege
+	# the no-college and prior check data stay local (see .gitignore)
+	rm -rf docs/data/nocollege docs/data/informative docs/data/prior-1 docs/data/prior-uniform
 	touch docs/.nojekyll
 	git add -A
 	git commit -m "update github pages"
@@ -19,7 +19,7 @@ staging:
 
 production:
 	npm run build
-	rm -rf build/data/nocollege
+	rm -rf build/data/nocollege build/data/informative build/data/prior-1 build/data/prior-uniform
 	make pudding
 
 # aws-sync:

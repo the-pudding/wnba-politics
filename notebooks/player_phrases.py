@@ -14,7 +14,9 @@ sys.path.insert(0, str(HERE / "notebooks"))
 from fighting_words import bayes_compare_language
 from sklearn.feature_extraction.text import CountVectorizer as CV
 csv.field_size_limit(10 ** 9)
-FROM, MIN_SENTENCES, MIN_PAIR, TOP = "2023-04-01", 150, 5, 40
+# MIN_PAIR: the fewest uses a phrase needs to be written out (file size; it cannot
+# reach significance below this)
+FROM, MIN_SENTENCES, MIN_PAIR, TOP = "2023-04-01", 150, 3, 40
 STOP = set("""a an the and or but of in on at to for with by from as is are was were be been being it its
 this that these those i you he she they we his her their our your my not no do does did has have had
 will would can could should may might must about after before over under again more most other some
@@ -34,19 +36,24 @@ NAME_PARTS |= set("""fever sky liberty aces lynx storm mercury dream sun wings s
 indiana chicago york vegas minnesota seattle phoenix atlanta connecticut dallas angeles washington golden
 toronto portland iowa hawkeyes lsu tigers uconn huskies usc trojans notre dame wnba nba espn""".split())
 def clean(t):
+    # every word stays (no stop list, no length rule): the prior handles common
+    # words, and phrases are only ever words that stood side by side
     t = re.sub(r"[^a-z' ]+", " ", t.lower().replace("’", "'"))
-    return " ".join(w for w in t.split() if w not in STOP and len(w) > 2)
+    return " ".join(t.split())
 rows = defaultdict(lambda: {"fox": [], "others": []})
 for r in csv.DictReader((HERE / "data" / "player_sentences.csv").open()):
     if r["date"] < FROM: continue
     rows[r["player"]]["fox" if r["outlet"] == "Fox News" else "others"].append(r["sentence"])
+# the corpus prior's background (the default; FW_PRIOR=uniform leaves it out): every player's
+# sentences, Fox and the other outlets together
+BACKGROUND = [clean(s) for sides in rows.values() for s in sides["fox"] + sides["others"]]
 out = {}
 for player, sides in rows.items():
     fox, oth = sides["fox"], sides["others"]
     if len(fox) < MIN_SENTENCES or len(oth) < MIN_SENTENCES: continue
     fc, oc = [clean(s) for s in fox], [clean(s) for s in oth]
-    cv = CV(decode_error="ignore", min_df=4, max_df=.5, ngram_range=(2, 2), max_features=20000, token_pattern=r"(?u)\b\w[\w'-]*\w\b")
-    scored = bayes_compare_language(fc, oc, prior=.05, cv=cv)
+    cv = CV(decode_error="ignore", min_df=1, max_df=1.0, ngram_range=(2, 2), token_pattern=r"(?u)\S+")
+    scored = bayes_compare_language(fc, oc, prior=.05, cv=cv, background=BACKGROUND)
     cv.fit(fc + oc)
     f_ct, o_ct = cv.transform(fc).sum(axis=0).A1, cv.transform(oc).sum(axis=0).A1
     idx = {t: i for i, t in enumerate(cv.get_feature_names_out())}
@@ -76,7 +83,7 @@ for player, sides in rows.items():
         i = idx.get(phrase)
         if i is None: continue
         nf, no = int(f_ct[i]), int(o_ct[i])
-        if nf + no < MIN_PAIR or BAD.search(phrase) or cap_share(phrase) >= 0.7: continue
+        if nf + no < MIN_PAIR or BAD.search(phrase) or cap_share(phrase) >= 0.7 or all(t in STOP for t in phrase.split()): continue
         if any(re.sub(r"'s?$", "", t) in NAME_PARTS for t in phrase.split()): continue
         side = "clark" if z > 0 else "others"
         if len(sides_out[side]) >= TOP: continue

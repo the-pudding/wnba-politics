@@ -31,6 +31,14 @@
 		sentences = "",
 		headlines = "",
 		pickPrompt = "",
+		// a face picked while counting sentences (the table below lists headlines):
+		//   pickedSentences: {n} of the {count} Fox sentences naming {name} {does} ({share}), e.g. “{example}”.
+		//   pickedTone: Average tone of the {count} Fox sentences naming {name}: {tone}.
+		//   pickedTable: Below, her Fox headlines on it (pickedTableAll: … every Fox headline that names her, on the tone tab)
+		pickedSentences = "",
+		pickedTone = "",
+		pickedTable = "",
+		pickedTableAll = "",
 		tableHead = "",
 		source = "",
 		...unused
@@ -862,6 +870,9 @@
 		const away = (e) => {
 			const t = e.target;
 			if (t.closest?.(".node")) return;
+			// a chip or button the click itself just redrew away was inside the
+			// table, not off it ("Play ×" must not also let go of the player)
+			if (!t.isConnected) return;
 			hideTip();
 			if (picked && !keeps().some((k) => k?.contains(t))) setPicked(null);
 		};
@@ -873,8 +884,15 @@
 			() => removeEventListener("scroll", onScroll)
 		);
 
+		// a picked face adds the tab's topic to the table's filters
+		function syncTopic() {
+			T.cat = tab === "tone" ? "all" : tab;
+			catEl.value = T.cat;
+		}
+
 		function setPicked(name) {
 			picked = name;
+			syncTopic();
 			T.shown = PAGE;
 			draw(true);
 			renderPick();
@@ -890,7 +908,40 @@
 				return;
 			}
 			const pl = byName.get(picked);
-			// only said when she's missing from the chart
+			// only said when she's missing from the chart, or when the chart
+			// counts sentences: then her sentence numbers, as the table lists headlines
+			if (pl?.s && basis === "s") {
+				const st = pl.s;
+				const line =
+					tab === "tone"
+						? fill(or(pickedTone, "Average tone of the {count} Fox sentences naming {name}: {tone}."), {
+								count: fmt(st.n),
+								name: picked,
+								tone: toneFmt(st.tone)
+							})
+						: fill(
+								or(
+									pickedSentences,
+									"{n} of the {count} Fox sentences naming {name} {does} ({share})" +
+										(st.ex?.[tab] ? ", e.g. “{example}”." : ".")
+								),
+								{
+									n: fmt(st[`${tab}N`] ?? 0),
+									count: fmt(st.n),
+									name: picked,
+									topic: TOPIC[tab].toLowerCase(),
+									does: DOES[tab],
+									share: pct(st[tab]),
+									example: st.ex?.[tab] ?? ""
+								}
+							);
+				const below =
+					tab === "tone"
+						? or(pickedTableAll, "Below, every Fox headline that names her.")
+						: or(pickedTable, "Below, her Fox headlines on it.");
+				whoEl.innerHTML = `<span>${esc(line)} ${esc(below)}</span>`;
+				return;
+			}
 			whoEl.innerHTML = !pl
 				? "<span>Not one of the players on the chart.</span>"
 				: !pl[basis]

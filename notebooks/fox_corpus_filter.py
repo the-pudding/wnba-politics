@@ -60,6 +60,13 @@ MENTION = ANCHOR   # kept for callers that import it
 # cases (a feature on the Storm's coach, a print sports brief) name the league
 # up top; an inflation column that reaches Griner at word 4,280 does not
 EARLY = 100
+# ... counted in sentences, not names: "Indiana Fever star Caitlin Clark's WNBA
+# games" is one mention, not three (a stock line in CBS's streaming guides let
+# college football guides in). An article whose link names the WNBA (an
+# outlet's WNBA section, or "wnba" in the slug) keeps the count of names, for
+# the short recaps that name the teams in one or two sentences
+WNBA_LINK = re.compile(r"(?<![a-z0-9])wnba(?![a-z0-9])", re.I)
+SENTENCE = re.compile(r"(?<=[.!?])\s+|\n+")
 
 
 # a roster surname that someone else in the news shares: when the article
@@ -112,6 +119,11 @@ def first_mention_word(text, blank=(), anchored=True):
     return len(text[:min(hits)].split()) if hits else None
 
 
+def mention_sentences(text, blank=(), anchored=True):
+    """How many sentences of the text name the WNBA world."""
+    return sum(1 for s in SENTENCE.split(text or "") if s.strip() and mentions(s, blank, anchored))
+
+
 def reason(row):
     if not in_window(row.get("date")):
         return f"outside the study window ({START} to {END})"
@@ -125,10 +137,12 @@ def reason(row):
     head, body = mentions(row.get("headline"), blank, anchored), mentions(row.get("body"), blank, anchored)
     if head + body == 0:
         return "no WNBA, team or roster mention anywhere"
+    if not WNBA_LINK.search(row.get("url") or ""):
+        body = mention_sentences(row.get("body"), blank, anchored)
     if head == 0 and body <= 1:
-        return "headline about something else, one passing mention in the body"
+        return "headline about something else, the body names the WNBA world in one sentence"
     if head == 0 and body == 2 and (first_mention_word(row.get("body"), blank, anchored) or 0) > EARLY:
-        return "headline about something else, two passing mentions deep in the body"
+        return "headline about something else, two sentences naming it, deep in the body"
     return None
 
 

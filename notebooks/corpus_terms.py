@@ -25,7 +25,7 @@ HERE = Path(__file__).resolve().parent.parent
 # the study window, the same for every outlet: articles dated outside it are
 # left out (inclusive; move END to the day of the final scrape)
 START = "2019-01-01"
-END = "2026-10-20"
+END = "2026-11-01"
 
 LEAGUE = ["WNBA", "W.N.B.A."]
 
@@ -59,8 +59,10 @@ LEAGUE_FIGURES = ["Cathy Engelbert", "Stephanie White", "Becky Hammon", "Cheryl 
 # extra words a URL slug may carry instead of a full name, for finding articles
 # in sitemaps (the filter still decides from the text): surnames and nicknames
 # rare enough not to flood a news site's sitemap with other stories
+# (no bare "carrington": it matches Manchester United's training ground and Bub
+# Carrington; "dijonai-carrington" comes from the full name)
 SLUG_EXTRAS = ["griner", "bueckers", "ionescu", "taurasi", "ogwumike", "vandersloot",
-               "ogunbowale", "carrington", "engelbert", "mystics", "lynx", "valkyries"]
+               "ogunbowale", "engelbert", "mystics", "lynx", "valkyries"]
 
 # a mention counts as prominent within this many opening words (see the filter)
 EARLY = 100

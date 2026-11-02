@@ -17,7 +17,7 @@
 			.map((p) => [p.slug, p.face.slice(p.slug.length)])
 	);
 
-	import { COMPARISON, GROUPS, AGGREGATES, LOGO, SHORT as SHORT_NAMES } from "$utils/outlets.js";
+	import { COMPARISON, GROUPS, AGGREGATES, LOGO, SHORT as SHORT_NAMES, FOX as FOX_NEWS } from "$utils/outlets.js";
 	// every outlet the picker offers on its own
 	const OUTLETS = [...COMPARISON];
 	// the pooled baselines the picker offers before the outlets themselves
@@ -90,11 +90,20 @@
 		comparedWith = "",
 		allOutlets = ""
 	} = $props();
-	// the title spans the axis; the menu names what Fox is compared with
+	// the title spans the axis; the menu names what Fox is compared with. When
+	// the title says "Fox News", that name becomes a second menu (while the
+	// picker is live): any outlet can take Fox's side of the axis
 	const HEADING = "How often Fox News names each player in WNBA headlines";
+	const COUNT_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven"];
 	const POOL_NAME = { "all outlets": "six other outlets combined", "sports outlets": "the sports outlets combined", "news outlets": "the news outlets combined" };
-	const againstName = (o) =>
-		o === "all outlets" && allOutlets ? allOutlets : (POOL_NAME[o] ?? o);
+	const againstName = (o) => {
+		// with another outlet on top, a pool is the rest of its members
+		if (POOLED.includes(o) && topOutlet !== FOX_NEWS) {
+			const n = (MEMBERS(o) ?? OUTLETS).filter((m) => m !== topOutlet).length;
+			return `${COUNT_WORDS[n] ?? n} other ${o === "all outlets" ? "" : POOL_SHORT[o] + " "}outlets combined`;
+		}
+		return o === "all outlets" && allOutlets ? allOutlets : (POOL_NAME[o] ?? o);
+	};
 	const fullData =
 		source === "pairs" ? pairData : source === "cast" ? castData : gapData;
 	// A check, shown only with ?checks in the address (utils/checks.svelte.js):
@@ -134,10 +143,19 @@
 	$effect(() => {
 		chosen = start;
 	});
+	// the outlet on top (the right of the axis): Fox, unless the reader picks
+	// another in the title's menu
+	let chosenTop = $state(FOX_NEWS);
+	let topOutlet = $derived(picker ? chosenTop : FOX_NEWS);
+	// an outlet can't be set against itself: picking the compared outlet for
+	// the top hands the menu back to the default
+	$effect(() => {
+		if (chosen === topOutlet) chosen = untrack(() => (start === topOutlet ? ALL : start));
+	});
 	let against = $derived(picker ? chosen : start);
 	let them = $derived(against === ALL ? "other outlets" : (POOL_LABEL[against] ?? against));
-	const topName = "Fox News";
-	const topShort = "Fox";
+	let topName = $derived(topOutlet);
+	let topShort = $derived(topOutlet === FOX_NEWS ? "Fox" : (SHORT_NAMES[topOutlet] ?? topOutlet));
 	// the Doc types A’ja with a curly apostrophe, the data with a straight one
 	const key = (name) => name.toLowerCase().replace(/[’‘]/g, "'");
 	let placedSet = $derived(placed === null ? null : new Set(placed.map(key)));
@@ -160,12 +178,15 @@
 	const isPlaced = (name) => placedShown === null || placedShown.has(key(name));
 
 	// both numbers are already cut to the shared window
+	const foxShare = (person) => ({ share: person.fox, n: person.foxN ?? 0 });
 	function pressShare(person) {
+		if (against === FOX_NEWS) return foxShare(person);
 		if (!POOLED.includes(against)) return person.byOutlet?.[against];
-		if (person.byOutlet?.[against]) return person.byOutlet[against];
+		if (topOutlet === FOX_NEWS && person.byOutlet?.[against]) return person.byOutlet[against];
 		let hits = 0,
 			total = 0;
 		for (const outlet of MEMBERS(against) ?? OUTLETS) {
+			if (outlet === topOutlet) continue;
 			const stat = person.byOutlet?.[outlet];
 			if (!stat || !data.totals?.[outlet]) continue;
 			hits += stat.n;
@@ -173,8 +194,9 @@
 		}
 		return total ? { share: hits / total, n: hits } : null;
 	}
-	// the top side's share: Fox's own
-	const topShare = (person) => ({ share: person.fox, n: person.foxN ?? 0 });
+	// the top side's share: Fox's own, or the outlet picked in the title
+	const topShare = (person) =>
+		topOutlet === FOX_NEWS ? foxShare(person) : person.byOutlet?.[topOutlet];
 
 	// k× Fox -> k − 1, k× theirs -> −(k − 1): uniform either way
 	let people = $derived(
@@ -182,7 +204,7 @@
 			.filter((person) => source !== "players" || !HIDDEN.has(person.name))
 			.filter((person) => (person.foxN ?? 0) >= minFox)
 			.map((person) => ({ ...person, them: pressShare(person), top: topShare(person) }))
-			.filter((person) => person.them && person.top.share + person.them.share > 0)
+			.filter((person) => person.them && person.top && person.top.share + person.them.share > 0)
 			.map((person) => ({
 				...person,
 				times: Math.max(
@@ -206,6 +228,27 @@
 	let outlets = $derived(
 		OUTLETS.filter((o) => data.people.some((p) => p.byOutlet?.[o]))
 	);
+	// the title's menu: Fox, then every outlet; the "Compared with" menu: the
+	// pools, then Fox (when it isn't on top) and the outlets, less the one on top
+	let topOptions = $derived([FOX_NEWS, ...outlets]);
+	let againstOptions = $derived([
+		...AGGREGATES,
+		...(topOutlet === FOX_NEWS ? [] : [FOX_NEWS]),
+		...outlets.filter((o) => o !== topOutlet)
+	]);
+	// the title split around "Fox News", where the menu goes; a possessive
+	// after the name ("Fox News’ attention") goes into the menu, fitted to each outlet
+	let headingParts = $derived.by(() => {
+		const text = or(heading, HEADING);
+		const at = text.indexOf(FOX_NEWS);
+		if (at < 0) return null;
+		const rest = text.slice(at + FOX_NEWS.length);
+		const owns = (rest.match(/^[’']s?/) ?? [""])[0];
+		return [text.slice(0, at), owns, rest.slice(owns.length)];
+	});
+	// "Fox News’", "New York Times’", "CBS’s", "USA Today’s"
+	const possessive = (name) =>
+		/(?:news|times)$/i.test(name) ? `${name}’` : `${name}’s`;
 
 	const slugOf = (name) =>
 		name
@@ -491,12 +534,23 @@
 		style:--axis-width={narrow ? null : `${axisWidth}%`}
 	>
 		<p class="kicker">on the web</p>
-		<p class="heading">{or(heading, HEADING)}</p>
+		<!-- a div, not a p: the menu inside renders block elements -->
+		<div class="heading">
+			{#if picker && headingParts}{headingParts[0]}<span class="top-pick"
+					><LogoSelect
+						options={topOptions}
+						bind:value={chosenTop}
+						logoOf={(o) => LOGO[o] ?? null}
+						shownAs={(o) => (headingParts[1] ? possessive(o) : o)}
+						label="Outlet"
+					/></span
+				>{headingParts[2]}{:else}{or(heading, HEADING)}{/if}
+		</div>
 		<!-- a div, not a p: the menu inside renders block elements -->
 		<div class="subheading" class:off={!picker} inert={!picker}>
 			<span>{or(comparedWith, "Compared with")}</span>
 			<LogoSelect
-				options={[...AGGREGATES, ...outlets]}
+				options={againstOptions}
 				bind:value={chosen}
 				logoOf={(o) => LOGO[o] ?? null}
 				nameOf={againstName}
@@ -529,7 +583,7 @@
 			width={WIDTH}
 			{height}
 			role="img"
-			aria-label="Whether Fox News or {against} gives each player a larger share of its WNBA headlines"
+			aria-label="Whether {topName} or {against} gives each player a larger share of its WNBA headlines"
 		>
 			<!-- the Fox half: from the equal line to the end of the axis -->
 			<rect class="fox-half" x={x(0)} y="28" width={NAMES + PLOT - x(0)} height={height - 82} />
@@ -791,7 +845,7 @@
 			<strong>{tooltip.person.name}</strong>
 			<div>
 				<span class="swatch" style="background:{FOX}"></span>
-				{pct(tooltip.person.top.share)} of Fox's WNBA headlines
+				{pct(tooltip.person.top.share)} of {topShort}'s WNBA headlines
 				<!-- the raw count beside every share -->
 				<span class="count">({tooltip.person.top.n.toLocaleString()})</span>
 			</div>
@@ -802,7 +856,7 @@
 					: them + "'s"}
 				<span class="count">({tooltip.person.them.n.toLocaleString()})</span>
 			</div>
-			{#if tooltip.person.ex}
+			{#if tooltip.person.ex && topOutlet === FOX_NEWS}
 				<p class="ex">“{tooltip.person.ex.headline}” <span class="count">Fox, {tooltip.person.ex.date.slice(0, 4)}</span></p>
 			{/if}
 		</div>
@@ -932,6 +986,51 @@
 	}
 	.subheading :global(.logo-select .current::after) {
 		right: 0;
+	}
+	/* the title's menu: the outlet in the line, underlined like the one below */
+	.top-pick {
+		display: inline-block;
+		vertical-align: baseline;
+	}
+	.top-pick :global(.logo-select) {
+		width: auto;
+	}
+	.top-pick :global(.logo-select .current) {
+		display: inline-flex;
+		min-width: 0;
+		height: auto;
+		padding: 0 22px 2px 0;
+		line-height: inherit;
+		letter-spacing: inherit;
+		border: 0;
+		border-bottom: 2px solid currentColor;
+		border-radius: 0;
+		background: transparent;
+		font: inherit;
+		color: inherit;
+	}
+	.top-pick :global(.logo-select .current::after) {
+		right: 0;
+	}
+	/* the open list reads like the "Compared with" one, not like the title */
+	.top-pick :global(.logo-select .menu) {
+		font-family: var(--font-graphic);
+		font-size: 15px;
+		font-weight: 400;
+		font-style: normal;
+		letter-spacing: normal;
+		line-height: normal;
+		text-transform: none;
+		text-align: left;
+		/* as wide as its longest name, not the title's button */
+		width: max-content;
+	}
+	/* the name alone in the title; the list keeps its logos */
+	.top-pick :global(.logo-select .current img) {
+		display: none;
+	}
+	.top-pick :global(.logo-select .current .text) {
+		overflow: visible;
 	}
 	@media (max-width: 640px) {
 		.titles {

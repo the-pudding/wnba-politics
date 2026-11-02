@@ -22,8 +22,17 @@ TOPIC_TERMS = {
     "lgbtq": ["LGBTQ / sexuality", "transgender / trans"],
     "fouls": ["fouls"],
 }
-# words a topic lights that its lists don't catch
-EXTRA = {"lgbtq": ["trans"]}
+# words a topic lights that its lists don't catch (the lists' race terms are
+# phrases, "Black women"; a chyron word is one word), and words it leaves out
+EXTRA = {"lgbtq": ["trans"], "polrace": ["black", "white", "privilege"]}
+LEAVE_OUT = {"polrace": ["anthem"]}
+# a word's example read off the broadcast itself, where the archive's text
+# recognition caught only scraps of the screen (checked against the clip)
+EXAMPLE_FIX = {
+    # Fox, My View with Lara Trump, Aug. 23, 2026: a full-screen quote card, then the banner
+    "gabby": "“I would welcome a trans athlete on my team or against my team” —Gabby Williams / "
+             "ENES KANTER FREEDOM CHALLENGES TRANS AGENDA",
+}
 
 # ---------------------------------------------------------------------------
 
@@ -38,13 +47,16 @@ totals = [sum(years["totals"][y][i] for y in years["years"]) for i in range(3)]
 terms = []
 for t in chy["ternary"]:
     ex_ch = channels.index(t["ex_ch"]) if t["ex_ch"] in channels else -1
-    terms.append([t["term"], *t["counts"], ex_ch, re.sub(r"\s+", " ", t["ex"]).strip()])
+    ex = EXAMPLE_FIX.get(t["term"], re.sub(r"\s+", " ", t["ex"]).strip())
+    terms.append([t["term"], *t["counts"], ex_ch, ex])
 
 rows = list(csv.DictReader((HERE / "data/topic_terms.csv").open()))
 topics = {}
 for key, cats in TOPIC_TERMS.items():
     rx = re.compile("|".join(r["term"] for r in rows if r["topic"] in cats), re.I)
-    topics[key] = [t["term"] for t in chy["ternary"] if rx.search(t["term"]) or t["term"] in EXTRA.get(key, [])]
+    topics[key] = [t["term"] for t in chy["ternary"]
+                   if (rx.search(t["term"]) or t["term"] in EXTRA.get(key, []))
+                   and t["term"] not in LEAVE_OUT.get(key, [])]
 
 OUT.write_text(json.dumps({
     "channels": channels,

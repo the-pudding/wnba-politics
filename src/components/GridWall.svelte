@@ -31,6 +31,9 @@
 	const LOGO_CREDIT = "ESPN’s Ryan Ruocco";
 	const LOGO_CALL_SHORT = "From the logo!";
 	const LOGO_LINK = "https://x.com/IndianaFever/status/1919143866818515093";
+	// the text under the title, over the byline; the Doc's subhed sets it ("none" leaves it out)
+	const SUBHED =
+		"By almost any measure, the WNBA just had its best season ever. On Fox News, they told a very different story. We analyzed thousands of articles and TV clips to show how the right politicized women’s basketball, and why it matters.";
 	// once the wall comes in, the title drops down onto it, in red, for this many steps:
 	// how big it gets there (share of its size on the title page) and how far from the top
 	const TITLE_STEPS = 1;
@@ -43,6 +46,10 @@
 	const callLink = copy.meta?.logoLink || LOGO_LINK;
 	const CALL_SPOT = "upper";
 	const callSpot = String(copy.meta?.logoCallSpot || CALL_SPOT).trim().toLowerCase();
+	const subhed = String(copy.meta?.subhed || SUBHED).trim();
+	const showSubhed = subhed.toLowerCase() !== "none";
+	// a dash stays on the line with the word before it
+	const subhedText = subhed.replace(/\s*—/g, "\u2060—");
 
 	// sound: off until the reader turns it on (one switch for the whole page, see
 	// utils/sound.svelte.js). Turning it on from the title page plays the call.
@@ -879,6 +886,7 @@
             class:off={shownIndex !== undefined && shownIndex >= TITLE_STEPS}
             class:title-down={titleOnWall}
             class:call-in-byline={callStyle === "byline"}
+            class:has-subhed={showSubhed}
         >
             <h1 aria-label="Why is Fox News obsessed with the WNBA?">
                 <span class="hedLeft" aria-hidden="true"><span class="hed-words" bind:this={hedLeftEl} style:transform={titleMoves.left}>{copy.meta.hedLeft}</span></span>
@@ -912,6 +920,7 @@
                 </p>
             {/if}
             <div class="byline">
+                {#if showSubhed}<p class="subhed">{@html subhedText}</p>{/if}
                 <p>
                     {#if callStyle === "byline"}
                         <span class="call-line">“{@html callText}” <span class="call-credit">— {@html callCredit}</span></span>
@@ -1741,6 +1750,52 @@
         to {
             opacity: 1;
             transform: scale(1) rotate(-2deg);
+        }
+    }
+    /* the subhed sits over the byline; the image gives up room for it */
+    .has-subhed .byline {
+        flex-direction: column;
+    }
+    /* as wide as the title above it */
+    .byline .subhed {
+        max-width: 45rem;
+        margin: 0 auto 0.75rem;
+        padding: 0 1rem;
+        text-align: center;
+        font-family: var(--font-serif);
+        font-size: 1.15rem;
+        line-height: 1.45;
+        color: var(--color-gray-700, #555);
+        text-wrap: pretty;
+    }
+    .has-subhed h1 {
+        --img-h: 60svh;
+    }
+    /* desktop: the title centres in the room above the subhed and byline */
+    @media (min-width: 861px) {
+        .has-subhed h1 {
+            height: calc(100% - 8rem);
+        }
+    }
+    /* smaller screens centre the title in the header: keep it above the subhed */
+    @media (max-width: 860px) {
+        .has-subhed h1 {
+            --img-h: 58svh;
+        }
+        .intro-wall-header.has-subhed {
+            padding-bottom: 8rem;
+            box-sizing: border-box;
+        }
+    }
+    @media (max-width: 550px) {
+        .has-subhed h1 {
+            --img-h: 40svh;
+        }
+        .intro-wall-header.has-subhed {
+            padding-bottom: 11rem;
+        }
+        .byline .subhed {
+            font-size: 1.05rem;
         }
     }
     /* the call over the byline takes a line's room: the image gives it up */

@@ -129,8 +129,8 @@
   "Becky Hammon",
   "Cheryl Reeve"
  ],
- "slug_pattern": "(?<![a-z0-9])(?:golden-state-valkyries|courtney-vandersloot|dijonai-carrington|los-angeles-sparks|washington-mystics|sophie-cunningham|napheesa-collier|arike-ogunbowale|new-york-liberty|phoenix-mercury|connecticut-sun|breanna-stewart|cathy-engelbert|brittney-griner|kelsey-mitchell|sabrina-ionescu|chennedy-carter|stephanie-white|candace-parker|paige-bueckers|dewanna-bonner|las-vegas-aces|kahleah-copper|nneka-ogwumike|minnesota-lynx|natasha-cloud|portland-fire|seattle-storm|atlanta-dream|caitlin-clark|marina-mabrey|cameron-brink|aliyah-boston|alyssa-thomas|toronto-tempo|jonquel-jones|indiana-fever|diana-taurasi|dallas-wings|chelsea-gray|cheryl-reeve|becky-hammon|vandersloot|jewell-loyd|angel-reese|chicago-sky|kelsey-plum|lexie-hull|ogunbowale|aja-wilson|carrington|valkyries|engelbert|ogwumike|sue-bird|bueckers|mystics|ionescu|taurasi|griner|wnba|lynx)(?![a-z0-9])",
+ "slug_pattern": "(?<![a-z0-9])(?:golden-state-valkyries|courtney-vandersloot|washington-mystics|los-angeles-sparks|dijonai-carrington|sophie-cunningham|arike-ogunbowale|new-york-liberty|napheesa-collier|brittney-griner|stephanie-white|connecticut-sun|cathy-engelbert|chennedy-carter|phoenix-mercury|kelsey-mitchell|breanna-stewart|sabrina-ionescu|kahleah-copper|paige-bueckers|minnesota-lynx|las-vegas-aces|dewanna-bonner|nneka-ogwumike|candace-parker|natasha-cloud|jonquel-jones|alyssa-thomas|portland-fire|marina-mabrey|toronto-tempo|atlanta-dream|seattle-storm|diana-taurasi|indiana-fever|caitlin-clark|aliyah-boston|cameron-brink|dallas-wings|becky-hammon|cheryl-reeve|chelsea-gray|chicago-sky|angel-reese|kelsey-plum|jewell-loyd|vandersloot|lexie-hull|ogunbowale|aja-wilson|engelbert|valkyries|bueckers|ogwumike|sue-bird|mystics|taurasi|ionescu|griner|wnba|lynx)(?![a-z0-9])",
  "early_words": 100,
  "start": "2019-01-01",
- "end": "2026-10-20"
+ "end": "2026-11-01"
 }

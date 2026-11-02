@@ -49,6 +49,9 @@
 
 	// the triangle's title when the Doc gives none (the dot plot's own)
 	const HEADING = "The words used in television chyrons";
+	// empty scrolling after the dot plot's last card, before the faces fly to
+	// the triangle: room to try the menus with nothing over the chart (in vh)
+	const EXPLORE_ROOM = 150;
 
 	// --- the dot plot's steps -----------------------------------------------
 	const GAP = $derived(stageSteps(steps));
@@ -658,6 +661,9 @@
 				</div>
 			{/each}
 		</Scrolly>
+
+		<!-- a pause with no card, the dot plot's menus live -->
+		<div style:height="{EXPLORE_ROOM}vh"></div>
 
 		<!-- scrolling through it carries the faces to the triangle -->
 		<div class="bridge" bind:this={bridgeEl}>

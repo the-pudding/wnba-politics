@@ -13,6 +13,12 @@ Aliyah Boston,Just Women's Sports,51,0.1643
 Aliyah Boston,The Athletic,43,0.1992
 Aliyah Boston,USA Today,13,0.1256
 Aliyah Boston,Yahoo Sports,704,0.0883
+Allisha Gray,CBS Sports,28,0.2011
+Allisha Gray,ESPN,34,0.114
+Allisha Gray,Just Women's Sports,20,0.1037
+Allisha Gray,The Athletic,17,0.1497
+Allisha Gray,USA Today,26,0.0981
+Allisha Gray,Yahoo Sports,81,0.1109
 Alyssa Thomas,CBS Sports,48,0.1365
 Alyssa Thomas,ESPN,57,0.1153
 Alyssa Thomas,Fox News,24,0.0033
@@ -22,7 +28,7 @@ Alyssa Thomas,USA Today,23,0.0764
 Alyssa Thomas,Yahoo Sports,210,-0.0015
 Angel Reese,CBS Sports,136,0.1152
 Angel Reese,ESPN,97,0.1014
-Angel Reese,Fox News,589,0.0037
+Angel Reese,Fox News,600,0.0028
 Angel Reese,Just Women's Sports,119,0.1289
 Angel Reese,The Athletic,129,0.0904
 Angel Reese,USA Today,93,0.1103
@@ -41,14 +47,14 @@ Breanna Stewart,USA Today,40,0.1011
 Breanna Stewart,Yahoo Sports,591,0.1136
 Brittney Griner,CBS Sports,85,0.0531
 Brittney Griner,ESPN,189,0.0648
-Brittney Griner,Fox News,400,-0.0497
+Brittney Griner,Fox News,394,-0.0484
 Brittney Griner,Just Women's Sports,117,0.0815
 Brittney Griner,The Athletic,82,0.0762
 Brittney Griner,USA Today,121,0.0428
 Brittney Griner,Yahoo Sports,933,0.0239
 Caitlin Clark,CBS Sports,399,0.1132
 Caitlin Clark,ESPN,288,0.0866
-Caitlin Clark,Fox News,1727,0.053
+Caitlin Clark,Fox News,1729,0.0531
 Caitlin Clark,Just Women's Sports,258,0.1463
 Caitlin Clark,The Athletic,481,0.1289
 Caitlin Clark,USA Today,306,0.0855
@@ -94,13 +100,23 @@ Diana Taurasi,Just Women's Sports,51,0.137
 Diana Taurasi,The Athletic,63,0.2107
 Diana Taurasi,USA Today,30,0.114
 Diana Taurasi,Yahoo Sports,196,0.1576
+Gabby Williams,CBS Sports,22,0.0847
+Gabby Williams,ESPN,59,0.0628
+Gabby Williams,Fox News,23,0.0176
+Gabby Williams,Just Women's Sports,34,0.0952
+Gabby Williams,USA Today,35,0.0785
+Gabby Williams,Yahoo Sports,79,0.1055
+Jackie Young,CBS Sports,13,0.216
+Jackie Young,ESPN,15,0.1303
+Jackie Young,Just Women's Sports,17,0.1642
+Jackie Young,Yahoo Sports,48,0.1897
 Jewell Loyd,CBS Sports,17,0.1385
 Jewell Loyd,ESPN,28,0.142
 Jewell Loyd,USA Today,17,0.1139
 Jewell Loyd,Yahoo Sports,24,0.1354
 Jonquel Jones,CBS Sports,43,0.1948
 Jonquel Jones,ESPN,47,0.0831
-Jonquel Jones,Fox News,17,0.0337
+Jonquel Jones,Fox News,16,0.0347
 Jonquel Jones,Just Women's Sports,39,0.1646
 Jonquel Jones,The Athletic,26,0.185
 Jonquel Jones,USA Today,24,0.1175
@@ -122,7 +138,7 @@ Kelsey Plum,Just Women's Sports,49,0.0902
 Kelsey Plum,The Athletic,30,0.1638
 Kelsey Plum,USA Today,22,0.0992
 Kelsey Plum,Yahoo Sports,509,0.0745
-Lexie Hull,Fox News,19,0.0932
+Lexie Hull,Fox News,21,0.0772
 Lexie Hull,Yahoo Sports,228,0.1033
 Marina Mabrey,ESPN,16,0.0394
 Marina Mabrey,Yahoo Sports,78,0.0698
@@ -146,11 +162,17 @@ Nneka Ogwumike,USA Today,27,0.1063
 Nneka Ogwumike,Yahoo Sports,66,0.0999
 Paige Bueckers,CBS Sports,88,0.1027
 Paige Bueckers,ESPN,76,0.0916
-Paige Bueckers,Fox News,101,0.1032
+Paige Bueckers,Fox News,100,0.1034
 Paige Bueckers,Just Women's Sports,121,0.1021
 Paige Bueckers,The Athletic,150,0.1468
 Paige Bueckers,USA Today,44,0.0555
 Paige Bueckers,Yahoo Sports,1980,0.1094
+Rhyne Howard,CBS Sports,27,0.1276
+Rhyne Howard,ESPN,32,0.0747
+Rhyne Howard,Just Women's Sports,30,0.1895
+Rhyne Howard,The Athletic,12,0.146
+Rhyne Howard,USA Today,25,0.0762
+Rhyne Howard,Yahoo Sports,66,0.1404
 Sabrina Ionescu,CBS Sports,61,0.1643
 Sabrina Ionescu,ESPN,76,0.1017
 Sabrina Ionescu,Fox News,34,0.1034
@@ -160,7 +182,7 @@ Sabrina Ionescu,USA Today,30,0.0922
 Sabrina Ionescu,Yahoo Sports,649,0.1402
 Sophie Cunningham,CBS Sports,26,-0.0484
 Sophie Cunningham,ESPN,26,0.0372
-Sophie Cunningham,Fox News,274,0.0339
+Sophie Cunningham,Fox News,277,0.0334
 Sophie Cunningham,Just Women's Sports,26,0.0694
 Sophie Cunningham,The Athletic,21,-0.0359
 Sophie Cunningham,USA Today,34,0.0361
@@ -172,3 +194,9 @@ Sue Bird,Just Women's Sports,54,0.191
 Sue Bird,The Athletic,28,0.2316
 Sue Bird,USA Today,29,0.2024
 Sue Bird,Yahoo Sports,252,0.1809
+Tina Charles,CBS Sports,19,0.1888
+Tina Charles,ESPN,30,0.1102
+Tina Charles,Fox News,16,-0.0223
+Tina Charles,Just Women's Sports,20,0.1576
+Tina Charles,USA Today,16,0.1429
+Tina Charles,Yahoo Sports,38,0.1531
