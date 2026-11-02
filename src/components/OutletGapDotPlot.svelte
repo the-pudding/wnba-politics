@@ -533,15 +533,7 @@
 		<p class="kicker">on the web</p>
 		<!-- a div, not a p: the menu inside renders block elements -->
 		<div class="heading">
-			{#if picker && headingParts}{headingParts[0]}<span class="top-pick"
-					><LogoSelect
-						options={topOptions}
-						bind:value={chosenTop}
-						logoOf={(o) => LOGO[o] ?? null}
-						shownAs={(o) => (headingParts[1] ? possessive(o) : o)}
-						label="Outlet"
-					/></span
-				>{headingParts[2]}{:else}{or(heading, HEADING)}{/if}
+			{or(heading, HEADING)}
 		</div>
 		<!-- a div, not a p: the menu inside renders block elements -->
 		<div class="subheading" class:off={!picker} inert={!picker}>

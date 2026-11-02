@@ -957,7 +957,7 @@
                     in:wipeLabel={{ delay: KICKER_OUT, duration: KICKER_IN }}
                     out:wipeLabel={{ duration: KICKER_OUT }}
                 >
-                    <span class="live-dot" aria-hidden="true"></span>Now Playing {kicker}
+                    <span class="live-dot" aria-hidden="true"></span>{kicker}
                 </p>
             {/key}
         </div>

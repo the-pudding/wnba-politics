@@ -70,6 +70,10 @@
 		range = "",
 		// the tooltip's lines (see WordBars); ratioUnit: for its size
 		hoverCounts = "",
+		hoverRatio = "",
+		hoverEven = "",
+		hoverStrength = "",
+		ratioUnit = "",
 		// srText: the chart described for screen readers (a step's own srText
 		// describes the chart at that step)
 		srText = "",

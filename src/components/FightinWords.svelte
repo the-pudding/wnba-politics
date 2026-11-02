@@ -855,28 +855,19 @@
 			// only Fox's head carries its wordmark; the other side is named in words
 			topLogo: PILL_LOGO[top] ?? "fox-news.svg",
 			// the heads at the bars' outer edges, saying what each side means
-			topHead: or(foxHead, "More distinctive to Fox News"),
+			topHead: paired
+				? `More distinctive to ${outletName(top)}`
+				: or(foxHead, "More distinctive to Fox News"),
 			bottomHead:
 				against === ALL_OUTLETS
 					? or(othersHead, "More distinctive to other outlets")
-					: (() => {
-							const n = AGGREGATES.includes(against)
+					: `More distinctive to ${
+							AGGREGATES.includes(against)
 								? `the ${against}`
 								: outletName(against)
-						)
+						}`
 		}
 	);
-	// "Fox News’", "New York Times’", "CBS’s", "USA Today’s"
-	const possessive = (name) =>
-		/(?:news|times)$/i.test(name) ? `${name}’` : `${name}’s`;
-	// "ESPN uses more", "the news outlets use more"
-	function usesMore(n) {
-		return (
-			n.charAt(0).toUpperCase() +
-			n.slice(1) +
-			(/s$/.test(n) && !/news$/i.test(n) ? " use more" : " uses more")
-		);
-	}
 	// a bar's example on hover, from the same stores as the scatter's card
 	function barExample(word, z = 0) {
 		const mode = bodyMode ? bodyKey : "headlines";
@@ -994,32 +985,13 @@
 		<!-- the title, and who Fox is compared with, as on the player chart -->
 		<div class="head">
 			<p class="kicker">on the web</p>
-			<p class="heading">
-				{#if bodyMode && player === ALL}{fillIn(
+			<!-- a div, not a p: the title's menu renders block elements -->
+			<div class="heading">
+				{#if bodyMode && player === ALL}
+					{fillIn(
 						or(headingText, "The phrases that define Fox News’ coverage"),
 						{ unit: unitName(gram) }
-					)}
-					{@const at = title.indexOf(FOX_NEWS)}
-					<!-- a possessive after the name ("Fox News’ coverage") goes into the menu, fitted to each outlet -->
-					{@const owns = (title
-						.slice(at + FOX_NEWS.length)
-						.match(/^(?:[’']s?)/) ?? [""])[0]}
-					<!-- "Fox News" in the title is a menu: any outlet can take Fox's side -->
-					{#if at >= 0 && live && college === "with"}{title.slice(0, at)}<span
-							class="top-pick"
-							><LogoSelect
-								options={[
-									FOX_NEWS,
-									...articleOutlets.filter((o) => COMPARISON.includes(o))
-								]}
-								bind:value={chosenTop}
-								logoOf={(o) => PILL_LOGO[o] ?? null}
-								shownAs={(o) => (owns ? possessive(o) : o)}
-								label="Outlet"
-							/></span
-						>{title.slice(
-							at + FOX_NEWS.length + owns.length
-						)}{:else}{title}{/if}{:else}{gram === 3
+					)}{:else}{gram === 3
 						? "Three-word phrases"
 						: gram === 2
 							? "Phrases"
@@ -1206,6 +1178,9 @@
 			{next}
 			{range}
 			{hoverCounts}
+			{hoverRatio}
+			{hoverEven}
+			{hoverStrength}
 			totals={!source && sample ? { top: sample.fox, bottom: sample.other } : null}
 			example={barExample}
 			onhover={() => {
@@ -1526,51 +1501,6 @@
 	}
 	.subheading :global(.logo-select .current::after) {
 		right: 0;
-	}
-	/* the title's menu: the outlet in the line, underlined like the one below */
-	.top-pick {
-		display: inline-block;
-		vertical-align: baseline;
-	}
-	.top-pick :global(.logo-select) {
-		width: auto;
-	}
-	.top-pick :global(.logo-select .current) {
-		display: inline-flex;
-		min-width: 0;
-		height: auto;
-		padding: 0 22px 2px 0;
-		border: 0;
-		border-bottom: 2px solid currentColor;
-		border-radius: 0;
-		background: transparent;
-		font: inherit;
-		line-height: inherit;
-		letter-spacing: inherit;
-		color: inherit;
-	}
-	.top-pick :global(.logo-select .current::after) {
-		right: 0;
-	}
-	/* the open list reads like the "Compared with" one, not like the title */
-	.top-pick :global(.logo-select .menu) {
-		font-family: var(--font-graphic);
-		font-size: 15px;
-		font-weight: 400;
-		font-style: normal;
-		letter-spacing: normal;
-		line-height: normal;
-		text-transform: none;
-		text-align: left;
-		/* as wide as its longest name, not the title's button */
-		width: max-content;
-	}
-	/* the name alone in the title; the list keeps its logos */
-	.top-pick :global(.logo-select .current img) {
-		display: none;
-	}
-	.top-pick :global(.logo-select .current .text) {
-		overflow: visible;
 	}
 	@media (max-width: 640px) {
 		.heading {

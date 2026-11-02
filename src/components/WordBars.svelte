@@ -45,6 +45,14 @@
 		next = "",
 		range = "",
 		hoverCounts = "",
+		// the bold line under the word: hoverRatio ({times}, also {who} {verb}
+		// {unit}), hoverEven (about the same rate); ratioUnit, what the rate is
+		// per ("for its size")
+		hoverRatio = "",
+		hoverEven = "",
+		ratioUnit = "",
+		// hoverStrength: the three words for how sure a score is, least sure first, by commas
+		hoverStrength = "",
 		// each side's total ({ top, bottom }), so the tooltip can show a word's
 		// uses as a percentage; without it, source.counts ({ clark, others })
 		totals = null
