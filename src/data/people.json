@@ -155,6 +155,13 @@
 		"bio": "Lexie Lauren Hull is an American model and professional basketball player for the Indiana Fever of the Women's National Basketball Association (WNBA) and Rose of Unrivaled. She played college basketball for the Stanford Cardinal, with whom ",
 		"slug": "lexie-hull"
 	},
+	"Gabby Williams": {
+		"group": "players",
+		"rx": "gabby williams",
+		"face": "gabby-williams.avif",
+		"bio": "Gabrielle Lisa Williams is an American-French professional basketball player for the Golden State Valkyries of the Women's National Basketball Association (WNBA). She was selected fourth overall by the Chicago Sky in the 2018 WNBA draft.",
+		"slug": "gabby-williams"
+	},
 	"DeWanna Bonner": {
 		"group": "players",
 		"rx": "dewanna|(?<!wales )\\bbonner\\b",
@@ -449,6 +456,38 @@
 		"face": "kim-mulkey.avif",
 		"bio": "Kimberly Duane Mulkey is an American college basketball coach and former player. Since 2021, she has been the head coach for Louisiana State University's LSU women's basketball team. A Pan-American gold medalist in 1983 and Olympic gold med",
 		"slug": "kim-mulkey",
+		"network": false
+	},
+	"Rhyne Howard": {
+		"group": "players",
+		"rx": "rhyne howard",
+		"face": "rhyne-howard.avif",
+		"bio": "Rhyne Howard is an American professional basketball player for the Atlanta Dream of the Women's National Basketball Association (WNBA). She was the first overall pick in the 2022 WNBA draft.",
+		"slug": "rhyne-howard",
+		"network": false
+	},
+	"Jackie Young": {
+		"group": "players",
+		"rx": "jackie young",
+		"face": "jackie-young.avif",
+		"bio": "Jacqueline Young is an American professional basketball player for the Las Vegas Aces of the Women's National Basketball Association (WNBA). She was the first overall pick in the 2019 WNBA draft.",
+		"slug": "jackie-young",
+		"network": false
+	},
+	"Tina Charles": {
+		"group": "players",
+		"rx": "tina charles",
+		"face": "tina-charles.avif",
+		"bio": "Tina Charles is an American professional basketball player who has played for the Connecticut Sun of the Women's National Basketball Association (WNBA). She was the first overall pick in the 2010 WNBA draft and the league's 2012 MVP.",
+		"slug": "tina-charles",
+		"network": false
+	},
+	"Allisha Gray": {
+		"group": "players",
+		"rx": "allisha gray",
+		"face": "allisha-gray.avif",
+		"bio": "Allisha Gray is an American professional basketball player for the Atlanta Dream of the Women's National Basketball Association (WNBA). She was the 2017 WNBA Rookie of the Year.",
+		"slug": "allisha-gray",
 		"network": false
 	}
 }

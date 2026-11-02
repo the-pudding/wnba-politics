@@ -107,11 +107,14 @@
 	});
 	const TOP = 34;
 	const BOTTOM = 10;
+	// ROW_SQUEEZE: thinner rows, only for a step whose highlighted words
+	// can't all fit on a short screen otherwise
 	const ROW_MIN = 26,
-		ROW_MAX = 44;
+		ROW_MAX = 44,
+		ROW_SQUEEZE = 20;
 	let ROW = $derived(
 		fill && avail > 0
-			? Math.max(ROW_MIN, Math.min(ROW_MAX, (avail - TOP - BOTTOM) / viewRows))
+			? Math.max(viewRows > fitRows ? ROW_SQUEEZE : ROW_MIN, Math.min(ROW_MAX, (avail - TOP - BOTTOM) / viewRows))
 			: ROW_MIN
 	);
 	let height = $derived(TOP + rows * ROW + BOTTOM);
@@ -126,14 +129,20 @@
 	// full width instead of closing up around an empty middle
 	let empty = $derived(!fox.length && !others.length);
 	// with room to spare the chart shows more words rather than taller bars:
-	// as many rows as fit at a comfortable height, up to a ceiling
+	// as many rows as fit at a comfortable height, up to a ceiling. On a short
+	// screen it shows fewer words, so the note under the bars stays on screen
 	const ROW_COMFY = 32,
-		TOP_MAX = 28;
-	let topN = $derived(
-		fill && avail > 0
-			? Math.max(top, Math.min(TOP_MAX, Math.floor((avail - TOP - BOTTOM) / ROW_COMFY)))
-			: top
+		TOP_MAX = 28,
+		TOP_MIN = 6;
+	// the most rows that fit at all, highlighted words included
+	let fitRows = $derived(
+		fill && avail > 0 ? Math.max(TOP_MIN, Math.floor((avail - TOP - BOTTOM) / ROW_MIN)) : Infinity
 	);
+	let topN = $derived.by(() => {
+		if (!fill || avail <= 0) return top;
+		const comfy = Math.floor((avail - TOP - BOTTOM) / ROW_COMFY);
+		return Math.max(TOP_MIN, Math.min(TOP_MAX, Math.max(comfy, Math.min(top, fitRows))));
+	});
 	let paged = $derived(more > topN);
 	let page = $state(0);
 	// the words ranked on each side, up to `more`, and how many pages they fill
@@ -170,10 +179,12 @@
 				...list.slice(0, more).slice(page * topN, page * topN + pins.keep),
 				...(sign ? pins[sign] : [])
 			];
-		const kept = list.slice(0, topN);
-		for (const p of list.slice(topN))
-			if (lit.has(p.word.toLowerCase())) kept.push(p);
-		return kept;
+		// highlighted words ranked lower join the bottom; on a short screen
+		// they take the place of the last unhighlighted ones
+		const isLit = (p) => lit.has(p.word.toLowerCase());
+		let keep = topN;
+		while (keep > 1 && keep + list.slice(keep).filter(isLit).length > fitRows) keep--;
+		return [...list.slice(0, keep), ...list.slice(keep).filter(isLit)];
 	}
 	// every page is a full page tall, so the chart does not jump
 	let rows = $derived(paged ? topN : Math.max(fox.length, others.length, 1));
@@ -295,6 +306,40 @@
 			: 0
 	);
 	const fmt = (z) => Math.abs(z).toFixed(1);
+	// the tooltip in plain words: how much more often one side uses the word for
+	// its size (its rate per article, headline or word about her), and how sure
+	// the score lets us be that the gap is not chance, at the usual 95%, 99% and
+	// 99.9% cut-offs
+	const STRENGTH_CUTS = [1.96, 3.29];
+	// the ratio needs this many uses on each side (one stray use makes "16×");
+	// a word only one side uses gets no ratio line
+	const MIN_RATIO_USES = 5;
+	const STRENGTH_WORDS = "could be chance, strong, very strong";
+	const strengthOf = (z) => {
+		const words = or(hoverStrength, STRENGTH_WORDS).split(",").map((w) => w.trim());
+		return words[STRENGTH_CUTS.filter((cut) => Math.abs(z) >= cut).length] ?? words[words.length - 1];
+	};
+	const capital = (name) => String(name).charAt(0).toUpperCase() + String(name).slice(1);
+	// "Others", "sports outlets", "other players" take "use"; "Fox", "ESPN" take "uses"
+	const verbOf = (name) => (/^others?\b|outlets$|players$/i.test(String(name).trim()) ? "use" : "uses");
+	function ratioOf(p) {
+		// the two sides' sizes: the main chart passes its article or headline
+		// counts; a player's chart has the words tied to her on each side
+		const sizes =
+			source?.sizes ?? (source?.counts ? { top: source.counts.clark, bottom: source.counts.others } : null);
+		if (!sizes?.top || !sizes?.bottom) return "";
+		const unit = sizes.unit ?? or(ratioUnit, "for its size");
+		const sayWho = (who) => ({ who: capital(who), verb: verbOf(who), unit });
+		if (Math.min(p.nf, p.no) < MIN_RATIO_USES) return "";
+		const topRate = p.nf / sizes.top;
+		const bottomRate = p.no / sizes.bottom;
+		const times = Math.max(topRate, bottomRate) / Math.min(topRate, bottomRate);
+		if (times < 1.1) return fillIn(or(hoverEven, "About as often"), { unit });
+		return fillIn(or(hoverRatio, "{times} as often"), {
+			...sayWho(topRate >= bottomRate ? topName : otherName),
+			times: (times < 10 ? times.toFixed(1) : Math.round(times).toLocaleString("en-US")) + "×"
+		});
+	}
 	// a word's count with thousands commas ("1,234"); anything not a number as it came
 	const count = (n) =>
 		n != null && n !== "" && Number.isFinite(+n) ? (+n).toLocaleString("en-US") : n;
@@ -399,14 +444,41 @@
 		if (start + MAX < sentence.length) cut = cut.replace(/\s\S*$/, "") + "…";
 		return [cut, m ? m.index - shift : undefined];
 	}
+	// the word in its example: in bold, with a rule in the side's colour under it
+	// a phrase ("nifty assist", "foul out") marks each of its words: the stored
+	// form is the first, and the others are found close by, before or after it
+	// ("fouled her out")
+	const NEAR = 60;
 	function markWord(sentence, word, form, color, at) {
 		const [cut, where] = excerpt(sentence, word, form, at);
 		const m = findWord(cut, wordRx(word, form), where);
 		if (!m) return escapeHtml(cut);
-		return escapeHtml(cut.slice(0, m.index)) +
-			`<mark style="background:${color}2e;box-shadow:inset 0 -2px 0 ${color}66;` +
-			`color:inherit;padding:0 1px;">${escapeHtml(m[0])}</mark>` +
-			escapeHtml(cut.slice(m.index + m[0].length));
+		const marks = [[m.index, m.index + m[0].length]];
+		for (const part of word.split(/\s+/).slice(1)) {
+			const from = Math.max(0, m.index - NEAR);
+			const near = nearestTo(cut.slice(from, m.index + m[0].length + NEAR), wordRx(part), m.index - from);
+			if (near) marks.push([from + near.index, from + near.index + near[0].length]);
+		}
+		marks.sort((a, b) => a[0] - b[0]);
+		let html = "", last = 0;
+		for (const [s, e] of marks) {
+			if (s < last) continue;
+			html += escapeHtml(cut.slice(last, s)) +
+				`<mark style="background:none;box-shadow:inset 0 -2px 0 ${color};font-weight:700;` +
+				`color:inherit;padding:0 1px;">${escapeHtml(cut.slice(s, e))}</mark>`;
+			last = e;
+		}
+		return html + escapeHtml(cut.slice(last));
+	}
+	// the match closest to a point in the text, not counting one at the point itself
+	function nearestTo(text, rx, point) {
+		const g = new RegExp(rx.source, rx.flags.includes("g") ? rx.flags : rx.flags + "g");
+		let best = null;
+		for (const m of text.matchAll(g)) {
+			if (m.index === point) continue;
+			if (!best || Math.abs(m.index - point) < Math.abs(best.index - point)) best = m;
+		}
+		return best;
 	}
 	let tip = $derived.by(() => {
 		if (!hovered) return null;
@@ -616,7 +688,8 @@
 				{/each}
 			{/each}
 		</svg>
-		<!-- always laid out, so the chart keeps its height; shown only when there are pages -->
+		<!-- always laid out where a chart can page, so it keeps its height; shown only when there are pages -->
+		{#if more > 0}
 		{@const showPager = paged && pages > 1 && pager}
 		<div class="pager" class:off={!showPager} aria-hidden={!showPager} bind:this={pagerEl}>
 			<button type="button" disabled={page === 0} onclick={() => (page -= 1)}>{or(previous, "← Previous")}</button>
@@ -625,9 +698,22 @@
 			>
 			<button type="button" disabled={page >= pages - 1} onclick={() => (page += 1)}>{or(next, "Next →")}</button>
 		</div>
+		{/if}
 
 		{#if tip}
 			{@const color = tip.sign > 0 ? FOX : OTHERS}
+			{@const ratio = ratioOf(tip.p)}
+			<!-- a "|" in the Doc's hover counts starts a new line -->
+			{@const countLines = fillIn(or(hoverCounts, "Uses: {top} {topCount} · {bottom} {bottomCount} | Distinctiveness: {score} ({strength})"), {
+				top: capital(topName),
+				bottom: capital(otherName),
+				topCount: count(tip.p.nf),
+				bottomCount: count(tip.p.no),
+				score: fmt(tip.p.z),
+				strength: strengthOf(tip.p.z)
+			})
+				.split(/\s*\|\s*/)
+				.filter((line) => line.trim())}
 			<div
 				class="tip-card"
 				bind:clientWidth={cardW}
@@ -637,6 +723,7 @@
 			>
 				<!-- the side's colour in a swatch and on the quote's rule; the words in ink -->
 				<span class="tip-head">{properCase(tip.p.word)}</span>
+				{#if ratio}<span class="tip-ratio">{ratio}</span>{/if}
 				<span class="tip-count"
 					>{fillIn(or(hoverCounts, "{top} {topCount} · {bottom} {bottomCount} · Score {score}"), {
 						top: topName,
@@ -844,6 +931,13 @@
 		font-size: 18px;
 		font: var(--tip-title);
 	}
+	.tip-ratio {
+		display: block;
+		font: var(--tip-small);
+		font-weight: 700;
+		color: var(--color-fg);
+		margin: 2px 0 0;
+	}
 	.tip-card .swatch {
 		display: inline-block;
 		width: 10px;
@@ -863,6 +957,9 @@
 		font: var(--tip-small);
 		color: var(--wnba-tan-dark);
 		margin: 3px 0 0;
+	}
+	.tip-count-line {
+		display: block;
 	}
 	.tip-card p {
 		margin: 9px 0 0;

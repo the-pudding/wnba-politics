@@ -35,6 +35,7 @@
 	const FOX = "var(--color-fox-navy)"; // Fox's chart colour, set once in variables.css
 	const OTHER = "var(--color-outlets)"; // the other outlets' purple
 	const SIGNIFICANT = 1.96;
+	const MOST_USES = 1000; // the right end of the "Minimum uses" check slider
 	const SANS = "var(--font-chart)";
 
 	// crude greedy wrap: SVG text has no box to flow inside
@@ -66,6 +67,7 @@
 	import { properCase } from "$utils/properCase.js";
 	import { isGameTerm } from "$utils/gameWords.js";
 	import { isNameTerm } from "$utils/nameWords.js";
+	import { isFunctionTerm } from "$utils/functionWords.js";
 	import { checks } from "$utils/checks.svelte.js";
 	import {
 		COMPARISON,
@@ -76,14 +78,18 @@
 		LOGO as PILL_LOGO,
 		LOGO_WIDTH,
 		inOutlet,
-		outletName
+		outletName,
+		FOX as FOX_NEWS,
+		SHORT as SHORT_NAMES
 	} from "$utils/outlets.js";
 	// the wordmarks drawn under the chart for whatever Fox is set against: an
 	// outlet's own, or a group's members (all 13 would not fit: none for "all")
 	const LOGOS = {
 		"sports outlets": SPORTS.map((o) => PILL_LOGO[o]),
 		"news outlets": NEWS.map((o) => PILL_LOGO[o]),
-		...Object.fromEntries(COMPARISON.map((o) => [o, [PILL_LOGO[o]]]))
+		...Object.fromEntries(
+			[FOX_NEWS, ...COMPARISON].map((o) => [o, [PILL_LOGO[o]]])
+		)
 	};
 	const PILL_NAME = { "sports outlets": "sports", "news outlets": "news" };
 	// the dropdown's name for an outlet or a pool
@@ -128,7 +134,9 @@
 		//   tabWords, tabTwo, tabThree, search,
 		//   rankFox: Fox #{rank}   rankOthers: Others #{rank}   rankEven: Even
 		//   foxHead, othersHead, caption ({fox} {others} {them}),
-		//   previous, next, range, hoverCounts (see WordBars)
+		//   previous, next, range, hoverCounts, hoverRatio,
+		//   hoverEven, hoverStrength (see WordBars)
+		//   perArticle: per article   perHeadline: per headline (the ratio's unit)
 		heading: headingText = "",
 		comparedWith = "",
 		allOutlets = "",
@@ -146,6 +154,11 @@
 		next = "",
 		range = "",
 		hoverCounts = "",
+		hoverRatio = "",
+		hoverEven = "",
+		hoverStrength = "",
+		perArticle = "",
+		perHeadline = "",
 		...rest
 	} = $props();
 	import { fill as fillIn, or } from "$utils/fill.js";
@@ -176,12 +189,49 @@
 	// the reader's pick; the chart compares with the default while not live
 	let chosen = $state(data.outlets[0]);
 	let player = $state(ALL);
-	const topName = "Fox";
+	// the outlet on Fox's side: Fox, unless the reader picks another in the
+	// title's menu. Only over whole articles, where the title names Fox and the
+	// pairs are scored (notebooks/06 → static/data/fw_pair/)
+	let chosenTop = $state(FOX_NEWS);
 	const bottomName = "others";
 
 	let bodyMode = $derived(
 		text === "articles" && player === ALL && !!data.hasArticles
 	);
+	let top = $derived(
+		live && bodyMode && !source && college === "with" ? chosenTop : FOX_NEWS
+	);
+	let paired = $derived(top !== FOX_NEWS);
+	let topName = $derived(paired ? (SHORT_NAMES[top] ?? top) : "Fox");
+	// a pair of outlets, neither Fox: one file per pair, stored in COMPARISON's
+	// order with the first outlet's side positive, so either way round reads
+	// from the same file
+	let pairFiles = $state({});
+	let pairKey = $derived.by(() => {
+		if (!paired || against === FOX_NEWS) return null;
+		const [a, b] =
+			COMPARISON.indexOf(top) < COMPARISON.indexOf(against)
+				? [top, against]
+				: [against, top];
+		const folder =
+			prior === "corpus" ? "fw_pair" : `${PRIOR_FOLDERS[prior]}/fw_pair`;
+		return `${folder}/${slug(a)}--${slug(b)}`;
+	});
+	let pairFlip = $derived(
+		!!pairKey && COMPARISON.indexOf(top) > COMPARISON.indexOf(against)
+	);
+	let pair = $derived(pairKey ? pairFiles[pairKey] : null);
+	$effect(() => {
+		const key = pairKey;
+		if (key && !pairFiles[key])
+			ensureFile(
+				key,
+				`${base}/data/${key}.json`,
+				(v) => (pairFiles = { ...pairFiles, [key]: v })
+			);
+	});
+	// [z, n, this side, that side], turned round
+	const flip = (s) => s && [-s[0], s[1], s[3], s[2]];
 	// while a file is still loading, keep showing what is on screen rather than
 	// flashing an empty chart (the words/phrases switch used to blank it)
 	let lastWords = [];
@@ -224,6 +274,38 @@
 				(v) => (nc = { ...nc, trigrams: v })
 			);
 	});
+	// A check, shown only with ?checks: the site's prior, Monroe et al.'s
+	// informative prior (each word's prior its share of all WNBA coverage in the
+	// corpus, weighing as much as the smaller side), beside a uniform one, every
+	// word the same pseudo-count. From a rerun of notebook 06 with
+	// FW_PRIOR=uniform (static/data/prior-uniform/)
+	const PRIOR_FOLDERS = { uniform: "prior-uniform" };
+	const PRIOR_NAMES = {
+		corpus: "Corpus",
+		uniform: "Uniform"
+	};
+	let prior = $state("corpus");
+	let informative = $derived(
+		prior !== "corpus" && player === ALL && !noCollege
+	);
+	let inf = $state({});
+	let infFile = (key) => inf[`${PRIOR_FOLDERS[prior]}/${key}`];
+	$effect(() => {
+		if (!informative) return;
+		const folder = PRIOR_FOLDERS[prior];
+		for (const [key, file] of [
+			["head", "fw_headlines"],
+			["articles", "fw_articles"],
+			["bigrams", "fw_bigrams"],
+			["trigrams", "fw_trigrams"]
+		])
+			if (!inf[`${folder}/${key}`])
+				ensureFile(
+					`inf-${folder}-${key}`,
+					`${base}/data/${folder}/${file}.json`,
+					(v) => (inf = { ...inf, [`${folder}/${key}`]: v })
+				);
+	});
 	// A check, shown only with ?checks: "Leave out" game words (the box score, results, teams and cities), so
 	// what is left is how the coverage talks about the league rather than the
 	// games, and/or people's names, so what is left is what is said rather than
@@ -231,20 +313,31 @@
 	let leaveOut = $state("none");
 	let hideGame = $derived(leaveOut === "game" || leaveOut === "both");
 	let hideNames = $derived(leaveOut === "names" || leaveOut === "both");
+	// function words ("the", "about", "on x") are counted but not shown
+	// (src/utils/functionWords.js); a check, shown only with ?checks, puts them back
+	let functionWords = $state("hidden");
 	let words = $derived.by(() => {
-		const next = noCollege
-			? bodyMode
-				? nc[bodyKey]
-				: nc.head?.words
-			: bodyMode
-				? gram === 3
-					? articleTrigrams
-					: gram === 2
-						? articleBigrams
-						: articleWords
-				: player === ALL
-					? data.words
-					: (data.byPlayer?.[player] ?? []);
+		const next = pairKey
+			? pair
+				? Object.keys(pair[bodyKey] ?? {}).map((word) => ({ word }))
+				: null
+			: noCollege
+				? bodyMode
+					? nc[bodyKey]
+					: nc.head?.words
+				: informative
+					? bodyMode
+						? infFile(bodyKey)
+						: infFile("head")?.words
+					: bodyMode
+						? gram === 3
+							? articleTrigrams
+							: gram === 2
+								? articleBigrams
+								: articleWords
+						: player === ALL
+							? data.words
+							: (data.byPlayer?.[player] ?? []);
 		if (next) lastWords = next;
 		return next ?? lastWords;
 	});
@@ -274,7 +367,7 @@
 	// a single outlet's numbers, one file per outlet, fetched on its pill
 	// the pools, the pair and the comparison outlets ship in the bundle; other pills are dev-only
 	const POOLED = [...AGGREGATES, ...COMPARISON];
-	let single = $derived(!POOLED.includes(against));
+	let single = $derived(!paired && !POOLED.includes(against));
 	$effect(() => {
 		if (single && !outletStats[against])
 			ensureFile(
@@ -286,6 +379,12 @@
 	// the stats of a word in the current comparison: [z, n, fox, other]
 	let modeKey = $derived(bodyMode ? bodyKey : "headlines");
 	function statOf(entry) {
+		if (pairKey) {
+			const s = pair?.[modeKey]?.[entry.word];
+			return pairFlip ? flip(s) : s;
+		}
+		// another outlet against Fox: Fox's numbers against it, turned round
+		if (paired) return flip(entry.s?.[top]);
 		if (!single) return entry.s?.[against];
 		const table = outletStats[against];
 		if (!table) return undefined;
@@ -305,23 +404,53 @@
 		return [...seen.values()];
 	});
 	let outletsHere = $derived(
-		(bodyMode
-			? articleOutlets
-			: player === ALL
-				? [...data.outlets, ...(data.outletsExtra ?? [])]
-				: Object.keys(data.playerN?.[player] ?? {}).sort()
+		(paired
+			? [
+					FOX_NEWS,
+					...articleOutlets.filter((o) => COMPARISON.includes(o) && o !== top)
+				]
+			: bodyMode
+				? articleOutlets
+				: player === ALL
+					? [...data.outlets, ...(data.outletsExtra ?? [])]
+					: Object.keys(data.playerN?.[player] ?? {}).sort()
 		).filter((o) => DEV || POOLED.includes(o))
 	);
-	let sample = $derived(
+	const sampleOf = (key) =>
 		(noCollege
-			? (bodyMode ? nc.head?.articleOutletN : nc.head?.outletN)?.[against]
+			? (bodyMode ? nc.head?.articleOutletN : nc.head?.outletN)?.[key]
 			: bodyMode
-				? data.articleOutletN?.[against]
+				? data.articleOutletN?.[key]
 				: player === ALL
-					? data.outletN?.[against]
-					: data.playerN?.[player]?.[against]) ?? null
+					? data.outletN?.[key]
+					: data.playerN?.[player]?.[key]) ?? null;
+	// each side's size: `fox` is the top side's, whoever is on top
+	let sample = $derived.by(() => {
+		if (pairKey) {
+			const n = pair?.n?.[bodyMode ? "articles" : "headlines"];
+			if (!n) return null;
+			return pairFlip ? { fox: n[1], other: n[0] } : { fox: n[0], other: n[1] };
+		}
+		if (paired) {
+			const s = sampleOf(top);
+			return s && { fox: s.other, other: s.fox };
+		}
+		return sampleOf(against);
+	});
+	// the fewest uses (both sides together) a word needs to be drawn: none by
+	// default (the prior already keeps rare words from ranking). With ?checks
+	// a slider sets one, on a log scale from one use to MOST_USES
+	let usesSlider = $state(null);
+	let defaultFloor = 1;
+	let floor = $derived(
+		usesSlider === null
+			? defaultFloor
+			: Math.max(1, Math.round(Math.pow(MOST_USES, usesSlider / 100)))
 	);
-	let floor = $derived(player === ALL ? 5 : 3);
+	let sliderAt = $derived(
+		usesSlider ??
+			Math.round((100 * Math.log(defaultFloor)) / Math.log(MOST_USES))
+	);
 	// the line under the bars, in the topic graphics' source-line style
 	//: what was compared, then how it was scored
 	let caption = $derived.by(() => {
@@ -339,9 +468,14 @@
 			others: sample.other.toLocaleString(),
 			them
 		};
-		if (String(captionText).trim()) return fillIn(captionText, vars);
+		const topLabel = paired ? outletName(top) : "Fox News";
+		if (String(captionText).trim())
+			return fillIn(
+				paired ? captionText.replaceAll("Fox News", topLabel) : captionText,
+				vars
+			);
 		return (
-			`Fox News: ${sample.fox.toLocaleString()} ${what}; ${them}: ${sample.other.toLocaleString()}, April 2023 on${noCollege ? ", college coverage left out" : ""}. ` +
+			`${topLabel}: ${sample.fox.toLocaleString()} ${what}; ${them}: ${sample.other.toLocaleString()}, April 2023 on${noCollege ? ", college coverage left out" : ""}. ` +
 			`Words ranked by weighted log-odds with an informative prior (Monroe et al. 2008); ` +
 			`bar length is ${sqrt ? "the square root of the z-score, so one runaway word doesn’t flatten the rest" : "the z-score"}. ` +
 			`Faded bars are within noise (|z| under 1.96). Hover a bar for an example.`
@@ -431,7 +565,8 @@
 					.filter(
 						(entry) =>
 							!(hideGame && isGameTerm(entry.word)) &&
-							!(hideNames && isNameTerm(entry.word))
+							!(hideNames && isNameTerm(entry.word)) &&
+							!(functionWords === "hidden" && isFunctionTerm(entry.word))
 					)
 					.map((entry) => [entry, statOf(entry)])
 					.filter(([, s]) => s && s[1] >= floor)
@@ -665,7 +800,7 @@
 		}
 	}
 	$effect(() => {
-		if (against !== ALL_OUTLETS) ensureOutletExamples();
+		if (against !== ALL_OUTLETS || paired) ensureOutletExamples();
 	});
 	// the example for a word on the comparison side: the chosen outlet's own
 	// sentence, or for a pooled group one of its members' sentences. A word on
@@ -673,6 +808,16 @@
 	// (a Breitbart word once showed a CBS Sports quote), so with no sentence
 	// found the card shows none. Fox's side and "all outlets" use the shared store.
 	function exampleFor(mode, word, z) {
+		// a pair's file carries a sentence from whichever side the word leans to
+		if (pairKey)
+			return pair ? (pair.examples?.[mode]?.[word] ?? null) : undefined;
+		// another outlet against Fox: its side quotes it, Fox's side quotes Fox
+		if (paired && z > 0)
+			return outletExamples
+				? (outletExamples[top]?.[mode]?.[word] ?? null)
+				: undefined;
+		if (paired)
+			return litExamples[mode]?.[word] ?? fullExamples?.[mode]?.[word];
 		if (z < 0 && against !== ALL_OUTLETS) {
 			const members = AGGREGATES.includes(against)
 				? (GROUPS[against] ?? [])
@@ -690,7 +835,17 @@
 	let barSource = $derived(
 		source ?? {
 			points,
-			topShort: "in Fox News",
+			// each side's size, for the tooltip's "uses it 3× as often"
+			sizes: sample
+				? {
+						top: sample.fox,
+						bottom: sample.other,
+						unit: bodyMode
+							? or(perArticle, "per article")
+							: or(perHeadline, "per headline")
+					}
+				: null,
+			topShort: paired ? inOutlet(top) : "in Fox News",
 			bottomShort:
 				against === ALL_OUTLETS
 					? "in the other outlets"
@@ -698,7 +853,7 @@
 						? `in the ${against}`
 						: inOutlet(against),
 			// only Fox's head carries its wordmark; the other side is named in words
-			topLogo: PILL_LOGO["Fox News"] ?? "fox-news.svg",
+			topLogo: PILL_LOGO[top] ?? "fox-news.svg",
 			// the heads at the bars' outer edges, saying what each side means
 			topHead: or(foxHead, "More distinctive to Fox News"),
 			bottomHead:
@@ -707,15 +862,21 @@
 					: (() => {
 							const n = AGGREGATES.includes(against)
 								? `the ${against}`
-								: outletName(against);
-							return (
-								n.charAt(0).toUpperCase() +
-								n.slice(1) +
-								(/s$/.test(n) && !/news$/i.test(n) ? " use more" : " uses more")
-							);
-						})()
+								: outletName(against)
+						)
 		}
 	);
+	// "Fox News’", "New York Times’", "CBS’s", "USA Today’s"
+	const possessive = (name) =>
+		/(?:news|times)$/i.test(name) ? `${name}’` : `${name}’s`;
+	// "ESPN uses more", "the news outlets use more"
+	function usesMore(n) {
+		return (
+			n.charAt(0).toUpperCase() +
+			n.slice(1) +
+			(/s$/.test(n) && !/news$/i.test(n) ? " use more" : " uses more")
+		);
+	}
 	// a bar's example on hover, from the same stores as the scatter's card
 	function barExample(word, z = 0) {
 		const mode = bodyMode ? bodyKey : "headlines";
@@ -803,6 +964,7 @@
 		return [out, m.index - shift];
 	}
 
+	// the word in its example: in bold, with a rule in the side's colour under it
 	function markWord(sentence, word, color, form, at) {
 		const [cut, where] = excerpt(sentence, word, form, at);
 		const rx =
@@ -811,7 +973,7 @@
 		if (!m) return escapeHtml(cut);
 		return (
 			escapeHtml(cut.slice(0, m.index)) +
-			`<mark style="background:${color}2e;box-shadow:inset 0 -2px 0 ${color}66;` +
+			`<mark style="background:none;box-shadow:inset 0 -2px 0 ${color};font-weight:700;` +
 			`color:inherit;padding:0 1px;">${escapeHtml(m[0])}</mark>` +
 			escapeHtml(cut.slice(m.index + m[0].length))
 		);
@@ -836,14 +998,35 @@
 				{#if bodyMode && player === ALL}{fillIn(
 						or(headingText, "The phrases that define Fox News’ coverage"),
 						{ unit: unitName(gram) }
-					)}{:else}{gram === 3
+					)}
+					{@const at = title.indexOf(FOX_NEWS)}
+					<!-- a possessive after the name ("Fox News’ coverage") goes into the menu, fitted to each outlet -->
+					{@const owns = (title
+						.slice(at + FOX_NEWS.length)
+						.match(/^(?:[’']s?)/) ?? [""])[0]}
+					<!-- "Fox News" in the title is a menu: any outlet can take Fox's side -->
+					{#if at >= 0 && live && college === "with"}{title.slice(0, at)}<span
+							class="top-pick"
+							><LogoSelect
+								options={[
+									FOX_NEWS,
+									...articleOutlets.filter((o) => COMPARISON.includes(o))
+								]}
+								bind:value={chosenTop}
+								logoOf={(o) => PILL_LOGO[o] ?? null}
+								shownAs={(o) => (owns ? possessive(o) : o)}
+								label="Outlet"
+							/></span
+						>{title.slice(
+							at + FOX_NEWS.length + owns.length
+						)}{:else}{title}{/if}{:else}{gram === 3
 						? "Three-word phrases"
 						: gram === 2
 							? "Phrases"
 							: "Words"} in {player === ALL
 						? `WNBA ${bodyMode ? "articles" : "headlines"}`
 						: `headlines naming ${player}`}{/if}
-			</p>
+			</div>
 			<!-- a div, not a p: the menu inside renders block elements -->
 			<div class="subheading" class:off={!live} inert={!live}>
 				<span>{or(comparedWith, "Compared with")}</span>
@@ -876,6 +1059,31 @@
 						label="Leave out"
 					/>
 				</div>
+				<!-- a check: see `functionWords` above -->
+				<div class="field">
+					<span class="field-label">Function words</span>
+					<LogoSelect
+						options={["hidden", "shown"]}
+						bind:value={functionWords}
+						nameOf={(o) => (o === "hidden" ? "Hidden" : "Shown")}
+						label="Function words"
+					/>
+				</div>
+				<!-- a check: see `floor` above -->
+				<label class="field uses">
+					<span class="field-label"
+						>Minimum uses: <b>{floor.toLocaleString()}</b></span
+					>
+					<input
+						type="range"
+						min="0"
+						max="100"
+						step="1"
+						value={sliderAt}
+						oninput={(e) => (usesSlider = +e.currentTarget.value)}
+						aria-label="Minimum uses"
+					/>
+				</label>
 				{#if player === ALL}
 					<!-- a check: see `college` above -->
 					<div class="field">
@@ -888,6 +1096,16 @@
 							label="College coverage"
 						/>
 					</div>
+					<!-- a check: see `prior` above -->
+					<div class="field">
+						<span class="field-label">Prior</span>
+						<LogoSelect
+							options={["corpus", "uniform"]}
+							bind:value={prior}
+							nameOf={(o) => PRIOR_NAMES[o]}
+							label="Prior"
+						/>
+					</div>
 				{/if}
 			</div>
 		{/if}
@@ -895,7 +1113,12 @@
 			<!-- the unit as tabs on a rule, the search at the rule's right end -->
 			<div class="unit-row">
 				{#if bodyMode}
-					<div class="unit-tabs" inert={!live} role="tablist" aria-label="Words at a time">
+					<div
+						class="unit-tabs"
+						inert={!live}
+						role="tablist"
+						aria-label="Words at a time"
+					>
 						{#each [1, 2, 3].map((n) => [n, unitName(n)]) as [n, label] (n)}
 							<button
 								type="button"
@@ -936,7 +1159,9 @@
 										<span class="uses" style="color:{t.z > 0 ? FOX : OTHER}"
 											>{fillIn(
 												t.z > 0
-													? or(rankFox, "Fox #{rank}")
+													? paired
+														? `${topName} #{rank}`
+														: or(rankFox, "Fox #{rank}")
 													: or(
 															rankOthers,
 															against === ALL_OUTLETS
@@ -991,7 +1216,9 @@
 		<svg
 			viewBox="0 0 {WIDTH} {HEIGHT}"
 			role="img"
-			aria-label="Weighted log-odds z-score against word frequency, Fox News versus {against}"
+			aria-label="Weighted log-odds z-score against word frequency, {paired
+				? outletName(top)
+				: 'Fox News'} versus {against}"
 		>
 			<!-- the band where a difference isn't distinguishable from chance -->
 			<rect
@@ -1154,8 +1381,7 @@
 				)}px"
 			>
 				<!-- the side's colour in a swatch and on the quote's rule; the words in ink -->
-				<span class="tip-head">{properCase(tip.word)}</span
-				>
+				<span class="tip-head">{properCase(tip.word)}</span>
 				<!-- the split behind the dot: uses on each side, and the score -->
 				<span class="tip-count"
 					>{topName}
@@ -1301,6 +1527,51 @@
 	.subheading :global(.logo-select .current::after) {
 		right: 0;
 	}
+	/* the title's menu: the outlet in the line, underlined like the one below */
+	.top-pick {
+		display: inline-block;
+		vertical-align: baseline;
+	}
+	.top-pick :global(.logo-select) {
+		width: auto;
+	}
+	.top-pick :global(.logo-select .current) {
+		display: inline-flex;
+		min-width: 0;
+		height: auto;
+		padding: 0 22px 2px 0;
+		border: 0;
+		border-bottom: 2px solid currentColor;
+		border-radius: 0;
+		background: transparent;
+		font: inherit;
+		line-height: inherit;
+		letter-spacing: inherit;
+		color: inherit;
+	}
+	.top-pick :global(.logo-select .current::after) {
+		right: 0;
+	}
+	/* the open list reads like the "Compared with" one, not like the title */
+	.top-pick :global(.logo-select .menu) {
+		font-family: var(--font-graphic);
+		font-size: 15px;
+		font-weight: 400;
+		font-style: normal;
+		letter-spacing: normal;
+		line-height: normal;
+		text-transform: none;
+		text-align: left;
+		/* as wide as its longest name, not the title's button */
+		width: max-content;
+	}
+	/* the name alone in the title; the list keeps its logos */
+	.top-pick :global(.logo-select .current img) {
+		display: none;
+	}
+	.top-pick :global(.logo-select .current .text) {
+		overflow: visible;
+	}
 	@media (max-width: 640px) {
 		.heading {
 			font-size: 28px;
@@ -1427,6 +1698,14 @@
 		font-size: 13px;
 		font-weight: 600;
 		color: var(--color-ink-dark);
+	}
+	.field.uses {
+		min-width: 180px;
+	}
+	.field.uses input[type="range"] {
+		width: 100%;
+		accent-color: var(--color-fox);
+		margin: 8px 0 6px;
 	}
 	/* on a phone the controls shrink to the bars' scale: shorter fields,
 	   smaller type, and no "Search" label over a box that says Search */

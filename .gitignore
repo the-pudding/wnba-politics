@@ -28,6 +28,9 @@ data/*.csv
 
 # no-college check data (?checks): local only, 120 MB with its parse caches
 static/data/nocollege/
+static/data/informative/
+static/data/prior-1/
+static/data/prior-uniform/
 
 # Storm TV sources and build script (downloads clips)
 notebooks/storm_tv/

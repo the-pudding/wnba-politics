@@ -14,7 +14,9 @@
 	//   mark: 2026-07-07        markNote: …   markShort: … (phones)
 	//   peakNote: … {n} …       peakNoteShort: …   ("none" hides it)
 	//   lineLabel: …            line2Label: …   fieldLabel: …   unit: …
-	//   listLabel: …            list2Label: …   sourceNote: …
+	//   caption: Number of articles that mention at least one of the following: {words}.
+	//                           ({words2}: the second line's words; {label}, {label2})
+	//   listLabel: …            list2Label: …   sourceNote: … (a line under it)
 	//   field: false            hide the grey lines
 	//   {}
 	import { base } from "$app/paths";
@@ -98,6 +100,7 @@
 		peakNoteShort = "",
 		listLabel = "",
 		list2Label = "",
+		caption = "",
 		sourceNote = "",
 		field: showField = null,
 		...rest // old options still in the Doc
@@ -474,6 +477,20 @@
 		...g,
 		label: or(i ? list2Label : listLabel, g.label)
 	}));
+	// the line under the chart: what an article must mention to count. A share
+	// for the yearly charts, a count for the monthly ones
+	const captionDefault =
+		(counts ? "Number" : "Share") +
+		" of articles that mention at least one of the following: " +
+		(second ? "{words}, {words2}." : "{words}.");
+	// a long run like "women/players/athletes" may wrap after any slash
+	const listed = (g) => (g?.words.join(", ") ?? "").replace(/\//g, "/<wbr>");
+	const captionText = fill(or(caption, captionDefault), {
+		words: listed(words[0]),
+		words2: listed(words[1]),
+		label: words[0]?.label ?? "",
+		label2: words[1]?.label ?? ""
+	});
 	const swatch = (c) => `<span class="sw" style="background:${c}"></span>`;
 	const dekDefault = second
 		? `Fox News WNBA articles each month that use {swatch}<b>${NAME[topic]}</b>${NAME[topic].includes(" or ") ? ", or" : " or"} {swatch2}<b>${NAME[second]}</b>.` +
@@ -481,11 +498,13 @@
 				? ` In grey, each other outlet’s articles with ${NAME[topic]}.`
 				: "")
 		: `Share of each outlet’s WNBA articles that mention ${NAME[topic]}, by ${monthly ? "month" : "year"}.<br />{swatch}<b>Fox News</b> and {grey}${others.length === 6 ? "six" : others.length} other outlets.`;
-	const dek = tidy(fill(or(subtitle, dekDefault), {
-		swatch: swatch(COLOR[topic]),
-		swatch2: second ? swatch(COLOR[second]) : "",
-		grey: '<span class="sw grey"></span>'
-	}));
+	const dek = tidy(
+		fill(or(subtitle, dekDefault), {
+			swatch: swatch(COLOR[topic]),
+			swatch2: second ? swatch(COLOR[second]) : "",
+			grey: '<span class="sw grey"></span>'
+		})
+	);
 </script>
 
 <svelte:window bind:innerWidth={viewportW} />
@@ -658,7 +677,11 @@
 				{#each hover.rows as r (r.name)}
 					<p class="tip-row" class:hi={r.hi}>
 						<span class="tip-name">
-							{#if LOGO[r.o] && topic !== "fouls"}<img class="logo" alt="" src="{base}/logos/square/{LOGO[r.o]}" />{/if}
+							{#if LOGO[r.o] && topic !== "fouls"}<img
+									class="logo"
+									alt=""
+									src="{base}/logos/square/{LOGO[r.o]}"
+								/>{/if}
 							{r.name}
 						</span><span>{fmt(r.v)}</span>
 					</p>
@@ -668,18 +691,11 @@
 	</div>
 
 	<!-- each outlet on its own, same scale -->
-	
 
 	<!-- the words counted -->
 	<div class="source">
-		{#each words as g (g.label)}
-			<p><b>{g.label}:</b> {g.words.join(", ")}</p>
-		{/each}
-		<p>
-			{@html tidy(
-				or(sourceNote, "An article counts once, however often it uses them.")
-			)}
-		</p>
+		<p>{@html tidy(captionText)}</p>
+		{#if String(sourceNote).trim()}<p>{@html tidy(sourceNote)}</p>{/if}
 	</div>
 </figure>
 
@@ -718,7 +734,7 @@
 		vertical-align: 4px;
 	}
 	.dek :global(.sw.grey) {
-		background: #7C7060;
+		background: #7c7060;
 	}
 	/* the chart box takes whatever room the column leaves; the svg sits on top of it
 	   (out of the flow) so its own height never props the box open */
@@ -885,10 +901,10 @@
 		font-weight: 700;
 	}
 	.sm-name .logo {
-			height: 24px;
-			width: 24px;
-			margin-right: 0.25rem;
-		}
+		height: 24px;
+		width: 24px;
+		margin-right: 0.25rem;
+	}
 	.sm-name span {
 		display: flex;
 		align-items: center;

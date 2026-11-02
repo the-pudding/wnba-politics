@@ -11,6 +11,9 @@
 		// logoOf(option) -> a file in static/logos, or null to show the name
 		logoOf = () => null,
 		nameOf = (o) => o,
+		// shownAs(option) -> the name on the closed menu only, when it differs
+		// from the list's ("Fox News’" in a title, "Fox News" in the list)
+		shownAs = null,
 		// isDisabled(option) -> a reason string to grey it out, or false
 		isDisabled = () => false,
 		label = "Outlet",
@@ -66,16 +69,16 @@
 	});
 </script>
 
-{#snippet mark(o)}
+{#snippet mark(o, name = nameOf(o))}
     {#if o && logoOf(o)}
         {@const logo = logoOf(o)}
         {@const src = logo.endsWith('.svg') 
             ? `${base}/logos/square/${logo}` 
             : `${base}/logos/square/${logo}.svg`}
-        <img src={src} alt={nameOf(o) || ''} />
-        <span class="text">{nameOf(o)}</span>
+        <img src={src} alt={name || ''} />
+        <span class="text">{name}</span>
     {:else if o}
-        <span class="text">{nameOf(o)}</span>
+        <span class="text">{name}</span>
     {/if}
 {/snippet}
 
@@ -89,7 +92,7 @@
 		onclick={() => (open = !open)}
 		onkeydown={onKey}
 	>
-		{@render mark(value)}
+		{@render mark(value, (shownAs ?? nameOf)(value))}
 	</button>
 	{#if open}
 		<ul class="menu" role="listbox" aria-label={label}>

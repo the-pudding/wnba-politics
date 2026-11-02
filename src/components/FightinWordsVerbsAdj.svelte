@@ -2,6 +2,7 @@
 	// Verb-and-adjective scatter walked through
 	// Each step takes: who, rel, vs, pair, words, text
 	import Scrolly from "$components/helpers/Scrolly.svelte";
+	import { untrack } from "svelte";
 	import FightinWords from "$components/FightinWords.svelte";
 	import WordBars from "$components/WordBars.svelte";
 	import {
@@ -13,6 +14,7 @@
 	import { COMPARISON, LOGO } from "$utils/outlets.js";
 	import LogoSelect from "$components/helpers/LogoSelect.svelte";
 	import { checks } from "$utils/checks.svelte.js";
+	import { isFunctionTerm } from "$utils/functionWords.js";
 	import { base } from "$app/paths";
 	import { faces, clipPops } from "$utils/clips.js";
 	import roster from "$data/people.json";
@@ -66,6 +68,7 @@
 		previous = "",
 		next = "",
 		range = "",
+		// the tooltip's lines (see WordBars); ratioUnit: for its size
 		hoverCounts = "",
 		// srText: the chart described for screen readers (a step's own srText
 		// describes the chart at that step)
@@ -104,7 +107,25 @@
 	$effect(() => {
 		if (index !== undefined && index !== null) last = index;
 	});
-	let current = $derived(STEPS[last] ?? STEPS[0]);
+	// past the last card (the cardless final beat, and below it) the chart goes
+	// back to its default view for the player it's on: "Described as", no words
+	// picked out, so the reader starts exploring from a clean chart. The player
+	// is read once, on the way in (untrack), so picking another one there
+	// doesn't reset the tab
+	let current = $derived(
+		last >= STEPS.length
+			? {
+					who: untrack(() => pickedWho),
+					rel: "describe",
+					vs: "outlets",
+					pair: null,
+					words: [],
+					title: "",
+					explore: true,
+					html: ""
+				}
+			: (STEPS[last] ?? STEPS[0])
+	);
 	// the reader's controls work only once the cards are gone (step-open);
 	// before that the faces and tabs show but are locked, and the menu is hidden
 	let live = $derived(index >= STEPS.length);
@@ -178,7 +199,10 @@
 		if (pickedWho && !row.includes(pickedWho)) row[row.length - 1] = pickedWho;
 		return row;
 	});
-	let rest = $derived(PICKABLE.filter((n) => !inRow.includes(n)));
+	// the menu: A to Z by surname, easier to find a name in
+	let rest = $derived(
+		PICKABLE.filter((n) => !inRow.includes(n)).sort(bySurname)
+	);
 	let moreOpen = $state(false);
 	let moreEl = $state(null);
 	$effect(() => {
@@ -222,6 +246,14 @@
 	// with or without college coverage. The no-college numbers come from a rerun
 	// of notebook 09 with college articles dropped (static/data/nocollege/;
 	// words only, not two-word phrases).
+	// A check, shown only with ?checks: the fewest uses (Fox and the others
+	// together) a word needs to be drawn, on a log scale from one use to
+	// MOST_USES. Off (one use) unless the slider is moved
+	const MOST_USES = 300;
+	let usesSlider = $state(0);
+	let floor = $derived(
+		Math.max(1, Math.round(Math.pow(MOST_USES, usesSlider / 100)))
+	);
 	let college = $state("with");
 	let ncWords = $state(null);
 	$effect(() => {
@@ -231,6 +263,32 @@
 			.then((v) => (ncWords = v))
 			.catch(() => {});
 	});
+	// A check, shown only with ?checks: the site's prior (Monroe et al.'s
+	// informative prior, each word's prior its share of every player's words
+	// across the corpus, weighing as much as the smaller side) beside a uniform
+	// one, every word the same pseudo-count. From reruns of notebooks 06 and 09
+	// with FW_PRIOR=uniform (static/data/prior-uniform/)
+	const PRIOR_FOLDERS = { uniform: "prior-uniform" };
+	const PRIOR_NAMES = {
+		corpus: "Corpus prior",
+		uniform: "Uniform prior"
+	};
+	let prior = $state("corpus");
+	let folder = $derived(PRIOR_FOLDERS[prior]);
+	let infAll = $state({});
+	const infFetching = new Set();
+	$effect(() => {
+		const f = folder;
+		if (!f || infAll[f] || infFetching.has(f)) return;
+		infFetching.add(f);
+		fetch(`${base}/data/${f}/src/player_words.json`)
+			.then((r) => r.json())
+			.then((v) => (infAll = { ...infAll, [f]: v }))
+			.catch(() => {});
+	});
+	let infWords = $derived(folder ? infAll[folder] : null);
+	// the informative numbers stand in only while college coverage is in
+	let inf = $derived(!!folder && college !== "without");
 	// words, or two-word phrases (each relation's word and its partner in the
 	// parse: "foul out", "cheap shot"; notebook 09). The phrases
 	// ship one file per player (static/data/player_phrases2), fetched on use
@@ -241,17 +299,21 @@
 	const phraseFetching = new Set();
 	$effect(() => {
 		const who = pickedWho;
-		if (!phrases || !who || phraseFiles[who] || phraseFetching.has(who)) return;
-		phraseFetching.add(who);
-		fetch(`${base}/data/player_phrases2/${slugOf(who)}.json`)
+		const key = (inf ? `${folder}:` : "") + who;
+		if (!phrases || !who || phraseFiles[key] || phraseFetching.has(key)) return;
+		phraseFetching.add(key);
+		fetch(
+			`${base}/data/${inf ? `${folder}/` : ""}player_phrases2/${slugOf(who)}.json`
+		)
 			.then((r) => (r.ok ? r.json() : {}))
 			.catch(() => ({}))
-			.then((v) => (phraseFiles = { ...phraseFiles, [who]: v }));
+			.then((v) => (phraseFiles = { ...phraseFiles, [key]: v }));
 	});
 	// the player's block with the phrase relations merged in
 	let phraseAlt = $derived.by(() => {
-		const f = phraseFiles[pickedWho];
-		const base_ = data.players?.[pickedWho];
+		const f = phraseFiles[(inf ? `${folder}:` : "") + pickedWho];
+		const root = inf ? infWords : data;
+		const base_ = root?.players?.[pickedWho];
 		if (!phrases || !f || !base_) return null;
 		const merged = { ...base_ };
 		for (const part of [
@@ -262,10 +324,16 @@
 			"vsByOutlet"
 		])
 			merged[part] = { ...(base_[part] ?? {}), ...(f[part] ?? {}) };
-		return { ...data, players: { ...data.players, [pickedWho]: merged } };
+		return { ...root, players: { ...root.players, [pickedWho]: merged } };
 	});
 	let alt = $derived(
-		phrases ? phraseAlt : college === "without" ? ncWords : null
+		phrases
+			? phraseAlt
+			: college === "without"
+				? ncWords
+				: inf
+					? infWords
+					: null
 	);
 	let src_ = $derived(alt ?? data);
 	let outletsHere = $derived(
@@ -283,16 +351,21 @@
 	$effect(() => {
 		const who = pickedWho;
 		const nc = college === "without" && !phrases;
-		const k = nc ? `nc:${who}` : who;
+		const k = outletKey(who);
 		if (!outlet || !who || byOutlet[k] || fetching.has(k)) return;
 		fetching.add(k);
 		fetch(
-			`${base}/data/${nc ? "nocollege/static/" : ""}${playerOutletFile(who)}`
+			`${base}/data/${nc ? "nocollege/static/" : inf && !phrases ? `${folder}/static/` : ""}${playerOutletFile(who)}`
 		)
 			.then((r) => (r.ok ? r.json() : {}))
 			.catch(() => ({}))
 			.then((block) => (byOutlet = { ...byOutlet, [k]: block }));
 	});
+	// which version of a player's single-outlet file is up
+	function outletKey(who) {
+		if (college === "without" && !phrases) return `nc:${who}`;
+		return inf && !phrases ? `${folder}:${who}` : who;
+	}
 	// "all" is the story's own chart; then each comparison outlet on its own
 	const OUTLET_OPTIONS = ["all", ...COMPARISON];
 	// a smaller cast member has too few attachments for some relations; those
@@ -328,23 +401,28 @@
 		const src = playerWordsSource({
 			...shown,
 			rel: suffix(shown.rel),
-			byOutlet:
-				byOutlet[
-					college === "without" && !phrases ? `nc:${shown.who}` : shown.who
-				] ?? null,
+			byOutlet: byOutlet[outletKey(shown.who)] ?? null,
 			alt
 		});
-		if (!src || shown.vs !== "outlets") return src;
-		return { ...src, topLogo: LOGO["Fox News"] };
+		if (!src) return src;
+		// a phrase that starts or ends with a function word ("a hard") is left
+		// off, as in the main chart (src/utils/functionWords.js); the single
+		// words are picked by grammar, so a "said" there is a real verb and stays
+		const kept = {
+			...src,
+			points: src.points.filter(
+				(p) => p.n >= floor && !(phrases && isFunctionTerm(p.word))
+			)
+		};
+		if (shown.vs !== "outlets") return kept;
+		return { ...kept, topLogo: LOGO["Fox News"] };
 	});
 	// while a picked player's file is still on its way (phrases, a single
 	// outlet), the chart keeps showing what it had instead of blinking out
 	let waiting = $derived(
-		(phrases && !phraseFiles[pickedWho]) ||
+		(phrases && !phraseFiles[(inf ? `${folder}:` : "") + pickedWho]) ||
 			(!!outlet &&
-				!byOutlet[
-					college === "without" && !phrases ? `nc:${pickedWho}` : pickedWho
-				] &&
+				!byOutlet[outletKey(pickedWho)] &&
 				!data.players?.[pickedWho]?.vsByOutlet?.[suffix(pickedRel)]?.[outlet])
 	);
 	let lastSource = null;
@@ -523,6 +601,25 @@
 						nameOf={(o) => (o === "with" ? "With college" : "Without college")}
 						label="College coverage"
 					/>
+					<!-- a check: see `prior` above -->
+					<LogoSelect
+						options={["corpus", "uniform"]}
+						bind:value={prior}
+						nameOf={(o) => PRIOR_NAMES[o]}
+						label="Prior"
+					/>
+					<!-- a check: see `floor` above -->
+					<label class="uses">
+						<span>Minimum uses: <b>{floor.toLocaleString()}</b></span>
+						<input
+							type="range"
+							min="0"
+							max="100"
+							step="1"
+							bind:value={usesSlider}
+							aria-label="Minimum uses"
+						/>
+					</label>
 				{/if}
 			</div>
 			<!-- the relations as tabs on a rule; words or phrases a quiet switch
@@ -581,6 +678,10 @@
 					{next}
 					{range}
 					{hoverCounts}
+					{hoverRatio}
+					{hoverEven}
+					{hoverStrength}
+					{ratioUnit}
 				/>
 			{:else}
 				<FightinWords {source} highlight={shown.words} bare controls={false} />
@@ -632,7 +733,7 @@
 		align-items: center;
 		justify-content: center;
 	}
-	
+
 	/* the bars hang from a fixed top: a step with more or fewer words only
 	   lengthens the chart downward, instead of re-centring everything */
 	.words-scrolly.bars .sticky {
@@ -692,10 +793,12 @@
 	.player:hover img {
 		transform: translateY(-2px);
 	}
-	.player.on, .player:hover {
+	.player.on,
+	.player:hover {
 		opacity: 1;
 	}
-	.player.on .player-name, .player:hover .player-name {
+	.player.on .player-name,
+	.player:hover .player-name {
 		font-weight: 700;
 	}
 
@@ -1001,5 +1104,19 @@
 	   link in a step's text must still be clickable */
 	.steps :global(a) {
 		pointer-events: auto;
+	}
+	/* the "Minimum uses" check */
+	.uses {
+		display: inline-flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 170px;
+		font-family: var(--font-sans);
+		font-size: 13px;
+		color: var(--color-ink-dark);
+	}
+	.uses input[type="range"] {
+		width: 100%;
+		accent-color: var(--color-fox);
 	}
 </style>

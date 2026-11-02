@@ -35,7 +35,7 @@ GROUP = {
 
 # People added beyond notebook 07's network: group, and a regex for their
 # name in headlines (None = use the pattern in people.json).
-# Photos go in static/net/<first-last>.jpg or .png.
+# Photos go in static/net/<first-last>.avif (or .png, .jpg).
 EXTRA = {
     "Kim Mulkey": ("league", None),
     "Adam Silver": ("league", None),
@@ -75,7 +75,7 @@ def face_of(name):
     if roster.get(name, {}).get("face"):
         return roster[name]["face"]
     slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-    for ext in ("png", "jpg"):
+    for ext in ("avif", "png", "jpg"):
         if (HERE / "static/net" / f"{slug}.{ext}").exists():
             return f"{slug}.{ext}"
     return None
@@ -132,6 +132,8 @@ out = {
     "months": months,
     "total": {m: total.get(m, 0) for m in months},
     "inRange": len(rows),
+    # the last headline's date, for the source line ("to November 1, 2026")
+    "lastDate": max(r["date"][:10] for r in rows),
     # OutKick's own site, and its sections on foxnews.com since the move there
     "outkick": sum(1 for r in rows if re.search(r"outkick\.com|foxnews\.com/outkick-", r["url"])),
     "nodes": nodes,

@@ -16,17 +16,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from topics import patterns
+from chyron_rules import line_hit   # what counts as a WNBA banner
 
 ROOT = Path(__file__).resolve().parents[1]
 CHANNEL = {"FOXNEWSW": "Fox News", "CNNW": "CNN", "MSNBCW": "MSNBC", "MSNOW": "MSNBC"}   # MS NOW = MSNBC renamed, Nov 2025
-# a banner counts as WNBA when it names the league or one of its people
-# (the same terms as notebooks/08-chyrons.ipynb)
-WNBA = re.compile("|".join([r"\bwnba\b", "caitlin clark", "angel reese", "brittney griner",
-    r"\bgriner\b", "sophie cunningham", "paige bueckers", r"a'?ja wilson", "diana taurasi",
-    "sue bird", "candace parker", "sabrina ionescu", "breanna stewart", "napheesa collier",
-    "kelsey plum", "maya moore", "skylar diggins", "aliyah boston", "cameron brink",
-    "dijonai carrington", "kamilla cardoso", "chennedy carter", "indiana fever",
-    "chicago sky", "atlanta dream"]), re.I)
 PATS = patterns()
 TOPICS = {
     "polrace": re.compile(PATS["politics or race"], re.I),
@@ -43,7 +36,7 @@ with open(ROOT / "data" / "chyron_matches.tsv") as fh:
         day, year = row["date_time_utc"][:10], row["date_time_utc"][:4]
         for line in row["text"].split("\\n"):
             text = " ".join(line.split()).strip(" .-")
-            if len(text) < 8 or not WNBA.search(text):
+            if len(text) < 8 or not line_hit(text):
                 continue
             key = (network, day, text.lower())
             if key in seen:

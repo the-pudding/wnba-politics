@@ -60,6 +60,11 @@ ALIASES = {
     "Lexie Hull": ["lexie hull"],
     "Courtney Vandersloot": ["courtney vandersloot", "vandersloot"],
     "Kahleah Copper": ["kahleah copper", "kahleah"],
+    "Rhyne Howard": ["rhyne howard", "rhyne"],
+    "Sheryl Swoopes": ["sheryl swoopes", "swoopes"],
+    "Jackie Young": ["jackie young"],
+    "Tina Charles": ["tina charles"],
+    "Allisha Gray": ["allisha gray", "allisha"],
 }
 LOOKUP = {alias: name for name, aliases in ALIASES.items() for alias in aliases}
 NAME_RE = re.compile(

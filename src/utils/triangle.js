@@ -501,7 +501,7 @@ export class Tern {
 			if (!placed) continue;
 			boxes.push(placed.box);
 			// each label in its own group, keyed by its word (a person's, none),
-			// so a hover can set it aside
+			// so a hover can tell the word is already named
 			const gl = this.gLab
 				.append("g")
 				.attr("class", "label")
@@ -655,7 +655,6 @@ export class Tern {
 				null;
 		this.gOver.selectAll(".hover-dot").remove();
 		this.gLab.selectAll(".hover-label").remove();
-		this.gLab.selectAll("g.label").attr("opacity", null);
 		if (!t) {
 			this.tip.style("display", "none");
 			return;
@@ -668,20 +667,22 @@ export class Tern {
 			.attr("cy", t.y)
 			.attr("r", this.r(t.total) + 2.5)
 			.attr("fill", this.state.lit.get(t.term) || leanColor(t.s));
-		// the hovered word named above its dot, as on TernaryStatic, lit or not;
-		// its own label steps aside meanwhile
-		this.gLab.selectAll("g.label").attr("opacity", (d) =>
-			d === t.term ? 0 : null
-		);
-		this.gLab
-			.append("text")
-			.attr("class", "wlabel hover-label")
-			.attr("x", t.x)
-			.attr("y", t.y - this.r(t.total) - 9)
-			.attr("text-anchor", "middle")
-			.attr("fill", this.state.lit.get(t.term) || leanColor(t.s))
-			.style("font-size", (this.narrow ? 12.5 : 13) + "px")
-			.text(t.term);
+		// a word already labelled keeps its label where it is; any other is
+		// named above its dot while hovered
+		const labelled = !this.gLab
+			.selectAll("g.label")
+			.filter((d) => d === t.term)
+			.empty();
+		if (!labelled)
+			this.gLab
+				.append("text")
+				.attr("class", "wlabel hover-label")
+				.attr("x", t.x)
+				.attr("y", t.y - this.r(t.total) - 9)
+				.attr("text-anchor", "middle")
+				.attr("fill", this.state.lit.get(t.term) || leanColor(t.s))
+				.style("font-size", (this.narrow ? 12.5 : 13) + "px")
+				.text(t.term);
 		this.tip.html(tipHTML(t)).style("display", "block");
 		const tw = this.tip.node().offsetWidth,
 			th = this.tip.node().offsetHeight;
