@@ -48,7 +48,7 @@
 		"Cameron Brink",
 		"Kelsey Plum"
 	]);
-	const HEADING = "How often Fox News names each player in WNBA headlines";
+	const HEADING = "Each player’s share of WNBA headlines";
 	const EVEN = 1.1; // within 10% either way reads as level: the pale ring
 	const REACH = 4; // log2 units either way (16×), past every value in the data
 	const SHORT = { "New York Times": "NYT", "Washington Post": "Post" };

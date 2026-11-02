@@ -90,11 +90,8 @@
 		comparedWith = "",
 		allOutlets = ""
 	} = $props();
-	// the title spans the axis; the menu names what Fox is compared with. When
-	// the title says "Fox News", that name becomes a second menu (while the
-	// picker is live): any outlet can take Fox's side of the axis
-	const HEADING = "How often Fox News names each player in WNBA headlines";
-	const COUNT_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven"];
+	// the title spans the axis; the menu names what Fox is compared with
+	const HEADING = "Which players get an outsized share of Fox News’ attention?";
 	const POOL_NAME = { "all outlets": "six other outlets combined", "sports outlets": "the sports outlets combined", "news outlets": "the news outlets combined" };
 	const againstName = (o) => {
 		// with another outlet on top, a pool is the rest of its members
@@ -583,7 +580,7 @@
 			width={WIDTH}
 			{height}
 			role="img"
-			aria-label="Whether {topName} or {against} gives each player a larger share of its WNBA headlines"
+			aria-label="Dot plot chart showing whether Fox News has a bigger share of coverage for 13 WNBA players than {against}"
 		>
 			<!-- the Fox half: from the equal line to the end of the axis -->
 			<rect class="fox-half" x={x(0)} y="28" width={NAMES + PLOT - x(0)} height={height - 82} />
@@ -592,14 +589,14 @@
 				x={narrow ? NAMES + 24 + 10 : x(0) - 22}
 				y={TOP - (narrow ? 22 : 0)}
 				text-anchor={narrow ? "start" : "end"}
-				fill={THEM}>← More {narrow ? themShort : them}</text
+				fill={THEM}>← Bigger share {narrow ? themShort : them}</text
 			>
 			<text
 				class="head"
 				x={narrow ? NAMES + PLOT - 10 : x(0) + 22}
 				y={TOP - (narrow ? 22 : 0)}
 				text-anchor={narrow ? "end" : "start"}
-				fill={FOX}>{narrow ? `More ${topShort} →` : `More ${topName} →`}</text
+				fill={FOX}>{narrow ? `Bigger share ${topShort} →` : `Bigger share ${topName} →`}</text
 			>
 			<!-- the ends of the axis, in each side's colour -->
 			<line
@@ -845,14 +842,14 @@
 			<strong>{tooltip.person.name}</strong>
 			<div>
 				<span class="swatch" style="background:{FOX}"></span>
-				{pct(tooltip.person.top.share)} of {topShort}'s WNBA headlines
+				{pct(tooltip.person.top.share)} of Fox's headlines
 				<!-- the raw count beside every share -->
 				<span class="count">({tooltip.person.top.n.toLocaleString()})</span>
 			</div>
 			<div>
 				<span class="swatch" style="background:{THEM}"></span>
 				{pct(tooltip.person.them.share)} of {them === "other outlets"
-					? "the other outlets'"
+					? "others' headlines"
 					: them + "'s"}
 				<span class="count">({tooltip.person.them.n.toLocaleString()})</span>
 			</div>
@@ -892,7 +889,7 @@
 		padding-left: 9px;
 		border-left: 3px solid var(--tip-rule);
 		font: var(--tip-quote);
-		max-width: 260px;
+		max-width: 320px;
 		font-style: italic;
 	}
 	.tip {
@@ -926,7 +923,7 @@
 		width: 10px;
 		height: 10px;
 		border-radius: 2px;
-		margin-right: 5px;
+		margin-right: 2px;
 		vertical-align: -1px;
 	}
 
@@ -987,50 +984,13 @@
 	.subheading :global(.logo-select .current::after) {
 		right: 0;
 	}
-	/* the title's menu: the outlet in the line, underlined like the one below */
-	.top-pick {
-		display: inline-block;
-		vertical-align: baseline;
-	}
-	.top-pick :global(.logo-select) {
-		width: auto;
-	}
-	.top-pick :global(.logo-select .current) {
-		display: inline-flex;
-		min-width: 0;
-		height: auto;
-		padding: 0 22px 2px 0;
-		line-height: inherit;
-		letter-spacing: inherit;
-		border: 0;
-		border-bottom: 2px solid currentColor;
-		border-radius: 0;
-		background: transparent;
-		font: inherit;
-		color: inherit;
-	}
-	.top-pick :global(.logo-select .current::after) {
-		right: 0;
-	}
-	/* the open list reads like the "Compared with" one, not like the title */
-	.top-pick :global(.logo-select .menu) {
-		font-family: var(--font-graphic);
-		font-size: 15px;
-		font-weight: 400;
-		font-style: normal;
-		letter-spacing: normal;
-		line-height: normal;
-		text-transform: none;
-		text-align: left;
-		/* as wide as its longest name, not the title's button */
-		width: max-content;
-	}
-	/* the name alone in the title; the list keeps its logos */
-	.top-pick :global(.logo-select .current img) {
-		display: none;
-	}
-	.top-pick :global(.logo-select .current .text) {
-		overflow: visible;
+	/* the underlined word has no box, so the focus ring rounds its corners and
+	   sits a little clear of the text */
+	.subheading :global(.logo-select .current:focus),
+	.subheading :global(.logo-select .current[aria-expanded="true"]) {
+		outline: 2px solid var(--color-ink);
+		outline-offset: 3px;
+		border-radius: 3px;
 	}
 	@media (max-width: 640px) {
 		.titles {

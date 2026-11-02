@@ -157,9 +157,12 @@
 		white-space: nowrap;
 		text-overflow: ellipsis;
 	}
-	.current:focus-visible {
-		outline: none;
-		outline-offset: 1px;
+	/* focus, by keyboard or mouse, and while the menu is open (Safari does not
+	   focus a button on click): a ring outside the box */
+	.current:focus,
+	.current[aria-expanded="true"] {
+		outline: 2px solid var(--color-ink-dark);
+		outline-offset: 2px;
 	}
 	img {
 		display: block;

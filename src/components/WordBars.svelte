@@ -44,17 +44,10 @@
 		previous = "",
 		next = "",
 		range = "",
-		// hoverCounts: the lines under the ratio, {top} {topCount} {bottom}
-		// {bottomCount} {score} {strength}; a "|" starts a new line
 		hoverCounts = "",
-		// the bold line under the word: hoverRatio ({times}, also {who} {verb}
-		// {unit}), hoverEven (about the same rate); ratioUnit, what the rate is
-		// per ("for its size")
-		hoverRatio = "",
-		hoverEven = "",
-		ratioUnit = "",
-		// hoverStrength: the three words for how sure a score is, least sure first, by commas
-		hoverStrength = ""
+		// each side's total ({ top, bottom }), so the tooltip can show a word's
+		// uses as a percentage; without it, source.counts ({ clark, others })
+		totals = null
 	} = $props();
 	const noteMode = $derived(note === undefined || note === null ? "stock" : String(note).trim() ? "custom" : "none");
 
@@ -350,6 +343,27 @@
 	// a word's count with thousands commas ("1,234"); anything not a number as it came
 	const count = (n) =>
 		n != null && n !== "" && Number.isFinite(+n) ? (+n).toLocaleString("en-US") : n;
+	// a word's uses as a share of its side's total ("1.2%"); the raw count
+	// when there is no total to divide by
+	let sideTotals = $derived({
+		top: +(totals?.top ?? source?.counts?.clark) || 0,
+		bottom: +(totals?.bottom ?? source?.counts?.others) || 0
+	});
+	function pct(n, total) {
+		if (!total || n == null || !Number.isFinite(+n)) return count(n);
+		const p = (100 * +n) / total;
+		if (p === 0) return "0%";
+		if (p < 0.1) return "<0.1%";
+		return (p < 10 ? p.toFixed(1) : Math.round(p)) + "%";
+	}
+	// how far a score is from noise, in words, for the tooltip's {strength}
+	function strength(z) {
+		const a = Math.abs(z);
+		if (a < WEAK_Z) return "within noise";
+		if (a < 3.29) return "moderate";
+		if (a < 6) return "strong";
+		return "very strong";
+	}
 	// the width the bars reach, both sides (the longest bar and its word), so
 	// the note under the chart wraps to the drawing rather than the frame
 	// how far the bars (and their words) reach from the middle, either side,
@@ -515,14 +529,16 @@
 <div class="word-bars" bind:this={el}>
 	{#if source}
 		<!-- the column heads -->
-		<svg width={WIDTH} height={TOP - 24} viewBox="0 0 {WIDTH} {TOP - 24}" role="presentation">
+		<svg width={WIDTH} height={TOP - 24} viewBox="0 0 {WIDTH} {TOP - 24}" 
+			role="presentation"
+			aria-label="Diverging bar chart showing words that are distinctive to {topName} and to {otherName}">
 			{#if source.topHead}
 				<!-- heads at the bars' outer edges, saying what each side means:
 				     "← Other outlets use more" · "Fox News uses more →" -->
 				{@const oneLine = textWidth(bottomHead) + textWidth(source.topHead) + 60 < 2 * barsReach}
 				{#if oneLine}
-					<text class="head edge others" x={0} y="10" text-anchor="start">← {bottomHead}</text>
-					<text class="head edge fox" x={WIDTH} y="10" text-anchor="end">{source.topHead} →</text>
+					<text class="head edge others" x={0} y="10" text-anchor="start">← More distinctive to other outlets</text>
+					<text class="head edge fox" x={WIDTH} y="10" text-anchor="end">More distinctive to Fox News →</text>
 				{:else}
 					<!-- too narrow for both on one line: each breaks before "use(s) more" -->
 					{@const split = (t) => { const i = t.search(/ uses? more$/); return i > 0 ? [t.slice(0, i), t.slice(i + 1)] : [t, ""]; }}
@@ -709,9 +725,14 @@
 				<span class="tip-head">{properCase(tip.p.word)}</span>
 				{#if ratio}<span class="tip-ratio">{ratio}</span>{/if}
 				<span class="tip-count"
-					>{#each countLines as line, i}<span class="tip-count-line"
-							>{line}{#if tip.p.pin && i === countLines.length - 1} · #{tip.p.rank}{/if}</span
-						>{/each}</span
+					>{fillIn(or(hoverCounts, "{top} {topCount} · {bottom} {bottomCount} · Score {score}"), {
+						top: topName,
+						bottom: otherName,
+						topCount: pct(tip.p.nf, sideTotals.top),
+						bottomCount: pct(tip.p.no, sideTotals.bottom),
+						score: fmt(tip.p.z),
+						strength: strength(tip.p.z)
+					})}{#if tip.p.pin} · #{tip.p.rank}{/if}</span
 				>
 				{#if tip.eg}
 					<p style="border-left-color:{color}">

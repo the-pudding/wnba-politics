@@ -70,10 +70,9 @@
 		range = "",
 		// the tooltip's lines (see WordBars); ratioUnit: for its size
 		hoverCounts = "",
-		hoverRatio = "",
-		hoverEven = "",
-		hoverStrength = "",
-		ratioUnit = "",
+		// srText: the chart described for screen readers (a step's own srText
+		// describes the chart at that step)
+		srText = "",
 		...unused
 	} = $props();
 	import { fill, or } from "$utils/fill.js";
@@ -97,7 +96,8 @@
 				title: (step.title ?? "").trim(),
 				// explore: true — the reader picks the player and the relation
 				explore: step.explore === true || step.explore === "true",
-				html: step.text ?? ""
+				html: step.text ?? "",
+				srText: step.srText ?? ""
 			}))
 	);
 
@@ -691,6 +691,9 @@
 				No comparison stored for {shown.who} · {shown.rel}
 			</p>
 		{/if}
+		{#if srText?.trim()}
+			<p class="sr-only">{@html srText}</p>
+		{/if}
 	</div>
 
 	<div class="steps">
@@ -702,6 +705,9 @@
 					class:explore={step.explore}
 				>
 					<p class="card">{@html clipPops(faces(step.html, base), base)}</p>
+					{#if step.srText?.trim()}
+						<p class="sr-only">{@html step.srText}</p>
+					{/if}
 				</div>
 			{/each}
 			<!-- cardless final beat: the chart stays put for another screen and a

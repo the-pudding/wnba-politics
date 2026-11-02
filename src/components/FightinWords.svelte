@@ -855,14 +855,12 @@
 			// only Fox's head carries its wordmark; the other side is named in words
 			topLogo: PILL_LOGO[top] ?? "fox-news.svg",
 			// the heads at the bars' outer edges, saying what each side means
-			topHead: paired
-				? usesMore(outletName(top))
-				: or(foxHead, "Fox News uses more"),
+			topHead: or(foxHead, "More distinctive to Fox News"),
 			bottomHead:
 				against === ALL_OUTLETS
-					? or(othersHead, "Other outlets use more")
-					: usesMore(
-							AGGREGATES.includes(against)
+					? or(othersHead, "More distinctive to other outlets")
+					: (() => {
+							const n = AGGREGATES.includes(against)
 								? `the ${against}`
 								: outletName(against)
 						)
@@ -996,11 +994,9 @@
 		<!-- the title, and who Fox is compared with, as on the player chart -->
 		<div class="head">
 			<p class="kicker">on the web</p>
-			<!-- a div, not a p: the title's menu renders block elements -->
-			<div class="heading">
-				{#if bodyMode && player === ALL}
-					{@const title = fillIn(
-						or(headingText, "How Fox News writes about the WNBA"),
+			<p class="heading">
+				{#if bodyMode && player === ALL}{fillIn(
+						or(headingText, "The phrases that define Fox News’ coverage"),
 						{ unit: unitName(gram) }
 					)}
 					{@const at = title.indexOf(FOX_NEWS)}
@@ -1210,9 +1206,7 @@
 			{next}
 			{range}
 			{hoverCounts}
-			{hoverRatio}
-			{hoverEven}
-			{hoverStrength}
+			totals={!source && sample ? { top: sample.fox, bottom: sample.other } : null}
 			example={barExample}
 			onhover={() => {
 				if (!source) ensureExamples();

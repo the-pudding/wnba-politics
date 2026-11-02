@@ -10,6 +10,7 @@
 //   clip:    a Fox headline clipping shown under the step's text, in the
 //            running text's format: tag | date | color | title
 //   explore: true — hand over the outlet picker
+//   srText:  what the chart shows at this step, for screen readers
 //
 // If no step uses `place`, nobody is staged and every face starts in place.
 
@@ -37,7 +38,9 @@ export function stageSteps(steps) {
 			center: list(step.center),
 			clip: step.clip ? parseClip(step.clip) : null,
 			explore: step.explore === true || step.explore === "true",
-			html: step.text ?? ""
+			html: step.text ?? "",
+			// read to screen readers in place of the chart
+			srText: step.srText ?? ""
 		}));
 	const staged = raw.some((step) => step.place.length);
 	let placed = staged ? [] : null;

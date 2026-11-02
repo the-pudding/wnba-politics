@@ -7,6 +7,8 @@
 	//   [.ternarySteps]  the triangle's steps (as on TernaryScrollyOld); a step's
 	//                    topic (polrace, lgbtq, fouls) shades the triangle's heat
 	//   bridge           a card that scrolls by during the handoff
+	//   srText           the handoff described for screen readers (a step's
+	//                    own srText describes the chart at that step)
 	//   heading, comparedWith, allOutlets, speed  (the dot plot's)
 	//   note             (the triangle's line underneath)
 	//   The find box sits under the triangle on every step; a step with
@@ -27,6 +29,7 @@
 	import { faces, clipPops } from "$utils/clips.js";
 	import { or } from "$utils/fill.js";
 	import { cubicInOut } from "svelte/easing";
+	import { tick } from "svelte";
 
 	let {
 		steps = null,
@@ -37,7 +40,9 @@
 		comparedWith = "",
 		allOutlets = "",
 		note = null,
-		bands = true
+		bands = true,
+		// the handoff, described for screen readers
+		srText = ""
 	} = $props();
 	// the Doc sends "true"/"false" as text; blank means "not set"
 	const flag = (v) => {
@@ -95,7 +100,8 @@
 				search: step.search === true || step.search === "true",
 				bands: flag(step.bands),
 				rows: parseGroups(step).map(shareRow).filter(Boolean),
-				html: step.text ?? ""
+				html: step.text ?? "",
+				srText: step.srText ?? ""
 			}))
 	);
 	// --- the cards' share bars (as on ChyronTriangle) ------------------------
@@ -417,6 +423,27 @@
 			open = false;
 		}
 	}
+	// The find box sits in the sticky frame, before the steps in the page, so
+	// Tab never reaches it from the last step. A button in that step (seen only
+	// on keyboard focus) jumps into it; Tab out of the box comes back to the
+	// button, so the reader carries on from the last step and is not sent back
+	// to the top of the scrolly.
+	let skipEl = $state(null);
+	async function toFind() {
+		await tick(); // let the box come out of `inert` first
+		inputEl?.focus({ preventScroll: true });
+	}
+	function tabOut(e) {
+		if (e.key !== "Tab" || !skipEl) return;
+		const stops = [...e.currentTarget.querySelectorAll("input, button, [tabindex='0']")];
+		if (!e.shiftKey && document.activeElement === stops.at(-1)) {
+			// no preventDefault: the Tab then moves on from the button
+			skipEl.focus({ preventScroll: true });
+		} else if (e.shiftKey && document.activeElement === stops[0]) {
+			e.preventDefault();
+			skipEl.focus({ preventScroll: true });
+		}
+	}
 	const drop = (word) => {
 		picked = picked.filter((w) => w !== word);
 		lastKept = null;
@@ -488,12 +515,14 @@
 
 <!-- under the triangle on every step: find a word -->
 {#snippet tools()}
-	<div class="ter-tools" class:off={!findStep} inert={!findStep}>
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="ter-tools" class:off={!findStep} inert={!findStep} onkeydown={tabOut}>
 		<label class="control">
 			<div class="search-box">
 				<input
 					type="search"
 					bind:this={inputEl}
+					aria-label="Find a word in the chart"
 					enterkeyhint="search"
 					placeholder="Find a word…"
 					bind:value={query}
@@ -555,6 +584,8 @@
 							tabindex="0"
 							onpointerenter={() => (focus = word)}
 							onpointerleave={() => (focus = null)}
+							onfocusin={() => (focus = word)}
+							onfocusout={() => (focus = null)}
 						>
 							{word}
 							<button
@@ -617,6 +648,7 @@
 					quiet={findStep && open && suggestions.length > 0}
 					topic={terStep?.topic ?? null}
 					bands={phase === "ternary" && (terStep?.bands ?? flag(bands) ?? true)}
+					tipLayer={stageEl}
 				/>
 				{@render tools()}
 			</div>
@@ -656,6 +688,11 @@
 							<p class="gap-card">
 								{@html clipPops(faces(step.html, base), base)}
 							</p>
+							{#if step.srText?.trim()}
+								<p class="sr-only">
+									{@html step.srText}
+								</p>
+							{/if}
 						</div>
 					{/if}
 				</div>
@@ -671,6 +708,9 @@
 				<div class="card bridge-card" class:active={phase === "bridge"}>
 					<p class="card-text">{@html clipPops(faces(bridge, base), base)}</p>
 				</div>
+			{/if}
+			{#if srText?.trim()}
+				<p class="sr-only">{@html srText}</p>
 			{/if}
 		</div>
 
@@ -689,69 +729,70 @@
 							{#if step.html}<p class="card-text">
 									{@html clipPops(faces(step.html, base), base)}
 								</p>{/if}
+							{#if step.srText?.trim()}
+								<p class="sr-only">{@html step.srText}</p>
+							{/if}
 							<!-- one stacked bar per word group: Fox | CNN | MSNBC, then Fox's share -->
 							{#if step.rows.length}
-								<table class="shares">
-									<thead>
-										<tr>
-											<th scope="col"><span class="sr-only">Player</span></th>
-											<th scope="col" class="legend">
-												<i style:color={SHARE_COLORS[0]}>Fox</i>
-												<i style:color={SHARE_COLORS[1]}>CNN</i>
-												<i style:color={SHARE_COLORS[2]}>MSNBC</i>
-											</th>
-											<!-- over the rows' numbers: they're Fox's share -->
-											<th scope="col" class="head-pct" style:color={SHARE_COLORS[0]}
-												>Fox%</th
-											>
-										</tr>
-									</thead>
-									<tbody>
+								<!-- the key over the rows, for sighted readers: each row says it all -->
+								<div class="shares">
+									<div class="shead" aria-hidden="true">
+										<span></span>
+										<span class="legend">
+											<i style:color={SHARE_COLORS[0]}>Fox</i>
+											<i style:color={SHARE_COLORS[1]}>CNN</i>
+											<i style:color={SHARE_COLORS[2]}>MSNBC</i>
+										</span>
+										<!-- over the rows' numbers: they're Fox's share -->
+										<span class="head-pct" style:color={SHARE_COLORS[0]}>Fox%</span>
+									</div>
+									<ul role="list">
 										{#each step.rows as row (row.key)}
 											<!-- the whole row lights the player on the triangle; the
 											     name's button gives it a keyboard stop -->
-											<tr
+											<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
+											<li
 												class="srow"
 												class:on={focus === row.lead}
 												onpointerenter={(e) => hovers(e) && (focus = row.lead)}
 												onpointerleave={(e) => hovers(e) && (focus = rowPin)}
 												onclick={(e) => tapRow(e, row.lead)}
 											>
-												<th scope="row">
-													<!-- Enter/Space click this, and the click bubbles to the row -->
-													<button
-														class="who"
-														aria-pressed={rowPin === row.lead}
-													>
-														{#if row.face}<img src={row.face} alt="" />{/if}
-														<span class="full">{row.label}</span>
-														<span class="short">{row.short}</span>
-													</button>
-												</th>
-												<td>
-													<span
-														class="sbar"
-														role="img"
-														aria-label="Fox {pctOf(row.shares[0])}, CNN {pctOf(
-															row.shares[1]
-														)}, MSNBC {pctOf(row.shares[2])}"
-													>
-														{#each row.shares as v, i}
-															<span
-																style:width="{(v * 100).toFixed(2)}%"
-																style:background={SHARE_COLORS[i]}
-															></span>
-														{/each}
-													</span>
-												</td>
-												<!-- Fox's share, in Fox's colour whichever way the row leans -->
-												<td class="pct" style:color={SHARE_COLORS[0]}
-													>{pctOf(row.shares[0])}</td
+												<!-- Enter/Space click this, and the click bubbles to the row;
+												     reaching it by keyboard shows its tooltip -->
+												<button
+													class="who"
+													aria-label="{row.label} details"
+													aria-pressed={rowPin === row.lead}
+													onfocus={() => (focus = row.lead)}
+													onblur={() => (focus = rowPin)}
 												>
-											</tr>
+													{#if row.face}<img src={row.face} alt="" />{/if}
+													<span class="full">{row.label}</span>
+													<span class="short">{row.short}</span>
+												</button>
+												<span
+													class="sbar"
+													role="img"
+													aria-label="Fox {pctOf(row.shares[0])}, CNN {pctOf(
+														row.shares[1]
+													)}, MSNBC {pctOf(row.shares[2])}"
+												>
+													{#each row.shares as v, i}
+														<span
+															style:width="{(v * 100).toFixed(2)}%"
+															style:background={SHARE_COLORS[i]}
+														></span>
+													{/each}
+												</span>
+												<!-- Fox's share, in Fox's colour whichever way the row leans -->
+												<span class="pct" style:color={SHARE_COLORS[0]}
+													><span class="sr-only">Fox share:</span>{pctOf(row.shares[0])}</span
+												>
+											</li>
 										{/each}
-									</tbody>
-								</table>
+									</ul>
+								</div>
 							{/if}
 							{#if step.img}
 								<img
@@ -762,6 +803,12 @@
 								/>
 							{/if}
 						</div>
+					{/if}
+					{#if i === TER.length - 1}
+						<!-- the keyboard's way into the find box (see toFind) -->
+						<button class="to-find" bind:this={skipEl} onclick={toFind}
+							>Find a word in the chart</button
+						>
 					{/if}
 				</div>
 			{/each}
@@ -889,6 +936,9 @@
 		justify-content: center;
 	}
 
+	/* the triangle's tooltip is drawn in .sticky (TernaryStatic's tipLayer), out
+	   of the stage's opacity and the column's transform, so its z-index (5)
+	   puts it over the heads */
 	.flyers {
 		position: absolute;
 		inset: 0;
@@ -1047,26 +1097,38 @@
 		z-index: 5;
 	}
 
-	/* the share bars as a table: name | stacked bar | Fox's share */
+	/* the share bars as a list: name | stacked bar | Fox's share, the
+	   columns shared by every row (subgrid) so the names line up */
 	.shares {
-		width: 100%;
-		/* reset.css fixes every table's layout; this one sizes to its names */
-		table-layout: auto;
-		border-collapse: collapse;
+		display: grid;
+		grid-template-columns: auto 1fr auto;
 		margin-top: 12px;
 		font-family: var(--font-chart);
 		font-size: 13px;
 	}
-	.shares th,
-	.shares td {
-		padding: 0 4px;
-		vertical-align: middle;
+	.shares ul {
+		display: grid;
+		grid-template-columns: subgrid;
+		grid-column: 1 / -1;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
-	.shares thead th {
+	.shead,
+	.srow {
+		display: grid;
+		grid-template-columns: subgrid;
+		grid-column: 1 / -1;
+		align-items: center;
+	}
+	.shead > *,
+	.srow > * {
+		padding: 0 4px;
+	}
+	.shead {
 		font-size: 11.5px;
 		font-weight: 700;
 		color: rgba(42, 21, 3, 0.6);
-		text-align: left;
 		padding-bottom: 2px;
 		white-space: nowrap;
 	}
@@ -1076,18 +1138,34 @@
 	}
 	.shares .head-pct {
 		text-align: right;
-		width: 1%;
-	}
-	/* the name column as wide as its longest name, the bar takes the rest */
-	.shares tbody th {
-		width: 1%;
-		text-align: left;
-	}
-	/* the % column only as wide as its numbers, never wrapping */
-	.shares .pct,
-	.shares .head-pct {
-		width: 1%;
 		white-space: nowrap;
+	}
+	/* out of sight until the keyboard reaches it */
+	.to-find {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+	.to-find:focus-visible {
+		width: auto;
+		height: auto;
+		clip: auto;
+		overflow: visible;
+		bottom: 2rem;
+		left: 50%;
+		transform: translateX(-50%);
+		padding: 6px 12px;
+		border: 0;
+		border-radius: 4px;
+		background: var(--color-ink-dark);
+		color: #fff;
+		font-family: var(--font-sans);
+		font-size: 14px;
+		pointer-events: auto;
+		z-index: 7;
 	}
 	.sr-only {
 		position: absolute;
@@ -1103,31 +1181,26 @@
 		color: var(--color-ink);
 		cursor: pointer;
 	}
-	.srow > * {
+	.srow {
+		margin: 0;
+		border-radius: 3px;
 		transition: background 120ms ease;
 	}
-	.srow.on > * {
+	.srow.on {
 		background: rgba(42, 21, 3, 0.06);
 	}
 	/* touch screens keep :hover stuck after a tap, so only real hovers shade */
 	@media (hover: hover) {
-		.srow:hover > * {
+		.srow:hover {
 			background: rgba(42, 21, 3, 0.06);
 		}
-	}
-	.srow > :first-child {
-		border-radius: 3px 0 0 3px;
-	}
-	.srow > :last-child {
-		border-radius: 0 3px 3px 0;
 	}
 	.srow .who {
 		display: flex;
 		align-items: center;
 		gap: 6px;
 		min-width: 0;
-		/* table cells ignore max-width, so the cap lives on the button: a
-		   long name ellipses rather than pushing the % off the card */
+		/* a long name ellipses rather than pushing the % off the card */
 		max-width: min(170px, 40vw);
 		padding: 0;
 		border: 0;
@@ -1166,7 +1239,6 @@
 		height: 10px;
 		border-radius: 2px;
 		overflow: hidden;
-		background: var(--color-sand);
 	}
 	.sbar span {
 		display: block;

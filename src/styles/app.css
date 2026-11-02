@@ -367,6 +367,11 @@ span.orange {
 	font-weight: 700;
 }
 
+span.green {
+	color: var(--wnba-green);
+	font-weight: 700;
+}
+
    span.fox {
 	color: var(--color-fox-navy);
 	font-weight: 700;

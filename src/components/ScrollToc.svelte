@@ -16,7 +16,23 @@
 					: titleCase(section.section)
 			};
 		})
-		.filter(Boolean);
+		.filter(Boolean)
+		.map((entry) => ({ ...entry, words: hangWords(entry.label) }));
+
+	// Hanging punctuation on the right edge. A word's closing punctuation takes
+	// no width, so at a line end it hangs past the column. Mid-line, the next
+	// word starts with an invisible copy of it to win the space back.
+	function hangWords(label) {
+		const trail = (w) => w.match(/[.,;:!?’”'")\]…]+$/)?.[0] ?? "";
+		return label.split(" ").map((w, i, all) => {
+			const hang = trail(w);
+			return {
+				text: hang ? w.slice(0, -hang.length) : w,
+				hang,
+				ghost: i ? trail(all[i - 1]) : ""
+			};
+		});
+	}
 
 	let active = $state(entries[0]?.id ?? null);
 	$effect(() => {
@@ -61,7 +77,8 @@
 				<li class:on={active === entry.id}>
 					<a href="#{entry.id}" onclick={go(entry.id)}>
 						<span class="dot"></span>
-						<span class="label">{entry.label}</span>
+						<!-- prettier-ignore -->
+						<span class="label">{#each entry.words as w, i}{#if i}{" "}{/if}{#if w.ghost}<span class="ghost" aria-hidden="true">{w.ghost}</span>{/if}{w.text}{#if w.hang}<span class="hang"><span>{w.hang}</span></span>{/if}{/each}</span>
 					</a>
 				</li>
 			{/each}
@@ -135,6 +152,18 @@
 			opacity 250ms ease,
 			transform 250ms ease,
 			color 250ms ease;
+	}
+	.hang {
+		position: relative;
+	}
+	.hang > span {
+		position: absolute;
+		left: 0;
+		white-space: nowrap;
+	}
+	.ghost {
+		visibility: hidden;
+		user-select: none;
 	}
 	/* labels show for the current section, and for all on hover */
 	li.on .label,
