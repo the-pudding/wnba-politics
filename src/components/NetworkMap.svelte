@@ -1922,7 +1922,7 @@
 	   card, the same as the framing chart's */
 	.netmap.still {
 		max-width: 1000px; /* wider on wide screens, below */
-		margin: 2rem auto;
+		margin: 2rem 1rem;
 		padding: 24px 28px 22px;
 		background: #fff;
 		border: 1px solid var(--color-rule);

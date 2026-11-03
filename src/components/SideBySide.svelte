@@ -33,19 +33,20 @@
 	.side-by-side {
 		display: flex;
 		align-items: stretch;
-		gap: 48px;
+		gap: 1rem;
 		box-sizing: border-box;
 		width: 100%;
 		margin: 0 auto;
-		padding: 2rem 0;
+		padding: 0 0 2rem 0;
 	}
 	.col {
 		flex: 1 1 0;
 		min-width: 0;
 		padding: 1rem;
 		width: 50%;
-		border: 1px solid var(--color-rule);
-		border-radius: 8px;
+	}
+	.col:first-of-type {
+		border-right: 1px solid var(--color-rule);
 	}
 	.col :global(.act) {
 		margin: 0;

@@ -5,7 +5,7 @@ export default [
 		// the Doc has tabs now (Tab 1 is the story, "JD" a collaborator's copy);
 		// the export concatenates them unless one is named. t.0 is the first
 		// tab; another tab's id is the "tab=t.…" part of the URL when it is open
-		tab: "t.0"
+		tab: "t.ylg0ceakrqem"
 	},
 	{
 		id: "1Vl-tlngO8M6TKCd1aLWgG6FxGg5UIeIIEm_mAnfgeVY",

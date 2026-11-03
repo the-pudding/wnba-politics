@@ -309,9 +309,10 @@
 			let scale, ticks, H, out;
 
 			if (!narrow) {
-				// value across; the swarm spreads up and down and the frame fits it
+				// value across; the swarm spreads up and down inside a fixed-height frame
 				const top = 34,
 					bottom = 30;
+				const FRAME_H = 340;
 				const binW = zn.length
 					? Math.max(84, Math.min(240, Math.sqrt(zArea / 0.5) * 1.25))
 					: 0;
@@ -326,12 +327,20 @@
 					d.x = scale(d.p[t]);
 					d.y = 0;
 				}
-				d3.forceSimulation(mn)
+				// keep every dot inside the fixed frame height
+				const half = (FRAME_H - (top + 8 + 12 + bottom)) / 2;
+				const clampY = (d) =>
+					(d.y = Math.max(-half + d.r, Math.min(half - d.r, d.y)));
+				const ms = d3
+					.forceSimulation(mn)
 					.force("x", d3.forceX((d) => scale(d.p[t])).strength(1))
 					.force("y", d3.forceY(0).strength(0.06))
 					.force("c", d3.forceCollide((d) => d.r + pad).iterations(3))
-					.stop()
-					.tick(320);
+					.stop();
+				for (let i = 0; i < 320; i++) {
+					ms.tick();
+					for (const d of mn) clampY(d);
+				}
 				for (const d of mn)
 					d.x = Math.max(xA + d.r - 8, Math.min(W - d.r - 1, d.x));
 				if (zn.length) {
@@ -347,15 +356,15 @@
 						.stop();
 					for (let i = 0; i < 300; i++) {
 						s.tick();
-						for (const d of zn)
+						for (const d of zn) {
 							d.x = Math.max(d.r + 1, Math.min(binW - d.r - 1, d.x));
+							clampY(d);
+						}
 					}
 				}
-				const y0 = d3.min(nodes, (d) => d.y - d.r),
-					y1 = d3.max(nodes, (d) => d.y + d.r);
-				const shift = top + 8 - y0;
-				for (const d of nodes) d.y += shift;
-				H = Math.max(240, y1 - y0 + top + 8 + 12 + bottom);
+				// centre y = 0 in the plot band
+				for (const d of nodes) d.y += top + 8 + half;
+				H = FRAME_H;
 				out = { W, H, narrow, scale, ticks, top, bottom, xA, binW, share, zn };
 			} else {
 				// value up the screen; the swarm spreads side to side
@@ -1896,7 +1905,7 @@
 	/* the headlines scroll inside their own box, under the column heads; a
 	   dark rule ends it, and a fade over the last row says there's more */
 	.swarm :global(.rows) {
-		max-height: 560px;
+		max-height: 300px;
 		overflow-y: auto;
 	}
 	.swarm :global(.rows .hr:last-child td) {

@@ -126,8 +126,31 @@ h2::before {
 }
 
 h3 {
+	font-size: var(--42px, 42px);
+	text-align: center;
+	max-width: 700px;
+	line-height: 1.1;
+	margin: 5rem auto 2rem auto;
+	font-family: var(--font-display);
+}
+
+h3::before {
+	content: "";
+	display: block;
+	margin: 0 auto;
+	width: 60px;
+	height: 6px;
+	background: var(--color-fox-navy);
+	margin-bottom: 1rem;
+}
+
+#reading h3, #methods h3 {
 	font-size: var(--28px, 28px);
 	font-family: var(--font-display);
+}
+
+#reading h3::before, #methods h3::before {
+	display: none;
 }
 
 h4 {
@@ -362,6 +385,11 @@ svg {
 /* inline colour in the Doc's text, as the kids-book copy does with he/she:
    <span class="fox">4.5x more</span> in the dot plot's Fox navy,
    <span class="others">1.3x less</span> in its other-outlets purple */
+span.explore {
+	font-family: var(--font-sans);
+	font-weight: 700;
+}
+
 span.orange {
 	color: var(--wnba-orange);
 	font-weight: 700;

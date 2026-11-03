@@ -176,7 +176,7 @@
         width: 100%;
         display: flex;
         flex-direction: row;
-        gap: 1rem;
+        gap: 0.5rem;
         align-items: center;
         justify-content: center;
         position: sticky;
@@ -247,12 +247,11 @@
 
     .sheet {
         scroll-margin-top: 4.75rem; /* the sticky nav, and a little room */
-        background: #fff;
-        border: 1px solid var(--color-rule);
-        border-radius: 8px;
-        padding: 1.5rem;
+        padding: 0;
         position: relative;
-		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+    }
+    .sheet .heading {
+        margin: 2rem auto 2rem auto;
     }
 
     .sheet-header {
@@ -274,8 +273,6 @@
     /* Outer wrapper caps height to 100svh */
     .content-wrapper {
         position: relative;
-        max-height: 85svh;
-        overflow: hidden;
     }
 
     .content-wrapper.expanded {
