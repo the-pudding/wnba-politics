@@ -331,6 +331,8 @@
 	};
 	// (only while this wall is on screen, so clips don't play, or talk, from further up
 	// or down the page; the clips below check it too)
+	// (also hides the title and its corner bubble when the page loads already
+	// scrolled past the wall, where no step has been seen to fade them)
 	let wallInView = $state(false);
 	// and whether it's filling the screen (crossing its middle): the section menu on the
 	// right steps aside then, so it doesn't sit over the pulled-out clips
@@ -897,7 +899,7 @@
         {#if config.header && id == "intro"}
         <header
             class="intro-wall-header"
-            class:off={shownIndex !== undefined && shownIndex >= TITLE_STEPS}
+            class:off={(shownIndex !== undefined && shownIndex >= TITLE_STEPS) || (!beforeSteps && !wallInView)}
             class:title-down={titleOnWall}
             class:call-in-byline={callStyle === "byline"}
             class:has-subhed={showSubhed}

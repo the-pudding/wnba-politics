@@ -5,7 +5,8 @@ the published piece shows, so they are all that goes into the page bundle;
 headline words inline, article words and phrases in a file fetched when a
 reader switches to articles. The single-outlet comparisons are an evaluation
 tool: the dev server shows their pills and fetches one small file per outlet.
-Stats are stored compactly as [z, n, fox, other] under one key per comparison.
+Stats are stored compactly as [z, n, fox, other, fox articles, other articles]
+under one key per comparison.
 """
 import json, re
 from pathlib import Path
@@ -20,7 +21,11 @@ def slug(label):
     return re.sub(r"[^a-z0-9]+", "-", label.lower()).strip("-")
 
 def _row(entry, key):
-    return [entry["z"][key], entry["n"][key], entry.get("nf", {}).get(key, 0), entry.get("no", {}).get(key, 0)]
+    row = [entry["z"][key], entry["n"][key], entry.get("nf", {}).get(key, 0), entry.get("no", {}).get(key, 0)]
+    # how many articles on each side use it, where the notebook counted them
+    if key in entry.get("af", {}):
+        row += [entry["af"][key], entry["ao"][key]]
+    return row
 
 def _compact(entries, keys):
     out = []

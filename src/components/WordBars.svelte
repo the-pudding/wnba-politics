@@ -44,11 +44,22 @@
 		previous = "",
 		next = "",
 		range = "",
+		// hoverCounts: {top} {bottom} {topUses} {bottomUses} {topShare}
+		// {bottomShare} (share of articles) {topCount} {bottomCount} {items}
+		// {score} {strength}, and with article counts {rank} {topLabel}
+		// {bottomLabel} {topItems} {bottomItems} (each side's size) {topTimes}
+		// {bottomTimes} ("1,235 uses") {difference}, {bottomAll} ("Others
+		// (combined)", or the one outlet's name); "|" starts a new line and
+		// **…** is bold
 		hoverCounts = "",
-		// the bold line under the word: hoverRatio ({times}, also {who} {verb}
+		// the how-often line: hoverRatio ({times}, also {who} {verb}
 		// {unit}), hoverEven (about the same rate); ratioUnit, what the rate is
 		// per ("for its size")
 		hoverRatio = "",
+		// with each side's article counts the line compares articles instead:
+		// hoverShareRatio (Used in {times} as many {items}), hoverShareEven
+		hoverShareRatio = "",
+		hoverShareEven = "",
 		hoverEven = "",
 		ratioUnit = "",
 		// hoverStrength: the three words for how sure a score is, least sure first, by commas
@@ -65,6 +76,15 @@
 	const INK = "var(--color-ink)";
 	const WEAK_Z = 1.96; // below this a word's lean is within noise
 	const LOADING = "Loading words…"; // while a comparison's words are still on their way
+	// the hover counts when each side's article counts are known: how many
+	// times as many articles use it, and each side's share (the Doc's
+	// hoverCounts takes over once it has {topShare})
+	const SHARE_COUNTS = "{ratio}: | {topLabel} {topShare} · {bottomLabel} {bottomShare}";
+	// a player's chart: how often for its size, then the uses on each side
+	const USES_COUNTS = "{ratio} | Uses: {top} {topUses} · {bottomAll} {bottomUses}";
+	// and the bold line under the word: how sure the difference is
+	// (**…** is bold)
+	const SHARE_HEAD = "**{difference}** ({score})";
 
 	let lit = $derived(new Set((highlight ?? []).map((w) => w.toLowerCase())));
 	let anyLit = $derived(lit.size > 0);
@@ -338,12 +358,21 @@
 		if (!sizes?.top || !sizes?.bottom) return "";
 		const unit = sizes.unit ?? or(ratioUnit, "for its size");
 		const sayWho = (who) => ({ who: capital(who), verb: verbOf(who), unit });
-		if (Math.min(p.nf, p.no) < MIN_RATIO_USES) return "";
-		const topRate = p.nf / sizes.top;
-		const bottomRate = p.no / sizes.bottom;
+		// with article counts, the share of each side's articles that use it, so
+		// the line agrees with the percentages under it; otherwise its uses
+		const shared = p.af != null && p.ao != null;
+		const [mine, theirs] = shared ? [p.af, p.ao] : [p.nf, p.no];
+		if (Math.min(mine, theirs) < MIN_RATIO_USES) return "";
+		const topRate = mine / sizes.top;
+		const bottomRate = theirs / sizes.bottom;
 		const times = Math.max(topRate, bottomRate) / Math.min(topRate, bottomRate);
-		if (times < 1.1) return fillIn(or(hoverEven, "About as often"), { unit });
-		return fillIn(or(hoverRatio, "{times} as often"), {
+		const items = sizes.items ?? "articles";
+		if (times < 1.1)
+			return shared
+				? fillIn(or(hoverShareEven, "Used in about as many {items}"), { items })
+				: fillIn(or(hoverEven, "About as often"), { unit });
+		return fillIn(shared ? or(hoverShareRatio, "Used in {times} as many {items}") : or(hoverRatio, "{times} as often"), {
+			items,
 			...sayWho(topRate >= bottomRate ? topName : otherName),
 			times: (times < 10 ? times.toFixed(1) : Math.round(times).toLocaleString("en-US")) + "×"
 		});
@@ -351,6 +380,8 @@
 	// a word's count with thousands commas ("1,234"); anything not a number as it came
 	const count = (n) =>
 		n != null && n !== "" && Number.isFinite(+n) ? (+n).toLocaleString("en-US") : n;
+	// a side's size, short: "940", "3.4k", "6k"
+	const short = (n) => (n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k` : count(n));
 	// a word's uses as a share of its side's total ("1.2%"); the raw count
 	// when there is no total to divide by
 	let sideTotals = $derived({
@@ -363,14 +394,6 @@
 		if (p === 0) return "0%";
 		if (p < 0.1) return "<0.1%";
 		return (p < 10 ? p.toFixed(1) : Math.round(p)) + "%";
-	}
-	// how far a score is from noise, in words, for the tooltip's {strength}
-	function strength(z) {
-		const a = Math.abs(z);
-		if (a < WEAK_Z) return "within noise";
-		if (a < 3.29) return "moderate";
-		if (a < 6) return "strong";
-		return "very strong";
 	}
 	// the width the bars reach, both sides (the longest bar and its word), so
 	// the note under the chart wraps to the drawing rather than the frame
@@ -710,15 +733,49 @@
 
 		{#if tip}
 			{@const color = tip.sign > 0 ? FOX : OTHERS}
-			{@const ratio = ratioOf(tip.p)}
+			{@const shared = tip.p.af != null && tip.p.ao != null}
+			{@const difference = capital(strengthOf(tip.p.z)) + (Math.abs(tip.p.z) >= STRENGTH_CUTS[0] ? " difference" : "")}
+			<!-- the bold line: how sure the difference is -->
+			<!-- its place on its side -->
+			{@const rank = side(tip.sign).findIndex((p) => p.word === tip.p.word) + 1}
+			{@const ratio = fillIn(SHARE_HEAD, { difference, score: fmt(tip.p.z) })}
 			<!-- a "|" in the Doc's hover counts starts a new line -->
-			{@const countLines = fillIn(or(hoverCounts, "Uses: {top} {topCount} · {bottom} {bottomCount} | Distinctiveness: {score} ({strength})"), {
+			<!-- with each side's article counts, the share of articles that use
+			     it; otherwise (a player's chart) how often, then the uses. For
+			     now the Doc's wording only takes over once it has those slots
+			     ({topShare}, or {topUses}) -->
+			{@const template = shared
+				? (String(hoverCounts).includes("{topShare}") ? hoverCounts : SHARE_COUNTS)
+				: (String(hoverCounts).includes("{topUses}") ? hoverCounts : USES_COUNTS)}
+			{@const countLines = fillIn(template, {
 				top: capital(topName),
 				bottom: capital(otherName),
-				topCount: count(tip.p.nf),
-				bottomCount: count(tip.p.no),
+				topLabel: source?.sizes?.topLabel ?? capital(topName),
+				bottomLabel: source?.sizes?.bottomLabel ?? capital(otherName),
+				topItems: short(sideTotals.top),
+				bottomItems: short(sideTotals.bottom),
+				rank: count(rank),
+				items: source?.sizes?.items ?? "articles",
+				// the other side by name: "Others (combined)" when it pools several
+				// outlets or players, the outlet's own name when it is one
+				bottomAll: /other/i.test(String(source?.bottomLabel ?? "other"))
+					? `${capital(otherName)} (combined)`
+					: capital(source.bottomLabel),
+				topUses: count(tip.p.nf),
+				bottomUses: count(tip.p.no),
+				topTimes: `${count(tip.p.nf)} ${+tip.p.nf === 1 ? "use" : "uses"}`,
+				bottomTimes: `${count(tip.p.no)} ${+tip.p.no === 1 ? "use" : "uses"}`,
+				topShare: shared ? pct(tip.p.af, sideTotals.top) : "",
+				bottomShare: shared ? pct(tip.p.ao, sideTotals.bottom) : "",
+				topCount: pct(shared ? tip.p.af : tip.p.nf, sideTotals.top),
+				bottomCount: pct(shared ? tip.p.ao : tip.p.no, sideTotals.bottom),
 				score: fmt(tip.p.z),
-				strength: strengthOf(tip.p.z)
+				strength: strengthOf(tip.p.z),
+				// "Very strong difference"; the weakest word stands alone ("Could be chance")
+				difference,
+				// "Used in 3.5× as many articles"
+				// (too few uses for a ratio: "Share of articles")
+				ratio: shared ? ratioOf(tip.p) || `Share of ${source?.sizes?.items ?? "articles"}` : ratioOf(tip.p)
 			})
 				.split(/\s*\|\s*/)
 				.filter((line) => line.trim())}
@@ -731,16 +788,13 @@
 			>
 				<!-- the side's colour in a swatch and on the quote's rule; the words in ink -->
 				<span class="tip-head">{properCase(tip.p.word)}</span>
-				{#if ratio}<span class="tip-ratio">{ratio}</span>{/if}
+				{#if ratio}<span class="tip-ratio"
+						>{#each ratio.split("**") as part, j}{#if j % 2}<strong>{part}</strong>{:else}{part}{/if}{/each}</span
+					>{/if}
 				<span class="tip-count"
-					>{fillIn(or(hoverCounts, "{top} {topCount} · {bottom} {bottomCount} · Score {score}"), {
-						top: topName,
-						bottom: otherName,
-						topCount: pct(tip.p.nf, sideTotals.top),
-						bottomCount: pct(tip.p.no, sideTotals.bottom),
-						score: fmt(tip.p.z),
-						strength: strength(tip.p.z)
-					})}{#if tip.p.pin} · #{tip.p.rank}{/if}</span
+					>{#each countLines as line, i}<span class="tip-count-line"
+							>{#each line.split("**") as part, j}{#if j % 2}<strong>{part}</strong>{:else}{part}{/if}{/each}{#if tip.p.pin && !shared && i === countLines.length - 1} · #{tip.p.rank}{/if}</span
+						>{/each}</span
 				>
 				{#if tip.eg}
 					<p style="border-left-color:{color}">
@@ -942,7 +996,6 @@
 	.tip-ratio {
 		display: block;
 		font: var(--tip-small);
-		font-weight: 700;
 		color: var(--color-fg);
 		margin: 2px 0 0;
 	}

@@ -33,6 +33,7 @@
 	import Subsections from "$components/Subsections.svelte";
 	import Aside from "$components/Aside.svelte";
 	import SideBySide from "$components/SideBySide.svelte";
+	import MethodsCompare from "$components/MethodsCompare.svelte";
 
 	const copy = getContext("copy");
 	const { body } = copy;
@@ -78,6 +79,8 @@
 		Subsections,
 		SideBySide,
 		Aside,
+		// the "how fightin' words compares" dropdown
+		MethodsCompare,
 		// legacy Doc ids — delete once the Doc carries component names
 		toc: Toc,
 		"outlet-topics": OutletTopicCompare,

@@ -47,6 +47,7 @@
 		"throat"
 	];
 	const TOPIC_LABELS = 7; // topic words labelled on a topic triangle (the most used)
+	const TOPIC_MIN_USES = 10; // topic words used fewer times than this are left off
 	const WIDE = 860; // wider than this: the cards beside the triangle, not over it
 	const CARD_COLUMN = 360; // room the cards take on the left, wide screens
 	const EXPLORE_GAP = 14; // px between the triangle and the explore card, narrow screens
@@ -498,7 +499,7 @@
 	function buildTopic(D, cleanup) {
 		const list = (D.topics[topic] ?? [])
 			.map((w) => D.BY.get(w))
-			.filter(Boolean);
+			.filter((w) => w && w.total >= TOPIC_MIN_USES);
 		const tern = new Tern(el("tern"), D, { maxSide: 420, litOnly: true });
 		cleanup.terns = [tern];
 		cleanup.push(() => tern.destroy());
@@ -511,7 +512,7 @@
 			{
 				// each word in the colour of the zone it sits in
 				lit: new Map(list.map((w) => [w.term, leanColor(w.s)])),
-				floor: 10,
+				floor: TOPIC_MIN_USES,
 				groups: [],
 				labels: labelled.map((w) => ({
 					terms: [w.term],

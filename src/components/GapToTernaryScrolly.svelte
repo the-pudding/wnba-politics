@@ -130,8 +130,15 @@
 		const [first, ...rest] = name.trim().split(/\s+/);
 		return rest.length ? `${first[0]}. ${rest.join(" ")}` : first;
 	};
+	// a person's own counts, first name and surname together (notebook 08)
+	const PEOPLE = new Map(
+		Object.values(chy.ternary_people ?? {}).map((p) => [nameKey(p.term), p])
+	);
 	const shareRow = (group) => {
-		const pts = group.map((w) => COUNTS.get(w.toLowerCase())).filter(Boolean);
+		const own = PEOPLE.get(nameKey(group.join(" ")));
+		const pts = own
+			? [own]
+			: group.map((w) => COUNTS.get(w.toLowerCase())).filter(Boolean);
 		if (!pts.length) return null;
 		const rates = [0, 1, 2].map(
 			(i) =>
@@ -179,15 +186,19 @@
 		phase === "ternary" ? (TER[terLast] ?? TER[0] ?? null) : null
 	);
 
-	// each player's surname on the triangle (A'ja Wilson is "wilson"; a name
-	// the chyrons never ran falls back to the first name, else nothing)
+	// each player's own dot on the triangle (their mentions, first name and
+	// surname together); else their surname, else their first name, else nothing
 	const slugOf = (name) =>
 		name
 			.toLowerCase()
 			.replace(/[^a-z0-9]+/g, "-")
 			.replace(/^-|-$/g, "");
-	const ternary = new Map((chy.ternary ?? []).map((row) => [row.term, row]));
+	const ternary = new Map(
+		[...(chy.ternary ?? []), ...Object.values(chy.ternary_people ?? {})].map((row) => [row.term, row])
+	);
 	const termFor = (name) => {
+		// the player's own dot, first name and surname together
+		if (PEOPLE.has(nameKey(name))) return PEOPLE.get(nameKey(name)).term;
 		const parts = name.toLowerCase().replace(/[’‘]/g, "'").split(/\s+/);
 		return [parts.at(-1), parts[0]].find((w) => ternary.has(w)) ?? null;
 	};
@@ -297,9 +308,39 @@
 		}
 		// the top row leaves first
 		out.sort((a, b) => a.start.y - b.start.y);
+		separate(out.map((f) => f.end).filter(Boolean));
 		flyers = out;
 		const words = out.filter((f) => f.end).map((f) => f.term);
 		if (words.join() !== bridgeWords.join()) bridgeWords = words;
+	}
+
+	// heads whose dots sit almost on top of one another ("Collier" and
+	// "Mitchell" by CNN's corner) are pushed apart until both faces show,
+	// each moving as little as it can from its dot
+	function separate(ends) {
+		const size = (e) => Math.max(e.r, HEAD_MIN);
+		for (let pass = 0; pass < 30; pass++) {
+			let moved = false;
+			for (let i = 0; i < ends.length; i++)
+				for (let j = i + 1; j < ends.length; j++) {
+					const a = ends[i],
+						b = ends[j];
+					const need = size(a) + size(b) + HEAD_GAP;
+					let dx = b.x - a.x,
+						dy = b.y - a.y;
+					const d = Math.hypot(dx, dy);
+					if (d >= need) continue;
+					// on the very same spot: side by side
+					if (d < 0.01) [dx, dy] = [1, 0];
+					const push = (need - d) / 2 / (d < 0.01 ? 1 : d);
+					a.x -= dx * push;
+					a.y -= dy * push;
+					b.x += dx * push;
+					b.y += dy * push;
+					moved = true;
+				}
+			if (!moved) break;
+		}
 	}
 
 	$effect(() => {
@@ -336,7 +377,8 @@
 		FLY_TO = 0.85,
 		STAGGER = 0.25,
 		ARC = 50, // px the path bows upward at its middle
-		HEAD_MIN = 10; // px: the smallest a head lands, so the face still reads
+		HEAD_MIN = 10, // px: the smallest a head lands, so the face still reads
+		HEAD_GAP = 2; // px between two heads that would otherwise overlap
 	// the dot plot's heads stay hoverable into the bridge, until they start to fly
 	let flying = $derived(t >= FLY_FROM);
 	let gapOpacity = $derived(1 - clamp((t - 0.05) / 0.35));
@@ -644,6 +686,7 @@
 					big
 					highlightColor={HIGHLIGHT}
 					enclose={Boolean(terStep) && !search && !holdNames}
+					people={!search}
 					focus={pinned}
 					quiet={findStep && open && suggestions.length > 0}
 					topic={terStep?.topic ?? null}

@@ -146,6 +146,9 @@ export function playerWordsSource({ who, rel, vs, pair, outlet = null, byOutlet 
 					n,
 					nf,
 					no,
+					// among its side's strongest words (notebook 09's TOP_N), the ones
+					// that carry an example
+					top: !!entry.top,
 					eg: own?.eg ?? entry.eg ?? lent?.eg,
 					egw: own?.egw ?? entry.egw ?? lent?.egw,
 					// where the word starts in the example (a hand-picked one has none)

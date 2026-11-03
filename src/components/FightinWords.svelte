@@ -97,6 +97,10 @@
 		outlet === ALL_OUTLETS
 			? or(allOutlets, "six other outlets")
 			: (PILL_NAME[outlet] ?? outlet).replace(/^./, (c) => c.toUpperCase());
+	// the six outlets pooled, as the tooltip's line for them starts
+	const TIP_OTHERS = "others";
+	const capitalise = (text) =>
+		String(text).replace(/^./, (c) => c.toUpperCase());
 	const pooledIn = (group, outlet) => (GROUPS[group] ?? []).includes(outlet);
 
 	// `source` ({points, topLabel, bottomLabel}) lets another dataset borrow the chart
@@ -135,7 +139,7 @@
 		//   rankFox: Fox #{rank}   rankOthers: Others #{rank}   rankEven: Even
 		//   foxHead, othersHead, caption ({fox} {others} {them}),
 		//   previous, next, range, hoverCounts, hoverRatio,
-		//   hoverEven, hoverStrength (see WordBars)
+		//   hoverEven, hoverShareRatio, hoverShareEven, hoverStrength (see WordBars)
 		//   perArticle: per article   perHeadline: per headline (the ratio's unit)
 		heading: headingText = "",
 		comparedWith = "",
@@ -154,6 +158,8 @@
 		next = "",
 		range = "",
 		hoverCounts = "",
+		hoverShareRatio = "",
+		hoverShareEven = "",
 		hoverRatio = "",
 		hoverEven = "",
 		hoverStrength = "",
@@ -230,8 +236,8 @@
 				(v) => (pairFiles = { ...pairFiles, [key]: v })
 			);
 	});
-	// [z, n, this side, that side], turned round
-	const flip = (s) => s && [-s[0], s[1], s[3], s[2]];
+	// [z, n, this side, that side, this side's articles, that side's], turned round
+	const flip = (s) => s && [-s[0], s[1], s[3], s[2], s[5], s[4]];
 	// while a file is still loading, keep showing what is on screen rather than
 	// flashing an empty chart (the words/phrases switch used to blank it)
 	let lastWords = [];
@@ -575,7 +581,10 @@
 						z: s[0],
 						n: s[1],
 						nf: s[2] ?? 0,
-						no: s[3] ?? 0
+						no: s[3] ?? 0,
+						// how many articles (or headlines) on each side use it
+						af: s[4],
+						ao: s[5]
 					}))
 	);
 
@@ -783,24 +792,35 @@
 		}
 	}
 	// against one outlet, that outlet's side quotes that outlet
-	// (notebooks/06 → static/data/fw_examples_by_outlet.json), fetched once
-	let outletExamples = $state(null);
-	let outletExamplesLoading = false;
-	async function ensureOutletExamples() {
-		if (outletExamples || outletExamplesLoading) return;
-		outletExamplesLoading = true;
+	// (notebooks/06 → static/data/fw_examples_by_outlet/<outlet>.json), each
+	// fetched once, when a comparison first needs it
+	let outletExamples = $state({});
+	const fetchingExamples = new Set();
+	async function ensureOutletExamples(outlet) {
+		if (outletExamples[outlet] || fetchingExamples.has(outlet)) return;
+		fetchingExamples.add(outlet);
+		let found = {};
 		try {
-			outletExamples = await (
-				await fetch(`${base}/data/fw_examples_by_outlet.json`)
+			found = await (
+				await fetch(`${base}/data/fw_examples_by_outlet/${slug(outlet)}.json`)
 			).json();
 		} catch {
-			outletExamples = {};
-		} finally {
-			outletExamplesLoading = false;
+			// no file: the card shows no sentence for that side
 		}
+		outletExamples = { ...outletExamples, [outlet]: found };
 	}
+	// the outlets whose own sentences the comparison side quotes
+	let quotedOutlets = $derived(
+		paired
+			? [top]
+			: against === ALL_OUTLETS
+				? []
+				: AGGREGATES.includes(against)
+					? (GROUPS[against] ?? [])
+					: [against]
+	);
 	$effect(() => {
-		if (against !== ALL_OUTLETS || paired) ensureOutletExamples();
+		for (const outlet of quotedOutlets) ensureOutletExamples(outlet);
 	});
 	// the example for a word on the comparison side: the chosen outlet's own
 	// sentence, or for a pooled group one of its members' sentences. A word on
@@ -813,20 +833,20 @@
 			return pair ? (pair.examples?.[mode]?.[word] ?? null) : undefined;
 		// another outlet against Fox: its side quotes it, Fox's side quotes Fox
 		if (paired && z > 0)
-			return outletExamples
-				? (outletExamples[top]?.[mode]?.[word] ?? null)
+			return outletExamples[top]
+				? (outletExamples[top][mode]?.[word] ?? null)
 				: undefined;
 		if (paired)
 			return litExamples[mode]?.[word] ?? fullExamples?.[mode]?.[word];
 		if (z < 0 && against !== ALL_OUTLETS) {
-			const members = AGGREGATES.includes(against)
-				? (GROUPS[against] ?? [])
-				: [against];
-			for (const outlet of members) {
-				const own = outletExamples?.[outlet]?.[mode]?.[word];
+			for (const outlet of quotedOutlets) {
+				const own = outletExamples[outlet]?.[mode]?.[word];
 				if (own) return own;
 			}
-			return outletExamples ? null : undefined;
+			// still loading: undefined; loaded with no sentence: none
+			return quotedOutlets.every((outlet) => outletExamples[outlet])
+				? null
+				: undefined;
 		}
 		return litExamples[mode]?.[word] ?? fullExamples?.[mode]?.[word];
 	}
@@ -842,7 +862,17 @@
 						bottom: sample.other,
 						unit: bodyMode
 							? or(perArticle, "per article")
-							: or(perHeadline, "per headline")
+							: or(perHeadline, "per headline"),
+						items: bodyMode ? "articles" : "headlines",
+						// each side's name at the start of its line in the tooltip
+						topLabel: paired ? outletName(top) : "Fox",
+						bottomLabel: capitalise(
+							against === ALL_OUTLETS
+								? TIP_OTHERS
+								: AGGREGATES.includes(against)
+									? against
+									: outletName(against)
+						)
 					}
 				: null,
 			topShort: paired ? inOutlet(top) : "in Fox News",
@@ -1178,10 +1208,14 @@
 			{next}
 			{range}
 			{hoverCounts}
+			{hoverShareRatio}
+			{hoverShareEven}
 			{hoverRatio}
 			{hoverEven}
 			{hoverStrength}
-			totals={!source && sample ? { top: sample.fox, bottom: sample.other } : null}
+			totals={!source && sample
+				? { top: sample.fox, bottom: sample.other }
+				: null}
 			example={barExample}
 			onhover={() => {
 				if (!source) ensureExamples();

@@ -74,6 +74,8 @@
 		hoverEven = "",
 		hoverStrength = "",
 		ratioUnit = "",
+		// usesLabel: the slider's name (Minimum uses)
+		usesLabel = "",
 		// srText: the chart described for screen readers (a step's own srText
 		// describes the chart at that step)
 		srText = "",
@@ -250,13 +252,14 @@
 	// with or without college coverage. The no-college numbers come from a rerun
 	// of notebook 09 with college articles dropped (static/data/nocollege/;
 	// words only, not two-word phrases).
-	// A check, shown only with ?checks: the fewest uses (Fox and the others
-	// together) a word needs to be drawn, on a log scale from one use to
-	// MOST_USES. Off (one use) unless the slider is moved
-	const MOST_USES = 300;
+	// the fewest uses (Fox and the others together) a word needs to be drawn,
+	// on a log scale from one use to the most-used of them (mostUses, below). Off (one use) unless the
+	// slider is moved; the slider shows, and counts, in explore mode only.
+	// It only thins out the side's strongest words (the ones with examples),
+	// never bringing weaker ones into view
 	let usesSlider = $state(0);
 	let floor = $derived(
-		Math.max(1, Math.round(Math.pow(MOST_USES, usesSlider / 100)))
+		Math.max(1, Math.round(Math.pow(mostUses, usesSlider / 100)))
 	);
 	let college = $state("with");
 	let ncWords = $state(null);
@@ -401,13 +404,26 @@
 				}
 	);
 	// Fox's column head carries its wordmark; the other side is named in words
-	let fresh = $derived.by(() => {
-		const src = playerWordsSource({
+	let rawSource = $derived(
+		playerWordsSource({
 			...shown,
 			rel: suffix(shown.rel),
 			byOutlet: byOutlet[outletKey(shown.who)] ?? null,
 			alt
-		});
+		})
+	);
+	// the slider's top end: the most uses among the words it can show, so at
+	// its far end one word is still drawn, whatever the player
+	let mostUses = $derived(
+		Math.max(
+			1,
+			...(rawSource?.points ?? [])
+				.filter((p) => p.top && !(phrases && isFunctionTerm(p.word)))
+				.map((p) => p.n)
+		)
+	);
+	let fresh = $derived.by(() => {
+		const src = rawSource;
 		if (!src) return src;
 		// a phrase that starts or ends with a function word ("a hard") is left
 		// off, as in the main chart (src/utils/functionWords.js); the single
@@ -415,7 +431,9 @@
 		const kept = {
 			...src,
 			points: src.points.filter(
-				(p) => p.n >= floor && !(phrases && isFunctionTerm(p.word))
+				(p) =>
+					(!live || floor <= 1 || (p.top && p.n >= floor)) &&
+					!(phrases && isFunctionTerm(p.word))
 			)
 		};
 		if (shown.vs !== "outlets") return kept;
@@ -589,6 +607,8 @@
 							label="Compared with"
 						/>
 						{#if narrow}{@render unitSwitch()}{/if}
+						<!-- on a desktop the slider follows the menu on its line -->
+						{#if !narrow && live}{@render usesControl()}{/if}
 					</div>
 				{:else if shown.vs !== "outlets" && !shown.title}
 					<p class="heading">
@@ -612,20 +632,29 @@
 						nameOf={(o) => PRIOR_NAMES[o]}
 						label="Prior"
 					/>
-					<!-- a check: see `floor` above -->
-					<label class="uses">
-						<span>Minimum uses: <b>{floor.toLocaleString()}</b></span>
-						<input
-							type="range"
-							min="0"
-							max="100"
-							step="1"
-							bind:value={usesSlider}
-							aria-label="Minimum uses"
-						/>
-					</label>
 				{/if}
+				<!-- on a phone the slider takes a line of its own, at the right -->
+				{#if narrow && live}<div class="uses-row">
+						{@render usesControl()}
+					</div>{/if}
 			</div>
+			<!-- the fewest uses a word needs, in explore mode only: see `floor` above -->
+			{#snippet usesControl()}
+				<label class="uses">
+					<span
+						>{or(usesLabel, "Minimum uses")}:
+						<b>{floor.toLocaleString()}</b></span
+					>
+					<input
+						type="range"
+						min="0"
+						max="100"
+						step="1"
+						bind:value={usesSlider}
+						aria-label={or(usesLabel, "Minimum uses")}
+					/>
+				</label>
+			{/snippet}
 			<!-- the relations as tabs on a rule; words or phrases a quiet switch
 			     at its right end -->
 			{#snippet unitSwitch()}
@@ -1110,17 +1139,26 @@
 		pointer-events: auto;
 	}
 	/* the "Minimum uses" check */
+	/* the slider: its name, then the track, on one line */
 	.uses {
 		display: inline-flex;
-		flex-direction: column;
-		gap: 2px;
-		min-width: 170px;
+		align-items: center;
+		gap: 8px;
 		font-family: var(--font-sans);
 		font-size: 13px;
 		color: var(--color-ink-dark);
+		white-space: nowrap;
+	}
+	.subheading .uses {
+		margin-left: 18px;
 	}
 	.uses input[type="range"] {
-		width: 100%;
+		width: 130px;
 		accent-color: var(--color-fox);
+	}
+	.uses-row {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 6px;
 	}
 </style>

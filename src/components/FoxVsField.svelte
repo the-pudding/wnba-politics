@@ -200,11 +200,7 @@
 		0
 	);
 	const step = counts ? (peak > 60 ? 20 : 10) : 0.1;
-	const yMax = Math.ceil((peak * 1.04) / step) * step;
-	const yTicks = Array.from(
-		{ length: Math.round(yMax / step) + 1 },
-		(_, i) => +(i * step).toFixed(4)
-	);
+	const yBase = Math.ceil((peak * 1.04) / step) * step;
 	const fmt = (v) =>
 		counts ? String(Math.round(v)) : `${Math.round(v * 100)}%`;
 	const MONTHS = [
@@ -275,6 +271,7 @@
 			});
 		return out.filter((n) => periods.includes(n.p));
 	})();
+	const NOTE_CHAR = 6.6; // px per character at the notes' size, roughly
 	// a note on up to three short lines
 	const wrap = (text, width = 22) => {
 		const lines = [""];
@@ -325,6 +322,48 @@
 		bottom: 30,
 		left: 4
 	});
+	// on a short chart the highest point can climb into the dated notes at the
+	// top ("Clark's rookie season" over Fox's 23%): the scale then runs higher,
+	// so the lines stay below the notes
+	// each dated note's box: its lines, which side of its line it sits on, and
+	// how far down (a note that would run into an earlier one goes below it)
+	const noteBoxes = $derived.by(() => {
+		const placed = [];
+		return noteList.map((n) => {
+			const lines = wrap(
+				narrow && n.short ? n.short : n.text,
+				narrow ? 13 : 22
+			);
+			const w =
+				Math.max(n.head.length, ...lines.map((l) => l.length)) * NOTE_CHAR;
+			const x0 = n.left ? x(n.p) - 6 - w : x(n.p) + 6;
+			const h = 20 + 14 * lines.length;
+			let top = M.top;
+			for (const b of placed)
+				if (x0 < b.x0 + b.w && b.x0 < x0 + w && top < b.top + b.h)
+					top = b.top + b.h + 6;
+			const box = { lines, w, x0, top, h };
+			placed.push(box);
+			return box;
+		});
+	});
+	const notesBand = $derived(
+		noteBoxes.length
+			? Math.max(...noteBoxes.map((b) => b.top + b.h)) - M.top
+			: 0
+	);
+	const yMax = $derived.by(() => {
+		const plot = H - M.top - M.bottom;
+		if (!notesBand || plot <= notesBand) return yBase;
+		const need = (peak * plot) / (plot - notesBand);
+		return Math.max(yBase, Math.ceil(need / step) * step);
+	});
+	const yTicks = $derived(
+		Array.from(
+			{ length: Math.round(yMax / step) + 1 },
+			(_, i) => +(i * step).toFixed(4)
+		)
+	);
 	const x = $derived(
 		scalePoint()
 			.domain(periods)
@@ -360,9 +399,25 @@
 					Math.max(...nameLines(h.name).map((l) => l.length), value.length) *
 					7.2;
 				const right = x(d.p) + 8 + w <= width; // flip left if it would run off the edge
+				const lx = right ? x(d.p) + 8 : x(d.p) - 8;
+				// a label that would sit on a dated note ("Fox News 23%" under
+				// "2024 Clark's rookie season") drops to just below the notes
+				const lx0 = right ? lx : lx - w;
+				const rows = nameLines(h.name).length + 1;
+				let ly = y(d.v) + dy;
+				for (const b of noteBoxes) {
+					const noteFoot = b.top + b.h;
+					if (
+						lx0 < b.x0 + b.w &&
+						b.x0 < lx0 + w &&
+						ly - 12 < noteFoot &&
+						b.top < ly + 15 * (rows - 1) + 4
+					)
+						ly = noteFoot + 12;
+				}
 				return {
-					x: right ? x(d.p) + 8 : x(d.p) - 8,
-					y: y(d.v) + dy,
+					x: lx,
+					y: ly,
 					value,
 					anchor: right ? "start" : "end"
 				};
@@ -413,7 +468,9 @@
 				[...field, ...heroes].map((s) => s.pts.find((d) => d.p === q)?.v ?? 0)
 			)
 		);
-		const notesFoot = noteList.length ? M.top + 16 + 14 * 3 + 16 : 0; // stay below the notes
+		const notesFoot = noteList.length
+			? Math.max(M.top + 16 + 14 * 3 + 16, M.top + notesBand + 12)
+			: 0; // stay below the notes
 		return { p, v: top, y: Math.max(y(top) - 8, notesFoot) };
 	});
 
@@ -460,7 +517,7 @@
 		.domain(periods)
 		.range([SM.l, SW - SM.r]);
 	const sy = scaleLinear()
-		.domain([0, yMax])
+		.domain([0, yBase])
 		.range([SH - SM.b, SM.t]);
 	const spath = d3line()
 		.x((d) => sx(d.p))
@@ -556,20 +613,18 @@
 			{/each}
 
 			<!-- the dated notes -->
-			{#each noteList as n (n.p + n.text)}
+			{#each noteList as n, i (n.p + n.text)}
 				{@const nx = x(n.p)}
 				{@const tx = nx + (n.left ? -6 : 6)}
 				<line class="note-line" x1={nx} x2={nx} y1={M.top - 4} y2={y(0)} />
 				<text
 					class="note"
 					x={tx}
-					y={M.top + 16}
+					y={noteBoxes[i].top + 16}
 					text-anchor={n.left ? "end" : "start"}
 				>
 					<tspan class="note-head" x={tx}>{n.head}</tspan>
-					{#each wrap(narrow && n.short ? n.short : n.text, narrow ? 13 : 22) as l, k (k)}<tspan
-							x={tx}
-							dy="14">{l}</tspan
+					{#each noteBoxes[i].lines as l, k (k)}<tspan x={tx} dy="14">{l}</tspan
 						>{/each}
 				</text>
 			{/each}

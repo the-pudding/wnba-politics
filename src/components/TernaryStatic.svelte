@@ -32,6 +32,10 @@
 		enclose = true,
 		// shade the "mostly Fox / CNN / MSNBC" bands at the corners
 		bands: showBands = true,
+		// people: a band that is one person's name ("caitlin, clark"), or a
+		// person's whole name in a band ("caitlin clark"), is drawn as one dot
+		// for that person, labelled with the surname, their name's words hidden
+		people = false,
 		// hide words used fewer times than this (the explore step's slider)
 		minTotal = 0,
 		// topic: "polrace" or "lgbtq" — light that vocabulary's words and shade
@@ -108,6 +112,31 @@
 		return { totals, counts };
 	});
 	const meta = new Map((chy.ternary ?? []).map((t) => [t.term, t]));
+	// each person's mentions, first name and surname together (notebook 08)
+	const nameKey = (words) => words.join(" ").toLowerCase().replace(/[’‘]/g, "'");
+	const PEOPLE = new Map(
+		Object.entries(chy.ternary_people ?? {}).map(([name, p]) => [
+			p.term,
+			{ ...p, name, label: name.split(" ").at(-1) }
+		])
+	);
+	let named = $derived.by(() => {
+		if (!people || throughYear) return [];
+		const out = new Map();
+		for (const band of groups) {
+			const whole = PEOPLE.get(nameKey(band));
+			if (whole) out.set(whole.term, whole);
+			else
+				for (const word of band) {
+					const one = PEOPLE.get(nameKey([word]));
+					if (one) out.set(one.term, one);
+				}
+		}
+		return [...out.values()];
+	});
+	let hiddenWords = $derived(
+		new Set(named.flatMap((p) => p.term.split(" ")))
+	);
 
 	// --- a topic's words and heat -------------------------------------------
 	const TOPIC_TERMS = {
@@ -172,7 +201,8 @@
 	// scrolly: all Fox red); otherwise each band gets its own palette colour
 	let bands = $derived([
 		...(groups.length ? groups : words.length ? [words] : []).map((band, i) => ({
-			words: new Set(band.map((w) => w.toLowerCase())),
+			// the whole name too, for a person's own dot
+			words: new Set([...band.map((w) => w.toLowerCase()), nameKey(band)]),
 			color: highlightColor ?? GROUP_COLORS[i % GROUP_COLORS.length]
 		})),
 		// the topic's words form a band of their own, in the topic's colour
@@ -280,7 +310,7 @@
 			}
 			return out;
 		}
-		return (chy.ternary ?? [])
+		return [...(chy.ternary ?? []).filter((t) => !hiddenWords.has(t.term)), ...named]
 			.filter((t) => t.total >= floor)
 			.map((t) => {
 				const [px, py] = bary(t.shares);
@@ -352,28 +382,65 @@
 		const perChar = narrow ? 13 : big ? 8.5 : 7.5;
 		// the bottom corners carry the channel names: keep clear of them
 		const FLOOR = corners.B[1] - (narrow ? 30 : 16);
-		for (const term of terms.filter((t) => t.lit).sort((a, b) => a.py - b.py)) {
+		// the text's height above its baseline
+		const capH = rowH * 0.6;
+		const lit = terms.filter((t) => t.lit);
+		// the dots with the fewest lit neighbours are labelled first, so a dot
+		// on its own gets the spot beside it before a crowd spills over it
+		const crowd = (t) => lit.filter((o) => o !== t && Math.hypot(o.px - t.px, o.py - t.py) < 40).length;
+		for (const term of lit.toSorted((a, b) => crowd(a) - crowd(b) || a.py - b.py)) {
 			const gap = narrow ? 9 : big ? 7 : 5;
-			const width = term.term.length * perChar;
-			// past the right edge the label sits on the dot's other side
-			const flip = term.px + radius(term.total) + gap + width > SIDE - 4;
-			const x = flip ? term.px - radius(term.total) - gap : term.px + radius(term.total) + gap;
-			// the span the text covers, by its anchor: two labels clash when their
-			// spans overlap and their baselines sit closer than a row
-			const x0 = flip ? x - width : x, x1 = flip ? x : x + width;
-			let y = term.py + (narrow ? 8 : big ? 5 : 4);
-			const clashes = (candidate) =>
-				placed.some(
-					(o) => Math.abs(o.y - candidate) < rowH && o.x0 < x1 + 10 && o.x1 > x0 - 10
+			const width = (term.label ?? term.term).length * perChar;
+			const r = radius(term.total);
+			// level with the dot, or a little above it on the triangle's base,
+			// clear of the corners' names
+			const level = term.py + (narrow ? 8 : big ? 5 : 4) > FLOOR ? term.py - (narrow ? 12 : 6) : term.py + (narrow ? 8 : big ? 5 : 4);
+			// the span a label covers, by its anchor
+			const span = (x, anchor) =>
+				anchor === "start" ? [x, x + width] : anchor === "end" ? [x - width, x] : [x - width / 2, x + width / 2];
+			// two labels clash when their spans overlap and their baselines sit
+			// closer than a row; a label clashes with another lit dot it covers
+			const clashes = (x0, x1, y) =>
+				placed.some((o) => Math.abs(o.y - y) < rowH && o.x0 < x1 + 10 && o.x1 > x0 - 10) ||
+				lit.some(
+					(o) =>
+						o !== term &&
+						o.px + radius(o.total) > x0 - 2 &&
+						o.px - radius(o.total) < x1 + 2 &&
+						o.py + radius(o.total) > y - capH &&
+						o.py - radius(o.total) < y + 2
 				);
-			// stack downward when a neighbour's label is in the way, upward when
-			// that would land on a corner name
-			while (clashes(y)) y += rowH;
-			if (y > FLOOR) {
-				y = term.py - (narrow ? 12 : 6);
-				while (clashes(y)) y -= rowH;
+			// beside the dot, right then left, then above it, then below; clear of
+			// the edges, the apex's network name and the corners' names
+			const spots = [
+				{ x: term.px + r + gap, y: level, anchor: "start" },
+				{ x: term.px - r - gap, y: level, anchor: "end" },
+				{ x: term.px, y: term.py - r - gap, anchor: "middle" },
+				{ x: term.px, y: term.py + r + gap + capH, anchor: "middle" }
+			];
+			let spot = spots.find(({ x, y, anchor }) => {
+				const [x0, x1] = span(x, anchor);
+				const top = anchor === "middle" ? y - capH : y;
+				return x0 >= 2 && x1 <= SIDE - 4 && (y <= FLOOR || y <= term.py) && top >= CEILING && !clashes(x0, x1, y);
+			});
+			if (!spot) {
+				// nowhere free: beside the dot, stacked down past the labels in the
+				// way, or up when that would land on a corner name
+				const flip = term.px + r + gap + width > SIDE - 4;
+				const x = flip ? term.px - r - gap : term.px + r + gap;
+				const anchor = flip ? "end" : "start";
+				const [x0, x1] = span(x, anchor);
+				const taken = (y) => placed.some((o) => Math.abs(o.y - y) < rowH && o.x0 < x1 + 10 && o.x1 > x0 - 10);
+				let y = level;
+				while (taken(y)) y += rowH;
+				if (y > FLOOR) {
+					y = term.py - (narrow ? 12 : 6);
+					while (taken(y)) y -= rowH;
+				}
+				spot = { x, y, anchor };
 			}
-			placed.push({ ...term, x, y, x0, x1, anchor: flip ? "end" : "start" });
+			const [x0, x1] = span(spot.x, spot.anchor);
+			placed.push({ ...term, x: spot.x, y: spot.y, x0, x1, anchor: spot.anchor });
 		}
 		return placed;
 	});
@@ -526,6 +593,11 @@
 		offscreen || quiet
 			? null
 			: (locked ?? hovered ?? (pinGone ? null : focused))
+	);
+	// a word already labelled keeps its label where it is; only an unlabelled
+	// word is named above its dot
+	let shownLabelled = $derived(
+		Boolean(shown) && labelled.some((t) => t.term === shown.term)
 	);
 	// the tooltip beside the dot (the other side near the right edge, under or
 	// over it when neither side fits), kept within the drawing; in px
@@ -770,18 +842,16 @@
 		{#each labelled as term (term.term)}
 			<text
 				class="word"
-				opacity={shown?.term === term.term ? 0 : null}
 				x={term.x}
 				y={term.y}
 				text-anchor={term.anchor ?? "start"}
 				fill={term.lit}
 			>
-				{term.term}
+				{term.label ?? term.term}
 			</text>
 		{/each}
-		<!-- the hovered word named above its dot, lit or not; its own label
-		     steps aside meanwhile -->
-		{#if labels && shown}
+		<!-- the hovered word named above its dot, when it has no label of its own -->
+		{#if labels && shown && !shownLabelled}
 			<text
 				class="word hover"
 				x={shown.px}
@@ -789,7 +859,7 @@
 				text-anchor="middle"
 				fill={shown.lit ?? regionColor(shown.shares)}
 			>
-				{shown.term}
+				{shown.label ?? shown.term}
 			</text>
 		{/if}
 	</svg>
@@ -827,8 +897,9 @@
 			style:visibility={tipPos ? null : "hidden"}
 		>
 			<div class="w">
-				<span>{shown.term}</span><small
-					>{shown.total.toLocaleString()} use{shown.total === 1 ? "" : "s"}</small
+				<span>{shown.name ?? shown.term}</span><small
+					>{shown.total.toLocaleString()}
+					{shown.name ? "mention" : "use"}{shown.total === 1 ? "" : "s"}</small
 				>
 			</div>
 			<div class="shares">
@@ -1045,16 +1116,21 @@
 			top: 12px;
 		}
 	}
+	/* a long name stays on one line; the count goes under it when there's no room */
 	.tip .w {
 		display: flex;
+		flex-wrap: wrap;
 		justify-content: space-between;
 		align-items: baseline;
-		gap: 8px;
+		gap: 0 8px;
 		font-family: var(--font-serif);
 		font-size: 18px;
 		font-weight: 700;
 		color: var(--color-fg);
 		margin-bottom: 6px;
+	}
+	.tip .w span {
+		white-space: nowrap;
 	}
 	.tip .w small {
 		font-size: 12px;

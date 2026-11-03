@@ -63,7 +63,8 @@
 		"TvBeside",
 		"WordCompare",
 		"WordNeighbors",
-		"SideBySide"
+		"SideBySide",
+		"MethodsCompare"
 	]);
 
 	// one-liner: `chart: name | key: value | …`
