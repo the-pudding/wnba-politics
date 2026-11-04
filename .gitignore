@@ -34,3 +34,7 @@ static/data/prior-uniform/
 
 # Storm TV sources and build script (downloads clips)
 notebooks/storm_tv/
+
+# data shared with Maddy, kept out of the public repo
+for-maddy-wnba-news-data/
+for-maddy-wnba-news-data.zip

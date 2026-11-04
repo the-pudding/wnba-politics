@@ -172,7 +172,8 @@
 
 	// --- the handoff ----------------------------------------------------------
 	// t runs 0 → 1 as the bridge (an empty stretch between the two sets of
-	// cards) crosses the middle of the screen; it drives everything in between
+	// cards) crosses HANDOFF_LINE (a share of the screen's height, from the
+	// top); it drives everything in between
 	let bridgeEl = $state(null);
 	let t = $state(0);
 	const clamp = (v) => Math.max(0, Math.min(1, v));
@@ -223,16 +224,6 @@
 			C: [SIDE - PAD, top + tall]
 		};
 	})();
-	const totals = (chy.ternary ?? [])
-		.map((row) => row.total)
-		.filter((n) => n >= 1);
-	const BIGGEST = Math.max(1, ...totals);
-	const SMALLEST = Math.max(1, Math.min(...totals));
-	// the "big" radius, with no slider floor
-	const dotRadius = (total) => {
-		const span = Math.log(Math.max(2, BIGGEST / SMALLEST));
-		return 2 + (Math.log(Math.max(1, total / SMALLEST)) / span) * 10;
-	};
 	const HIGHLIGHT = "var(--color-fox-navy)";
 	// the band a word sits in, as TernaryStatic colours its dots (keep in step):
 	// the network with more than half its uses, else the middle's tan
@@ -254,7 +245,6 @@
 		return {
 			px: a * corners.A[0] + b * corners.B[0] + c * corners.C[0],
 			py: a * corners.A[1] + b * corners.B[1] + c * corners.C[1],
-			r: dotRadius(row.total),
 			// lit as the triangle lights it: its band's network colour
 			color: regionColor(row.shares)
 		};
@@ -269,6 +259,7 @@
 	let flyers = $state([]);
 	// the players' words, lit on the triangle while they land
 	let bridgeWords = $state([]);
+	let headSpots = $state({});
 	function measure() {
 		if (!stageEl || !gapEl || !terEl) return;
 		const svg = terEl.querySelector("svg");
@@ -289,7 +280,7 @@
 				end = {
 					x: p.x - box.left,
 					y: p.y - box.top,
-					r: at.r * ctm.a,
+					r: headRadius(term, box.width < PHONE_WIDTH ? HEAD_MAX_PHONE : HEAD_MAX),
 					color: at.color
 				};
 			}
@@ -310,6 +301,18 @@
 		out.sort((a, b) => a.start.y - b.start.y);
 		separate(out.map((f) => f.end).filter(Boolean));
 		flyers = out;
+		// where each head landed, in the triangle's drawing units, so its label
+		// (and the line to a label set apart) finds the face, not just its dot
+		const inverse = ctm.inverse();
+		const spots = {};
+		for (const f of out)
+			if (f.end) {
+				const q = new DOMPoint(f.end.x + box.left, f.end.y + box.top).matrixTransform(inverse);
+				// (and how far its face reaches, with a little air)
+				const reach = (f.end.r + 2) / ctm.a;
+				spots[f.term] = [Math.round(q.x * 10) / 10, Math.round(q.y * 10) / 10, Math.round(reach * 10) / 10];
+			}
+		if (JSON.stringify(spots) !== JSON.stringify(headSpots)) headSpots = spots;
 		const words = out.filter((f) => f.end).map((f) => f.term);
 		if (words.join() !== bridgeWords.join()) bridgeWords = words;
 	}
@@ -349,8 +352,8 @@
 		const update = () => {
 			frame = null;
 			const r = bridgeEl.getBoundingClientRect();
-			const mid = window.innerHeight / 2;
-			t = clamp((mid - r.top) / Math.max(1, r.height));
+			const line = window.innerHeight * HANDOFF_LINE;
+			t = clamp((line - r.top) / Math.max(1, r.height));
 			// (and once past it, if a fast scroll skipped it, so the names are known)
 			// and while the heads sit on the triangle, so they follow a resize
 			if ((t > 0 && t < 1) || (t >= 1 && (!bridgeWords.length || headsOn)))
@@ -372,17 +375,36 @@
 	});
 
 	// the handoff's timing, as shares of the bridge: the faces fly between
-	// FLY_FROM and FLY_TO, each leaving up to STAGGER after the first
-	const FLY_FROM = 0.05,
-		FLY_TO = 0.85,
+	// FLY_FROM and FLY_TO, each leaving up to STAGGER after the first, and the
+	// triangle fades in by FLY_TO, while the bridge's card is still on screen
+	const HANDOFF_LINE = 0.75,
+		FLY_FROM = 0.05,
+		FLY_TO = 0.7,
 		STAGGER = 0.25,
 		ARC = 50, // px the path bows upward at its middle
 		HEAD_MIN = 10, // px: the smallest a head lands, so the face still reads
+		HEAD_MAX = 24, // px: the head of the most-mentioned player
+		HEAD_MAX_PHONE = 16,
+		PHONE_WIDTH = 640,
 		HEAD_GAP = 2; // px between two heads that would otherwise overlap
+	// a head's size runs with the player's mentions, on a log scale as the dots'
+	// does: Griner's 7,000 would otherwise dwarf everyone
+	const headMentions = [...TERM_OF.values()]
+		.map((term) => ternary.get(term)?.total)
+		.filter(Boolean);
+	const MOST_MENTIONS = Math.max(1, ...headMentions);
+	const FEWEST_MENTIONS = Math.max(1, Math.min(...headMentions));
+	const headRadius = (term, biggest) => {
+		const span = Math.log(Math.max(2, MOST_MENTIONS / FEWEST_MENTIONS));
+		const share = Math.log(ternary.get(term).total / FEWEST_MENTIONS) / span;
+		return HEAD_MIN + (biggest - HEAD_MIN) * share;
+	};
 	// the dot plot's heads stay hoverable into the bridge, until they start to fly
 	let flying = $derived(t >= FLY_FROM);
 	let gapOpacity = $derived(1 - clamp((t - 0.05) / 0.35));
-	let terOpacity = $derived(clamp((t - 0.4) / 0.45));
+	let terOpacity = $derived(clamp((t - 0.35) / (FLY_TO - 0.35)));
+	// the triangle answers a pointer once the faces have landed on it
+	let terLive = $derived(phase === "ternary" || (phase === "bridge" && t >= FLY_TO));
 	const lerp = (a, b, p) => a + (b - a) * p;
 	function flight(f, i, n) {
 		const delay = n > 1 ? (STAGGER * i) / (n - 1) : 0;
@@ -496,6 +518,7 @@
 	// a tap on touch (a finger "leaves" the moment it lifts)
 	let headTerm = $state(null);
 	const hovers = (event) => event.pointerType !== "touch";
+	let headTouched = false;
 	// a share row's tooltip: hover lights it with a mouse; a click or tap pins
 	// it until that row is clicked again (or anywhere else on the page). Touch
 	// skips the hover events, so a tap doesn't light, unlight and relight.
@@ -675,7 +698,7 @@
 			class="stage ternary"
 			bind:this={terEl}
 			style:opacity={terOpacity}
-			inert={phase !== "ternary"}
+			inert={!terLive}
 		>
 			<div class="ter-col">
 				<TernaryStatic
@@ -687,6 +710,8 @@
 					highlightColor={HIGHLIGHT}
 					enclose={Boolean(terStep) && !search && !holdNames}
 					people={!search}
+					markMin={headsOn ? HEAD_MIN : 0}
+					markAt={headsOn ? headSpots : null}
 					focus={pinned}
 					quiet={findStep && open && suggestions.length > 0}
 					topic={terStep?.topic ?? null}
@@ -709,9 +734,10 @@
 						style:transform="translate({at.x - at.r}px, {at.y - at.r}px)"
 						style:opacity={at.opacity}
 						class:live={headsOn && at.landed}
-						onpointerenter={(e) => hovers(e) && (headTerm = f.term)}
+						onpointerdown={(e) => (headTouched = !hovers(e))}
+						onpointermove={(e) => hovers(e) && (headTerm = f.term)}
 						onpointerleave={(e) => hovers(e) && (headTerm = null)}
-						onclick={() => (headTerm = headTerm === f.term ? null : f.term)}
+						onclick={() => headTouched && (headTerm = headTerm === f.term ? null : f.term)}
 						role="presentation"
 					>
 						{#if f.img}<img src={f.img} alt="" />{/if}

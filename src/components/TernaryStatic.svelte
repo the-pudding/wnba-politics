@@ -34,8 +34,14 @@
 		bands: showBands = true,
 		// people: a band that is one person's name ("caitlin, clark"), or a
 		// person's whole name in a band ("caitlin clark"), is drawn as one dot
-		// for that person, labelled with the surname, their name's words hidden
+		// for that person, labelled with their full name, their name's words hidden
 		people = false,
+		// markMin: faces drawn over the people's dots (the scrolly's heads), this
+		// many screen px across their radius at least; labels keep clear of them
+		markMin = 0,
+		// markAt: { term: [x, y, reach] } where those faces sit, in drawing units, when
+		// they have been nudged off their dots; null: on their dots
+		markAt = null,
 		// hide words used fewer times than this (the explore step's slider)
 		minTotal = 0,
 		// topic: "polrace" or "lgbtq" — light that vocabulary's words and shade
@@ -117,7 +123,7 @@
 	const PEOPLE = new Map(
 		Object.entries(chy.ternary_people ?? {}).map(([name, p]) => [
 			p.term,
-			{ ...p, name, label: name.split(" ").at(-1) }
+			{ ...p, name, label: name }
 		])
 	);
 	let named = $derived.by(() => {
@@ -374,6 +380,12 @@
 	});
 	// nudge lit labels apart; anything above the apex hits the network's corner label
 	const CEILING = corners.A[1] - 2;
+	// a label this far from its dot (drawing px past the dot's edge) gets a line to it
+	const LEADER_AFTER = 8;
+	// the drawn width, to turn markMin's screen px into drawing px
+	let svgWidth = $state(0);
+	// (plus the face's ring)
+	let markR = $derived(markMin && svgWidth ? ((markMin + 2) * SIDE) / svgWidth : 0);
 	let labelled = $derived.by(() => {
 		const placed = [];
 		if (!labels) return placed;
@@ -384,14 +396,19 @@
 		const FLOOR = corners.B[1] - (narrow ? 30 : 16);
 		// the text's height above its baseline
 		const capH = rowH * 0.6;
-		const lit = terms.filter((t) => t.lit);
+		// a person's label goes by the face over the dot, where there is one
+		const lit = terms
+			.filter((t) => t.lit)
+			.map((t) => (markAt?.[t.term] ? { ...t, px: markAt[t.term][0], py: markAt[t.term][1], markReach: markAt[t.term][2] } : t));
 		// the dots with the fewest lit neighbours are labelled first, so a dot
 		// on its own gets the spot beside it before a crowd spills over it
 		const crowd = (t) => lit.filter((o) => o !== t && Math.hypot(o.px - t.px, o.py - t.py) < 40).length;
+		// a person's dot is as big as the face over it
+		const reach = (t) => (t.name ? Math.max(radius(t.total), t.markReach ?? markR) : radius(t.total));
 		for (const term of lit.toSorted((a, b) => crowd(a) - crowd(b) || a.py - b.py)) {
 			const gap = narrow ? 9 : big ? 7 : 5;
 			const width = (term.label ?? term.term).length * perChar;
-			const r = radius(term.total);
+			const r = reach(term);
 			// level with the dot, or a little above it on the triangle's base,
 			// clear of the corners' names
 			const level = term.py + (narrow ? 8 : big ? 5 : 4) > FLOOR ? term.py - (narrow ? 12 : 6) : term.py + (narrow ? 8 : big ? 5 : 4);
@@ -405,10 +422,10 @@
 				lit.some(
 					(o) =>
 						o !== term &&
-						o.px + radius(o.total) > x0 - 2 &&
-						o.px - radius(o.total) < x1 + 2 &&
-						o.py + radius(o.total) > y - capH &&
-						o.py - radius(o.total) < y + 2
+						o.px + reach(o) > x0 - 2 &&
+						o.px - reach(o) < x1 + 2 &&
+						o.py + reach(o) > y - capH &&
+						o.py - reach(o) < y + 2
 				);
 			// beside the dot, right then left, then above it, then below; clear of
 			// the edges, the apex's network name and the corners' names
@@ -424,13 +441,46 @@
 				return x0 >= 2 && x1 <= SIDE - 4 && (y <= FLOOR || y <= term.py) && top >= CEILING && !clashes(x0, x1, y);
 			});
 			if (!spot) {
-				// nowhere free: beside the dot, stacked down past the labels in the
+				// nowhere free beside it: the nearest free place, a few rows up or
+				// down and a little to either side (a line will lead back to it)
+				const fits = ({ x, y, anchor }) => {
+					const [x0, x1] = span(x, anchor);
+					return x0 >= 2 && x1 <= SIDE - 4 && y <= FLOOR && y - capH >= CEILING && !clashes(x0, x1, y);
+				};
+				const near = [];
+				for (let k = 0; k <= 6; k++)
+					for (let m = 0; m <= 4; m++)
+						for (const dy of k ? [-k * rowH, k * rowH] : [0])
+							for (const [dx, anchor] of [[r + gap + m * 16, "start"], [-(r + gap + m * 16), "end"]])
+								near.push({ x: term.px + dx, y: level + dy, anchor, cost: k * rowH + m * 16 });
+				// a dot by a bottom corner may also take the row of the corner's name,
+				// past the name, before a long climb up the edge
+				// (low enough to clear the faces on the base)
+				const baseFace = Math.max(markR, ...lit.filter((t) => t.py > corners.B[1] - 30).map(reach));
+				const BASE_ROW = Math.max(corners.B[1] + 40, corners.B[1] + baseFace + capH + 2);
+				// the corner names are bold capitals, 24px on the big triangle (16px otherwise)
+				const cornerW = (name) => String(name ?? "").length * (big || narrow ? 24 : 16) * 0.78;
+				const byBase = term.py > FLOOR - 3 * rowH;
+				const baseFits = ({ x, y, anchor }) => {
+					const [x0, x1] = span(x, anchor);
+					return x0 >= 2 && x1 <= SIDE - 4 && !clashes(x0, x1, y);
+				};
+				if (byBase && term.px < SIDE / 2)
+					for (let m = 0; m <= 8; m++)
+						near.push({ x: corners.B[0] - 14 + cornerW(channels[1]) + 14 + m * 16, y: BASE_ROW, anchor: "start", cost: 2 * rowH + m * 16, base: true });
+				if (byBase && term.px >= SIDE / 2)
+					for (let m = 0; m <= 8; m++)
+						near.push({ x: corners.C[0] + 14 - cornerW(channels[2]) - 14 - m * 16, y: BASE_ROW, anchor: "end", cost: 2 * rowH + m * 16, base: true });
+				spot = near.sort((a, b) => a.cost - b.cost).find((c) => (c.base ? baseFits(c) : fits(c)));
+			}
+			if (!spot) {
+				// still nowhere: beside the dot, stacked down past the labels in the
 				// way, or up when that would land on a corner name
 				const flip = term.px + r + gap + width > SIDE - 4;
 				const x = flip ? term.px - r - gap : term.px + r + gap;
 				const anchor = flip ? "end" : "start";
 				const [x0, x1] = span(x, anchor);
-				const taken = (y) => placed.some((o) => Math.abs(o.y - y) < rowH && o.x0 < x1 + 10 && o.x1 > x0 - 10);
+				const taken = (y) => clashes(x0, x1, y);
 				let y = level;
 				while (taken(y)) y += rowH;
 				if (y > FLOOR) {
@@ -440,7 +490,21 @@
 				spot = { x, y, anchor };
 			}
 			const [x0, x1] = span(spot.x, spot.anchor);
-			placed.push({ ...term, x: spot.x, y: spot.y, x0, x1, anchor: spot.anchor });
+			// a label pushed away from its dot: a line from the dot's edge to the
+			// nearest point of the label
+			const nx = Math.min(Math.max(term.px, x0), x1),
+				ny = Math.min(Math.max(term.py, spot.y - capH), spot.y);
+			const d = Math.hypot(nx - term.px, ny - term.py);
+			const leader =
+				d > r + gap + LEADER_AFTER
+					? {
+							x1: term.px + ((nx - term.px) / d) * r,
+							y1: term.py + ((ny - term.py) / d) * r,
+							x2: nx,
+							y2: ny
+						}
+					: null;
+			placed.push({ ...term, x: spot.x, y: spot.y, x0, x1, top: spot.y - capH, anchor: spot.anchor, leader });
 		}
 		return placed;
 	});
@@ -534,10 +598,16 @@
 		}
 		return bestD < REACH ? best : null;
 	}
+	// a name counts as its dot, even off the triangle
+	function labelUnder({ x, y }) {
+		return labelled.find((t) => x >= t.x0 && x <= t.x1 && y >= t.top && y <= t.y + 4) ?? null;
+	}
 	function track(event) {
 		const p = toDrawing(event);
 		if (!p) return;
-		if (onTriangle(p)) hovered = nearest(p);
+		const named = labelUnder(p);
+		if (named) hovered = named;
+		else if (onTriangle(p)) hovered = nearest(p);
 		else {
 			hovered = null;
 			pinGone = true;
@@ -552,7 +622,7 @@
 	let lockedTerm = $state(null);
 	function lock(event) {
 		const p = toDrawing(event);
-		const hit = p && onTriangle(p) ? nearest(p) : null;
+		const hit = p ? (labelUnder(p) ?? (onTriangle(p) ? nearest(p) : null)) : null;
 		lockedTerm = hit && hit.term !== lockedTerm ? hit.term : null;
 	}
 	function unlockAway(event) {
@@ -707,6 +777,7 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 	<svg
 		bind:this={svgEl}
+		bind:clientWidth={svgWidth}
 		viewBox="0 0 {SIDE} {HEIGHT}"
 		role="img"
 		aria-label="Ternary plot of WNBA chyron words across Fox News, CNN and MSNBC"
@@ -839,6 +910,11 @@
 			/>
 		{/if}
 
+		{#each labelled as term (term.term)}
+			{#if term.leader}
+				<line class="leader" x1={term.leader.x1} y1={term.leader.y1} x2={term.leader.x2} y2={term.leader.y2} stroke={term.lit} />
+			{/if}
+		{/each}
 		{#each labelled as term (term.term)}
 			<text
 				class="word"
@@ -1070,6 +1146,12 @@
 		stroke: var(--color-paper);
 		stroke-width: 3.5px;
 		stroke-linejoin: round;
+	}
+	.leader {
+		stroke-width: 1.25px;
+		vector-effect: non-scaling-stroke;
+		opacity: 0.85;
+		pointer-events: none;
 	}
 	.big .word {
 		font-size: 15px;

@@ -299,13 +299,16 @@
 
 	// every distinct pull-out on this wall: its kind ("clips" or "heads") and what it
 	// shows. A step that pulls without listing its own uses the block's list. Every
-	// pulling step gets its own group, so each one lifts out tiles in a different place.
+	// pulling step gets its own group, so each one lifts out tiles in a different place,
+	// unless it pulls the same list as the step before: then what's out stays put.
 	let pulls = $derived.by(() => {
 		const groups = [];
-		const sceneGroup = config.scenes.map((s) => {
+		const sceneGroup = config.scenes.map((s, i) => {
 			if (!s.pull) return -1;
 			const items =
 				s.pull === "clips" ? s.videos ?? config.videos : s.highlights ?? config.highlights;
+			const last = groups[groups.length - 1];
+			if (config.scenes[i - 1]?.pull === s.pull && String(last?.items) === String(items)) return groups.length - 1;
 			groups.push({ type: s.pull, items });
 			return groups.length - 1;
 		});
@@ -775,8 +778,8 @@
 	// a clip the reader clicked, heard in place of the step's own turns until it ends
 	let picked = $state(null);
 	$effect(() => {
-		// each step starts with the first clip named
-		sceneIndex;
+		// each pull-out starts with the first clip named; steps sharing one carry on
+		activeGroup;
 		turn = 0;
 		picked = null;
 	});

@@ -17262,13 +17262,13 @@
 "confidence": 1.0
 },
 "b04456a8d3ef520a": {
-"verdict": "yes",
-"answer": "Reese averages 17.2 for St. Frances.",
+"verdict": "no",
+"answer": "High-school Reese at St. Frances, a different person",
 "kind": "card",
 "player": "Angel Reese",
 "outlet": "ESPN",
 "relation": "subject",
-"confidence": 1.0
+"word": "average"
 },
 "937a7b9f108696a5": {
 "verdict": "yes",
@@ -29655,13 +29655,13 @@
 "confidence": 1.0
 },
 "8fb03a24060ee66d": {
-"verdict": "yes",
-"answer": "The passage uses 'remain' about DiJonai Carrington.",
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
 "kind": "card",
 "player": "DiJonai Carrington",
 "outlet": "Fox News",
-"relation": "object",
-"confidence": 1.0
+"relation": "object2",
+"word": "remain vague"
 },
 "252590291916f833": {
 "verdict": "yes",
@@ -30159,13 +30159,13 @@
 "confidence": 1.0
 },
 "0f1243ab45a70756": {
-"verdict": "yes",
-"answer": "The passage uses 'maker' about DiJonai Carrington.",
+"verdict": "no",
+"answer": "about another player",
 "kind": "card",
 "player": "DiJonai Carrington",
 "outlet": "Fox News",
 "relation": "describe",
-"confidence": 1.0
+"word": "maker"
 },
 "3773e2941cf73c6b": {
 "verdict": "yes",
@@ -33480,13 +33480,13 @@
 "confidence": 1.0
 },
 "300ca0cf1a4a84b1": {
-"verdict": "yes",
-"answer": "The passage uses 'score' about Paige Bueckers.",
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
 "kind": "card",
 "player": "Paige Bueckers",
 "outlet": "CBS",
-"relation": "object",
-"confidence": 1.0
+"relation": "object2",
+"word": "score point"
 },
 "f39a8a988f3783d4": {
 "verdict": "yes",
@@ -41625,13 +41625,13 @@
 "confidence": 1.0
 },
 "28cb9e628601e00c": {
-"verdict": "yes",
-"answer": "She and the governor traded barks.",
+"verdict": "no",
+"answer": "'Traded barks' is not a player trade",
 "kind": "card",
 "player": "Kelsey Plum",
 "outlet": "ESPN",
 "relation": "all",
-"confidence": 1.0
+"word": "trade"
 },
 "7691df72fae4f4d8": {
 "verdict": "yes",
@@ -42660,13 +42660,13 @@
 "confidence": 1.0
 },
 "9b09e7932154cedb": {
-"verdict": "yes",
-"answer": "She is called a fierce competitor.",
+"verdict": "no",
+"answer": "Mercury GM statement is about Copper, not Plum",
 "kind": "card",
 "player": "Kelsey Plum",
 "outlet": "CBS",
 "relation": "describe2",
-"confidence": 1.0
+"word": "fierce competitor"
 },
 "3b96a7d9b63ff75c": {
 "verdict": "yes",
@@ -47853,13 +47853,13 @@
 "confidence": 1.0
 },
 "b0715ab6307f5df8": {
-"verdict": "unclear",
-"answer": "No name appears, so it is not clear whose play is described.",
+"verdict": "no",
+"answer": "Lynx playoff quote; not about Ionescu (Liberty)",
 "kind": "card",
 "player": "Sabrina Ionescu",
 "outlet": "USA Today",
 "relation": "play",
-"confidence": 1.0
+"word": "massive"
 },
 "e0ca3e69b427219e": {
 "verdict": "right",
@@ -50364,13 +50364,13 @@
 "confidence": 1.0
 },
 "e8400286c1ddc443": {
-"verdict": "yes",
-"answer": "Yes, the passage uses it that way.",
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
 "kind": "card",
 "player": "Natasha Cloud",
 "outlet": "ESPN",
 "relation": "object",
-"confidence": 1.0
+"word": "receive"
 },
 "1511ce928d67268d": {
 "verdict": "yes",
@@ -58257,13 +58257,13 @@
 "confidence": 1.0
 },
 "c05531f2c90ae700": {
-"verdict": "yes",
-"answer": "The passage uses it about Chennedy Carter.",
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
 "kind": "card",
 "player": "Chennedy Carter",
 "outlet": "Fox News",
 "relation": "object2",
-"confidence": 1.0
+"word": "play half"
 },
 "5f401003e5320546": {
 "verdict": "yes",
@@ -58815,13 +58815,13 @@
 "confidence": 1.0
 },
 "2aed73593bb28b88": {
-"verdict": "yes",
-"answer": "The passage uses it about Chennedy Carter.",
+"verdict": "no",
+"answer": "No three-pointer in passage; about Wilson's layup",
 "kind": "card",
 "player": "Chennedy Carter",
 "outlet": "Fox News",
-"relation": "all2",
-"confidence": 1.0
+"relation": "subject2",
+"word": "hit three-pointer"
 },
 "23a1f393052e8d0d": {
 "verdict": "yes",
@@ -62604,13 +62604,13 @@
 "confidence": 1.0
 },
 "71ce1505d6dc7d9b": {
-"verdict": "yes",
-"answer": "Used about Breanna Stewart in that way.",
+"verdict": "no",
+"answer": "'Unrivaled' is the league name, not a description",
 "kind": "card",
 "player": "Breanna Stewart",
 "outlet": "USA Today",
 "relation": "object",
-"confidence": 1.0
+"word": "unrivaled"
 },
 "15eec027f654c548": {
 "verdict": "no",
@@ -64449,13 +64449,13 @@
 "confidence": 1.0
 },
 "5d6316855e076819": {
-"verdict": "yes",
-"answer": "Used about Breanna Stewart in that way.",
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
 "kind": "card",
 "player": "Breanna Stewart",
 "outlet": "AP",
 "relation": "object2",
-"confidence": 1.0
+"word": "earn respect"
 },
 "5840c8d6d2d4de93": {
 "verdict": "yes",
@@ -69876,13 +69876,13 @@
 "confidence": 1.0
 },
 "e02d42186838b251": {
-"verdict": "yes",
-"answer": "Her efforts are called intentional.",
+"verdict": "no",
+"answer": "Off-court mental-health efforts, not her play",
 "kind": "card",
 "player": "Aliyah Boston",
 "outlet": "ESPN",
-"relation": "play",
-"confidence": 1.0
+"relation": "play2",
+"word": "intentional effort"
 },
 "bb96f54513092fe9": {
 "verdict": "unclear",
@@ -72342,13 +72342,13 @@
 "confidence": 1.0
 },
 "833cfb635fd9c789": {
-"verdict": "yes",
-"answer": "She finished third in MVP voting.",
+"verdict": "no",
+"answer": "'place' refers to Gray's and Mitchell's finish; also all-caps headline",
 "kind": "card",
 "player": "Alyssa Thomas",
 "outlet": "Fox News",
 "relation": "describe",
-"confidence": 1.0
+"word": "place"
 },
 "8e8b0b167b9210af": {
 "verdict": "yes",
@@ -72423,13 +72423,13 @@
 "confidence": 1.0
 },
 "2fe5285ffcf996e2": {
-"verdict": "yes",
-"answer": "She is the MVP runner-up.",
+"verdict": "no",
+"answer": "'up' only appears inside 'runner-up'",
 "kind": "card",
 "player": "Alyssa Thomas",
 "outlet": "ESPN",
 "relation": "describe",
-"confidence": 1.0
+"word": "up"
 },
 "fd731074491b1671": {
 "verdict": "yes",
@@ -74673,13 +74673,13 @@
 "confidence": 1.0
 },
 "d2b920fd1b40fc73": {
-"verdict": "yes",
-"answer": "Biden called her a coach.",
+"verdict": "no",
+"answer": "Biden calls her a coach; that is Hammon, not Parker",
 "kind": "card",
 "player": "Candace Parker",
 "outlet": "Fox News",
 "relation": "object",
-"confidence": 1.0
+"word": "call"
 },
 "d837a7924dc298de": {
 "verdict": "yes",
@@ -75501,13 +75501,13 @@
 "confidence": 1.0
 },
 "72a6cfc8ceb12141": {
-"verdict": "yes",
-"answer": "It is the title of her ESPN documentary.",
+"verdict": "no",
+"answer": "'Unapologetic' is the title of the ESPN show",
 "kind": "card",
 "player": "Candace Parker",
 "outlet": "ESPN",
 "relation": "describe",
-"confidence": 1.0
+"word": "unapologetic"
 },
 "48a84ae6812f5a7a": {
 "verdict": "yes",
@@ -78336,13 +78336,13 @@
 "confidence": 1.0
 },
 "f8736bfa00903f66": {
-"verdict": "unclear",
-"answer": "The passage never names the she; it is probably Bonner but not settled.",
+"verdict": "no",
+"answer": "Quote about Thomas/Sabally system fit; Bonner never mentioned",
 "kind": "card",
 "player": "DeWanna Bonner",
 "outlet": "CBS",
 "relation": "describe",
-"confidence": 1.0
+"word": "comfortable"
 },
 "ae345e1ebe38922d": {
 "verdict": "yes",
@@ -79722,13 +79722,13 @@
 "confidence": 1.0
 },
 "46f77740568a9505": {
-"verdict": "yes",
-"answer": "She was one of the reserves.",
+"verdict": "no",
+"answer": "All-Star reserves list; Mitchell not in passage",
 "kind": "card",
 "player": "Kelsey Mitchell",
 "outlet": "ESPN",
 "relation": "subject",
-"confidence": 1.0
+"word": "round"
 },
 "f15e2de17b7b74a6": {
 "verdict": "yes",
@@ -80037,13 +80037,13 @@
 "confidence": 1.0
 },
 "034e922e19f83cd0": {
-"verdict": "yes",
-"answer": "Players and staff tended to her.",
+"verdict": "no",
+"answer": "Players tend to the injured Clark, not Mitchell",
 "kind": "card",
 "player": "Kelsey Mitchell",
 "outlet": "Fox News",
 "relation": "object",
-"confidence": 1.0
+"word": "tend"
 },
 "7d9402f662a618b2": {
 "verdict": "yes",
@@ -80262,13 +80262,13 @@
 "confidence": 1.0
 },
 "d72393b0a66de4ca": {
-"verdict": "yes",
-"answer": "She is described as one of the team's guards.",
+"verdict": "no",
+"answer": "'guards' is a noun here, not a verb acting on her",
 "kind": "card",
 "player": "Kelsey Mitchell",
 "outlet": "ESPN",
 "relation": "object",
-"confidence": 1.0
+"word": "guard"
 },
 "8528fd63066ef5c9": {
 "verdict": "yes",
@@ -80289,13 +80289,13 @@
 "confidence": 1.0
 },
 "2552bf5bfc0c3d4e": {
-"verdict": "unclear",
-"answer": "The she who carried the team is not named in the passage.",
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
 "kind": "card",
 "player": "Kelsey Mitchell",
 "outlet": "CBS",
 "relation": "object",
-"confidence": 1.0
+"word": "carry"
 },
 "0c2c8c28804b1a99": {
 "verdict": "yes",
@@ -83340,13 +83340,13 @@
 "confidence": 1.0
 },
 "804cc3e4935a2277": {
-"verdict": "yes",
-"answer": "The rookie of the year runner-up.",
+"verdict": "no",
+"answer": "'up' only appears inside 'runner-up'",
 "kind": "card",
 "player": "Arike Ogunbowale",
 "outlet": "ESPN",
 "relation": "describe",
-"confidence": 1.0
+"word": "up"
 },
 "6f1d9d03d789c375": {
 "verdict": "yes",
@@ -85185,13 +85185,13 @@
 "confidence": 1.0
 },
 "e61171a242eaa05f": {
-"verdict": "yes",
-"answer": "Others joined her among players who opted out of 2020.",
+"verdict": "no",
+"answer": "About Toliver and Ogwumike joining opt-outs; Jones not mentioned",
 "kind": "card",
 "player": "Jonquel Jones",
 "outlet": "ESPN",
 "relation": "object",
-"confidence": 1.0
+"word": "join"
 },
 "4541ef56cef9f35f": {
 "verdict": "yes",
@@ -85464,13 +85464,13 @@
 "confidence": 1.0
 },
 "eb60205c82d2c9f9": {
-"verdict": "yes",
-"answer": "Jones is no stranger to winning AP awards.",
+"verdict": "no",
+"answer": "'No stranger to' is an idiom, not describing her as a stranger",
 "kind": "card",
 "player": "Jonquel Jones",
 "outlet": "Fox News",
 "relation": "describe",
-"confidence": 1.0
+"word": "stranger"
 },
 "54c83058cd1834c5": {
 "verdict": "yes",
@@ -85662,13 +85662,13 @@
 "confidence": 1.0
 },
 "20f67cdb1b968dd4": {
-"verdict": "yes",
-"answer": "She is one of the Sun's five starters.",
+"verdict": "no",
+"answer": "Passage about all five starters; Jones not named",
 "kind": "card",
 "player": "Jonquel Jones",
 "outlet": "ESPN",
 "relation": "describe",
-"confidence": 1.0
+"word": "starter"
 },
 "3773ea79542a3ce3": {
 "verdict": "yes",
@@ -86175,13 +86175,13 @@
 "confidence": 1.0
 },
 "116ffe187813d46d": {
-"verdict": "yes",
-"answer": "It describes Jones's limited playing time.",
+"verdict": "no",
+"answer": "2017 draft pick on Sun camp bench is Brionna Jones, not Jonquel",
 "kind": "card",
 "player": "Jonquel Jones",
 "outlet": "New York Times",
 "relation": "play",
-"confidence": 1.0
+"word": "sparingly"
 },
 "d3922a631a878f18": {
 "verdict": "unclear",
@@ -88848,13 +88848,13 @@
 "confidence": 1.0
 },
 "f1df57074b5656c0": {
-"verdict": "yes",
-"answer": "She is among the others receiving votes.",
+"verdict": "no",
+"answer": "'Others receiving votes' is a list heading, not a description of her.",
 "kind": "card",
 "player": "Marina Mabrey",
 "outlet": "USA Today",
 "relation": "describe",
-"confidence": 1.0
+"word": "other"
 },
 "cb48b13c3068b826": {
 "verdict": "yes",
@@ -88875,13 +88875,13 @@
 "confidence": 1.0
 },
 "d17693cd86374b9c": {
-"verdict": "yes",
-"answer": "She is ranked 23rd on the list.",
+"verdict": "no",
+"answer": "a stat-card label",
 "kind": "card",
 "player": "Marina Mabrey",
 "outlet": "ESPN",
 "relation": "describe",
-"confidence": 1.0
+"word": "rank"
 },
 "2a4bc81768f6d413": {
 "verdict": "yes",
@@ -90864,13 +90864,13 @@
 "confidence": 1.0
 },
 "113895c4cc947c40": {
-"verdict": "yes",
-"answer": "The Rose are bringing Hull back.",
+"verdict": "no",
+"answer": "Rose roster re-signings; Hull not in passage",
 "kind": "card",
 "player": "Lexie Hull",
 "outlet": "ESPN",
 "relation": "object",
-"confidence": 1.0
+"word": "bring"
 },
 "73994975eb39cb68": {
 "verdict": "no",
@@ -91305,13 +91305,13 @@
 "confidence": 1.0
 },
 "2e0e1028d1e57860": {
-"verdict": "yes",
-"answer": "She is available in 73.8% of ESPN leagues.",
+"verdict": "no",
+"answer": "Fantasy-league availability, not a description of her",
 "kind": "card",
 "player": "Lexie Hull",
 "outlet": "ESPN",
 "relation": "describe",
-"confidence": 1.0
+"word": "available"
 },
 "4611976639704b1a": {
 "verdict": "yes",
@@ -94500,13 +94500,13 @@
 "confidence": 1.0
 },
 "95198d56e3f7bf74": {
-"verdict": "yes",
-"answer": "The word is used about Jewell Loyd in that way.",
+"verdict": "no",
+"answer": "About Middleton, Milton and others wearing Kobe 5s, not Loyd",
 "kind": "card",
 "player": "Jewell Loyd",
 "outlet": "ESPN",
 "relation": "subject",
-"confidence": 1.0
+"word": "share"
 },
 "7bf81ea05e56fd28": {
 "verdict": "yes",
@@ -94680,13 +94680,13 @@
 "confidence": 1.0
 },
 "2d715f6bf417f1e8": {
-"verdict": "yes",
-"answer": "The word is used about Jewell Loyd in that way.",
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
 "kind": "card",
 "player": "Jewell Loyd",
 "outlet": "Fox News",
 "relation": "object",
-"confidence": 1.0
+"word": "hone"
 },
 "ca2c6fecfbaac1b9": {
 "verdict": "yes",
@@ -95130,13 +95130,13 @@
 "confidence": 1.0
 },
 "04f0591aee4c9544": {
-"verdict": "yes",
-"answer": "The word is used about Jewell Loyd in that way.",
+"verdict": "no",
+"answer": "'Quick to point out' is an idiom, not describing her as quick",
 "kind": "card",
 "player": "Jewell Loyd",
 "outlet": "Fox News",
 "relation": "describe",
-"confidence": 1.0
+"word": "quick"
 },
 "dc8cdf819c58af87": {
 "verdict": "yes",
@@ -95427,13 +95427,13 @@
 "confidence": 1.0
 },
 "0bfd4f634348343e": {
-"verdict": "yes",
-"answer": "The word is used about Jewell Loyd in that way.",
+"verdict": "no",
+"answer": "'Traded 3-pointers' is not a player trade",
 "kind": "card",
 "player": "Jewell Loyd",
 "outlet": "ESPN",
 "relation": "all",
-"confidence": 1.0
+"word": "trade"
 },
 "d3105bff195fa6ef": {
 "verdict": "yes",
@@ -99180,13 +99180,13 @@
 "confidence": 1.0
 },
 "1092703934292287": {
-"verdict": "yes",
-"answer": "The word is used about Kahleah Copper in that way.",
+"verdict": "no",
+"answer": "Roster list names Stewart and Bueckers; Copper not in passage",
 "kind": "card",
 "player": "Kahleah Copper",
 "outlet": "USA Today",
 "relation": "object",
-"confidence": 1.0
+"word": "feature"
 },
 "51315173856ca70f": {
 "verdict": "yes",
@@ -102870,13 +102870,13 @@
 "confidence": 0.0
 },
 "165fb99ca3ee8644": {
-"verdict": "unclear",
-"answer": "The 'she' who wrote the response is never named in the passage.",
+"verdict": "no",
+"answer": "'she wrote' is someone commenting on Clark, not Clark",
 "kind": "card",
 "player": "Caitlin Clark",
 "outlet": "Fox News",
 "relation": "subject",
-"confidence": 0.996
+"word": "write"
 },
 "0df31d2a82ad8149": {
 "verdict": "yes",
@@ -104364,13 +104364,13 @@
 "confidence": 1.0
 },
 "a587f45aa9e2156a": {
-"verdict": "yes",
-"answer": "She is a black belt in Taekwondo.",
+"verdict": "no",
+"answer": "'Black belt' in taekwondo, not 'black' as a description",
 "kind": "card",
 "player": "Sophie Cunningham",
 "outlet": "Fox News",
 "relation": "describe",
-"confidence": 1.0
+"word": "black"
 },
 "4aa4a2c68dcb5b3b": {
 "verdict": "no",
@@ -105237,13 +105237,13 @@
 "confidence": 1.0
 },
 "5703d45b13c41bbe": {
-"verdict": "unclear",
-"answer": "The 'she' who has missed games is never named.",
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
 "kind": "card",
 "player": "A'ja Wilson",
 "outlet": "CBS",
 "relation": "object2",
-"confidence": 1.0
+"word": "miss game"
 },
 "1df2db12f3f1dd4b": {
 "verdict": "no",
@@ -106992,13 +106992,13 @@
 "confidence": 1.0
 },
 "3f734089369940e0": {
-"verdict": "yes",
-"answer": "Mitchell is passing milestones, per the quote.",
+"verdict": "no",
+"answer": "'She' reaching milestones is Clark, not Mitchell",
 "kind": "card",
 "player": "Kelsey Mitchell",
 "outlet": "USA Today",
 "relation": "all",
-"confidence": 1.0
+"word": "pass"
 },
 "949dd2cd5398ee3a": {
 "verdict": "yes",
@@ -117974,13 +117974,13 @@
 "confidence": 1.0
 },
 "5991f7ebfdef52f0": {
-"verdict": "unclear",
-"answer": "The passage never names who has integrated nicely.",
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
 "kind": "card",
 "player": "Chennedy Carter",
 "outlet": "CBS",
 "relation": "object2",
-"confidence": 1.0
+"word": "integrate nicely"
 },
 "8c32d1fbf0a19fc0": {
 "verdict": "yes",
@@ -119126,13 +119126,13 @@
 "confidence": 1.0
 },
 "1dc25ad2a38fd0ed": {
-"verdict": "unclear",
-"answer": "The passage never names who Quinn praises.",
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
 "kind": "card",
 "player": "Sue Bird",
 "outlet": "CBS",
-"relation": "object2",
-"confidence": 1.0
+"relation": "object",
+"word": "play"
 },
 "60650be528976e13": {
 "verdict": "yes",
@@ -119198,13 +119198,13 @@
 "confidence": 1.0
 },
 "8fe2553502ed64fc": {
-"verdict": "yes",
-"answer": "Clark says Bird has been talking crap all game.",
+"verdict": "no",
+"answer": "'She's been talking crap' is someone else, not Bird acted on",
 "kind": "card",
 "player": "Sue Bird",
 "outlet": "CBS",
 "relation": "object2",
-"confidence": 1.0
+"word": "talk crap"
 },
 "45ea6117b7736c8c": {
 "verdict": "yes",
@@ -119477,13 +119477,13 @@
 "confidence": 1.0
 },
 "a3587b0810516a0c": {
-"verdict": "yes",
-"answer": "Parker pours cold water on the Reese/Clark rivalry.",
+"verdict": "no",
+"answer": "'pours cold water on' is an idiom",
 "kind": "card",
 "player": "Candace Parker",
 "outlet": "Fox News",
 "relation": "subject",
-"confidence": 1.0
+"word": "pour"
 },
 "d549c5a910f0858d": {
 "verdict": "yes",
@@ -132848,13 +132848,13 @@
 "confidence": 1.0
 },
 "881141386bd09442": {
-"verdict": "yes",
-"answer": "The Fever fed the ball to Mitchell.",
+"verdict": "no",
+"answer": "Fever feeding Boston; Mitchell not in passage",
 "kind": "card",
 "player": "Kelsey Mitchell",
 "outlet": "USA Today",
 "relation": "object2",
-"confidence": 1.0
+"word": "feed ball"
 },
 "1f8e9ffb7df67a0c": {
 "verdict": "yes",
@@ -135458,13 +135458,13 @@
 "confidence": 1.0
 },
 "0bcaceee3d82784f": {
-"verdict": "yes",
-"answer": "The core designation was applied to her.",
+"verdict": "no",
+"answer": "'long core' from 'no longer be cored'; not a real phrase",
 "kind": "card",
 "player": "Kelsey Mitchell",
 "outlet": "USA Today",
 "relation": "object2",
-"confidence": 1.0
+"word": "long core"
 },
 "29809c054387cee4": {
 "verdict": "yes",
@@ -152767,13 +152767,13 @@
 "confidence": 1.0
 },
 "50549888bc434bea": {
-"verdict": "unclear",
-"answer": "The headline mentions a flagrant foul but does not say who committed it.",
+"verdict": "no",
+"answer": "Flagrant foul was committed on Clark, not her play",
 "kind": "card",
 "player": "Caitlin Clark",
 "outlet": "Fox News",
-"relation": "play",
-"confidence": 1.0
+"relation": "play2",
+"word": "flagrant foul"
 },
 "08beb132af036901": {
 "verdict": "yes",
@@ -153487,13 +153487,13 @@
 "confidence": 1.0
 },
 "3d517496729c08fa": {
-"verdict": "yes",
-"answer": "She is described as actually talented.",
+"verdict": "no",
+"answer": "Looks-and-headlines description likely about Cunningham, not Carrington",
 "kind": "card",
 "player": "DiJonai Carrington",
 "outlet": "Fox News",
 "relation": "describe",
-"confidence": 1.0
+"word": "talented"
 },
 "5d9766e917208068": {
 "verdict": "yes",
@@ -162701,5 +162701,1040 @@
 "outlet": "Fox News",
 "relation": "describe",
 "confidence": 1.0
+},
+"f73f53f3dff0da6b": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "A'ja Wilson",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "expand game"
+},
+"db08336cf122b710": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "A'ja Wilson",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "lead league"
+},
+"bdc4e0b7fcddac26": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "A'ja Wilson",
+"outlet": "USA Today",
+"relation": "object2",
+"word": "record double-double"
+},
+"c2e08fdba1cde0f4": {
+"verdict": "no",
+"answer": "\"decisive\" describes Game 5, not her play",
+"kind": "card",
+"player": "Aliyah Boston",
+"outlet": "AP",
+"relation": "play",
+"word": "decisive"
+},
+"267593e4eee758fc": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Aliyah Boston",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "gain perspective"
+},
+"380b7063e5c5450a": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Aliyah Boston",
+"outlet": "USA Today",
+"relation": "object2",
+"word": "grow game"
+},
+"3e16da07030012f9": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Aliyah Boston",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "improve ball-handling"
+},
+"98fe06531c66941f": {
+"verdict": "no",
+"answer": "Contest results table; Gray not mentioned, 'shooting' is a contest title",
+"kind": "card",
+"player": "Allisha Gray",
+"outlet": "ESPN",
+"relation": "describe",
+"word": "shooting"
+},
+"ac07b2a8ac17d0d0": {
+"verdict": "no",
+"answer": "'up' only appears inside 'runner-up'",
+"kind": "card",
+"player": "Allisha Gray",
+"outlet": "CBS",
+"relation": "describe",
+"word": "up"
+},
+"10e16c8f6560180d": {
+"verdict": "no",
+"answer": "'th' is just the ordinal suffix of '15 th rebound'",
+"kind": "card",
+"player": "Alyssa Thomas",
+"outlet": "USA Today",
+"relation": "play",
+"word": "th"
+},
+"a4d9c90434d0e840": {
+"verdict": "no",
+"answer": "Free agent back from France is not Reese; name absent",
+"kind": "card",
+"player": "Angel Reese",
+"outlet": "Fox News",
+"relation": "describe",
+"word": "agent"
+},
+"b0aa7cdd641628fa": {
+"verdict": "no",
+"answer": "Reese is the one hunting; she isn't the one hunted",
+"kind": "card",
+"player": "Angel Reese",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "hunt gleefully"
+},
+"e6cb76d8bf56a181": {
+"verdict": "no",
+"answer": "Describes an LSU recruit, not Stewart",
+"kind": "card",
+"player": "Breanna Stewart",
+"outlet": "ESPN",
+"relation": "play",
+"word": "great"
+},
+"acca20cbfde3bf1f": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Breanna Stewart",
+"outlet": "Washington Post",
+"relation": "object2",
+"word": "improve game"
+},
+"511f7fc773280cdb": {
+"verdict": "no",
+"answer": "Rebounds credited to Canada, Jones, Hillman; Griner not mentioned",
+"kind": "card",
+"player": "Brittney Griner",
+"outlet": "CBS",
+"relation": "play2",
+"word": "nice effort"
+},
+"372dea10c6f78d09": {
+"verdict": "no",
+"answer": "The dunker is someone imitating Griner, not Griner",
+"kind": "card",
+"player": "Brittney Griner",
+"outlet": "CBS",
+"relation": "play",
+"word": "one-handed"
+},
+"b588d3d3a5221294": {
+"verdict": "no",
+"answer": "Cheap shot was delivered to Clark, not her play",
+"kind": "card",
+"player": "Caitlin Clark",
+"outlet": "Fox News",
+"relation": "play2",
+"word": "cheap shot"
+},
+"dbb9fd255463300a": {
+"verdict": "no",
+"answer": "Hard foul was received by Clark, not her play",
+"kind": "card",
+"player": "Caitlin Clark",
+"outlet": "Fox News",
+"relation": "play2",
+"word": "hard foul"
+},
+"592fe2e3f070209c": {
+"verdict": "no",
+"answer": "'officially' adverb, not a description of her play",
+"kind": "card",
+"player": "Caitlin Clark",
+"outlet": "CBS",
+"relation": "play",
+"word": "official"
+},
+"71e517be16c9b883": {
+"verdict": "no",
+"answer": "Double figures describes Copper and Vandersloot; Parker not shown",
+"kind": "card",
+"player": "Candace Parker",
+"outlet": "USA Today",
+"relation": "describe2",
+"word": "double figure"
+},
+"3c9101393321a7e4": {
+"verdict": "no",
+"answer": "MVP voting passage is about A'ja Wilson, not Parker",
+"kind": "card",
+"player": "Candace Parker",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "easily outpace"
+},
+"6f9fc3e0e4904f25": {
+"verdict": "no",
+"answer": "Vaunted list is the one Reese joins, not Parker",
+"kind": "card",
+"player": "Candace Parker",
+"outlet": "New York Times",
+"relation": "describe2",
+"word": "vaunted list"
+},
+"59145ad863041ded": {
+"verdict": "no",
+"answer": "Better defender is the EuroLeague champion teammate, not Vandersloot",
+"kind": "card",
+"player": "Courtney Vandersloot",
+"outlet": "New York Times",
+"relation": "describe2",
+"word": "better defender"
+},
+"96a6066e5b5875e6": {
+"verdict": "no",
+"answer": "'a different Aces guard' distinguishes her; doesn't describe her",
+"kind": "card",
+"player": "Jackie Young",
+"outlet": "Fox News",
+"relation": "describe",
+"word": "different"
+},
+"46f22767b2b98360": {
+"verdict": "no",
+"answer": "'featured' refers to Ionescu's performance; list item glued to unrelated sentence",
+"kind": "card",
+"player": "Jackie Young",
+"outlet": "CBS",
+"relation": "all",
+"word": "feature"
+},
+"65ac081d3b06bee3": {
+"verdict": "no",
+"answer": "Passage praises other players; does not describe Loyd",
+"kind": "card",
+"player": "Jewell Loyd",
+"outlet": "ESPN",
+"relation": "describe2",
+"word": "individual performance"
+},
+"762953d73e919043": {
+"verdict": "no",
+"answer": "'Solid' describes the screens, not her play",
+"kind": "card",
+"player": "Jewell Loyd",
+"outlet": "New York Times",
+"relation": "play",
+"word": "solid"
+},
+"c96ea93ff930ed67": {
+"verdict": "no",
+"answer": "Passage never names Loyd; describes another player and 'they'",
+"kind": "card",
+"player": "Jewell Loyd",
+"outlet": "ESPN",
+"relation": "play2",
+"word": "well finish"
+},
+"4b160961af35fb91": {
+"verdict": "no",
+"answer": "About Reese joining a list of players; Jones not mentioned",
+"kind": "card",
+"player": "Jonquel Jones",
+"outlet": "New York Times",
+"relation": "describe2",
+"word": "vaunted list"
+},
+"d9416c99f607c562": {
+"verdict": "no",
+"answer": "'Aggressive' describes the Sky's defense, not Mitchell",
+"kind": "card",
+"player": "Kelsey Mitchell",
+"outlet": "CBS",
+"relation": "play",
+"word": "aggressive"
+},
+"602c0f7258fd688d": {
+"verdict": "no",
+"answer": "Column addressed to someone about a 19-year-old; Plum not mentioned",
+"kind": "card",
+"player": "Kelsey Plum",
+"outlet": "Fox News",
+"relation": "object",
+"word": "call"
+},
+"6509bdad0b419e66": {
+"verdict": "no",
+"answer": "Sentence says neither won a title; bar implies she did",
+"kind": "card",
+"player": "Kelsey Plum",
+"outlet": "Fox News",
+"relation": "subject2",
+"word": "win title"
+},
+"b87385de6ee7938a": {
+"verdict": "no",
+"answer": "Player facing Stanford's post rotation; Hull played for Stanford",
+"kind": "card",
+"player": "Lexie Hull",
+"outlet": "Fox News",
+"relation": "subject2",
+"word": "dominate end"
+},
+"e4ee7e87d23aaedd": {
+"verdict": "no",
+"answer": "Fantasy 'hold value'; Hull not named, run-in 'Fallers' list",
+"kind": "card",
+"player": "Lexie Hull",
+"outlet": "ESPN",
+"relation": "subject",
+"word": "hold"
+},
+"9c96d6514c7af159": {
+"verdict": "no",
+"answer": "'6-foot-4' prospect profile; Collier is not 6-4 and isn't named.",
+"kind": "card",
+"player": "Napheesa Collier",
+"outlet": "New York Times",
+"relation": "play",
+"word": "complete"
+},
+"89d12260bf497f04": {
+"verdict": "no",
+"answer": "Passage lists other players competing; Howard not named",
+"kind": "card",
+"player": "Rhyne Howard",
+"outlet": "Fox News",
+"relation": "subject",
+"word": "compete"
+},
+"3f2f71fda01c7823": {
+"verdict": "no",
+"answer": "'Invited' refers to Ionescu and Austin, not Howard",
+"kind": "card",
+"player": "Rhyne Howard",
+"outlet": "Fox News",
+"relation": "object",
+"word": "invite"
+},
+"c55f8bad46f4a2dd": {
+"verdict": "no",
+"answer": "'Did not play' belongs to Gray; Howard did shoot 5 of 20",
+"kind": "card",
+"player": "Rhyne Howard",
+"outlet": "CBS",
+"relation": "subject",
+"word": "not-shoot"
+},
+"47f227bc09b91a5b": {
+"verdict": "no",
+"answer": "'Rest of the first-teamers' is other players; Howard not in passage",
+"kind": "card",
+"player": "Rhyne Howard",
+"outlet": "Fox News",
+"relation": "describe",
+"word": "rest"
+},
+"305a6b6b2ab64d99": {
+"verdict": "no",
+"answer": "Nicknamed Hollywood, Atlanta ballhandler: a different player, not Ionescu",
+"kind": "card",
+"player": "Sabrina Ionescu",
+"outlet": "New York Times",
+"relation": "describe",
+"word": "ballhandler"
+},
+"39c82b22669c71ae": {
+"verdict": "no",
+"answer": "'Didn't have her best' is negated, not praise of her play",
+"kind": "card",
+"player": "Sabrina Ionescu",
+"outlet": "ESPN",
+"relation": "play",
+"word": "best"
+},
+"e7c2caceb47079f2": {
+"verdict": "no",
+"answer": "'Focused' describes her; not done to her; Ionescu unnamed",
+"kind": "card",
+"player": "Sabrina Ionescu",
+"outlet": "Fox News",
+"relation": "object",
+"word": "focused"
+},
+"f8a99ad315a58887": {
+"verdict": "no",
+"answer": "'Hits the hardwood' is an idiom for returning, not hitting shots",
+"kind": "card",
+"player": "Sabrina Ionescu",
+"outlet": "ESPN",
+"relation": "subject",
+"word": "hit"
+},
+"c759a1f179d57800": {
+"verdict": "no",
+"answer": "Cheap shot was against Clark, not Cunningham's play",
+"kind": "card",
+"player": "Sophie Cunningham",
+"outlet": "Fox News",
+"relation": "play2",
+"word": "cheap shot"
+},
+"df4a5d1b052f1d70": {
+"verdict": "no",
+"answer": "Hard screen was set on her; not her play",
+"kind": "card",
+"player": "Sophie Cunningham",
+"outlet": "USA Today",
+"relation": "play2",
+"word": "hard screen"
+},
+"4633419b0ae053f7": {
+"verdict": "no",
+"answer": "Strong play is Skylar Diggins-Smith's, not Cunningham's",
+"kind": "card",
+"player": "Sophie Cunningham",
+"outlet": "New York Times",
+"relation": "play2",
+"word": "strong play"
+},
+"1e1bcf1fae310889": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Caitlin Clark",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "work hard"
+},
+"4475cc307e8af1a7": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Diana Taurasi",
+"outlet": "CBS",
+"relation": "object2",
+"word": "earn right"
+},
+"53f62771d5db818d": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Kelsey Plum",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "drop point"
+},
+"254a0153c0981de1": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Sabrina Ionescu",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "attempt layup"
+},
+"327da354c955fa2c": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Sabrina Ionescu",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "record triple-double"
+},
+"e272679cacfb2d1a": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Chennedy Carter",
+"outlet": "USA Today",
+"relation": "object2",
+"word": "play basketball"
+},
+"4cd79b0417af5f5a": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Napheesa Collier",
+"outlet": "ESPN",
+"relation": "object2",
+"word": "play game"
+},
+"548e5e3f6b77ffd9": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Breanna Stewart",
+"outlet": "CBS",
+"relation": "object2",
+"word": "improve ball-handling"
+},
+"c49d12e57f297ee2": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Alyssa Thomas",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "earn bling"
+},
+"2f72d258da5f1c15": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Jonquel Jones",
+"outlet": "CBS",
+"relation": "object2",
+"word": "fully commit"
+},
+"ca8a00483933cacb": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Marina Mabrey",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "earn right"
+},
+"2fff6ab3f8000c33": {
+"verdict": "no",
+"answer": "she's read as passive; she is the one acting",
+"kind": "card",
+"player": "Jewell Loyd",
+"outlet": "CBS",
+"relation": "object2",
+"word": "handle admirably"
+},
+"e87f2cfc7056ead1": {
+"verdict": "no",
+"answer": "Negated: no instance of Wilson being asked; she wasn't asked.",
+"kind": "card",
+"player": "A'ja Wilson",
+"outlet": "Fox News",
+"relation": "object2",
+"word": "directly ask"
+},
+"058746c92218b689": {
+"verdict": "no",
+"answer": "She is the one who put in the foundation, not acted upon.",
+"kind": "card",
+"player": "A'ja Wilson",
+"outlet": "ESPN",
+"relation": "object",
+"word": "put"
+},
+"2a97f7ddb498eab0": {
+"verdict": "no",
+"answer": "Block totals (877, 2.72 avg) describe Dydek, not Wilson.",
+"kind": "card",
+"player": "A'ja Wilson",
+"outlet": "ESPN",
+"relation": "play2",
+"word": "total block"
+},
+"8794eafaf15eef1f": {
+"verdict": "no",
+"answer": "Boston here is a team (NWSL) getting a new coach.",
+"kind": "card",
+"player": "Aliyah Boston",
+"outlet": "ESPN",
+"relation": "subject",
+"word": "agree"
+},
+"f22b671127d70365": {
+"verdict": "no",
+"answer": "Part of 'male or female' idiom, not describing her as female.",
+"kind": "card",
+"player": "Aliyah Boston",
+"outlet": "Fox News",
+"relation": "describe",
+"word": "female"
+},
+"c357b1995004dd58": {
+"verdict": "no",
+"answer": "Boston is the city, as a place for a WNBA team.",
+"kind": "card",
+"player": "Aliyah Boston",
+"outlet": "CBS",
+"relation": "describe2",
+"word": "perfect place"
+},
+"006f56bb9d7cefc8": {
+"verdict": "no",
+"answer": "'Gritty' describes the Valkyries defense, not Gray's play.",
+"kind": "card",
+"player": "Allisha Gray",
+"outlet": "USA Today",
+"relation": "play",
+"word": "gritty"
+},
+"1c223cf0c3a6376b": {
+"verdict": "no",
+"answer": "'Left' is her left hand injury, not a play descriptor.",
+"kind": "card",
+"player": "Allisha Gray",
+"outlet": "ESPN",
+"relation": "play",
+"word": "left"
+},
+"7ae049e068cf2fc1": {
+"verdict": "no",
+"answer": "Passage is about rookie Michaela Onyenwere, not Thomas.",
+"kind": "card",
+"player": "Alyssa Thomas",
+"outlet": "ESPN",
+"relation": "describe",
+"word": "best"
+},
+"88e479cf0e10a3c5": {
+"verdict": "no",
+"answer": "No one demanded she consider consequences; she did not consider.",
+"kind": "card",
+"player": "Alyssa Thomas",
+"outlet": "Fox News",
+"relation": "subject",
+"word": "consider"
+},
+"d16957d620d47e08": {
+"verdict": "no",
+"answer": "'Double' is a fragment of 'triple-double'.",
+"kind": "card",
+"player": "Alyssa Thomas",
+"outlet": "ESPN",
+"relation": "describe",
+"word": "double"
+},
+"ac3456a626190905": {
+"verdict": "no",
+"answer": "'As a result' is a connective, not describing her.",
+"kind": "card",
+"player": "Alyssa Thomas",
+"outlet": "Fox News",
+"relation": "describe",
+"word": "result"
+},
+"325c0cae294896b5": {
+"verdict": "no",
+"answer": "'Mother' describes her mother (also named Angel Reese), not the player.",
+"kind": "card",
+"player": "Angel Reese",
+"outlet": "ESPN",
+"relation": "describe",
+"word": "mother"
+},
+"83befc56f1bcc95d": {
+"verdict": "no",
+"answer": "Negated: she did not play well; tab is not negated.",
+"kind": "card",
+"player": "Angel Reese",
+"outlet": "Fox News",
+"relation": "play2",
+"word": "well play"
+},
+"4ef51becb059e3a3": {
+"verdict": "no",
+"answer": "She is the one who added to her game, not acted upon.",
+"kind": "card",
+"player": "Breanna Stewart",
+"outlet": "ESPN",
+"relation": "object",
+"word": "add"
+},
+"23700316afa31c00": {
+"verdict": "no",
+"answer": "'Cracked up' means laughed, not the verb crack.",
+"kind": "card",
+"player": "Breanna Stewart",
+"outlet": "Fox News",
+"relation": "subject",
+"word": "crack"
+},
+"11e334d8679caf80": {
+"verdict": "no",
+"answer": "She is among those gracing rosters; she acts, not acted upon.",
+"kind": "card",
+"player": "Breanna Stewart",
+"outlet": "Fox News",
+"relation": "object2",
+"word": "grace roster"
+},
+"17e9b44d55047bd5": {
+"verdict": "no",
+"answer": "'hit back' is an idiom for retorting, not a hit",
+"kind": "card",
+"player": "Candace Parker",
+"outlet": "Fox News",
+"relation": "all",
+"word": "hit"
+},
+"c4dce89096b7059b": {
+"verdict": "no",
+"answer": "'lost her touch' is an idiom about shooting form",
+"kind": "card",
+"player": "Candace Parker",
+"outlet": "New York Times",
+"relation": "all",
+"word": "lose"
+},
+"ee64c947b63f5dd2": {
+"verdict": "no",
+"answer": "'passed Temeka Johnson' means surpassed on a list, not passing the ball",
+"kind": "card",
+"player": "Candace Parker",
+"outlet": "CBS",
+"relation": "all",
+"word": "pass"
+},
+"d9f387e19428fff3": {
+"verdict": "no",
+"answer": "Rookie of the Year 2017 at Dallas is Allisha Gray, not Chelsea",
+"kind": "card",
+"player": "Chelsea Gray",
+"outlet": "ESPN",
+"relation": "all",
+"word": "combine"
+},
+"7bd2fffb1631843e": {
+"verdict": "no",
+"answer": "'draft' is from All-Star draft results heading, not describing her",
+"kind": "card",
+"player": "Jackie Young",
+"outlet": "ESPN",
+"relation": "describe",
+"word": "draft"
+},
+"4deafb2bd5763c2f": {
+"verdict": "no",
+"answer": "'major move' is a life move, not a play",
+"kind": "card",
+"player": "Jackie Young",
+"outlet": "New York Times",
+"relation": "play2",
+"word": "major move"
+},
+"eead626779df2250": {
+"verdict": "no",
+"answer": "'extra' describes extra games, not her play",
+"kind": "card",
+"player": "Jewell Loyd",
+"outlet": "CBS",
+"relation": "play",
+"word": "extra"
+},
+"91fdf0c0dba00e67": {
+"verdict": "no",
+"answer": "This Jones is the namesake, not Jonquel Jones",
+"kind": "card",
+"player": "Jonquel Jones",
+"outlet": "ESPN",
+"relation": "subject",
+"word": "show"
+},
+"cb66bece651046a4": {
+"verdict": "no",
+"answer": "Passage says 'did not have a good shooting night'; negated",
+"kind": "card",
+"player": "Kahleah Copper",
+"outlet": "CBS",
+"relation": "play",
+"word": "good"
+},
+"1b4562874e582a48": {
+"verdict": "no",
+"answer": "Clark dribbles toward her; nothing is done to Mitchell",
+"kind": "card",
+"player": "Kelsey Mitchell",
+"outlet": "Fox News",
+"relation": "object",
+"word": "dribble"
+},
+"d7a937441bff6d30": {
+"verdict": "no",
+"answer": "League-best 8.4 assists belongs to Clark",
+"kind": "card",
+"player": "Kelsey Mitchell",
+"outlet": "ESPN",
+"relation": "play",
+"word": "league-best"
+},
+"2faa6be050bc230a": {
+"verdict": "no",
+"answer": "MVP outing and paint presence for New York is Jonquel Jones, not Plum",
+"kind": "card",
+"player": "Kelsey Plum",
+"outlet": "ESPN",
+"relation": "play",
+"word": "critical"
+},
+"3e1341b77e2e56d4": {
+"verdict": "no",
+"answer": "'restricted' is part of 'restricted free agent' status, nothing done to her",
+"kind": "card",
+"player": "Lexie Hull",
+"outlet": "ESPN",
+"relation": "object",
+"word": "restricted"
+},
+"05ccc5a895c16c53": {
+"verdict": "no",
+"answer": "'is set to enter' is an idiom, not something done to her",
+"kind": "card",
+"player": "Lexie Hull",
+"outlet": "Fox News",
+"relation": "object",
+"word": "set"
+},
+"c2576ba976eac6b7": {
+"verdict": "no",
+"answer": "New York drafted Kia Nurse, not Collier",
+"kind": "card",
+"player": "Napheesa Collier",
+"outlet": "ESPN",
+"relation": "object",
+"word": "draft"
+},
+"6dcf5f40692a92fc": {
+"verdict": "no",
+"answer": "Sidelined 'her' is Alyssa Thomas, not Collier.",
+"kind": "card",
+"player": "Napheesa Collier",
+"outlet": "ESPN",
+"relation": "object",
+"word": "sideline"
+},
+"a59677401a449267": {
+"verdict": "no",
+"answer": "'She won the tournament' is someone else; 'But Collier' contrasts.",
+"kind": "card",
+"player": "Napheesa Collier",
+"outlet": "ESPN",
+"relation": "all2",
+"word": "win tournament"
+},
+"140568e4d36067e7": {
+"verdict": "no",
+"answer": "Ogwumike was denied by FIBA; she did not deny.",
+"kind": "card",
+"player": "Nneka Ogwumike",
+"outlet": "Fox News",
+"relation": "subject",
+"word": "deny"
+},
+"835f9f88f97775d7": {
+"verdict": "no",
+"answer": "Voted All-Star starter, Fever rookie field goal leader is Aliyah Boston.",
+"kind": "card",
+"player": "Nneka Ogwumike",
+"outlet": "CBS",
+"relation": "object",
+"word": "vote"
+},
+"49fadb8ff249af5c": {
+"verdict": "no",
+"answer": "'Head coaches' are the jobs Bueckers wants filled, not describing her.",
+"kind": "card",
+"player": "Paige Bueckers",
+"outlet": "Fox News",
+"relation": "describe2",
+"word": "head coach"
+},
+"9ddb46abfeb3b4e7": {
+"verdict": "no",
+"answer": "'Big' comes from the idiom 'big three'.",
+"kind": "card",
+"player": "Rhyne Howard",
+"outlet": "ESPN",
+"relation": "play",
+"word": "big"
+},
+"3f8ea20c585fc1a4": {
+"verdict": "no",
+"answer": "'Clark joins a select group'; the subject is Clark.",
+"kind": "card",
+"player": "Rhyne Howard",
+"outlet": "AP",
+"relation": "object2",
+"word": "join group"
+},
+"bf5ecf7c78a3820a": {
+"verdict": "no",
+"answer": "Negation applies to 'wasn't selected', not to playing.",
+"kind": "card",
+"player": "Rhyne Howard",
+"outlet": "ESPN",
+"relation": "subject",
+"word": "not-play"
+},
+"5e997c0d7ddfd307": {
+"verdict": "no",
+"answer": "Howard is the one who played three seasons; she is the actor.",
+"kind": "card",
+"player": "Rhyne Howard",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "play season"
+},
+"16830fc83c641d6d": {
+"verdict": "no",
+"answer": "Williams starts the game; nothing is done to Howard.",
+"kind": "card",
+"player": "Rhyne Howard",
+"outlet": "New York Times",
+"relation": "object2",
+"word": "start game"
+},
+"96055ec5a0ba451f": {
+"verdict": "no",
+"answer": "Event would be renamed after Quigley, not Ionescu.",
+"kind": "card",
+"player": "Sabrina Ionescu",
+"outlet": "CBS",
+"relation": "object2",
+"word": "rename event"
+},
+"31ab45b3022163e3": {
+"verdict": "no",
+"answer": "'Separates her' refers to another player; Swoopes is mentioned after.",
+"kind": "card",
+"player": "Sheryl Swoopes",
+"outlet": "USA Today",
+"relation": "object",
+"word": "separate"
+},
+"ab6db6278ddf5918": {
+"verdict": "no",
+"answer": "'Sneaker' is the Nike Air Swoopes shoe, not a description of her.",
+"kind": "card",
+"player": "Sheryl Swoopes",
+"outlet": "ESPN",
+"relation": "describe",
+"word": "sneaker"
+},
+"f531ad8e2d7a3427": {
+"verdict": "no",
+"answer": "'Black' is part of 'black belt'.",
+"kind": "card",
+"player": "Sophie Cunningham",
+"outlet": "Fox News",
+"relation": "describe",
+"word": "black"
+},
+"31b8098da7ae15c8": {
+"verdict": "no",
+"answer": "Plum was drafted; Bird is only the time reference.",
+"kind": "card",
+"player": "Sue Bird",
+"outlet": "ESPN",
+"relation": "object",
+"word": "draft"
+},
+"21f5a0aee174dcf1": {
+"verdict": "no",
+"answer": "'Emphatic' describes Griner's blocked shots, not Bird.",
+"kind": "card",
+"player": "Sue Bird",
+"outlet": "New York Times",
+"relation": "play",
+"word": "emphatic"
+},
+"d36b3785dc05e189": {
+"verdict": "no",
+"answer": "'Bird is headed for the Hall of Fame'; she is acting, not acted on.",
+"kind": "card",
+"player": "Sue Bird",
+"outlet": "Fox News",
+"relation": "object",
+"word": "head"
+},
+"7f8daa4c16c4e8e8": {
+"verdict": "no",
+"answer": "The iconic 2022 All-Star dunk was not Bird's.",
+"kind": "card",
+"player": "Sue Bird",
+"outlet": "ESPN",
+"relation": "play",
+"word": "iconic"
+},
+"518a48a95188c95a": {
+"verdict": "no",
+"answer": "'Key weapon' is the Iowa star's range (Clark), not Bird's.",
+"kind": "card",
+"player": "Sue Bird",
+"outlet": "USA Today",
+"relation": "describe2",
+"word": "key weapon"
+},
+"3ac9159d7a4a1da8": {
+"verdict": "no",
+"answer": "negated: not the best player",
+"kind": "card",
+"player": "DiJonai Carrington",
+"outlet": "CBS",
+"relation": "describe",
+"word": "best"
+},
+"d9c0f3da5c95e2e4": {
+"verdict": "no",
+"answer": "close touch, not her play",
+"kind": "card",
+"player": "Sue Bird",
+"outlet": "ESPN",
+"relation": "play",
+"word": "close"
+},
+"d5e24d70eb14b97d": {
+"verdict": "no",
+"answer": "her shoe, not a description",
+"kind": "card",
+"player": "Sheryl Swoopes",
+"outlet": "ESPN",
+"relation": "describe",
+"word": "sneaker"
+},
+"106f3673eb137014": {
+"verdict": "no",
+"answer": "is set to enter, an idiom",
+"kind": "card",
+"player": "Lexie Hull",
+"outlet": "Fox News",
+"relation": "object",
+"word": "set"
+},
+"8d56f78b33b49bb2": {
+"verdict": "no",
+"answer": "her left hand, not her play",
+"kind": "card",
+"player": "Allisha Gray",
+"outlet": "CBS",
+"relation": "play",
+"word": "left"
+},
+"343863b20dcfa24b": {
+"verdict": "no",
+"answer": "two shy of a record, not a description",
+"kind": "card",
+"player": "Tina Charles",
+"outlet": "ESPN",
+"relation": "describe",
+"word": "shy"
 }
 }

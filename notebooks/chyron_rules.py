@@ -11,7 +11,9 @@ A banner counts when one of its lines has
   - a full team name ("ATLANTA DREAM", "LAS VEGAS ACES"),
   - a nickname no other team or common word has (Valkyries, Mystics),
   - two different team nicknames with a game word or a score
-    ("DREAM DOWN VALKYRIES 97-71"),
+    ("DREAM DOWN VALKYRIES 97-71"), or joined by a hyphen ("FEVER-SKY GAME"),
+  - a nickname next to a word for someone on the team, or its games
+    ("FEVER COACH", "MERCURY COACH", "ACES STAR"),
   - a player's surname next to a basketball word ("CLARK EARNS 7TH TECHNICAL
     FOUL", "BOSTON, CLARK DELIVER HISTORIC OVERTIME WIN").
 Weather and wildfire lines don't count for Storm, Fire, Sun, Sky or Mercury, and
@@ -68,8 +70,20 @@ TEAMS = [
     ("Seattle", "Storm"), ("Toronto", "Tempo"), ("Washington", "Mystics"),
 ]
 UNIQUE = ["Valkyries", "Mystics"]
+# nicknames that count next to a role word; Fire, Sun, Sky, Dream, Storm, Sparks
+# and Wings are left out, as those pairs are mostly something else ("FIRE
+# PLAYERS", "DREAM CENTER", "SPARKS FAN BACKLASH")
+ROLE_NICKS = ["Fever", "Lynx", "Mercury", "Aces", "Liberty"]
+ROLE_WORDS = (
+    r"coach|coaches|star|stars|guard|guards|forward|forwards|rookie|rookies|"
+    r"player|players|teammate|teammates|owner|owners|fans?|games?"
+)
+# a shared owner or another league's game ("PHOENIX SUNS, MERCURY OWNER")
+NOT_ROLE = r"\bsuns\b|\bnba\b"
 # other teams and things that share a nickname
 NOT_WNBA = r"red wings|sun devils|chicago fire|sun belt|liberty (?:university|flames)|storm surge"
+# a banner about someone else who shares a player's name
+NOT_THE_PLAYER = r"holocaust survivor"
 GAME_WORDS = (
     r"beat|beats|down|downs|tops?|defeats?|edges?|routs?|over|vs\.?|stuns?|sinks?|"
     r"blows? out|holds? off|rall(?:y|ies) past|crush(?:es)?|outlasts?|survives?|"
@@ -107,12 +121,16 @@ FULL = re.compile(
 BARE = re.compile(r"\b(?:" + "|".join(UNIQUE) + r")\b", re.I)
 RARE = re.compile(r"\b(?:" + "|".join(RARE_SURNAMES) + r")\b", re.I)
 PAIR = re.compile(rf"({NICK})[^|/]{{0,40}}?({NICK})", re.I)
+HYPHEN = re.compile(rf"({NICK})\s*-\s*({NICK})", re.I)
+ROLE = re.compile(r"\b(?:" + "|".join(ROLE_NICKS) + rf")(?:['’]s)?\s+(?:{ROLE_WORDS})\b", re.I)
+NOT_ROLE_LINE = re.compile(NOT_ROLE, re.I)
 SURNAME = re.compile(r"(?:(\w+)\W+)?\b(" + "|".join(SURNAMES) + r")\b(?:\s+(\w+))?", re.I)
 SCORE = re.compile(r"\b[\dO/]{2,3}\s*-\s*[\dO/]{2,3}\b")
 GAME = re.compile(rf"\b(?:{GAME_WORDS})\b", re.I)
 HOOPS = re.compile(rf"\b(?:{BASKETBALL})\b", re.I)
 NBA = re.compile(NBA_TEAMS, re.I)
 SKIP = re.compile(NOT_WNBA, re.I)
+SOMEONE_ELSE = re.compile(NOT_THE_PLAYER, re.I)
 WEATHERY = re.compile(WEATHER, re.I)
 NOT_PLAYER = re.compile(rf"^(?:{NOT_THEM})$", re.I)
 NOT_PLAYER_PHRASE = re.compile(NOT_THEM, re.I)
@@ -120,10 +138,14 @@ NOT_PLAYER_PHRASE = re.compile(NOT_THEM, re.I)
 
 def lines(text):
     """A Third Eye row holds several banners: split on its \\n and | marks."""
+    if SOMEONE_ELSE.search(text):
+        return []
     return [line for line in re.split(r"\\n|\n|\|", text) if line.strip()]
 
 
 def line_hit(line):
+    if SOMEONE_ELSE.search(line):
+        return None
     m = NAMES.search(line)
     if m:
         return "wnba" if m.group(0).lower().startswith("wnba") else "name: " + " ".join(m.group(0).lower().split())
@@ -141,6 +163,14 @@ def line_hit(line):
     m = RARE.search(line)
     if m:
         return "surname: " + m.group(0).lower()
+    m = ROLE.search(line)
+    if m and not NOT_ROLE_LINE.search(line):
+        return "role: " + " ".join(m.group(0).lower().split())
+    for m in HYPHEN.finditer(line):
+        a, b = m.group(1).lower(), m.group(2).lower()
+        # capitalised, so "fever-dream palace" doesn't count
+        if a != b and m.group(0)[0].isupper() and not {a, b} <= EVERYDAY_NICKS:
+            return "pair: " + " ".join(m.group(0).lower().split())
     for m in PAIR.finditer(line):
         a, b = m.group(1).lower(), m.group(2).lower()
         if a == b or (weather and {a, b} & WEATHER_NICKS):

@@ -35,6 +35,7 @@
 	const FOX = "var(--color-fox-navy)"; // Fox's chart colour, set once in variables.css
 	const OTHER = "var(--color-outlets)"; // the other outlets' purple
 	const SIGNIFICANT = 1.96;
+	const WEAK = "var(--wnba-tan-dark)"; // words within noise, either side
 	const MOST_USES = 1000; // the right end of the "Minimum uses" check slider
 	const SANS = "var(--font-chart)";
 
@@ -484,7 +485,7 @@
 			`${topLabel}: ${sample.fox.toLocaleString()} ${what}; ${them}: ${sample.other.toLocaleString()}, April 2023 on${noCollege ? ", college coverage left out" : ""}. ` +
 			`Words ranked by weighted log-odds with an informative prior (Monroe et al. 2008); ` +
 			`bar length is ${sqrt ? "the square root of the z-score, so one runaway word doesn’t flatten the rest" : "the z-score"}. ` +
-			`Faded bars are within noise (|z| under 1.96). Hover a bar for an example.`
+			`Tan bars are within noise (|z| under 1.96). Hover a bar for an example.`
 		);
 	});
 
@@ -923,7 +924,7 @@
 	});
 
 	const colorOf = (z) =>
-		Math.abs(z) < SIGNIFICANT ? "rgba(42,21,3,0.28)" : z > 0 ? FOX : OTHER;
+		Math.abs(z) < SIGNIFICANT ? WEAK : z > 0 ? FOX : OTHER;
 
 	const escapeHtml = (t) =>
 		t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

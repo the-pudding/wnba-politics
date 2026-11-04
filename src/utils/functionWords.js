@@ -5,7 +5,7 @@
 // "on x", "points and"), is left off. A phrase with one inside stays ("points
 // and rebounds").
 // The list is notebook 06's STOPWORDS, plus more pronouns and prepositions,
-// contractions, and the pieces of "7 p.m. ET".
+// contractions, and the pieces of "7 p.m. ET" and "15 th".
 const WORDS = `
 a an the and or but if then than that this these those of in on at to for with
 from by as is are was were be been being it its it's his her she he they them their our your you
@@ -21,7 +21,7 @@ there here
 don't doesn't didn't isn't wasn't aren't weren't won't can't couldn't wouldn't shouldn't
 hasn't haven't hadn't i'm i've i'll i'd you're you've you'll we're we've they're they've
 she's he's that's there's what's who's let's it'll
-p m et
+p m et th
 `;
 const FUNCTION_WORDS = new Set(WORDS.split(/\s+/).filter(Boolean));
 

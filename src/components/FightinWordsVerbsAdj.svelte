@@ -481,7 +481,7 @@
 			(counts && !outlet
 				? `: Fox News ${n(counts.clark)}, the other outlets ${n(counts.others)}`
 				: "") +
-			`. Ranked by weighted log-odds with an informative prior (Monroe et al. 2008); bar length is the square root of the z-score. Faded bars are within noise (|z| under 1.96). Hover a bar for an example.`
+			`. Ranked by weighted log-odds with an informative prior (Monroe et al. 2008); bar length is the square root of the z-score. Tan bars are within noise (|z| under 1.96). Hover a bar for an example.`
 		);
 	});
 </script>
@@ -633,7 +633,7 @@
 						label="Prior"
 					/>
 				{/if}
-				<!-- on a phone the slider takes a line of its own, at the right -->
+				<!-- on a phone the slider takes a line of its own, centred -->
 				{#if narrow && live}<div class="uses-row">
 						{@render usesControl()}
 					</div>{/if}
@@ -702,6 +702,7 @@
 					{scale}
 					{caps}
 					{scores}
+					nicknamesAsWords
 					highlight={shown.words}
 					top={12}
 					fill
@@ -1158,7 +1159,7 @@
 	}
 	.uses-row {
 		display: flex;
-		justify-content: flex-end;
+		justify-content: center;
 		margin-top: 6px;
 	}
 </style>

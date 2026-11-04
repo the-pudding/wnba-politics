@@ -25,6 +25,9 @@
 		scale = "linear",
 		// caps: true — words in capitals; "title" — first letter capitalised
 		caps = false,
+		// nicknamesAsWords: "fire", "sun", "storm" … stay lowercase (a player's
+		// words, where they are mostly verbs and words, not the teams)
+		nicknamesAsWords = false,
 		// scores: true — the score printed past each bar (it is always in the
 		// tooltip)
 		scores = false,
@@ -75,16 +78,23 @@
 	const OTHERS = "var(--color-outlets)";
 	const INK = "var(--color-ink)";
 	const WEAK_Z = 1.96; // below this a word's lean is within noise
+	const WEAK = "var(--wnba-tan-dark)"; // those words' colour in the tooltip, whichever side
+	const WEAK_BAR = "#f6efe6"; // their bars, close to the page so the words seem to float
+	const WEAK_TEXT = "#000"; // and their words
+	const WEAK_TEXT_FADED = "#cdc4b8"; // those words when a step highlights others
 	const LOADING = "Loading words…"; // while a comparison's words are still on their way
+	// the heads at the bars' outer edges; on a narrow chart each breaks before "to"
+	const EDGE_OTHERS = "← More distinctive to other outlets";
+	const EDGE_FOX = "More distinctive to Fox News →";
 	// the hover counts when each side's article counts are known: how many
 	// times as many articles use it, and each side's share (the Doc's
 	// hoverCounts takes over once it has {topShare})
 	const SHARE_COUNTS = "{ratio}: | {topLabel} {topShare} · {bottomLabel} {bottomShare}";
 	// a player's chart: how often for its size, then the uses on each side
 	const USES_COUNTS = "{ratio} | Uses: {top} {topUses} · {bottomAll} {bottomUses}";
-	// and the bold line under the word: how sure the difference is
+	// and the line under the word: its score, and how sure the difference is
 	// (**…** is bold)
-	const SHARE_HEAD = "**{difference}** ({score})";
+	const SHARE_HEAD = "**Distinctiveness: {score}** ({strength})";
 
 	let lit = $derived(new Set((highlight ?? []).map((w) => w.toLowerCase())));
 	let anyLit = $derived(lit.size > 0);
@@ -93,11 +103,6 @@
 	let el = $state(null);
 	let frame = $state({ w: 0 });
 	let narrow = $derived(frame.w > 0 && frame.w < 640);
-	// on a small screen "Other outlets use more" shortens to "Others use more"
-	let innerWidth = $state(1024);
-	let bottomHead = $derived(
-		innerWidth < 640 ? (source?.bottomHead ?? "").replace(/^other outlets\b/i, "Others") : source?.bottomHead
-	);
 	let WIDTH = $derived(frame.w || 900);
 	// fill: the scrolly asks the rows to stretch down the viewport, so a
 	// chart with fifteen bars uses the screen instead of a strip of it
@@ -134,6 +139,7 @@
 		};
 	});
 	const TOP = 34;
+	const HEAD_LINE = 13; // the edge heads' second line, on a narrow chart
 	const BOTTOM = 10;
 	// ROW_SQUEEZE: thinner rows, only for a step whose highlighted words
 	// can't all fit on a short screen otherwise
@@ -280,7 +286,7 @@
 			? w.toUpperCase()
 			: String(caps).toLowerCase() === "title"
 				? w.replace(/(^|[\s-])([a-z])/g, (m, a, b) => a + b.toUpperCase())
-				: properCase(w);
+				: properCase(w, { nicknamesAsWords });
 	// bar length: leaves room past the end for a word that does not fit inside
 	// outside: the bars keep the middle, the words take the outer column, with
 	// room for the score between them
@@ -325,6 +331,11 @@
 		measureCtx.font = `700 ${WORD_PX}px ${chartFont}`;
 		return measureCtx.measureText(word).width;
 	}
+	// the edge heads on one line when both fit (measured as drawn: 12px
+	// capitals, against the measure's bold words), else two lines each
+	const headWidth = (t) => (textWidth(t.toUpperCase()) * 12) / WORD_PX;
+	let edgeOneLine = $derived(headWidth(EDGE_OTHERS) + headWidth(EDGE_FOX) + 24 < WIDTH);
+	let headExtra = $derived(source?.topHead && !edgeOneLine ? HEAD_LINE : 0);
 	// the word column, when the words sit beside the bars: as wide as the
 	// longest word shown, within reason
 	let LABEL = $derived(
@@ -555,29 +566,28 @@
 	});
 </script>
 
-<svelte:window onclick={clickAway} bind:innerWidth />
+<svelte:window onclick={clickAway} />
 
 <div class="word-bars" bind:this={el}>
 	{#if source}
 		<!-- the column heads -->
-		<svg width={WIDTH} height={TOP - 24} viewBox="0 0 {WIDTH} {TOP - 24}" 
+		<svg width={WIDTH} height={TOP - 24 + headExtra} viewBox="0 0 {WIDTH} {TOP - 24 + headExtra}" 
 			role="presentation"
 			aria-label="Diverging bar chart showing words that are distinctive to {topName} and to {otherName}">
 			{#if source.topHead}
 				<!-- heads at the bars' outer edges, saying what each side means:
 				     "← Other outlets use more" · "Fox News uses more →" -->
-				{@const oneLine = textWidth(bottomHead) + textWidth(source.topHead) + 60 < 2 * barsReach}
-				{#if oneLine}
-					<text class="head edge others" x={0} y="10" text-anchor="start">← More distinctive to other outlets</text>
-					<text class="head edge fox" x={WIDTH} y="10" text-anchor="end">More distinctive to Fox News →</text>
+				{#if edgeOneLine}
+					<text class="head edge others" x={0} y="10" text-anchor="start">{EDGE_OTHERS}</text>
+					<text class="head edge fox" x={WIDTH} y="10" text-anchor="end">{EDGE_FOX}</text>
 				{:else}
-					<!-- too narrow for both on one line: each breaks before "use(s) more" -->
-					{@const split = (t) => { const i = t.search(/ uses? more$/); return i > 0 ? [t.slice(0, i), t.slice(i + 1)] : [t, ""]; }}
+					<!-- too narrow for both on one line: each breaks before "to", the arrow on the first line -->
+					{@const split = (t) => { const bare = t.replace(/\s*[←→]\s*/g, ""); const i = bare.indexOf(" to "); return i > 0 ? [bare.slice(0, i), bare.slice(i + 1)] : [bare, ""]; }}
 					<text class="head edge narrow others" x={mid - barsReach} y="11" text-anchor="start"
-						><tspan x={mid - barsReach}>← {split(bottomHead)[0]}</tspan><tspan x={mid - barsReach} dy="13">{split(bottomHead)[1]}</tspan></text
+						><tspan x={mid - barsReach}>← {split(EDGE_OTHERS)[0]}</tspan><tspan x={mid - barsReach} dy={HEAD_LINE}>{split(EDGE_OTHERS)[1]}</tspan></text
 					>
 					<text class="head edge narrow fox" x={mid + barsReach} y="11" text-anchor="end"
-						><tspan x={mid + barsReach}>{split(source.topHead)[0]} →</tspan><tspan x={mid + barsReach} dy="13">{split(source.topHead)[1]}</tspan></text
+						><tspan x={mid + barsReach}>{split(EDGE_FOX)[0]} →</tspan><tspan x={mid + barsReach} dy={HEAD_LINE}>{split(EDGE_FOX)[1]}</tspan></text
 					>
 				{/if}
 			{:else if source.bottomLogo}
@@ -643,7 +653,7 @@
 					{@const w = len(p.z)}
 					{@const on = !anyLit || lit.has(p.word.toLowerCase())}
 					{@const weak = Math.abs(p.z) < WEAK_Z}
-					{@const color = sign > 0 ? FOX : OTHERS}
+					{@const color = weak ? WEAK_BAR : sign > 0 ? FOX : OTHERS}
 					<!-- a label too long for its half (three-word phrases on a phone)
 					     shrinks just enough to fit, down to 9px -->
 					{@const room = mid - GAP - (beside || outside ? 0 : LABEL) - 18}
@@ -691,8 +701,8 @@
 							x={outside ? mid + sign * (GAP + span + 40) : beside ? mid + sign * GAP : tip_ ? end + sign * 7 : foot + sign * (7 - nudge)}
 							y={y + 4.5}
 							text-anchor={sign > 0 ? "start" : "end"}
-							fill="#fff"
-							style:--halo={color}
+							fill={!weak ? "#fff" : on || hovered === p.word ? WEAK_TEXT : WEAK_TEXT_FADED}
+							style:--halo={weak ? "transparent" : color}
 							font-size={fs}>{wordCase(p.word)}</text
 						>
 						{#if p.pin && (sign > 0 ? WIDTH - reach - 6 : reach - 6) >= String(p.rank).length * 7.5 + 10}
@@ -732,13 +742,13 @@
 		{/if}
 
 		{#if tip}
-			{@const color = tip.sign > 0 ? FOX : OTHERS}
+			{@const color = Math.abs(tip.p.z) < WEAK_Z ? WEAK : tip.sign > 0 ? FOX : OTHERS}
 			{@const shared = tip.p.af != null && tip.p.ao != null}
 			{@const difference = capital(strengthOf(tip.p.z)) + (Math.abs(tip.p.z) >= STRENGTH_CUTS[0] ? " difference" : "")}
 			<!-- the bold line: how sure the difference is -->
 			<!-- its place on its side -->
 			{@const rank = side(tip.sign).findIndex((p) => p.word === tip.p.word) + 1}
-			{@const ratio = fillIn(SHARE_HEAD, { difference, score: fmt(tip.p.z) })}
+			{@const ratio = fillIn(SHARE_HEAD, { difference, strength: strengthOf(tip.p.z), score: fmt(tip.p.z) })}
 			<!-- a "|" in the Doc's hover counts starts a new line -->
 			<!-- with each side's article counts, the share of articles that use
 			     it; otherwise (a player's chart) how often, then the uses. For
@@ -787,7 +797,7 @@
 				style="left:{tipBox.left}px; top:{tipBox.top}px; --arrow:{tipBox.arrow}px"
 			>
 				<!-- the side's colour in a swatch and on the quote's rule; the words in ink -->
-				<span class="tip-head">{properCase(tip.p.word)}</span>
+				<span class="tip-head">{properCase(tip.p.word, { nicknamesAsWords })}</span>
 				{#if ratio}<span class="tip-ratio"
 						>{#each ratio.split("**") as part, j}{#if j % 2}<strong>{part}</strong>{:else}{part}{/if}{/each}</span
 					>{/if}
@@ -812,7 +822,7 @@
 				<p class="note" class:source={noteKind === "source"} style:max-width="{noteKind === "source" ? Math.round(2 * barsReach) : plotWidth}px">{@html note}</p>
 			{:else if noteMode === "stock"}
 				<p class="note" style:max-width="{plotWidth}px">
-					Bars are each word's fightin'-words score. Faded bars score under {WEAK_Z},
+					Bars are each word's fightin'-words score. Tan bars score under {WEAK_Z},
 					within noise. Hover a bar for an example.
 				</p>
 			{/if}
@@ -925,12 +935,6 @@
 		opacity: 0.88;
 		transition: opacity 250ms ease;
 	}
-	/* within noise: a lighter tint of the same colour, not a greyed-out one
-	   (transparency over the orange page turns navy to mud) */
-	.bar.weak .fill {
-		opacity: 0.8;
-		filter: brightness(1.45) saturate(0.85);
-	}
 	/* a bar outside the step's words fades, but its label stays legible */
 	.bar.dim .fill {
 		opacity: 0.22;
@@ -941,6 +945,22 @@
 		opacity: 0.55;
 	}
 	.bar:hover .fill {
+		opacity: 1;
+	}
+	/* a word within noise floats on a pale bar, which fades less than the dark
+	   bars do because it starts so close to the page */
+	.bar.weak .fill {
+		opacity: 1;
+	}
+	.bar.weak.dim .fill {
+		opacity: 0.5;
+	}
+	.bar.weak.dim .word {
+		opacity: 1;
+	}
+	.bar.weak:hover .fill,
+	.bar.weak.hovered .fill {
+		fill: var(--wnba-tan-mid);
 		opacity: 1;
 	}
 	/* the hovered (or tapped) bar's words at full strength, faded bar or not */
