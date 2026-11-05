@@ -386,7 +386,8 @@
 		HEAD_MAX = 24, // px: the head of the most-mentioned player
 		HEAD_MAX_PHONE = 16,
 		PHONE_WIDTH = 640,
-		HEAD_GAP = 2; // px between two heads that would otherwise overlap
+		HEAD_GAP = 2, // px between two heads that would otherwise overlap
+		HEAD_QUIET = 0.4; // how far the faces a step doesn't name fade
 	// a head's size runs with the player's mentions, on a log scale as the dots'
 	// does: Griner's 7,000 would otherwise dwarf everyone
 	const headMentions = [...TERM_OF.values()]
@@ -569,11 +570,17 @@
 	let holdNames = $derived(
 		terLast === 0 && !terStep?.groups.length && bridgeWords.length > 0
 	);
-	// the heads stay on their words through the handoff and for as long as
-	// the names are held lit, then fade
+	// the heads stay on their words through the handoff and the triangle's
+	// steps, and leave for the find step, where the reader's words take over
 	let headsOn = $derived(
-		phase === "bridge" || (phase === "ternary" && holdNames)
+		phase === "bridge" || (phase === "ternary" && !findStep)
 	);
+	// on a step that names players, the others' faces step back
+	let namedWords = $derived(
+		new Set((terStep?.groups ?? []).flat().map((word) => word.toLowerCase().replace(/[’‘]/g, "'")))
+	);
+	const headQuiet = (term) =>
+		namedWords.size > 0 && !term?.split(" ").some((word) => namedWords.has(word));
 </script>
 
 <svelte:window onclick={unpin} />
@@ -708,7 +715,7 @@
 					bare
 					big
 					highlightColor={HIGHLIGHT}
-					enclose={Boolean(terStep) && !search && !holdNames}
+					enclose={Boolean(terStep) && !search && !headsOn}
 					people={!search}
 					markMin={headsOn ? HEAD_MIN : 0}
 					markAt={headsOn ? headSpots : null}
@@ -732,7 +739,7 @@
 						style:width="{at.r * 2}px"
 						style:height="{at.r * 2}px"
 						style:transform="translate({at.x - at.r}px, {at.y - at.r}px)"
-						style:opacity={at.opacity}
+						style:opacity={at.opacity * (headQuiet(f.term) ? HEAD_QUIET : 1)}
 						class:live={headsOn && at.landed}
 						onpointerdown={(e) => (headTouched = !hovers(e))}
 						onpointermove={(e) => hovers(e) && (headTerm = f.term)}
@@ -1023,6 +1030,7 @@
 		overflow: hidden;
 		background: var(--wnba-tan-light);
 		will-change: transform;
+		transition: opacity 250ms ease;
 	}
 	/* the photo framed as the dot plot frames it: a little large, a little low */
 	/* landed on its word, a head can be hovered for the word's tooltip */

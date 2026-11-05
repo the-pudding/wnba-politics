@@ -375,6 +375,8 @@
 	}
 	// "all" is the story's own chart; then each comparison outlet on its own
 	const OUTLET_OPTIONS = ["all", ...COMPARISON];
+	// false: the line just says "Compared with six other outlets", no menu
+	const OUTLET_MENU = false;
 	// a smaller cast member has too few attachments for some relations; those
 	// buttons grey out, and the choice falls back to every word
 	let available = $derived(
@@ -580,32 +582,40 @@
 						{HEADING[shown.rel]?.(shown.who) ?? source.relation}
 					</p>
 				{/if}
-				{#if shown.vs === "outlets" && (narrow || !shown.title)}
+				{#if shown.vs === "outlets" && (narrow || !shown.title || !OUTLET_MENU)}
 					<!-- a div, not a p: the menu inside renders block elements -->
-					<div class="subheading" class:off={!live} inert={!live}>
+					<div
+						class="subheading"
+						class:off={!live && OUTLET_MENU}
+						inert={!live}
+					>
 						<span
 							>{narrow
 								? or(phoneVs, "vs.")
 								: or(comparedWith, "Compared with")}</span
 						>
-						<LogoSelect
-							options={OUTLET_OPTIONS}
-							bind:value={pickedOutlet}
-							logoOf={(o) => (o === "all" ? null : (LOGO[o] ?? null))}
-							nameOf={(o) =>
-								o === "all" ? or(allOutlets, "six other outlets") : o}
-							isDisabled={(o) =>
-								o !== "all" && !outletsHere.has(o)
-									? fill(
-											or(
-												tooFewOutlet,
-												"Too few words about {player} in {outlet}"
-											),
-											{ player: pickedWho, outlet: o }
-										)
-									: false}
-							label="Compared with"
-						/>
+						{#if OUTLET_MENU}
+							<LogoSelect
+								options={OUTLET_OPTIONS}
+								bind:value={pickedOutlet}
+								logoOf={(o) => (o === "all" ? null : (LOGO[o] ?? null))}
+								nameOf={(o) =>
+									o === "all" ? or(allOutlets, "six other outlets") : o}
+								isDisabled={(o) =>
+									o !== "all" && !outletsHere.has(o)
+										? fill(
+												or(
+													tooFewOutlet,
+													"Too few words about {player} in {outlet}"
+												),
+												{ player: pickedWho, outlet: o }
+											)
+										: false}
+								label="Compared with"
+							/>
+						{:else}
+							<span>{or(allOutlets, "six other outlets")}</span>
+						{/if}
 						{#if narrow}{@render unitSwitch()}{/if}
 						<!-- on a desktop the slider follows the menu on its line -->
 						{#if !narrow && live}{@render usesControl()}{/if}
