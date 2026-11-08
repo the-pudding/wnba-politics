@@ -51,6 +51,9 @@
 	const PAGE = 25; // headlines drawn at first, and again each time the list is scrolled near its end
 	const RADIUS = { desktop: [17, 56], phone: [12, 36] }; // smallest and largest face
 	const PHONE_CHART = 560; // a chart narrower than this (px) stands upright
+	// height (px) of the chart on desktop (null = fit the tallest tab). The faces are
+	// centred in it; if a tab's swarm needs more room than this, the chart grows to fit
+	const DESKTOP_HEIGHT = 380;
 	// on the tone tab, faces ringed red (harsher) or green (warmer); within this much
 	// of zero they keep the plain ring, as neutral
 	const NEUTRAL_BAND = 0.02;
@@ -126,6 +129,25 @@
 		String(s ?? "")
 			.replace(/(^|[\s(\[“"—–-])'/g, "$1‘")
 			.replace(/'/g, "’");
+	// whole-word match plus common endings: "defend" finds "defends", "defended",
+	// "defending", but "tent" doesn't find "potential" or "tentative"
+	const wordRx = (q, flags = "iu") => {
+		const e = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		const alts = [`${e(q)}(?:s|es|d|ed|er|ers|est|ing|ings|ly)?`];
+		const last = q.slice(-1);
+		// stop → stopped, stopping
+		if (/[b-df-hj-np-tv-z]/i.test(last))
+			alts.push(`${e(q + last)}(?:ed|er|ers|ing|ings)`);
+		// race → racing
+		if (/e$/i.test(q)) alts.push(`${e(q.slice(0, -1))}(?:ing|ings)`);
+		// rally → rallies, rallied
+		if (/[^aeiou]y$/i.test(q))
+			alts.push(`${e(q.slice(0, -1))}(?:ies|ied|ier|iest)`);
+		return new RegExp(
+			`(?<![\\p{L}\\p{N}])(?:${alts.join("|")})(?![\\p{L}\\p{N}])`,
+			flags
+		);
+	};
 	const ordinal = (n) =>
 		n + (["th", "st", "nd", "rd"][((n % 100) >> 3) ^ 1 && n % 10] || "th");
 	const MON = [
@@ -714,7 +736,9 @@
 			L = layout();
 			// keep the frame the same height on every tab and count: the tallest
 			// of them all at this width, with the swarm centred in the extra room
-			const H = fixedH();
+			const H = L.narrow || DESKTOP_HEIGHT == null
+				? fixedH()
+				: Math.max(DESKTOP_HEIGHT, L.H);
 			if (H > L.H) {
 				if (!L.narrow) for (const d of L.nodes) d.y += (H - L.H) / 2;
 				L.H = H;
@@ -990,7 +1014,8 @@
 		function filtered(f = T) {
 			const pi = picked ? nameIdx.get(picked) : null;
 			const ci = f.cat === "all" ? null : MEAS.indexOf(f.cat);
-			const q = f.q.trim().toLowerCase();
+			const q = f.q.trim();
+			const rx = q ? wordRx(curly(q)) : null;
 			return D.headlines.filter((r) => {
 				if (picked && !r[3].includes(pi)) return false;
 				if (ci !== null) {
@@ -1001,9 +1026,9 @@
 				}
 				if (f.mood !== "all" && r[6] !== f.mood) return false;
 				if (
-					q &&
-					!r[1].toLowerCase().includes(q) &&
-					!r[3].some((i) => D.names[i].toLowerCase().includes(q))
+					rx &&
+					!rx.test(curly(r[1])) &&
+					!r[3].some((i) => rx.test(D.names[i]))
 				)
 					return false;
 				return true;
@@ -1013,11 +1038,7 @@
 			const safe = esc(curly(text));
 			const q = T.q.trim();
 			if (q.length < 2) return safe;
-			const rx = new RegExp(
-				esc(curly(q)).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-				"ig"
-			);
-			return safe.replace(rx, (m) => `<mark>${m}</mark>`);
+			return safe.replace(wordRx(esc(curly(q)), "giu"), (m) => `<mark>${m}</mark>`);
 		}
 		const rowsEl = el("rows"),
 			bodyEl = el("rows-b"),
@@ -1191,7 +1212,7 @@
 
 <section class="swarm" bind:this={root}>
 	<p class="kicker">on the web</p>
-	<h4 class="heading">{or(kicker, "How Fox News frames each player")}</h4>
+	<h3 class="heading">{or(kicker, "How Fox News frames each player")}</h3>
 	<div class="tabrow">
 		<div class="tabs" data-id="tabs" role="tablist" aria-label="Measure"></div>
 		<div class="unit" data-id="unit" role="group" aria-label="Counted over">
@@ -1225,7 +1246,7 @@
 	</div>
 
 	<div class="tbl" data-id="tbl">
-		<h3 class="tbl-h">{or(tableHead, "The headlines")}</h3>
+		<h4 class="tbl-h">{or(tableHead, "The headlines")}</h4>
 		<p class="summary" data-id="summary" aria-live="polite"></p>
 		<div class="tctl">
 			<label>Topic <select data-id="cat"></select></label>
@@ -1281,6 +1302,7 @@
 		--card: #f7f2e6;
 		--harsh: #c0392b;
 		--warm: #1f7a5a;
+		width: calc(100% - 2rem);
 		max-width: 1000px; /* wider on wide screens, below */
 		margin: 0 auto;
 		padding: 24px 28px 22px;
@@ -1289,6 +1311,12 @@
 		border: 1px solid var(--color-rule);
 		color: var(--ink);
 		font-family: var(--font-sans);
+	}
+	h3 {
+		text-align: left;
+	}
+	h3::before {
+		display: none;
 	}
 	/* wide screens: as wide as the Universe card in Explore, clear of the side menu */
 	@media (min-width: 1181px) {
@@ -1896,7 +1924,7 @@
 	/* the headlines scroll inside their own box, under the column heads; a
 	   dark rule ends it, and a fade over the last row says there's more */
 	.swarm :global(.rows) {
-		max-height: 560px;
+		max-height: 320px;
 		overflow-y: auto;
 	}
 	.swarm :global(.rows .hr:last-child td) {

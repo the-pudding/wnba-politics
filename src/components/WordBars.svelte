@@ -819,9 +819,9 @@
 		<div class="below" bind:this={belowEl}>
 			{#if noteMode === "custom"}
 				<!-- a source line spans the bars, edge to edge with the heads above -->
-				<p class="note" class:source={noteKind === "source"} style:max-width="{noteKind === "source" ? Math.round(2 * barsReach) : plotWidth}px">{@html note}</p>
+				<p class="note" class:source={noteKind === "source"}>{@html note}</p>
 			{:else if noteMode === "stock"}
-				<p class="note" style:max-width="{plotWidth}px">
+				<p class="note">
 					Bars are each word's fightin'-words score. Tan bars score under {WEAK_Z},
 					within noise. Hover a bar for an example.
 				</p>
@@ -857,9 +857,61 @@
 		font-size: 12px;
 		color: var(--color-fg);
 	}
-	/* kept in place but unseen (and out of the tab order) when there's one page */
+	/* kept in place but unseen (and out of the tab order) when there's one page;
+	   it fades and rises in as the player chart's "Compared with" line does,
+	   then a highlighter swipes across it and off again (menu-swipe) */
+	.pager {
+		width: fit-content;
+		max-width: 100%;
+		margin: 6px auto 0;
+		padding: 1px 4px;
+		background-image: linear-gradient(
+			rgba(255, 230, 0, 0.55),
+			rgba(255, 230, 0, 0.55)
+		);
+		background-repeat: no-repeat;
+		background-size: 0% 100%;
+		background-position: left;
+		transition:
+			opacity 450ms ease,
+			transform 450ms cubic-bezier(0.22, 0.8, 0.3, 1),
+			visibility 0s;
+	}
 	.pager.off {
+		opacity: 0;
+		transform: translateY(8px);
 		visibility: hidden;
+		/* stays visible until the fade out ends */
+		transition:
+			opacity 450ms ease,
+			transform 450ms cubic-bezier(0.22, 0.8, 0.3, 1),
+			visibility 0s linear 450ms;
+	}
+	.pager:not(.off) {
+		animation: menu-swipe 1.6s ease 400ms both;
+	}
+	@keyframes menu-swipe {
+		40% {
+			background-size: 100% 100%;
+			background-position: left;
+		}
+		65% {
+			background-size: 100% 100%;
+			background-position: right;
+		}
+		100% {
+			background-size: 0% 100%;
+			background-position: right;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.pager,
+		.pager.off {
+			transition: none;
+		}
+		.pager:not(.off) {
+			animation: none;
+		}
 	}
 	.pager button {
 		appearance: none;

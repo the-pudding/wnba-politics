@@ -33,7 +33,7 @@
 	.side-by-side {
 		display: flex;
 		align-items: stretch;
-		gap: 48px;
+		gap: 1rem;
 		box-sizing: border-box;
 		width: 100%;
 		margin: 0 auto;

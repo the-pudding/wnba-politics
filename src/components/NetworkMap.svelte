@@ -1435,6 +1435,7 @@
 		--rule: #e2e2e2;
 		--edge: #b3ab9e;
 		position: relative;
+		width: calc(100% - 2rem);
 		max-width: 1400px; /* same as the other scrollies, clear of the side menu */
 		margin: 5rem auto;
 		color: var(--ink);

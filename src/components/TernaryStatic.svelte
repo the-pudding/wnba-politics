@@ -743,7 +743,7 @@
 
 <div class="ternary-static" class:big class:timeline={timelineOn} bind:this={hostEl}>
 	<p class="kicker">on television</p>
-	{#if heading}<p class="heading">{heading}</p>{/if}
+	{#if heading}<h3 class="heading">{heading}</h3>{/if}
 	{#if timelineOn && controls}
 		<!-- the years: play runs through them; a button jumps to one; "all" is
 		     the whole span -->
@@ -1014,6 +1014,12 @@
 		position: relative;
 		max-width: 1040px;
 		padding: 1rem;
+	}
+	h3 {
+		text-align: left;
+	}
+	h3::before {
+		display: none;
 	}
 	svg {
 		width: 100%;

@@ -126,8 +126,27 @@ h2::before {
 }
 
 h3 {
-	font-size: var(--28px, 28px);
+	font-size: var(--32px, 32px);
 	font-family: var(--font-display);
+	text-align: center;
+}
+
+h3.fold-head {
+	text-align: left;
+}
+
+h3::before {
+	content: "";
+	display: block;
+	margin: 0 auto;
+	width: 50px;
+	height: 6px;
+	background: var(--color-fox-navy);
+	margin-bottom: 1rem;
+}
+
+h3.fold-head::before {
+	display: none;
 }
 
 h4 {
@@ -153,6 +172,14 @@ h6 {
 	line-height: 1.22;
 	text-wrap: pretty;
 	color: var(--color-fg);
+}
+
+.sheet h3 {
+	text-align: left;
+}
+
+.sheet h3::before {
+	display: none;
 }
 @media(max-width: 640px) {
 	.heading {

@@ -1017,7 +1017,7 @@
 		<div class="head">
 			<p class="kicker">on the web</p>
 			<!-- a div, not a p: the title's menu renders block elements -->
-			<div class="heading">
+			<h3 class="heading">
 				{#if bodyMode && player === ALL}
 					{fillIn(
 						or(headingText, "The phrases that define Fox News’ coverage"),
@@ -1029,7 +1029,7 @@
 							: "Words"} in {player === ALL
 						? `WNBA ${bodyMode ? "articles" : "headlines"}`
 						: `headlines naming ${player}`}{/if}
-			</div>
+			</h3>
 			<!-- a div, not a p: the menu inside renders block elements -->
 			<div class="subheading" class:off={!live} inert={!live}>
 				<span>{or(comparedWith, "Compared with")}</span>
@@ -1118,6 +1118,7 @@
 				{#if bodyMode}
 					<div
 						class="unit-tabs"
+						class:off={!live}
 						inert={!live}
 						role="tablist"
 						aria-label="Words at a time"
@@ -1431,6 +1432,12 @@
 		margin: 0 auto;
 		position: relative;
 	}
+	h3 {
+		text-align: left;
+	}
+	h3::before {
+		display: none;
+	}
 	.tip-card {
 		position: absolute;
 		z-index: 8;
@@ -1577,10 +1584,86 @@
 		font-weight: 700;
 		cursor: pointer;
 	}
-	/* hidden but holding their room, so nothing shifts when they come out */
+	/* hidden but holding their room, so nothing shifts when they come out;
+	   they fade and rise in as the player chart's "Compared with" line does */
+	.subheading,
+	.find {
+		transition:
+			opacity 450ms ease,
+			transform 450ms cubic-bezier(0.22, 0.8, 0.3, 1),
+			visibility 0s;
+	}
 	.subheading.off,
 	.find.off {
+		opacity: 0;
+		transform: translateY(8px);
 		visibility: hidden;
+		/* stays visible until the fade out ends */
+		transition:
+			opacity 450ms ease,
+			transform 450ms cubic-bezier(0.22, 0.8, 0.3, 1),
+			visibility 0s linear 450ms;
+	}
+	/* once on, a highlighter swipes across and off again (the player chart's
+	   menu-swipe): behind the subheading's line, over the find box's white */
+	.subheading {
+		width: fit-content;
+		max-width: 100%;
+		padding: 1px 4px;
+		margin-left: -4px;
+	}
+	.subheading,
+	.unit-tabs,
+	.find::after {
+		background-image: linear-gradient(
+			rgba(255, 230, 0, 0.55),
+			rgba(255, 230, 0, 0.55)
+		);
+		background-repeat: no-repeat;
+		background-size: 0% 100%;
+		background-position: left;
+	}
+	.find::after {
+		content: "";
+		position: absolute;
+		/* the input only, not the padding under it */
+		inset: -2px -4px 4px;
+		pointer-events: none;
+		border-radius: 3px;
+		mix-blend-mode: multiply;
+	}
+	/* the unit tabs stay put (they're always shown) and only take the swipe */
+	.subheading:not(.off),
+	.unit-tabs:not(.off),
+	.find:not(.off)::after {
+		animation: menu-swipe 1.6s ease 400ms both;
+	}
+	@keyframes menu-swipe {
+		40% {
+			background-size: 100% 100%;
+			background-position: left;
+		}
+		65% {
+			background-size: 100% 100%;
+			background-position: right;
+		}
+		100% {
+			background-size: 0% 100%;
+			background-position: right;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.subheading,
+		.subheading.off,
+		.find,
+		.find.off {
+			transition: none;
+		}
+		.subheading:not(.off),
+		.unit-tabs:not(.off),
+		.find:not(.off)::after {
+			animation: none;
+		}
 	}
 	.unit-tabs button:hover {
 		color: var(--color-ink-dark);

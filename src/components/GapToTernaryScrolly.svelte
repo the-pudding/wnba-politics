@@ -903,8 +903,8 @@
 
 	.sticky {
 		position: sticky;
-		top: 0;
-		height: 100vh;
+		top: 4rem;
+		height: calc(100vh - 4rem);
 	}
 	/* the two charts share the frame, one over the other */
 	.stage {
@@ -930,6 +930,7 @@
 		flex-direction: column;
 		align-items: center;
 		max-width: calc(100cqw - 32px);
+		height: 100%;
 		transform: translateX(
 			clamp(
 				0px,
@@ -946,7 +947,7 @@
 	/* the dot plot, framed as on OutletGapScrolly */
 	.gap :global(.outlet-gap) {
 		width: min(1040px, 97vw);
-		height: 96vh;
+		height: 100%;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -973,11 +974,68 @@
 
 	/* the triangle, framed as on TernaryScrolly, with the find box under it */
 	.ternary :global(svg) {
-		max-height: 74vh;
+		max-height: 60vh;
 	}
-	/* hidden but holding its room before the last step, so the triangle stays put */
+	/* hidden but holding its room before the last step, so the triangle stays put;
+	   it fades and rises in as the dot plot's "Compared with" line does */
+	.ter-tools {
+		transition:
+			opacity 450ms ease,
+			transform 450ms cubic-bezier(0.22, 0.8, 0.3, 1),
+			visibility 0s;
+	}
 	.ter-tools.off {
+		opacity: 0;
+		transform: translateY(8px);
 		visibility: hidden;
+		/* stays visible until the fade out ends */
+		transition:
+			opacity 450ms ease,
+			transform 450ms cubic-bezier(0.22, 0.8, 0.3, 1),
+			visibility 0s linear 450ms;
+	}
+	/* once it's on, a highlighter swipes across the box and off again (the
+	   dot plot's menu-swipe), laid over the input's white */
+	.search-box::after {
+		content: "";
+		position: absolute;
+		inset: -2px -4px;
+		pointer-events: none;
+		border-radius: 3px;
+		mix-blend-mode: multiply;
+		background-image: linear-gradient(
+			rgba(255, 230, 0, 0.55),
+			rgba(255, 230, 0, 0.55)
+		);
+		background-repeat: no-repeat;
+		background-size: 0% 100%;
+		background-position: left;
+	}
+	.ter-tools:not(.off) .search-box::after {
+		animation: find-swipe 1.6s ease 400ms both;
+	}
+	@keyframes find-swipe {
+		40% {
+			background-size: 100% 100%;
+			background-position: left;
+		}
+		65% {
+			background-size: 100% 100%;
+			background-position: right;
+		}
+		100% {
+			background-size: 0% 100%;
+			background-position: right;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.ter-tools,
+		.ter-tools.off {
+			transition: none;
+		}
+		.ter-tools:not(.off) .search-box::after {
+			animation: none;
+		}
 	}
 	.ter-tools {
 		position: relative;

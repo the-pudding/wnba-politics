@@ -520,8 +520,6 @@
 <div
 	class="outlet-gap"
 	class:narrow
-	style:transform={shift ? `translateX(${shift}px)` : undefined}
-	style:--slide="{SLIDE_MS}ms"
 >
 	<!-- the menu is out and live while `picker` is on (the scrolly: its last step) -->
 	<!-- the title over the axis, end to end; the menu switches who Fox is compared with -->
@@ -532,9 +530,9 @@
 	>
 		<p class="kicker">on the web</p>
 		<!-- a div, not a p: the menu inside renders block elements -->
-		<div class="heading">
+		<h3 class="heading">
 			{or(heading, HEADING)}
-		</div>
+		</h3>
 		<!-- a div, not a p: the menu inside renders block elements -->
 		<div class="subheading" class:off={!picker} inert={!picker}>
 			<span>{or(comparedWith, "Compared with")}</span>
@@ -861,6 +859,14 @@
 		margin: 0 auto;
 	}
 
+	h3 {
+		text-align: left;
+	}
+
+	h3::before {
+		display: none;
+	}
+
 	.head {
 		text-transform: uppercase;
 		font-size: 12px;
@@ -922,8 +928,16 @@
 	.college-pick {
 		margin-top: 6px;
 	}
+	/* the line fades and rises in when the menu turns on (inert keeps it out of
+	   reach while it's off) */
+	.subheading {
+		transition:
+			opacity 450ms ease,
+			transform 450ms cubic-bezier(0.22, 0.8, 0.3, 1);
+	}
 	.subheading.off {
-		visibility: hidden;
+		opacity: 0;
+		transform: translateY(8px);
 	}
 	.picker {
 		display: flex;
@@ -939,7 +953,7 @@
 	/* the title, and who Fox is compared with, as on the words charts; on a
 	   desktop it spans the axis from end to end */
 	.titles {
-		margin: 0 0 14px var(--axis-left, 0px);
+		margin: 0 0 0 var(--axis-left, 0px);
 		width: var(--axis-width, auto);
 		max-width: 100%;
 	}
@@ -975,6 +989,45 @@
 	}
 	.subheading :global(.logo-select .current::after) {
 		right: 0;
+	}
+	/* once it's on, a highlighter swipes across the whole line and off again */
+	.subheading {
+		width: fit-content;
+		max-width: 100%;
+		padding: 1px 4px;
+		margin-left: -4px;
+		background-image: linear-gradient(
+			rgba(255, 230, 0, 0.55),
+			rgba(255, 230, 0, 0.55)
+		);
+		background-repeat: no-repeat;
+		background-size: 0% 100%;
+		background-position: left;
+	}
+	.subheading:not(.off) {
+		animation: menu-swipe 1.6s ease 400ms both;
+	}
+	@keyframes menu-swipe {
+		40% {
+			background-size: 100% 100%;
+			background-position: left;
+		}
+		65% {
+			background-size: 100% 100%;
+			background-position: right;
+		}
+		100% {
+			background-size: 0% 100%;
+			background-position: right;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.subheading {
+			transition: none;
+		}
+		.subheading:not(.off) {
+			animation: none;
+		}
 	}
 	/* the underlined word has no box, so the focus ring rounds its corners and
 	   sits a little clear of the text */

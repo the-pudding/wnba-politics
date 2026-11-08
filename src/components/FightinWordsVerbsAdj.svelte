@@ -499,6 +499,7 @@
 			<!-- the players as faces in a row, one tap each -->
 			<div
 				class="players"
+				class:off={!live}
 				inert={!live}
 				role="radiogroup"
 				aria-label="Player"
@@ -572,21 +573,22 @@
 			<div class="head">
 				<p class="kicker">on the web</p>
 				{#if narrow && shown.vs === "outlets"}
-					<p class="heading">
+					<h3 class="heading">
 						{HEADING[shown.rel]?.(shown.who) ?? source.relation}
-					</p>
+					</h3>
 				{:else if shown.title}
-					<p class="heading">{@html shown.title}</p>
+					<h3 class="heading">{@html shown.title}</h3>
 				{:else if shown.vs === "outlets"}
-					<p class="heading">
+					<h3 class="heading">
 						{HEADING[shown.rel]?.(shown.who) ?? source.relation}
-					</p>
+					</h3>
 				{/if}
 				{#if shown.vs === "outlets" && (narrow || !shown.title || !OUTLET_MENU)}
 					<!-- a div, not a p: the menu inside renders block elements -->
 					<div
 						class="subheading"
 						class:off={!live && OUTLET_MENU}
+						class:narrow
 						inert={!live}
 					>
 						<span
@@ -621,11 +623,11 @@
 						{#if !narrow && live}{@render usesControl()}{/if}
 					</div>
 				{:else if shown.vs !== "outlets" && !shown.title}
-					<p class="heading">
+					<h3 class="heading">
 						<b>{source.relation}</b><br />
 						{source.topLabel} <span class="vs">vs.</span>
 						{source.bottomLabel}
-					</p>
+					</h3>
 				{/if}
 				{#if checks.on}
 					<!-- a check: see `college` above -->
@@ -668,7 +670,12 @@
 			<!-- the relations as tabs on a rule; words or phrases a quiet switch
 			     at its right end -->
 			{#snippet unitSwitch()}
-				<div class="unit-switch" role="group" aria-label="Words or phrases">
+				<div
+					class="unit-switch"
+					class:off={!live}
+					role="group"
+					aria-label="Words or phrases"
+				>
 					<button
 						type="button"
 						class:on={unit === "words"}
@@ -685,7 +692,12 @@
 				</div>
 			{/snippet}
 			<div class="tabrow" inert={!live}>
-				<div class="rel-tabs" role="tablist" aria-label="Kind of word">
+				<div
+					class="rel-tabs"
+					class:off={!live}
+					role="tablist"
+					aria-label="Kind of word"
+				>
 					{#each RELATIONS as [rel, label] (rel)}
 						<button
 							type="button"
@@ -731,9 +743,9 @@
 				<FightinWords {source} highlight={shown.words} bare controls={false} />
 			{/if}
 		{:else}
-			<p class="heading">
+			<h3 class="heading">
 				No comparison stored for {shown.who} · {shown.rel}
-			</p>
+			</h3>
 		{/if}
 		{#if srText?.trim()}
 			<p class="sr-only">{@html srText}</p>
@@ -768,10 +780,17 @@
 		padding: 0 1rem;
 	}
 
+	h3 {
+		text-align: left;
+	}
+	h3::before {
+		display: none;
+	}
+
 	.sticky {
 		position: sticky;
-		top: 0;
-		height: 100vh;
+		top: 4rem;
+		height: calc(100vh - 4rem);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -782,7 +801,6 @@
 	   lengthens the chart downward, instead of re-centring everything */
 	.words-scrolly.bars .sticky {
 		justify-content: flex-start;
-		padding-top: 4vh;
 		box-sizing: border-box;
 	}
 	/* .sticky :global(.fightin-words),
@@ -981,9 +999,64 @@
 	   inside it still shows (locked), as the tabs do */
 	.subheading.off {
 		visibility: hidden;
+		/* stays visible until the fade out ends */
+		transition: visibility 0s linear 450ms;
 	}
 	.subheading.off .unit-switch {
 		visibility: visible;
+	}
+	/* the line fades and rises in as the player chart's "Compared with" line
+	   does; the phone's unit switch stays put */
+	.subheading > :not(.unit-switch) {
+		transition:
+			opacity 450ms ease,
+			transform 450ms cubic-bezier(0.22, 0.8, 0.3, 1);
+	}
+	.subheading.off > :not(.unit-switch) {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	/* once on, a highlighter swipes across the line and off again (the player
+	   chart's menu-swipe); on a desktop only as wide as its words */
+	.subheading {
+		padding: 1px 4px;
+		margin-left: -4px;
+		background-image: linear-gradient(
+			rgba(255, 230, 0, 0.55),
+			rgba(255, 230, 0, 0.55)
+		);
+		background-repeat: no-repeat;
+		background-size: 0% 100%;
+		background-position: left;
+	}
+	.subheading:not(.narrow) {
+		width: fit-content;
+		max-width: 100%;
+	}
+	.subheading:not(.off) {
+		animation: menu-swipe 1.6s ease 400ms both;
+	}
+	@keyframes menu-swipe {
+		40% {
+			background-size: 100% 100%;
+			background-position: left;
+		}
+		65% {
+			background-size: 100% 100%;
+			background-position: right;
+		}
+		100% {
+			background-size: 0% 100%;
+			background-position: right;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.subheading > :not(.unit-switch) {
+			transition: none;
+		}
+		.subheading:not(.off) {
+			animation: none;
+		}
 	}
 	.subheading .unit-switch {
 		margin-left: auto;
@@ -1171,5 +1244,50 @@
 		display: flex;
 		justify-content: center;
 		margin-top: 6px;
+	}
+	/* the controls take the subheading's highlighter swipe when they go live
+	   (menu-swipe); the tabs are always shown, so they only take the swipe */
+	.uses,
+	.players,
+	.rel-tabs,
+	.unit-switch {
+		background-image: linear-gradient(
+			rgba(255, 230, 0, 0.55),
+			rgba(255, 230, 0, 0.55)
+		);
+		background-repeat: no-repeat;
+		background-size: 0% 100%;
+		background-position: left;
+	}
+	.players:not(.off),
+	.rel-tabs:not(.off),
+	.unit-switch:not(.off) {
+		animation: menu-swipe 1.6s ease 400ms both;
+	}
+	/* the slider only appears once live: it fades and rises in, then takes
+	   its own swipe */
+	.uses {
+		padding: 1px 4px;
+		animation:
+			uses-in 450ms cubic-bezier(0.22, 0.8, 0.3, 1) both,
+			menu-swipe 1.6s ease 400ms both;
+	}
+	@keyframes uses-in {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+	}
+	/* on a phone the switch sits in the subheading, whose swipe crosses it */
+	.subheading .unit-switch {
+		animation: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.uses,
+		.players:not(.off),
+		.rel-tabs:not(.off),
+		.unit-switch:not(.off) {
+			animation: none;
+		}
 	}
 </style>

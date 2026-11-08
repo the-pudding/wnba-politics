@@ -118,7 +118,7 @@
 </script>
 
 <div class="stacked-sections" aria-label={title || "Threads"}>
-    <nav bind:this={navEl}>
+    <!-- <nav bind:this={navEl}>
         Jump to
         {#each items as tab, i (i)}
             <button
@@ -130,7 +130,7 @@
                 {tab.kicker}
             </button>
         {/each}
-    </nav>
+    </nav> -->
     <div class="stack">
         {#each items as tab, i (i)}
             {@const isExpanded = expanded[i]}
@@ -247,12 +247,11 @@
 
     .sheet {
         scroll-margin-top: 4.75rem; /* the sticky nav, and a little room */
-        background: #fff;
-        border: 1px solid var(--color-rule);
-        border-radius: 8px;
-        padding: 1.5rem;
+        padding: 0;
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
         position: relative;
-		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
     }
 
     .sheet-header {
@@ -274,13 +273,6 @@
     /* Outer wrapper caps height to 100svh */
     .content-wrapper {
         position: relative;
-        max-height: 85svh;
-        overflow: hidden;
-    }
-
-    .content-wrapper.expanded {
-        max-height: none;
-        overflow: visible;
     }
 
     .fade-out {

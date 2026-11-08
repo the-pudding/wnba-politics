@@ -82,8 +82,8 @@
 
 	.sticky {
 		position: sticky;
-		top: 0;
-		height: 100vh;
+		top: 4rem;
+		height: calc(100vh - 4rem);
 		display: flex;
 		align-items: center;
 		justify-content: center;

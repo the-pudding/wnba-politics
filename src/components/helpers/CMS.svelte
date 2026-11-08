@@ -404,10 +404,10 @@
 		text-align: left;
 		cursor: pointer;
 	}
-	/* phones: the arrow keeps clear of the corner sound button (SoundCorner) */
+	/* phones: the arrow keeps clear of the corner buttons (ScrollToc, SoundCorner) */
 	@media (max-width: 768px) {
 		.fold-head button {
-			padding-right: 3.5rem;
+			padding-right: 13.75rem;
 		}
 	}
 	.chev {
