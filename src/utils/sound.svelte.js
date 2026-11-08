@@ -26,6 +26,30 @@ export function preloadSound(src) {
 		.catch(() => {});
 }
 
+// The announcer's call (the intro title) plays from its own audio player
+let callSrcNow = null; // which sound that player holds
+function callPlayer(src) {
+	call ??= new Audio();
+	if (callSrcNow !== src) {
+		call.src = ready.get(src) ?? src;
+		callSrcNow = src;
+	}
+	return call;
+}
+export const callSound = {
+	src: null, // set by the intro, so a tap anywhere can get the player ready for it
+	// from the top, if sound is on
+	play(src) {
+		if (!sound.on || sound.blocked) return;
+		const player = callPlayer(src);
+		player.currentTime = 0;
+		player.play().catch(() => {});
+	},
+	stop() {
+		call?.pause();
+	}
+};
+
 // a video's sound on: if the phone won't allow it, it plays on muted and the
 // switches ask for a tap
 function unmute(video) {
@@ -121,10 +145,22 @@ export function toggleSound(callSrc = null) {
 		}
 		// the clip that's up, joined wherever it's got to, or the call
 		if (heard) unmute(heard);
-		else if (callSrc) {
-			call ??= new Audio();
-			call.src = ready.get(callSrc) ?? callSrc;
-			call.play().catch(() => {});
+		else if (callSrc) callSound.play(callSrc);
+		// otherwise touch the call's player inside the tap (silently), so a phone lets
+		// it play later, when the title comes up, without another tap
+		if (!callSrc && callSound.src) {
+			const player = callPlayer(callSound.src);
+			if (player.paused) {
+				player.muted = true;
+				player
+					.play()
+					.then(() => {
+						player.pause();
+						player.currentTime = 0;
+						player.muted = false;
+					})
+					.catch(() => (player.muted = false));
+			}
 		}
 	} else {
 		sound.on = false;

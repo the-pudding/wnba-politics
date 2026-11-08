@@ -17,6 +17,9 @@
 		/* out of the flow, so the story starts at the top of the page; over the
 		   intro wall, which comes after it and would otherwise cover it */
 		position: absolute;
+		width: 100%;
+		display: flex;
+		justify-content: center;
 		top: 0;
 		left: 0;
 		z-index: 10;

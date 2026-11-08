@@ -144,11 +144,12 @@
 	// ROW_SQUEEZE: thinner rows, only for a step whose highlighted words
 	// can't all fit on a short screen otherwise
 	const ROW_MIN = 26,
-		ROW_MAX = 44,
 		ROW_SQUEEZE = 20;
+	// in the scrolly the rows keep one height (ROW_COMFY) rather than stretching
+	// to fill a tall screen; they only close up when a short screen can't fit them
 	let ROW = $derived(
 		fill && avail > 0
-			? Math.max(viewRows > fitRows ? ROW_SQUEEZE : ROW_MIN, Math.min(ROW_MAX, (avail - TOP - BOTTOM) / viewRows))
+			? Math.max(viewRows > fitRows ? ROW_SQUEEZE : ROW_MIN, Math.min(ROW_COMFY, (avail - TOP - BOTTOM) / viewRows))
 			: ROW_MIN
 	);
 	let height = $derived(TOP + rows * ROW + BOTTOM);
@@ -165,15 +166,18 @@
 	// with room to spare the chart shows more words rather than taller bars:
 	// as many rows as fit at a comfortable height, up to a ceiling. On a short
 	// screen it shows fewer words, so the note under the bars stays on screen
+	// MAX_BARS: the most bars on each side in one view, however tall the screen or
+	// whatever `top` the Doc asks for (highlighted words included)
+	const MAX_BARS = 20;
 	const ROW_COMFY = 32,
-		TOP_MAX = 28,
+		TOP_MAX = MAX_BARS,
 		TOP_MIN = 6;
 	// the most rows that fit at all, highlighted words included
 	let fitRows = $derived(
 		fill && avail > 0 ? Math.max(TOP_MIN, Math.floor((avail - TOP - BOTTOM) / ROW_MIN)) : Infinity
 	);
 	let topN = $derived.by(() => {
-		if (!fill || avail <= 0) return top;
+		if (!fill || avail <= 0) return Math.min(top, MAX_BARS);
 		const comfy = Math.floor((avail - TOP - BOTTOM) / ROW_COMFY);
 		return Math.max(TOP_MIN, Math.min(TOP_MAX, Math.max(comfy, Math.min(top, fitRows))));
 	});
@@ -217,7 +221,7 @@
 		// they take the place of the last unhighlighted ones
 		const isLit = (p) => lit.has(p.word.toLowerCase());
 		let keep = topN;
-		while (keep > 1 && keep + list.slice(keep).filter(isLit).length > fitRows) keep--;
+		while (keep > 1 && keep + list.slice(keep).filter(isLit).length > Math.min(fitRows, MAX_BARS)) keep--;
 		return [...list.slice(0, keep), ...list.slice(keep).filter(isLit)];
 	}
 	// every page is a full page tall, so the chart does not jump

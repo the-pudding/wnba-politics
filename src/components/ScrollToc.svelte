@@ -43,6 +43,7 @@
 	// the h3s now on the page, per section: { key, label, el, hash, depth }
 	let subs = $state({});
 	function scan() {
+		if (docToc.length) return; // the Doc sets the menu
 		const next = {};
 		let n = 0;
 		for (const s of sections) {
@@ -84,13 +85,79 @@
 	}
 	let lastSig = "";
 
+	// The menu, set in the Doc's [toc] list (how to write it is just below).
+	// Without one, it's built from the page's headings as above.
+	const slug = (text) =>
+		strip(text)
+			.toLowerCase()
+			.replace(/&[a-z]+;/g, "")
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-+|-+$/g, "");
+	const docToc = (Array.isArray(copy.toc) ? copy.toc : [])
+		.map((item, i) => {
+			const label = strip(item?.label).trim();
+			const go = strip(item?.go || item?.label).trim();
+			if (!label || !go) return null;
+			const sub = String(item?.sub ?? "").trim().toLowerCase();
+			return {
+				key: `toc-${i}`,
+				label,
+				go,
+				// sub: true (or 1) indents it under the one before; 2 indents it twice
+				depth: sub === "2" ? 2 : ["true", "yes", "1"].includes(sub) ? 1 : 0,
+				hash: null,
+				el: null
+			};
+		})
+		.filter(Boolean);
+
+	// what a Doc entry points at: an element with that id (a section, a body
+	// heading, a stack), or else a heading on the page whose words match
+	function findTarget(e) {
+		if (e.el?.isConnected) return e.el;
+		const byId =
+			document.getElementById(e.go) || document.getElementById(slug(e.go));
+		const want = slug(e.go);
+		const el =
+			byId ||
+			[...document.querySelectorAll("h2, h3, h4")].find(
+				(h) => h.getClientRects().length && slug(h.textContent) === want
+			) ||
+			null;
+		e.el = el;
+		// the link that opens it: a stack (or a chart inside one) opens its stack;
+		// otherwise its own id, which also opens a folded section
+		const sheet = el?.closest(".stacked-sections .sheet[id]");
+		e.hash = sheet?.id ?? el?.id ?? slug(e.go);
+		return el;
+	}
+
 	const entries = $derived(
-		sections.flatMap((s) => [
-			{ key: s.id, label: s.label, depth: 0, hash: s.id, el: null },
-			...(subs[s.id] ?? [])
-		])
+		docToc.length
+			? docToc
+			: sections.flatMap((s) => [
+					{ key: s.id, label: s.label, depth: 0, hash: s.id, el: null },
+					...(subs[s.id] ?? [])
+				])
 	);
-	const targetOf = (e) => e.el ?? document.getElementById(e.key);
+	const targetOf = (e) =>
+		docToc.length ? findTarget(e) : (e.el ?? document.getElementById(e.key));
+
+	// In the Doc, before [+body] (each item: a label, where it goes, and whether
+	// it's indented):
+	//   [toc]
+	//   label: Intro
+	//   go: intro
+	//
+	//   label: Fox’s favorite words
+	//   go: fightin
+	//
+	//   label: Which players get the most attention?
+	//   go: Which players get an outsized share of Fox News’ attention?
+	//   sub: true
+	//   []
+	// `go` is a section's name, a heading's words (as written), or a stack's
+	// kicker; leave it out and the label is used.
 	// indented under their section in the open list
 	const INDENT = "    ";
 
@@ -109,6 +176,13 @@
 				});
 		};
 		scan();
+		// a Doc entry that points at nothing on the page: say so (in development)
+		if (import.meta.env.DEV && docToc.length)
+			setTimeout(() => {
+				for (const e of docToc)
+					if (!findTarget(e))
+						console.warn(`[toc] "${e.label}": nothing on the page matches go: ${e.go}`);
+			}, 3000);
 		const watch = new MutationObserver(queue);
 		watch.observe(document.body, { childList: true, subtree: true });
 		window.addEventListener("resize", queue);
@@ -145,6 +219,7 @@
 	async function go(event) {
 		const e = entries.find((x) => x.key === event.currentTarget.value);
 		if (!e) return;
+		if (docToc.length) findTarget(e); // (sets e.hash, the link that opens it)
 		// a collapsed section or clipped stack opens first (replaceState is
 		// silent, so say so), or there's too little page below it to bring it
 		// to the top
@@ -154,6 +229,8 @@
 		}
 		await tick();
 		await new Promise((done) => requestAnimationFrame(done));
+		// (a folded section's heading only exists once it has opened: look again)
+		if (docToc.length && !e.el?.isConnected) e.el = null;
 		targetOf(e)?.scrollIntoView({ behavior: "instant", block: "start" });
 	}
 </script>

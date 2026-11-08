@@ -250,6 +250,47 @@
 		};
 	}
 
+	// the triangle as big as the frame allows: as tall as the room left by its
+	// heading, its note and the find box (and the find box's notes and kept words
+	// under it), and no wider than the room beside the cards, so it never slides
+	// under them. Set as --ter-w on the column, in px; measured on load and resize.
+	const TER_RATIO = 700 / (700 * 0.92); // the drawing's width over its height
+	const FIND_ROOM = 44; // px kept under the find box for its notes and chips
+	const TER_MAX_H = 700; // px: the tallest the chart gets, however big the screen
+	const CARDS_W = 460 + 64; // the cards' column (--cards)
+	let terColEl = $state(null);
+	let terW = $state(null);
+	function fitTriangle() {
+		const svg = terColEl?.querySelector(".ternary-static svg");
+		const tools = terColEl?.querySelector(".ter-tools");
+		if (!svg || !tools || !stageEl) return;
+		const stageW = stageEl.clientWidth;
+		const wide = window.innerWidth > 860;
+		// the room across: beside the cards on a wide screen, the frame's width
+		// on a narrow one (less the page's gutters and the chart's padding)
+		const across = (wide ? stageW - CARDS_W - 32 : stageW - 32) - 32;
+		// twice: the heading and note rewrap as the width changes
+		for (let pass = 0; pass < 2; pass++) {
+			const col = terColEl.getBoundingClientRect();
+			const s = svg.getBoundingClientRect();
+			const t = tools.getBoundingClientRect();
+			const above = s.top - col.top;
+			const below = t.bottom - s.bottom + FIND_ROOM;
+			const tall = Math.min(TER_MAX_H, col.height - above - below);
+			const w = Math.max(240, Math.floor(Math.min(across, tall * TER_RATIO)));
+			if (w === terW) break;
+			terW = w;
+			terColEl.style.setProperty("--ter-w", `${w}px`);
+		}
+	}
+	$effect(() => {
+		if (!terColEl || !stageEl) return;
+		fitTriangle();
+		const ro = new ResizeObserver(() => fitTriangle());
+		ro.observe(stageEl);
+		return () => ro.disconnect();
+	});
+
 	// the faces in flight: where each starts (its face on the dot plot) and
 	// lands (its dot on the triangle), in pixels within the sticky frame,
 	// measured afresh each frame of the handoff
@@ -707,7 +748,7 @@
 			style:opacity={terOpacity}
 			inert={!terLive}
 		>
-			<div class="ter-col">
+			<div class="ter-col" bind:this={terColEl}>
 				<TernaryStatic
 					heading={or(heading, HEADING)}
 					{groups}
@@ -972,9 +1013,15 @@
 		transform: scale(1) !important;
 	}
 
-	/* the triangle, framed as on TernaryScrolly, with the find box under it */
-	.ternary :global(svg) {
-		max-height: 60vh;
+	/* the triangle, framed as on TernaryScrolly, with the find box under it: as
+	   wide as fitTriangle measures (the frame's height, less what's above and
+	   below it); 60vh until it has measured */
+	.ternary :global(.ternary-static svg) {
+		width: var(--ter-w, auto);
+		max-height: var(--ter-w, 60vh);
+	}
+	.ternary :global(.ternary-static) {
+		max-width: none;
 	}
 	/* hidden but holding its room before the last step, so the triangle stays put;
 	   it fades and rises in as the dot plot's "Compared with" line does */

@@ -7,7 +7,7 @@
 	import { cubicOut } from "svelte/easing";
 	import { faces, clipPops } from "$utils/clips.js";
 	import { titleCase } from "$utils/titleCase.js";
-	import { sound, clipSound, wallVideos, toggleSound, preloadSound } from "$utils/sound.svelte.js";
+	import { sound, clipSound, callSound, wallVideos, toggleSound, preloadSound } from "$utils/sound.svelte.js";
 	import arrowSvg from "$svg/arrow-up-right.svg";
 	// the corner bubble and the sound button's icons, from Lucide (lucide.dev)
 	import MessageCircle from "@lucide/svelte/icons/message-circle";
@@ -16,6 +16,74 @@
     const copy = getContext("copy");
 
 	let { id = "intro", steps = [], header, highlights, videos } = $props();
+
+	// opening line: the first sentence is on the page from the start, and the rest types
+	// itself out after it. Every letter is laid out from the start (just hidden), so the
+	// lines never rewrap as it types. Works on text with HTML tags too.
+	const TYPE_DELAY = 1200; // ms before the typing starts (time to read the first sentence)
+	const TYPE_SPEED = 38; // ms per letter
+	const TYPE_PAUSE = 260; // extra ms after . , ? ! — and ;
+	function typewriter(node) {
+		const chars = [];
+		const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+		const texts = [];
+		while (walker.nextNode()) texts.push(walker.currentNode);
+		for (const t of texts) {
+			const frag = document.createDocumentFragment();
+			for (const c of t.data) {
+				const s = document.createElement("span");
+				s.className = "ch";
+				s.textContent = c;
+				frag.append(s);
+				chars.push(s);
+			}
+			t.replaceWith(frag);
+		}
+		node.classList.add("ready");
+
+		if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			chars.forEach((s) => s.classList.add("on"));
+			node.classList.add("done");
+			return;
+		}
+
+		// the first sentence is there from the start; the rest types in after it
+		let i = 0;
+		const text = chars.map((s) => s.textContent).join("");
+		const end = text.search(/[.?!]["”’)]?\s/);
+		if (end >= 0) {
+			i = end + 1;
+			while (i < chars.length && /\s|["”’)]/.test(text[i])) i++;
+			chars.slice(0, i).forEach((s) => s.classList.add("on"));
+			// the cursor waits at the end of it, blinking, until the typing starts
+			chars[i - 1].classList.add("at");
+		}
+		let timer;
+		const next = () => {
+			chars[i - 1]?.classList.remove("at");
+			if (i >= chars.length) {
+				// done: the scroll hint fades in after the line (300ms on, see .opening-hint),
+				// and the cursor goes as it starts to show
+				node.classList.add("done");
+				chars.at(-1)?.classList.add("at");
+				timer = setTimeout(() => chars.at(-1)?.classList.remove("at"), 300);
+				return;
+			}
+			const s = chars[i++];
+			s.classList.add("on", "at");
+			const pause = /[.,?!;—]/.test(s.textContent) ? TYPE_PAUSE : 0;
+			timer = setTimeout(next, TYPE_SPEED * (0.6 + Math.random() * 0.8) + pause);
+		};
+		timer = setTimeout(next, TYPE_DELAY);
+		return { destroy: () => clearTimeout(timer) };
+	}
+
+	// background video: browsers only allow autoplay when muted, so set the
+	// property directly (the attribute alone isn't always enough) and nudge play()
+	function autoplayMuted(node) {
+		node.muted = true;
+		node.play?.().catch(() => {}); // blocked (e.g. iOS Low Power Mode): poster/first frame stays
+	}
 
 	// the announcer's call on the intro title, from the Doc's top section:
 	//   logoCallStyle: corner | bubble | byline | none   (a small bubble in the top-right
@@ -33,10 +101,10 @@
 	const LOGO_LINK = "https://x.com/IndianaFever/status/1919143866818515093";
 	// the text under the title, over the byline; the Doc's subhed sets it ("none" leaves it out)
 	const SUBHED =
-		"By almost any measure, the WNBA just had its best season ever. On Fox News, they told a very different story. We analyzed thousands of articles and TV clips to show how the right politicized women’s basketball, and why it matters.";
+		"By almost any measure, the WNBA just had its best season ever. On Fox News, they told a very different story.";
 	// once the wall comes in, the title drops down onto it, in red, for this many steps:
 	// how big it gets there (share of its size on the title page) and how far from the top
-	const TITLE_STEPS = 1;
+	const TITLE_STEPS = 0;
 	const TITLE_SCALE = 0.75;
 	const TITLE_TOP = 14; // px
 	const callStyle = String(copy.meta?.logoCallStyle ?? "corner").trim().toLowerCase();
@@ -52,8 +120,10 @@
 	const subhedText = subhed.replace(/\s*—/g, "\u2060—");
 
 	// sound: off until the reader turns it on (one switch for the whole page, see
-	// utils/sound.svelte.js). Turning it on from the title page plays the call.
+	// utils/sound.svelte.js). On the opening screen it's the video's own sound; on the
+	// title (the intro's last step) it's the announcer's call, as its bubble pops up.
 	const CALL = `${base}/audio/logo-call.mp3`;
+	const CALL_POP = 0.9; // seconds after the title starts coming in: bubble and call
 
 	// the reader has asked for less motion: no wipe or switch-off between screenshot
 	// folders (they just swap), and the kicker label fades instead of wiping
@@ -67,8 +137,30 @@
 	});
 	onMount(() => {
 		// fetched now so it plays the moment the switch is tapped
-		if (config.header && id === "intro") preloadSound(CALL);
+		if (config.header && id === "intro") {
+			preloadSound(CALL);
+			callSound.src = CALL;
+		}
 	});
+
+	// the opening video is heard (when sound is on) while the opening screen is up, joined
+	// wherever it's got to; its sound stops as the screen switches off
+	function introAudio(node, on) {
+		wallVideos.add(node);
+		const set = (next) => {
+			wallVideos.want(node, next);
+			if (next) clipSound.play("intro", node);
+			else clipSound.stop(node);
+		};
+		set(on);
+		return {
+			update: set,
+			destroy() {
+				clipSound.stop(node);
+				wallVideos.remove(node);
+			}
+		};
+	}
 
 	// The copy doc sets up the wall. Each step can carry its own scene:
 	//   text: …
@@ -86,7 +178,8 @@
 	//                 off: the wall switches off like an old TV, to a line, a dot and black,
 	//                 then switches back on showing the new screenshots. Without it the tiles
 	//                 swap one by one. A step with a transition but no `images:` switches to
-	//                 the next different folder a later step names)
+	//                 the next different folder a later step names. A step that names the
+	//                 same folder as the step before still runs it, over the same screenshots)
 	//   audio: storm-doppler       (optional, on a step that pulls clips: that clip plays
 	//                 with its sound, from the start, once the reader has turned sound on.
 	//                 Several, comma-separated, take turns in that order: each is heard to
@@ -224,19 +317,34 @@
 	// how fast the reader is scrolling, in screens a second (smoothed)
 	let scrollSpeed = 0;
 	let lastScroll = { y: 0, t: 0 };
+	let scrollingUp = false;
+	// the steps have all gone up past the bottom of the screen: the reader is at the end
+	// of the wall, or below it
+	let afterSteps = $state(false);
+	let titleInstant = $state(false);
 	function measure() {
 		const now = performance.now();
 		const moved = Math.abs(scrollY - lastScroll.y) / innerHeight;
 		const secs = (now - lastScroll.t) / 1000;
 		if (secs > 0 && secs < 0.5) scrollSpeed = 0.6 * scrollSpeed + 0.4 * (moved / secs);
 		else scrollSpeed = 0;
+		if (scrollY !== lastScroll.y) scrollingUp = scrollY < lastScroll.y;
 		lastScroll = { y: scrollY, t: now };
-		if (stepsEl) beforeSteps = stepsEl.getBoundingClientRect().top > window.innerHeight * 0.5;
+		if (stepsEl) {
+			const box = stepsEl.getBoundingClientRect();
+			beforeSteps = box.top > window.innerHeight * 0.5;
+			afterSteps = box.bottom < window.innerHeight;
+		}
+		// the title shows at once when the reader comes back up into it, and builds in
+		// when they scroll down onto it (decided while it's off, then held while it's on)
+		if (!titleReveal) titleInstant = scrollingUp;
 		let e = -1;
 		stepsEl?.querySelectorAll(".step").forEach((el, i) => {
 			if (!config.scenes[i]?.transition) return;
-			const top = (el.querySelector(".card") ?? el).getBoundingClientRect().top;
-			if (top < window.innerHeight * TRANSITION_LINE) e = i;
+			const box = (el.querySelector(".card") ?? el).getBoundingClientRect();
+			// (only while the step is still on screen: once it's gone up past the top,
+			// it mustn't hold the wall on it, e.g. below the wall coming back up)
+			if (box.top < window.innerHeight * TRANSITION_LINE && el.getBoundingClientRect().bottom > 0) e = i;
 		});
 		early = e;
 	}
@@ -245,6 +353,10 @@
 	$effect(() => {
 		if (beforeSteps) shownIndex = undefined;
 		else if (stepIndex !== undefined || early >= 0) shownIndex = Math.max(stepIndex ?? -1, early);
+		// past the end of the steps (or the page opened further down): the last step,
+		// whatever was seen last on the way down (a fast scroll can skip the last steps),
+		// so coming back up shows the end of the wall, not the clips
+		else if (afterSteps) shownIndex = steps.length - 1;
 	});
 
 	// the title on the wall: each half moves from where it sits on the title page to meet
@@ -320,6 +432,8 @@
 	// the step before pulled out stays where it is and fades with it
 	let closing = $derived(sceneIndex !== undefined && scene.wall === "cleared");
 	let heldGroup = $derived(closing ? pulls.sceneGroup[sceneIndex - 1] ?? -1 : -1);
+	// on the intro, the cleared wall makes way for the title
+	let titleReveal = $derived(closing && config.header && id === "intro" && wallInView);
 	// the clips the next step pulls out are already lit and playing in their places on
 	// the wall, so that step only has to lift them out. -1 when there are none: the next
 	// step doesn't pull clips, or this one shows no screenshots or pulls out its own.
@@ -367,6 +481,10 @@
 	// for one; each run gets a new key so the band starts over
 	let wipeKey = $state(0);
 	let wiping = $state(false);
+	let headerWiping = $state(""); // "out" | "in" while a wipe takes the title page off or back on
+	// "out" | "in" while a switch-off takes the title page off (the title page switches
+	// off, the wall switches on) or back on (the reverse, scrolling up)
+	let headerPower = $state("");
 	// the switch-off: the old screenshots stay up until the screen has gone dark
 	let powerKey = $state(0);
 	let powering = $state(false);
@@ -381,25 +499,49 @@
 	$effect(() => {
 		const set = imageSet;
 		const idx = sceneIndex;
+		const changed = !!lastSet && set !== lastSet;
+		// a step that asks for a transition gets it even when the folder stays the same
+		// (crossing into it, either direction): the band or switch-off runs over the same
+		// screenshots, like changing channel
+		// (before the first step counts as step -1, so a transition on the first step
+		// runs as the title page gives way to the wall)
+		let crossed;
+		const from = lastIndex ?? -1,
+			to = idx ?? -1;
+		// (only a step at a time, so jumping in from below the wall doesn't run the
+		// first step's switch-off)
+		if (!changed && lastSet && from !== to && Math.abs(to - from) === 1) {
+			for (let i = Math.min(from, to) + 1; i <= Math.max(from, to); i++) {
+				if (config.scenes[i]?.transition) crossed = config.scenes[i].transition;
+			}
+		}
+		// the title page is wiped off along with it (or back on, scrolling up)
+		const headerWipe = crossed && config.header && Math.min(from, to) === -1 ? (to === -1 ? "in" : "out") : "";
+		const run = changed || !!crossed;
 		const kind = reducedMotion
 			? undefined
-			: [idx, lastIndex].map((i) => config.scenes[i]?.transition).find(Boolean);
-		if (lastSet && set !== lastSet && kind === "wipe") {
+			: changed
+				? [idx, lastIndex].map((i) => config.scenes[i]?.transition).find(Boolean)
+				: crossed;
+		if (run && kind === "wipe") {
 			wiping = true;
 			wipeKey += 1;
+			headerWiping = headerWipe;
 			clearTimeout(wipeTimer);
-			wipeTimer = setTimeout(() => (wiping = false), (WIPE + 0.4) * 1000);
+			wipeTimer = setTimeout(() => (wiping = false, headerWiping = ""), (WIPE + 0.4) * 1000);
 		}
 		const endPower = () => {
 			powerTimers.forEach(clearTimeout);
 			heldSet = undefined;
 			powering = poweringNow = false;
+			headerPower = "";
 		};
-		if (lastSet && set !== lastSet && kind === "off") {
+		if (run && kind === "off") {
 			powerTimers.forEach(clearTimeout);
 			powerTime = scrollSpeed > FAST_SCROLL ? POWER_FAST : POWER;
 			heldSet = lastSet;
 			powering = poweringNow = true;
+			headerPower = headerWipe;
 			powerKey += 1;
 			powerTimers = [
 				setTimeout(() => (heldSet = undefined), powerTime * 0.45 * 1000),
@@ -725,7 +867,13 @@
 				// skipping tiles another group already uses
 				let col = Math.min(cols - 1, Math.max(0, Math.floor((tx - x0) / tileW)));
 				let row = Math.min(rows - 1, Math.max(0, Math.floor((ty - y0) / tileH)));
-				while (map.has(row * cols + col)) col = (col + 1) % cols;
+				// (along the row, then on to the next row once a row is full, as it can be on a
+				// phone, with few columns; and never more than once round the whole wall)
+				for (let tries = 0; map.has(row * cols + col) && tries < cols * rows; tries++) {
+					col = (col + 1) % cols;
+					if (col === 0) row = (row + 1) % rows;
+				}
+				if (map.has(row * cols + col)) return; // every tile is taken: no pull-out
 				const cx = x0 + (col + 0.5) * tileW;
 				const cy = y0 + (row + 0.5) * tileH;
 				// k staggers the pull-outs, one after another. `low`: in the lower half of the
@@ -818,11 +966,20 @@
 			toggleSound();
 		}
 	}
-	// while the title page is up, the corner sound switch plays the call
+	// the opening screen (video and typed line) is up
+	let introHeard = $derived(config.header && id === "intro" && wallInView && shownIndex === undefined);
+	// while the title is up, the corner sound switch plays the call; and the call plays by
+	// itself as the title comes in, with its bubble, if sound is already on. It stops
+	// when the title goes.
 	$effect(() => {
-		if (!(config.header && id === "intro" && wallInView && shownIndex === undefined)) return;
+		if (!titleReveal) return;
 		sound.call = CALL;
-		return () => (sound.call = null);
+		const timer = setTimeout(() => callSound.play(CALL), (titleInstant ? 0 : CALL_POP) * 1000);
+		return () => {
+			clearTimeout(timer);
+			sound.call = null;
+			callSound.stop();
+		};
 	});
 	// tell the corner sound switch whether this wall can play sound right now
 	$effect(() => {
@@ -902,13 +1059,42 @@
         {#if config.header && id == "intro"}
         <header
             class="intro-wall-header"
-            class:off={(shownIndex !== undefined && shownIndex >= TITLE_STEPS) || (!beforeSteps && !wallInView)}
+            class:off={(shownIndex !== undefined && shownIndex >= TITLE_STEPS) || (!beforeSteps && (!wallInView || shownIndex === undefined))}
             class:title-down={titleOnWall}
             class:call-in-byline={callStyle === "byline"}
             class:has-subhed={showSubhed}
+            class:wipe-out={headerWiping === "out"}
+            class:wipe-in={headerWiping === "in"}
+            class:power-out={headerPower === "out"}
+            class:power-in={headerPower === "in"}
+            style="--wipe: {WIPE}s; --power: {powerTime}s"
         >
+            <p class="opening-line"><span><span class="typed" use:typewriter>{@html subhedText}</span><span class="scroll-hint opening-hint" aria-hidden="true">{@html arrowSvg}</span></span></p>
+            <video
+                class="intro-video"
+                src={`${base}/video/valks.mp4`}
+                poster={`${base}/video/valks.jpg`}
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="auto"
+                aria-hidden="true"
+                use:autoplayMuted
+                use:introAudio={introHeard}
+            ></video>
+        </header>
+        <!-- the last step clears the wall and the title comes up on the blank screen -->
+        <div class="title-reveal" class:on={titleReveal} class:instant={titleInstant} class:call-in-byline={callStyle === "byline"}>
+            <!-- the announcer's call pops up as its sound plays (drawn fresh each time, so it pops again) -->
+            {#if callStyle === "corner" && titleReveal}
+                <p class="call-corner {callSpot}" style="--pop: {titleInstant ? 0 : CALL_POP}s">
+                    <MessageCircle strokeWidth={1.25} fill="#fff" aria-hidden="true" />
+                    <span class="call-corner-words">“{@html callShort}”</span>
+                </p>
+            {/if}
             <h1 aria-label="Why is Fox News obsessed with the WNBA?">
-                <span class="hedLeft" aria-hidden="true"><span class="hed-words" bind:this={hedLeftEl} style:transform={titleMoves.left}>{copy.meta.hedLeft}</span></span>
+                <span class="hedLeft" aria-hidden="true"><span class="hed-words">{copy.meta.hedLeft}</span></span>
                 <span class="glitch" aria-hidden="true" style="--src: url({base}/images/cc-combo.png)">
                     <img class="base" src="{base}/images/cc-combo.avif" width="494" height="1200" alt="Caitlin Clark shoots over the Fox News logo"/>
                     {#each strips as s}
@@ -930,16 +1116,9 @@
                         </span>
                     {/if}
                 </span>
-                <span class="hedRight" aria-hidden="true"><span class="hed-words" bind:this={hedRightEl} style:transform={titleMoves.right}>{copy.meta.hedRight}</span></span>
+                <span class="hedRight" aria-hidden="true"><span class="hed-words">{copy.meta.hedRight}</span></span>
             </h1>
-            {#if callStyle === "corner"}
-                <p class="call-corner {callSpot}">
-                    <MessageCircle strokeWidth={1.25} fill="#fff" aria-hidden="true" />
-                    <span class="call-corner-words">“{@html callShort}”</span>
-                </p>
-            {/if}
             <div class="byline">
-                {#if showSubhed}<p class="subhed">{@html subhedText}</p>{/if}
                 <p>
                     {#if callStyle === "byline"}
                         <span class="call-line">“{@html callText}” <span class="call-credit">— {@html callCredit}</span></span>
@@ -948,7 +1127,7 @@
                     <span class="scroll-hint" aria-hidden="true">{@html arrowSvg}</span>
                 </p>
             </div>
-        </header>
+        </div>
         {:else if config.header && id == "outro"}
             <div class="outro-header" class:off={shownIndex !== undefined}>
                 <h2>This coverage matters</h2>
@@ -984,6 +1163,9 @@
             class="bg-grid"
             class:wiping
             class:powering
+            class:snap={!wallInView}
+            class:power-on={headerPower === "out"}
+            class:power-off={headerPower === "in"}
             class:closing
             class:names={WALL_NAMES}
             class:harsh={activePool.endsWith("|negative")}
@@ -1111,10 +1293,22 @@
 		<Scrolly bind:value={stepIndex}>
 			{#each steps as step, i}
 				<div class="step" class:active={stepIndex === i}>
-					{#if step.text?.trim()}
-						<p class="card">
-							{@html clipPops(faces(step.text, base), base)}
-						</p>
+					<!-- "blank" in the doc is an empty step: no card -->
+					{#if step.text?.trim() && step.text.trim().toLowerCase() !== "blank"}
+						<!-- img: file | alt | caption (optional, as in the body's [+img] blocks;
+						     the file sits in static/images/) shows under the text in the card -->
+						{@const [imgSrc, imgAlt = "", imgCaption = ""] = String(step.img ?? "")
+							.split("|")
+							.map((s) => s.trim())}
+						<div class="card">
+							<p>{@html clipPops(faces(step.text, base), base)}</p>
+							{#if imgSrc}
+								<figure class="card-img">
+									<img src="{base}/images/{imgSrc}" alt={imgAlt} loading="lazy" />
+									{#if imgCaption}<figcaption>{@html imgCaption}</figcaption>{/if}
+								</figure>
+							{/if}
+						</div>
 					{/if}
                     {#if step.srText?.trim()}
 						<p class="sr-only">
@@ -1142,7 +1336,7 @@
        new labels share the spot while one wipes out and the other wipes in */
     .kicker-spot {
         position: absolute;
-        top: 16px;
+        bottom: 2.5rem;
         left: 16px;
         z-index: 2;
         transition: opacity 300ms ease;
@@ -1180,6 +1374,65 @@
         .live-dot {
             animation: none;
         }
+    }
+    /* the text grows with the screen: 32px on a phone, up to 64px from about 1250px wide
+       (about 47px on a tablet), with the side gutters growing too */
+    .opening-line {
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 1.2rem + 3.6vw, 4rem);
+        line-height: 1.25;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100svh;
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 clamp(1rem, 5vw, 3rem);
+        box-sizing: border-box;
+    }
+    /* hidden until the script has split it into letters, so it doesn't flash in full first */
+    .typed {
+        visibility: hidden;
+    }
+    .typed:global(.ready) {
+        visibility: visible;
+    }
+    .typed :global(.ch) {
+        position: relative;
+        visibility: hidden;
+    }
+    .typed :global(.ch.on) {
+        visibility: visible;
+    }
+    /* the cursor sits just after the newest letter, absolutely placed so it never pushes text */
+    .typed :global(.ch.at::after) {
+        content: "";
+        position: absolute;
+        left: 100%;
+        top: 0.12em;
+        bottom: 0.08em;
+        width: 0.06em;
+        margin-left: 0.04em;
+        background: currentColor;
+        animation: caret-blink 0.9s steps(1) infinite;
+    }
+    @keyframes caret-blink {
+        50% { opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .typed :global(.ch.at::after) { animation: none; }
+    }
+    .intro-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100svh;
+        object-fit: cover;
+        z-index: -1;
+        filter: grayscale(100%);
+        opacity: 0.125;
     }
     .bg-grid {
         position: absolute;
@@ -1304,6 +1557,12 @@
     /* already lit, so they lift out without waiting */
     .cell.featured.pull-clips.lift-now {
         transition-delay: var(--fd);
+    }
+    /* off screen, the wall changes at once rather than easing, so nothing is still
+       mid-fade (pulled-out clips, tiles clearing) when the reader scrolls back to it */
+    .bg-grid.snap,
+    .bg-grid.snap :global(*) {
+        transition: none !important;
     }
     /* the closing step (wall: cleared): the tiles fade out one by one, each at its own
        scattered delay (--d), the pulled-out ones along with the rest */
@@ -1464,7 +1723,7 @@
         transition-delay: var(--d);
     }
     /* a wipe: each column swaps as the band of static passes over it, left to right */
-    .bg-grid.wiping .cell.images img {
+    .bg-grid.wiping .cell img {
         transition-duration: 120ms;
         transition-delay: calc(var(--across) * var(--wipe));
     }
@@ -1525,6 +1784,33 @@
         22% { transform: scale(1, 0.004); opacity: 1; filter: brightness(3); }
         23% { opacity: 0; }
         70% { transform: scale(1, 0.004); opacity: 0; }
+        71% { opacity: 1; filter: brightness(3); }
+        100% { transform: scale(1, 1); opacity: 1; filter: brightness(1); }
+    }
+    /* switching between the title page and the wall: the title page (with its video)
+       switches off and the wall switches on in its place, or the reverse scrolling up */
+    .bg-grid.powering.power-on {
+        animation-name: crt-on;
+    }
+    .bg-grid.powering.power-off {
+        animation-name: crt-off;
+    }
+    .intro-wall-header.off.power-out {
+        opacity: 1;
+        transition: visibility 0s var(--power);
+        animation: crt-off var(--power) ease-in-out forwards;
+    }
+    .intro-wall-header.power-in {
+        transition: none;
+        animation: crt-on var(--power) ease-in-out forwards;
+    }
+    @keyframes crt-off {
+        0% { transform: scale(1, 1); opacity: 1; filter: brightness(1); }
+        22% { transform: scale(1, 0.004); opacity: 1; filter: brightness(3); }
+        23%, 100% { transform: scale(1, 0.004); opacity: 0; }
+    }
+    @keyframes crt-on {
+        0%, 70% { transform: scale(1, 0.004); opacity: 0; }
         71% { opacity: 1; filter: brightness(3); }
         100% { transform: scale(1, 1); opacity: 1; filter: brightness(1); }
     }
@@ -1607,6 +1893,26 @@
             opacity 400ms ease,
             visibility 0s 400ms;
     }
+    /* a wipe from the title page to the wall: instead of fading, the title page is cut
+       away from the left as the band of static crosses (and drawn back on behind it,
+       scrolling up) */
+    .intro-wall-header.off.wipe-out {
+        opacity: 1;
+        transition: visibility 0s var(--wipe);
+        animation: header-wipe-out var(--wipe) linear forwards;
+    }
+    .intro-wall-header.wipe-in {
+        transition: none;
+        animation: header-wipe-in var(--wipe) linear forwards;
+    }
+    @keyframes header-wipe-out {
+        from { clip-path: inset(0 0 0 0); }
+        to { clip-path: inset(0 0 0 100%); }
+    }
+    @keyframes header-wipe-in {
+        from { clip-path: inset(0 100% 0 0); }
+        to { clip-path: inset(0 0 0 0); }
+    }
     .byline {
         color: var(--color-fg);
         font-family: var(--font-sans);
@@ -1641,9 +1947,106 @@
             animation: hint-bounce 1s ease-in-out infinite;
         }
     }
+    /* the same arrow after the opening line: held in its place (so the line doesn't
+       rewrap) and faded in once the line has finished typing */
+    .opening-hint {
+        /* in em so it scales with the text (3rem and 0.5rem at the full 64px) */
+        width: 0.75em;
+        height: 0.75em;
+        margin-left: 0.125em;
+        border: 2px solid var(--color-fg);
+        opacity: 0;
+        transition: opacity 500ms ease 300ms;
+    }
+    .typed:global(.done) + .opening-hint {
+        opacity: 1;
+    }
     @keyframes hint-bounce {
         0%, 60%, 100% { transform: translateY(0); }
         30% { transform: translateY(4px); }
+    }
+    /* the title over the cleared wall, on the last step of the intro. Its pieces come in
+       while the tiles are still fading out (they take about 1.7s, scattered): the left
+       half slides in from the left, the image rises, the right half slides in from the
+       right, then the byline. Scrolling back up it all fades straight out. Only opacity
+       and transforms, so the h1 stays readable to screen readers. */
+    .title-reveal {
+        --title-start: 0.25s; /* after the wall starts clearing */
+        --title-gap: 0.18s; /* between each piece */
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 300ms ease;
+    }
+    .title-reveal.on {
+        opacity: 1;
+        pointer-events: auto;
+        transition: none;
+    }
+    .title-reveal :is(.hedLeft, .glitch, .hedRight, .byline p) {
+        opacity: 0;
+        transition:
+            opacity 300ms ease,
+            transform 0s 300ms;
+    }
+    .title-reveal .hedLeft { transform: translateX(-80px); }
+    .title-reveal .hedRight { transform: translateX(80px); }
+    .title-reveal .glitch { transform: translateY(48px); }
+    .title-reveal .byline p { transform: translateY(16px); }
+    .title-reveal.on :is(.hedLeft, .glitch, .hedRight, .byline p) {
+        opacity: 1;
+        transform: none;
+        transition:
+            opacity 700ms ease var(--in),
+            transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1) var(--in);
+    }
+    .title-reveal.on .hedLeft { --in: var(--title-start); }
+    .title-reveal.on .glitch { --in: calc(var(--title-start) + var(--title-gap)); }
+    .title-reveal.on .hedRight { --in: calc(var(--title-start) + var(--title-gap) * 2); }
+    .title-reveal.on .byline p { --in: calc(var(--title-start) + var(--title-gap) * 4); }
+    /* coming back up into it: the title is simply there, before anything else shows */
+    .title-reveal.on.instant :is(.hedLeft, .glitch, .hedRight, .byline p) {
+        transition: none;
+    }
+    /* room for the byline under the title */
+    .title-reveal h1 {
+        --img-h: 64svh;
+    }
+    @media (min-width: 861px) {
+        .title-reveal h1 {
+            height: calc(100% - 6rem);
+            align-self: flex-start;
+        }
+    }
+    @media (max-width: 860px) {
+        .title-reveal {
+            padding-bottom: 6rem;
+            box-sizing: border-box;
+        }
+        .title-reveal h1 {
+            --img-h: 58svh;
+        }
+    }
+    @media (max-width: 550px) {
+        .title-reveal {
+            padding-bottom: 8rem;
+        }
+        .title-reveal h1 {
+            --img-h: 42svh;
+        }
+    }
+    /* less motion: no sliding, the pieces just fade in together */
+    @media (prefers-reduced-motion: reduce) {
+        .title-reveal :is(.hedLeft, .glitch, .hedRight, .byline p) {
+            transform: none;
+        }
+        .title-reveal.on :is(.hedLeft, .glitch, .hedRight, .byline p) {
+            --in: var(--title-start);
+        }
     }
     h1 {
         /* image height drives everything; width follows from its 494×1200 ratio */
@@ -1658,7 +2061,9 @@
         grid-template-columns: 1fr auto 1fr;
         align-items: center;
         column-gap: var(--gap);
-        font-size: 2.25rem;
+        /* the title's size follows the screen within each layout: 36px at 860px wide,
+           growing to 56px on a big screen (the side columns have room) */
+        font-size: clamp(2.25rem, 0.5rem + 2.6vw, 3.5rem);
         width: 100%;
         height: 100%;
     }
@@ -1667,7 +2072,8 @@
 		h1 {
             --img-h: 70svh;
             --img-w: calc(var(--img-h) * 494 / 1200);
-			font-size: 3rem;
+            /* tablets: about 35px at 550px wide up to 46px at 860px */
+			font-size: clamp(2rem, 1rem + 3.5vw, 3rem);
             /* two columns: the image on the left, both halves of the title stacked on
                the right, level with the image's middle. The empty first and last rows
                split the rest of the image's height, centring the words. */
@@ -1705,10 +2111,12 @@
 
     @media (max-width: 550px) {
 		h1 {
-			font-size: 2rem;
+            /* phones: 24px on the narrowest, 32px at 550px wide */
+			font-size: clamp(1.5rem, 0.6rem + 4.5vw, 2rem);
             --img-h: 45svh;
             --img-w: calc(var(--img-h) * 494 / 1200);
-            margin-left: 5%;
+            margin: 0 1rem;
+            gap: 0;
             grid-template-columns: auto minmax(0, 220px);
 		}
 	}
@@ -1718,6 +2126,10 @@
         height: var(--img-h);
         max-height: 800px;
         width: auto;
+        /* the reset's max-width: 100% let a narrow screen squeeze the image (and its
+           glitch strips) thinner than its shape: it keeps its proportions, and the
+           title's column gives way instead */
+        max-width: none;
     }
     /* --- TV static + glitch --- */
     .glitch {
@@ -1848,8 +2260,8 @@
     /* (kept left of the corner sound button) */
     .call-corner {
         position: fixed;
-        top: 2.5rem;
-        right: 2.5rem;
+        top: 2.25rem;
+        right: 2.25rem;
         z-index: 2;
         display: grid;
         place-items: center;
@@ -1857,7 +2269,12 @@
         height: 6.5rem;
         color: #000;
         text-decoration: none;
-        animation: bubble-pop 450ms cubic-bezier(0.2, 1.4, 0.4, 1) 0.9s both;
+        animation: bubble-pop 450ms cubic-bezier(0.2, 1.4, 0.4, 1) var(--pop, 0.9s) both;
+    }
+    /* on the title: placed in the title's screen rather than the window, so it goes
+       with the wall when the page scrolls on */
+    .title-reveal .call-corner {
+        position: absolute;
     }
     .call-corner :global(svg) {
         position: absolute;
@@ -1916,21 +2333,6 @@
     .title-down .hed-words {
         color: var(--color-fg);
         background-color: var(--wnba-tan-bg);
-    }
-    .intro-wall-header .glitch,
-    .intro-wall-header .byline,
-    .intro-wall-header .call-corner {
-        transition: opacity 300ms ease, filter 300ms ease;
-    }
-    .title-down .glitch,
-    .title-down .byline {
-        opacity: 0;
-        pointer-events: none;
-    }
-    /* (the bubble's pop-in holds its opacity, so it fades with a filter) */
-    .title-down .call-corner {
-        filter: opacity(0);
-        pointer-events: none;
     }
     /* smaller screens: the title doesn't move onto the wall, it fades out with the rest
        of the title page (titleMoves stays empty at this width) */
@@ -2063,6 +2465,7 @@
     .step:last-of-type {
         opacity: 0;
         pointer-events: none;
+        min-height: 180svh;
     }
     /* no title card: the closing blank step is short, so the wall clears and lets go
        of the screen soon after the last card */
@@ -2087,6 +2490,27 @@
 	}
 	.step.active .card {
 		opacity: 1;
+	}
+	.card > p {
+		margin: 0;
+	}
+	/* an image in a step's card, under its text */
+	.card-img {
+		margin: 1rem 0 0 0;
+	}
+	.card-img img {
+		display: block;
+		width: 100%;
+		height: auto;
+		border: 1px solid var(--color-rule);
+		border-radius: 2px;
+	}
+	.card-img figcaption {
+		margin: 0.25rem 0 1rem 0;
+		font-family: var(--font-sans);
+		font-size: 12px;
+		line-height: 1.35;
+		color: var(--color-gray-700, #555);
 	}
 	/* phones: the cards keep 2rem clear of the screen's edges, as the other scrollies' do */
 	@media (max-width: 640px) {

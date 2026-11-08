@@ -175,11 +175,7 @@ h6 {
 }
 
 .sheet h3 {
-	text-align: left;
-}
-
-.sheet h3::before {
-	display: none;
+	margin: 2rem 0;
 }
 @media(max-width: 640px) {
 	.heading {

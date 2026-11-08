@@ -37,7 +37,7 @@
 		box-sizing: border-box;
 		width: 100%;
 		margin: 0 auto;
-		padding: 2rem 0;
+		padding: 0 0 2rem 0;
 	}
 	.col {
 		flex: 1 1 0;
