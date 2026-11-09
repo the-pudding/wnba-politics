@@ -60,6 +60,9 @@
 	// the labelled faces show their number beside the name (−0.06, 12%) when true;
 	// the tooltip has it either way
 	const LABEL_VALUES = false;
+	// the Sentences / Headlines switch; off, the chart counts headlines only, the
+	// same tags the table below lists
+	const COUNT_TOGGLE = false;
 	// always labelled for reference, when there's room
 	const ANCHORS = {
 		desktop: ["Caitlin Clark", "Angel Reese"],
@@ -102,9 +105,10 @@
 		performance: "Never about play"
 	};
 	const SOURCE =
-		"Source: Fox News and OutKick WNBA coverage, {from} to {to}: {headlines} headlines and every sentence of their articles that names a player. " +
-		'Tone is the average score of a <a href="https://huggingface.co/cardiffnlp/twitter-roberta-large-topic-sentiment-latest" target="_blank">RoBERTa sentiment model</a>. Topics are matched by word lists; appearance, celebrity and play words count only when they grammatically belong to her, and celebrity includes appearance. ' +
-		"The table applies the same rule, so a player’s headline counts match the chart’s when counting by headline.";
+		"Source: Fox News and OutKick WNBA coverage, {from} to {to}: {headlines} headlines. A player is on the chart when at least four headlines name her. " +
+		'Tone is the average score of a <a href="https://huggingface.co/cardiffnlp/twitter-roberta-large-topic-sentiment-latest" target="_blank">RoBERTa sentiment model</a>. ' +
+		"Topics were tagged headline by headline: two AI coders read every headline against our definitions, more coders settled disagreements, and we reviewed the tags by hand. Celebrity includes appearance. " +
+		"The table uses the same tags, so a player’s counts match the chart’s.";
 
 	const TABS = $derived([
 		{ key: "tone", label: or(tabTone, "Tone") },
@@ -201,7 +205,7 @@
 		const byName = new Map(PLAYERS.map((p) => [p.name, p]));
 
 		let tab = "tone",
-			basis = "s",
+			basis = COUNT_TOGGLE ? "s" : "h",
 			picked = null;
 		const T = {
 			cat: "all",
@@ -263,7 +267,7 @@
 			renderTable(true);
 		});
 		const unitEl = el("unit");
-		unitEl.addEventListener("click", (e) => {
+		unitEl?.addEventListener("click", (e) => {
 			const b = e.target.closest("button");
 			if (!b) return;
 			basis = b.dataset.v;
@@ -1215,11 +1219,13 @@
 	<h3 class="heading">{or(kicker, "How Fox News frames each player")}</h3>
 	<div class="tabrow">
 		<div class="tabs" data-id="tabs" role="tablist" aria-label="Measure"></div>
-		<div class="unit" data-id="unit" role="group" aria-label="Counted over">
-			{or(countLabel, "Count:")}
-			<button data-v="s" class="on">{or(sentences, "Sentences")}</button>
-			<button data-v="h">{or(headlines, "Headlines")}</button>
-		</div>
+		{#if COUNT_TOGGLE}
+			<div class="unit" data-id="unit" role="group" aria-label="Counted over">
+				{or(countLabel, "Count:")}
+				<button data-v="s" class="on">{or(sentences, "Sentences")}</button>
+				<button data-v="h">{or(headlines, "Headlines")}</button>
+			</div>
+		{/if}
 	</div>
 
 	<div class="plot" data-id="plot">

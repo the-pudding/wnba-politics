@@ -22,7 +22,7 @@ OUT = HERE / "static/data/framing_swarm.json"
 MEASURES = ["political", "appearance", "celebrity", "performance"]
 # a player is on the chart, counting by headline, with at least this many
 # headlines naming her (by sentence, sentence_framing.json sets its own minimum)
-MIN_HEADLINES = 10
+MIN_HEADLINES = 4
 
 # ---------------------------------------------------------------------------
 
