@@ -1428,7 +1428,7 @@
         top: 0;
         left: 0;
         width: 100%;
-        height: 100svh;
+        height: 100lvh;
         object-fit: cover;
         z-index: -1;
         filter: grayscale(100%);
@@ -1736,7 +1736,7 @@
     .wipe-band {
         position: absolute;
         top: 0;
-        bottom: 0;
+        bottom: calc(100svh - 100lvh);
         left: 0;
         width: 180px;
         z-index: 1;
@@ -1823,6 +1823,8 @@
     .crt-black {
         position: absolute;
         inset: 0;
+        /* down to the bottom of a phone's screen with its toolbars gone, like the wall */
+        bottom: calc(100svh - 100lvh);
         z-index: 0;
         background: var(--color-fg);
         pointer-events: none;
@@ -1838,7 +1840,8 @@
         position: absolute;
         left: 0;
         right: 0;
-        top: 50%;
+        /* the middle of the whole screen, where the wall squeezes to */
+        top: 50lvh;
         height: 3px;
         margin-top: -1.5px;
         z-index: 1;
@@ -1886,6 +1889,8 @@
         z-index: 1;
         width: 100%;
         height: 100%;
+        /* switches off toward the same line as the wall */
+        transform-origin: 50% 50lvh;
         transition:
             opacity 400ms ease,
             visibility 0s;
