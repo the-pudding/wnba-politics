@@ -99,12 +99,14 @@
 			const go = strip(item?.go || item?.label).trim();
 			if (!label || !go) return null;
 			const sub = String(item?.sub ?? "").trim().toLowerCase();
+			// sub: true (or 1) indents it under the one before; 2 indents it twice
+			const depth = sub === "2" ? 2 : ["true", "yes", "1"].includes(sub) ? 1 : 0;
 			return {
 				key: `toc-${i}`,
-				label,
+				// (a dash typed before a sub-item is dropped: SUB_MARK stands in for it)
+				label: depth ? label.replace(/^[-–—•*]\s*/, "") : label,
 				go,
-				// sub: true (or 1) indents it under the one before; 2 indents it twice
-				depth: sub === "2" ? 2 : ["true", "yes", "1"].includes(sub) ? 1 : 0,
+				depth,
 				hash: null,
 				el: null
 			};
@@ -158,8 +160,10 @@
 	//   []
 	// `go` is a section's name, a heading's words (as written), or a stack's
 	// kicker; leave it out and the label is used.
-	// indented under their section in the open list
+	// in the open list, a sub-item gets a mark; one two levels down is also
+	// indented under the one before
 	const INDENT = "    ";
+	const SUB_MARK = "• ";
 
 	// fades in once the page's code is running, as the sound switch does
 	let shown = $state(false);
@@ -245,10 +249,14 @@
 		>
 			{#each entries as entry (entry.key)}
 				<option value={entry.key} class:sub={entry.depth > 0}
-					>{INDENT.repeat(entry.depth)}{entry.label}</option
+					>{INDENT.repeat(Math.max(entry.depth - 1, 0))}{entry.depth ? SUB_MARK : ""}{entry.label}</option
 				>
 			{/each}
 		</select>
+		<!-- phones: the closed menu shows just the name, without the mark -->
+		<span class="current" aria-hidden="true"
+			>{entries.find((e) => e.key === active)?.label ?? ""}</span
+		>
 	</nav>
 {/if}
 
@@ -320,6 +328,9 @@
 	option.sub {
 		font-weight: 400;
 	}
+	.current {
+		display: none;
+	}
 	@media (max-width: 768px) {
 		/* iOS zooms into a select under 16px when it's tapped; scale the text down
 		   visually instead */
@@ -333,6 +344,29 @@
 			border-radius: 999px;
 			transform: scale(0.6875);
 			transform-origin: top left;
+			/* its own text is hidden under the plain name (.current) */
+			color: transparent;
+		}
+		option {
+			color: var(--color-fg);
+		}
+		/* laid over the closed menu, in the same spot and type, and clicks pass
+		   through to it */
+		.current {
+			display: block;
+			position: absolute;
+			inset: 0;
+			padding: 0 2.25rem 0 1rem;
+			line-height: 2.5rem;
+			color: var(--color-fg);
+			font-family: var(--font-chart);
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 0.1em;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			pointer-events: none;
 		}
 	}
 </style>
