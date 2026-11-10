@@ -1569,6 +1569,12 @@
     .bg-grid.closing .slot > .cell {
         opacity: 0;
         transition: opacity 500ms ease var(--d);
+        /* solid, so the intro's title underneath shows only as each tile goes */
+        background: var(--wnba-tan-bg);
+    }
+    /* the title under the clearing wall takes the pointer (its byline links) */
+    .bg-grid.closing {
+        pointer-events: none;
     }
     .cell.images.quick img,
     .cell.text.quick p {
@@ -1965,17 +1971,15 @@
         0%, 60%, 100% { transform: translateY(0); }
         30% { transform: translateY(4px); }
     }
-    /* the title over the cleared wall, on the last step of the intro. Its pieces come in
-       while the tiles are still fading out (they take about 1.7s, scattered): the left
-       half slides in from the left, the image rises, the right half slides in from the
-       right, then the byline. Scrolling back up it all fades straight out. Only opacity
-       and transforms, so the h1 stays readable to screen readers. */
+    /* the title under the clearing wall, on the last step of the intro: it's there in
+       full as the step starts, and shows as the tiles fade off it (scattered, about
+       1.7s). Scrolling back up it fades straight out. Only opacity, so the h1 stays
+       readable to screen readers. */
     .title-reveal {
-        --title-start: 0.25s; /* after the wall starts clearing */
-        --title-gap: 0.18s; /* between each piece */
         position: absolute;
         inset: 0;
-        z-index: 1;
+        /* under the wall (which comes after it in the page): the tiles fade off it */
+        z-index: 0;
         display: flex;
         align-items: center;
         opacity: 0;
@@ -1993,23 +1997,9 @@
             opacity 300ms ease,
             transform 0s 300ms;
     }
-    .title-reveal .hedLeft { transform: translateX(-80px); }
-    .title-reveal .hedRight { transform: translateX(80px); }
-    .title-reveal .glitch { transform: translateY(48px); }
-    .title-reveal .byline p { transform: translateY(16px); }
+    /* the title is simply there under the wall; the tiles fading off reveal it */
     .title-reveal.on :is(.hedLeft, .glitch, .hedRight, .byline p) {
         opacity: 1;
-        transform: none;
-        transition:
-            opacity 700ms ease var(--in),
-            transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1) var(--in);
-    }
-    .title-reveal.on .hedLeft { --in: var(--title-start); }
-    .title-reveal.on .glitch { --in: calc(var(--title-start) + var(--title-gap)); }
-    .title-reveal.on .hedRight { --in: calc(var(--title-start) + var(--title-gap) * 2); }
-    .title-reveal.on .byline p { --in: calc(var(--title-start) + var(--title-gap) * 4); }
-    /* coming back up into it: the title is simply there, before anything else shows */
-    .title-reveal.on.instant :is(.hedLeft, .glitch, .hedRight, .byline p) {
         transition: none;
     }
     /* room for the byline under the title */
@@ -2037,15 +2027,6 @@
         }
         .title-reveal h1 {
             --img-h: 42svh;
-        }
-    }
-    /* less motion: no sliding, the pieces just fade in together */
-    @media (prefers-reduced-motion: reduce) {
-        .title-reveal :is(.hedLeft, .glitch, .hedRight, .byline p) {
-            transform: none;
-        }
-        .title-reveal.on :is(.hedLeft, .glitch, .hedRight, .byline p) {
-            --in: var(--title-start);
         }
     }
     h1 {
