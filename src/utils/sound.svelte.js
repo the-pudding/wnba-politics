@@ -51,8 +51,13 @@ export const callSound = {
 };
 
 // a video's sound on: if the phone won't allow it, it plays on muted and the
-// switches ask for a tap
+// switches ask for a tap. While the page is hidden it stays quiet until the
+// reader's back (see the end of this file)
 function unmute(video) {
+	if (document.hidden) {
+		hushed.add(video);
+		return;
+	}
 	video.muted = false;
 	video
 		.play()
@@ -87,6 +92,7 @@ export const clipSound = {
 	},
 	// its turn is over (only if it's still the one being heard)
 	stop(video) {
+		hushed.delete(video);
 		if (heard !== video) return;
 		video.muted = true;
 		heard = null;
@@ -147,19 +153,19 @@ export function toggleSound(callSrc = null) {
 		if (heard) unmute(heard);
 		else if (callSrc) callSound.play(callSrc);
 		// otherwise touch the call's player inside the tap (silently), so a phone lets
-		// it play later, when the title comes up, without another tap
+		// it play later, when the title comes up, without another tap. The play() in
+		// the tap is all a phone needs, so it's paused straight away: left to start,
+		// even muted, an iPhone was heard playing it over the clip
 		if (!callSrc && callSound.src) {
 			const player = callPlayer(callSound.src);
 			if (player.paused) {
 				player.muted = true;
 				player
 					.play()
-					.then(() => {
-						player.pause();
-						player.currentTime = 0;
-						player.muted = false;
-					})
-					.catch(() => (player.muted = false));
+					.catch(() => {})
+					.finally(() => (player.muted = false));
+				player.pause();
+				player.currentTime = 0;
 			}
 		}
 	} else {
@@ -167,4 +173,32 @@ export function toggleSound(callSrc = null) {
 		if (heard) heard.muted = true;
 		call?.pause();
 	}
+}
+
+// Another tab, a minimised window, a locked phone: everything making sound goes
+// quiet while the page is hidden, and comes back when the reader does. Clips keep
+// playing muted, so the walls stay in step; the wall clip heard on return is the
+// one whose turn it is by then. The TV sets and the announcer's call get their
+// sound back as they had it.
+const hushed = new Set();
+if (typeof document !== "undefined") {
+	document.addEventListener("visibilitychange", () => {
+		if (document.hidden) {
+			const players = [...document.querySelectorAll("video, audio"), call];
+			for (const media of players) {
+				if (media && !media.muted && !media.paused) {
+					media.muted = true;
+					hushed.add(media);
+				}
+			}
+			return;
+		}
+		const back = [...hushed];
+		hushed.clear();
+		for (const media of back) {
+			if (videos.has(media)) continue;
+			media.muted = false;
+		}
+		if (sound.on && heard && back.includes(heard)) unmute(heard);
+	});
 }

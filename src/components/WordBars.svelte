@@ -382,7 +382,7 @@
 	// the ratio needs this many uses on each side (one stray use makes "16×");
 	// a word only one side uses gets no ratio line
 	const MIN_RATIO_USES = 5;
-	const STRENGTH_WORDS = "could be chance, strong, very strong";
+	const STRENGTH_WORDS = "below threshold, above threshold, above threshold";
 	const strengthOf = (z) => {
 		const words = or(hoverStrength, STRENGTH_WORDS).split(",").map((w) => w.trim());
 		return words[STRENGTH_CUTS.filter((cut) => Math.abs(z) >= cut).length] ?? words[words.length - 1];

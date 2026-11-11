@@ -2,6 +2,7 @@
 	// Static chyron ternary
 	import { base } from "$app/paths";
 	import chyData from "$data/chyrons.json";
+	import gapWindow from "$data/outlet_gap.json";
 	import capData from "$data/captions.json";
 	// the piece's topic vocabularies, for `topic:` (the same file the outlet
 	// panels count with)
@@ -73,7 +74,17 @@
 			month: "long",
 			year: "numeric"
 		});
-	const PERIOD = `${monthName(chy.months[0])}–${monthName(chy.months.at(-1))}`;
+	// ending on the study's last day (the headline window's end) when the
+	// chyrons run to that month, as the dot plot's line does
+	const END = gapWindow.window.to;
+	const dayName = (iso) =>
+		new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)).toLocaleString("en-US", {
+			month: "long",
+			day: "numeric",
+			year: "numeric"
+		});
+	const lastMonth = chy.months.at(-1);
+	const PERIOD = `${monthName(chy.months[0])}–${lastMonth === END.slice(0, 7) ? dayName(END) : monthName(lastMonth)}`;
 
 	// --- the timeline -------------------------------------------------------
 	const YEARS = (yearly.years ?? []).filter((y) => y >= "2018");

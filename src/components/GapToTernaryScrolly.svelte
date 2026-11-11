@@ -11,6 +11,7 @@
 	//                    own srText describes the chart at that step)
 	//   heading, comparedWith, allOutlets, speed  (the dot plot's)
 	//   note             (the triangle's line underneath)
+	//   gapNote          the dot plot's line underneath; {period} its dates
 	//   The find box sits under the triangle on every step; a step with
 	//   `search: true` is a pause with no card, the triangle moved to the middle.
 	//   bands            true/false: shade the triangle's "mostly Fox / CNN /
@@ -40,6 +41,7 @@
 		comparedWith = "",
 		allOutlets = "",
 		note = null,
+		gapNote = "",
 		bands = true,
 		// the handoff, described for screen readers
 		srText = ""
@@ -791,6 +793,7 @@
 				{heading}
 				{comparedWith}
 				{allOutlets}
+				note={gapNote}
 			/>
 		</div>
 

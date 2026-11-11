@@ -148,10 +148,13 @@
 	});
 	onMount(() => {
 		// fetched now so it plays the moment the switch is tapped
-		if (config.header && id === "intro") {
-			preloadSound(CALL);
-			callSound.src = CALL;
-		}
+		if (config.header && id === "intro") preloadSound(CALL);
+	});
+	// a tap readies the call only while this wall (where the title comes up) is on
+	// screen, so a clip tapped further down never touches it
+	$effect(() => {
+		if (!(config.header && id === "intro")) return;
+		callSound.src = wallInView ? CALL : null;
 	});
 
 	// the opening video is heard (when sound is on) while the opening screen is up, joined
@@ -1548,7 +1551,10 @@
         top: 0;
         left: 0;
         width: 100%;
-        height: 100lvh;
+        /* past the bottom of the screen, with room to spare: Chrome on an iPhone grows
+           the screen as its toolbars slide away before the page catches up, which
+           would show a strip of page under the video */
+        height: calc(100lvh + 160px);
         object-fit: cover;
         z-index: -1;
         filter: grayscale(100%);

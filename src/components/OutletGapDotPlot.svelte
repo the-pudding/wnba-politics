@@ -9,7 +9,7 @@
 	import roster from "$data/people.json";
 	import HeadlineClip from "$components/HeadlineClip.svelte";
 	import { checks } from "$utils/checks.svelte.js";
-	import { or } from "$utils/fill.js";
+	import { or, fill } from "$utils/fill.js";
 	import LogoSelect from "$components/helpers/LogoSelect.svelte";
 	const faceFiles = Object.fromEntries(
 		Object.values(roster)
@@ -28,11 +28,12 @@
 	const POOL_LABEL = { "sports outlets": "the sports press", "all outlets": "the other outlets", "news outlets": "the news outlets" };
 	const POOL_SHORT = { "sports outlets": "sports", "all outlets": "all", "news outlets": "news" };
 	const MEMBERS = (group) => GROUPS[group];
-	const monthYear = (iso) =>
-		new Date(iso + "T12:00:00").toLocaleDateString("en-US", {
-			month: "short",
-			year: "numeric"
-		});
+	// the line under the axis, and how its dates read: first month to last day
+	const NOTE = "Headline mentions, {period}.";
+	const monthLong = (iso) =>
+		new Date(iso + "T12:00:00").toLocaleDateString("en-US", { month: "long", year: "numeric" });
+	const dayLong = (iso) =>
+		new Date(iso + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 	const FOX = "var(--wnba-red)"; // Fox's own navy, as on the headline clippings
 	const THEM = "var(--color-outlets)";
 	// left out of the dot plot for now, to keep the rows to the players the
@@ -74,6 +75,8 @@
 		// the headline shown blurred while no step has chosen one — the
 		// scrolly passes its first clipping; the last one shown takes over
 		clipPlaceholder = null,
+		// note: the line under the axis ({period} its dates; "off" for none)
+		note = "",
 		// where the clipping sits: "header" — a compact card in a strip above
 		// the axis headers, on the Fox half (phones fall back to "top") — or
 		// "row" (on the highlighted player's row), "top" (under the pills) or
@@ -118,7 +121,8 @@
 			.catch(() => {});
 	});
 	let data = $derived(college === "without" && ncData ? ncData : fullData);
-	let PERIOD = $derived(`${monthYear(data.window.from)} – ${monthYear(data.window.to)}`);
+	let PERIOD = $derived(`${monthLong(data.window.from)}–${dayLong(data.window.to)}`);
+	let noteText = $derived(fill(or(note, NOTE), { period: PERIOD }));
 	const pairs = source === "pairs";
 	const RATIO_CAP = reach + 1.6; // past the end of the axis, everyone sits at the edge
 	// a pair's short name: the two surnames
@@ -612,12 +616,14 @@
 					{/if}
 				</g>
 			{/each}
-			<!-- <text
-				class="note"
-				x={(NAMES + 24 + NAMES + PLOT) / 2}
-				y={axisY + 46}
-				text-anchor="middle">{PERIOD}</text
-			> -->
+			{#if noteText.trim().toLowerCase() !== "off"}
+				<text
+					class="note"
+					x={(NAMES + 24 + NAMES + PLOT) / 2}
+					y={axisY + 46}
+					text-anchor="middle">{noteText}</text
+				>
+			{/if}
 
 			{#each people as person, index (person.name)}
 				{@const slug = slugOf(person.name)}
@@ -1187,9 +1193,11 @@
 		font-size: 9.5px;
 		fill: rgba(42, 21, 3, 0.5);
 	}
+	/* the line under the axis, as under the triangle */
 	.note {
-		font-size: 13px;
-		fill: rgba(42, 21, 3, 0.55);
+		font-size: 12px;
+		font-family: var(--font-sans);
+		fill: rgba(42, 21, 3, 0.6);
 	}
 
 	.name {

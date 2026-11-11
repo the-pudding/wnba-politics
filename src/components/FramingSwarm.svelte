@@ -10,7 +10,9 @@
 	//   tabTone: Tone   tabPolitics: Politics   tabAppearance: Appearance
 	//   tabCelebrity: Celebrity   tabPlay: Play
 	//   countLabel: Count:   sentences: Sentences   headlines: Headlines
-	//   pickPrompt: Pick a face to read the headlines that name her.
+	//   pickPrompt: Tap a face to read headlines that name the player.
+	//   noneLabel: No headlines tagged as {topic}   (over the players with none; {topic}
+	//     is political, looks, celebrity or play)
 	//   tableHead: The headlines
 	//   source: Source: Fox News and OutKick WNBA coverage, {from} to {to}: {headlines} headlines …
 	//   {}
@@ -31,6 +33,7 @@
 		sentences = "",
 		headlines = "",
 		pickPrompt = "",
+		noneLabel = "",
 		// a face picked while counting sentences (the table below lists headlines):
 		//   pickedSentences: {n} of the {count} Fox sentences naming {name} {does} ({share}), e.g. “{example}”.
 		//   pickedTone: Average tone of the {count} Fox sentences naming {name}: {tone}.
@@ -100,18 +103,23 @@
 		celebrity: ["Less celebrity", "More celebrity"],
 		performance: ["Less about play", "More about play"]
 	};
-	// the group of players with none at all
-	const NONE = {
-		political: "Never political",
-		appearance: "Never about looks",
-		celebrity: "Never celebrity",
-		performance: "Never about play"
+	// the group of players with none at all, and the topic's word in that label
+	// (and in the tooltip)
+	const NONE_LABEL = "No headlines tagged as {topic}";
+	const NONE_TOPIC = {
+		political: "political",
+		appearance: "looks",
+		celebrity: "celebrity",
+		performance: "play"
 	};
+	const noneText = (t) => fill(or(noneLabel, NONE_LABEL), { topic: NONE_TOPIC[t] });
+	// phones: that group starts folded to one line ("… (14) ▾"), opened with a tap
+	const NONE_FOLDED = 44; // px, the folded line's height
 	const SOURCE =
-		"Source: Fox News and OutKick WNBA coverage, {from} to {to}: {headlines} headlines. A player is on the chart when at least four headlines name her. " +
-		'Tone is the average score of a <a href="https://huggingface.co/cardiffnlp/twitter-roberta-large-topic-sentiment-latest" target="_blank">RoBERTa sentiment model</a>. ' +
-		"Topics were tagged headline by headline: two AI coders read every headline against our definitions, more coders settled disagreements, and we reviewed the tags by hand. Celebrity includes appearance. " +
-		"The table uses the same tags, so a player’s counts match the chart’s.";
+		"Source: Fox News and OutKick WNBA coverage, {from} to {to}: {headlines} headlines. Players included are named in at least four headlines. " +
+		'Tone is measured with a <a href="https://huggingface.co/cardiffnlp/twitter-roberta-large-topic-sentiment-latest" target="_blank">RoBERTa sentiment model</a>. ' +
+		"Topics were tagged through LLM classification and manual labelling. " +
+		"These methods are meant to illuminate broad patterns and may include inaccuracies.";
 
 	const TABS = $derived([
 		{ key: "tone", label: or(tabTone, "Tone") },
@@ -174,6 +182,8 @@
 	const dateName = (iso) =>
 		`${MON[+iso.slice(5, 7) - 1]} ${+iso.slice(8, 10)}, ${iso.slice(0, 4)}`;
 	const monthName = (iso) => `${MON[+iso.slice(5, 7) - 1]} ${iso.slice(0, 4)}`;
+	// "Nov. 1, 2026": the last day, for the headlines' line
+	const dayName = (iso) => `${MON[+iso.slice(5, 7) - 1]} ${+iso.slice(8, 10)}, ${iso.slice(0, 4)}`;
 	const toneFmt = (v) =>
 		(v > 0.0049 ? "+" : v < -0.0049 ? "−" : "") + Math.abs(v).toFixed(2);
 	const pct = (v) =>
@@ -209,7 +219,8 @@
 
 		let tab = "tone",
 			basis = COUNT_TOGGLE ? "s" : "h",
-			picked = null;
+			picked = null,
+			noneOpen = false; // phones: the no-headlines group unfolded
 		const T = {
 			cat: "all",
 			mood: "all",
@@ -255,20 +266,30 @@
 			(t) =>
 				`<button role="tab" data-k="${t.key}" class="${t.key === tab ? "on" : ""}">${esc(t.label)}</button>`
 		).join("");
+		// phones: the same choice as a menu (the tabs take two lines there)
+		const tabSelEl = el("tabsel");
+		tabSelEl.innerHTML = TABS.map(
+			(t) =>
+				`<option value="${t.key}"${t.key === tab ? " selected" : ""}>${esc(t.label)}</option>`
+		).join("");
 		tabsEl.addEventListener("click", (e) => {
 			const b = e.target.closest("button");
-			if (!b) return;
-			tab = b.dataset.k;
+			if (b) setTab(b.dataset.k);
+		});
+		tabSelEl.addEventListener("change", () => setTab(tabSelEl.value));
+		function setTab(k) {
+			tab = k;
 			tabsEl
 				.querySelectorAll("button")
-				.forEach((x) => x.classList.toggle("on", x === b));
+				.forEach((x) => x.classList.toggle("on", x.dataset.k === k));
+			tabSelEl.value = k;
 			T.cat = tab === "tone" ? "all" : tab;
 			catEl.value = T.cat;
 			T.shown = PAGE;
 			hideTip();
 			draw(true);
 			renderTable(true);
-		});
+		}
 		const unitEl = el("unit");
 		unitEl?.addEventListener("click", (e) => {
 			const b = e.target.closest("button");
@@ -419,7 +440,16 @@
 				}
 				const binTop = top + PH + 40;
 				let binH = 0;
-				if (zn.length) {
+				const folded = zn.length && !noneOpen;
+				if (folded) {
+					// tucked away in the folded line, to grow out from when it opens
+					for (const d of zn) {
+						d.x = cx;
+						d.y = binTop + NONE_FOLDED / 2;
+						d.tucked = true;
+					}
+					binH = NONE_FOLDED;
+				} else if (zn.length) {
 					zn.forEach((d, i) => {
 						d.x = cx + Math.cos(i * 2.4) * 5 * Math.sqrt(i);
 						d.y = binTop + 40 + Math.sin(i * 2.4) * 3 * Math.sqrt(i);
@@ -436,11 +466,12 @@
 							d.x = Math.max(gutter + d.r + 2, Math.min(W - d.r - 1, d.x));
 					}
 					const zy0 = d3.min(zn, (d) => d.y - d.r);
-					for (const d of zn) d.y += binTop + 22 - zy0;
+					for (const d of zn) d.y += binTop + NONE_FOLDED - zy0;
 					binH = d3.max(zn, (d) => d.y + d.r) - binTop;
 				}
-				const yMax = d3.max(nodes, (d) => d.y + d.r);
+				const yMax = d3.max(folded ? mn : nodes, (d) => d.y + d.r);
 				H = Math.max(yMax, top + PH + 16) + bottom + 6;
+				if (folded) H = binTop + binH;
 				out = {
 					W,
 					H,
@@ -461,7 +492,10 @@
 				...out,
 				nodes,
 				P,
-				byName: new Map(nodes.map((d) => [d.p.name, d]))
+				// every face's spot; byName leaves out faces tucked in the folded line,
+				// so they get no label or tooltip
+				all: new Map(nodes.map((d) => [d.p.name, d])),
+				byName: new Map(nodes.filter((d) => !d.tucked).map((d) => [d.p.name, d]))
 			};
 		}
 
@@ -546,7 +580,7 @@
 						.attr("x", (L.binW + 14) / 2)
 						.attr("y", 14)
 						.attr("text-anchor", "middle")
-						.text(NONE[tab]);
+						.text(noneText(tab));
 				}
 			} else {
 				for (const t of ticks) {
@@ -594,13 +628,33 @@
 						.attr("y", L.binTop)
 						.attr("width", W)
 						.attr("height", H - L.binTop);
-					gAxis
+					// the group's line folds and unfolds it, by tap or keyboard
+					const toggle = gAxis
+						.append("g")
+						.attr("class", "bin-toggle")
+						.attr("role", "button")
+						.attr("tabindex", 0)
+						.attr("aria-expanded", String(noneOpen))
+						.on("click", foldNone)
+						.on("keydown", (e) => {
+							if (e.key !== "Enter" && e.key !== " ") return;
+							e.preventDefault();
+							foldNone();
+						});
+					toggle
+						.append("rect")
+						.attr("x", 0)
+						.attr("y", L.binTop)
+						.attr("width", W)
+						.attr("height", NONE_FOLDED)
+						.attr("fill", "transparent");
+					toggle
 						.append("text")
 						.attr("class", "note b")
 						.attr("x", W / 2)
-						.attr("y", L.binTop + 15)
+						.attr("y", L.binTop + 27)
 						.attr("text-anchor", "middle")
-						.text(NONE[tab]);
+						.text(`${noneText(tab)} (${L.zn.length}) ${noneOpen ? "▴" : "▾"}`);
 				}
 			}
 		}
@@ -729,9 +783,15 @@
 			}
 		}
 
+		function foldNone() {
+			noneOpen = !noneOpen;
+			hideTip();
+			draw(true);
+		}
+
 		let maxH = { key: "", H: 0 };
 		function fixedH() {
-			const key = `${plot.clientWidth}x${innerHeight}`;
+			const key = `${plot.clientWidth}x${innerHeight}x${noneOpen}`;
 			if (maxH.key !== key) {
 				let H = 0;
 				for (const t of TABS.map((x) => x.key))
@@ -755,7 +815,8 @@
 			}
 			svg.attr("viewBox", `0 0 ${L.W} ${L.H}`).attr("height", L.H);
 			drawAxis();
-			const on = new Set(L.P.map((p) => p.name));
+			// faces tucked in the folded no-headlines line count as off the chart
+			const on = new Set(L.P.map((p) => p.name).filter((n) => L.byName.has(n)));
 			nodeSel
 				.classed("off", (p) => !on.has(p.name))
 				.classed("picked", (p) => p.name === picked)
@@ -782,7 +843,7 @@
 				.attr("tabindex", (p) => (on.has(p.name) ? 0 : -1))
 				.attr("aria-pressed", (p) => String(p.name === picked))
 				.each(function (p) {
-					const d = L.byName.get(p.name);
+					const d = L.all.get(p.name);
 					if (!d) return;
 					this.style.transform = `translate(${d.x}px, ${d.y}px)`;
 					this.querySelector(".inner").style.transform = `scale(${d.r / R0})`;
@@ -821,7 +882,7 @@
 						: `${ordinal(warm)} warmest of ${N} players`;
 			}
 			if (p[tab] === 0)
-				return `One of ${P.filter((q) => q[tab] === 0).length} players with none`;
+				return `One of ${P.filter((q) => q[tab] === 0).length} players with no headlines tagged as ${NONE_TOPIC[tab]}`;
 			const r = 1 + P.filter((q) => q[tab] > p[tab]).length;
 			return r === 1
 				? `The ${MOST[tab]} of ${N} players`
@@ -938,7 +999,7 @@
 		const whoEl = el("who");
 		function renderPick() {
 			if (!picked) {
-				whoEl.innerHTML = `<span>${esc(or(pickPrompt, `${touch ? "Tap" : "Pick"} a face to read the headlines that name her.`))}</span>`;
+				whoEl.innerHTML = `<span>${esc(or(pickPrompt, `${touch ? "Tap" : "Pick"} a face to read headlines that name the player.`))}</span>`;
 				return;
 			}
 			const pl = byName.get(picked);
@@ -1120,7 +1181,7 @@
 						.join(
 							""
 						)}</span>${chips.length > 1 ? `<button class="clearall" data-k="all">Clear all</button>` : ""}`
-				: `All <b>${fmt(total)}</b> Fox News WNBA headlines, ${monthName(D.window[0])} to ${monthName(D.window[1])}. Pick a face, a topic or a tone to narrow them.`;
+				: `All <b>${fmt(total)}</b> Fox News WNBA headlines, ${monthName(D.window[0])} to ${dayName(D.window[1])}.`;
 			if (flash) {
 				sumEl.classList.remove("flash");
 				void sumEl.offsetWidth;
@@ -1225,6 +1286,7 @@
 	<h3 class="heading">{or(kicker, "How Fox News frames each player")}</h3>
 	<div class="tabrow">
 		<div class="tabs" data-id="tabs" role="tablist" aria-label="Measure"></div>
+		<select class="tab-menu" data-id="tabsel" aria-label="Measure"></select>
 		{#if COUNT_TOGGLE}
 			<div class="unit" data-id="unit" role="group" aria-label="Counted over">
 				{or(countLabel, "Count:")}
@@ -1407,6 +1469,10 @@
 		outline: 2px solid var(--ink);
 		outline-offset: 2px;
 	}
+	/* phones show the measure as a menu in place of the tabs */
+	.swarm :global(.tab-menu) {
+		display: none;
+	}
 
 	/* the swarm */
 	.swarm :global(.plot) {
@@ -1481,6 +1547,16 @@
 	.swarm :global(.note.b) {
 		font-weight: 700;
 		fill: var(--wnba-tan-dark);
+	}
+	/* phones: the no-headlines group's line, which folds and unfolds it */
+	.swarm :global(.bin-toggle) {
+		cursor: pointer;
+		outline: none;
+	}
+	.swarm :global(.bin-toggle:hover .note),
+	.swarm :global(.bin-toggle:focus-visible .note) {
+		fill: var(--color-fg);
+		text-decoration: underline;
 	}
 	.swarm :global(.node) {
 		cursor: pointer;
@@ -1987,10 +2063,23 @@
 			border-radius: 0;
 		}
 		.swarm :global(.tabs) {
-			gap: 4px 13px;
+			display: none;
 		}
-		.swarm :global(.tabs button) {
-			font-size: 14px;
+		.swarm :global(.tab-menu) {
+			display: block;
+			width: 100%;
+			height: 40px;
+			margin-bottom: 12px;
+			padding: 0 32px 0 10px;
+			font: 700 16px var(--font-sans);
+			color: var(--ink);
+			background-color: var(--color-white);
+			border: 1px solid var(--ink-3);
+			border-radius: 4px;
+		}
+		.swarm :global(.tab-menu:focus-visible) {
+			outline: 2px solid var(--ink);
+			outline-offset: 2px;
 		}
 		.swarm :global(.unit) {
 			margin-left: 0;
