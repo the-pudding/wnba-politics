@@ -944,8 +944,8 @@
 
 	.sticky {
 		position: sticky;
-		top: 3rem;
-		height: calc(100vh - 3rem);
+		top: 4rem;
+		height: calc(100vh - 4rem);
 	}
 	/* the two charts share the frame, one over the other */
 	.stage {
@@ -987,7 +987,9 @@
 
 	/* the dot plot, framed as on OutletGapScrolly */
 	.gap :global(.outlet-gap) {
-		width: min(1040px, 97vw);
+		width: 100%;
+		max-width: 1400px;
+		padding: 0 1rem;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
@@ -1019,6 +1021,7 @@
 	.ternary :global(.ternary-static svg) {
 		width: var(--ter-w, auto);
 		max-height: var(--ter-w, 60vh);
+		margin: 0 auto;
 	}
 	.ternary :global(.ternary-static) {
 		max-width: none;
@@ -1167,7 +1170,6 @@
 		pointer-events: none;
 	}
 	.bridge {
-		max-width: 460px;
 		padding: 0 2rem;
 		height: 160vh;
 		display: flex;
@@ -1220,7 +1222,6 @@
 
 	/* the triangle's cards: at the left */
 	.ter-step {
-		max-width: 460px;
 		padding: 0 2rem;
 		position: relative;
 		height: 100vh;

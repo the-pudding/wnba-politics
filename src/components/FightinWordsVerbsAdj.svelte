@@ -795,8 +795,8 @@
 
 	.sticky {
 		position: sticky;
-		top: 3rem;
-		height: calc(100vh - 3rem);
+		top: 4rem;
+		height: calc(100vh - 4rem);
 		display: flex;
 		flex-direction: column;
 		align-items: center;

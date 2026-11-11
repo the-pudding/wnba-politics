@@ -78,7 +78,9 @@
 	/* the frame is a column: title, pills and clipping on top, and the drawing
 	   takes exactly the height that is left, so nothing is ever cut off */
 	.sticky :global(.outlet-gap) {
-		width: min(1040px, 97vw);
+		width: 100%;
+		max-width: 1400px;
+		padding: 0 1rem;
 		height: 96vh;
 		display: flex;
 		flex-direction: column;

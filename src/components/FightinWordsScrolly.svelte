@@ -106,7 +106,9 @@
 	}
 	/* flex item shrinks to its content without this */
 	.sticky :global(.fightin-words) {
-		width: min(1400px, 94vw);
+		width: 100%;
+		max-width: 1400px;
+		padding: 0 1rem;
 		height: 100%;
 	}
 	/* leaves room for the controls the explore beat brings back; the bars

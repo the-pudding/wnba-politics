@@ -362,7 +362,8 @@
 	// the edge heads on one line when both fit (measured as drawn: 12px
 	// capitals, against the measure's bold words), else two lines each
 	const headWidth = (t) => (textWidth(t.toUpperCase()) * 12) / WORD_PX;
-	let edgeOneLine = $derived(headWidth(EDGE_OTHERS) + headWidth(EDGE_FOX) + 24 < WIDTH);
+	// (below 460px of screen they always take two lines)
+	let edgeOneLine = $derived(screenW >= 460 && headWidth(EDGE_OTHERS) + headWidth(EDGE_FOX) + 24 < WIDTH);
 	let headExtra = $derived(source?.topHead && !edgeOneLine ? HEAD_LINE : 0);
 	// the word column, when the words sit beside the bars: as wide as the
 	// longest word shown, within reason
@@ -609,8 +610,9 @@
 					<text class="head edge others" x={0} y="10" text-anchor="start">{EDGE_OTHERS}</text>
 					<text class="head edge fox" x={WIDTH} y="10" text-anchor="end">{EDGE_FOX}</text>
 				{:else}
-					<!-- too narrow for both on one line: each breaks before "to", the arrow on the first line -->
-					{@const split = (t) => { const bare = t.replace(/\s*[←→]\s*/g, ""); const i = bare.indexOf(" to "); return i > 0 ? [bare.slice(0, i), bare.slice(i + 1)] : [bare, ""]; }}
+					<!-- too narrow for both on one line: each breaks before "to" (the short
+					     wording, with no "to", before its last word), the arrow on the first line -->
+					{@const split = (t) => { const bare = t.replace(/\s*[←→]\s*/g, ""); const to = bare.indexOf(" to "); const i = to > 0 ? to : bare.lastIndexOf(" "); return i > 0 ? [bare.slice(0, i), bare.slice(i + 1)] : [bare, ""]; }}
 					<text class="head edge narrow others" x={mid - barsReach} y="11" text-anchor="start"
 						><tspan x={mid - barsReach}>← {split(EDGE_OTHERS)[0]}</tspan><tspan x={mid - barsReach} dy={HEAD_LINE}>{split(EDGE_OTHERS)[1]}</tspan></text
 					>

@@ -13,6 +13,7 @@
 	import MessageCircle from "@lucide/svelte/icons/message-circle";
 	import Volume2 from "@lucide/svelte/icons/volume-2";
 	import VolumeOff from "@lucide/svelte/icons/volume-off";
+	import ArrowRightLeft from "@lucide/svelte/icons/arrow-right-left";
     const copy = getContext("copy");
 
 	let { id = "intro", steps = [], header, highlights, videos } = $props();
@@ -713,6 +714,9 @@
 
 	// how long the whole wall takes to fill in, in seconds
 	const STAGGER = 1.2;
+	// how long the wall takes to clear (wall: cleared), in seconds: the same scattered
+	// order, squeezed into less time
+	const CLEAR_STAGGER = 0.5;
 	// how long a wipe (transition: wipe) takes to cross the wall, in seconds
 	const WIPE = 1.3;
 	// how long the TV switch-off and back on (transition: off) takes, in seconds; the
@@ -925,6 +929,9 @@
 	let turn = $state(0);
 	// a clip the reader clicked, heard in place of the step's own turns until it ends
 	let picked = $state(null);
+	// videos a tap has just sent back to the start, so that jump isn't taken for the
+	// clip looping round (which would end its turn)
+	const rewound = new WeakSet();
 	$effect(() => {
 		// each pull-out starts with the first clip named; steps sharing one carry on
 		activeGroup;
@@ -961,11 +968,38 @@
 		} else picked = name;
 		const video = cell.querySelector("video");
 		if (video && soundOff) {
+			rewound.add(video);
 			video.currentTime = 0;
 			clipSound.play(name, video);
 			toggleSound();
 		}
 	}
+	// the speech bubble on a pulled-out clip: with sound off, on the clip whose turn it is
+	// ("Tap to play clip audio"); with sound on, on the first other clip ("Switch clip audio")
+	let pulledClips = $derived(
+		[...tiles.values()]
+			.filter((t) => t.g === activeGroup && t.type === "clips")
+			.sort((a, b) => a.k - b.k)
+			.map(videoName)
+	);
+	let tipSwitch = $derived(sound.on && !sound.blocked);
+	let tipClip = $derived.by(() => {
+		if (!wallInView || closing || !pulledClips.length) return null;
+		if (!tipSwitch) return speaking ?? pulledClips[0];
+		return pulledClips.find((name) => name !== speaking) ?? null;
+	});
+	// the bubble first waits for its clip to finish lifting out; once they're out, it
+	// moves between clips (or changes) straight away
+	let tipQuick = $state(false);
+	$effect(() => {
+		tipQuick = false;
+		if (activeGroup < 0) return;
+		const wait = (pulledClips.length * FEATURE_STAGGER + CLIP_LIGHT_UP + CLIP_LIFT) * 1000;
+		const timer = setTimeout(() => (tipQuick = true), wait);
+		return () => clearTimeout(timer);
+	});
+	const tipDelay = (spot) =>
+		tipQuick ? 0 : spot.k * FEATURE_STAGGER + (liftNow ? 0 : CLIP_LIGHT_UP) + CLIP_LIFT;
 	// the opening screen (video and typed line) is up
 	let introHeard = $derived(config.header && id === "intro" && wallInView && shownIndex === undefined);
 	// while the title is up, the corner sound switch plays the call; and the call plays by
@@ -992,6 +1026,10 @@
 		let { on, name, done } = opts;
 		let last = 0;
 		const watch = () => {
+			if (rewound.delete(node)) {
+				last = node.currentTime;
+				return;
+			}
 			if (on && node.currentTime + 0.3 < last) done();
 			last = node.currentTime;
 		};
@@ -1172,7 +1210,7 @@
             aria-hidden="true"
             bind:clientWidth={gridW}
             bind:clientHeight={gridH}
-            style="--cols: {cols}; --rows: {rows}; --tile-w: {tileW}px; --tile-h: {tileH}px; --light-up: {CLIP_LIGHT_UP}s; --lift: {CLIP_LIFT}s; --wipe: {WIPE}s; --power: {powerTime}s; --outline-w: {OUTLINE_W}px; --active-outline: {ACTIVE_OUTLINE}; --active-outline-w: {ACTIVE_OUTLINE_W}px; --active-gap: {ACTIVE_GAP}px; --outline-fox: {OUTLINE.fox}; --wall-filter: {WALL_COLOR ? 'none' : 'grayscale(100%)'}; --wall-opacity: {WALL_OPACITY};"
+            style="--cols: {cols}; --rows: {rows}; --tile-w: {tileW}px; --tile-h: {tileH}px; --light-up: {CLIP_LIGHT_UP}s; --lift: {CLIP_LIFT}s; --wipe: {WIPE}s; --power: {powerTime}s; --clear: {CLEAR_STAGGER / STAGGER}; --outline-w: {OUTLINE_W}px; --active-outline: {ACTIVE_OUTLINE}; --active-outline-w: {ACTIVE_OUTLINE_W}px; --active-gap: {ACTIVE_GAP}px; --outline-fox: {OUTLINE.fox}; --wall-filter: {WALL_COLOR ? 'none' : 'grayscale(100%)'}; --wall-opacity: {WALL_OPACITY};"
         >
             {#each gridCells as cell, i (i)}
                 {@const spot = tiles.get(i)}
@@ -1260,6 +1298,25 @@
                         </p>
                     {/each}
                 </div>
+                {#if f?.type === "clips" && tipClip === videoName(spot)}
+                    <!-- the speech bubble sits outside the tile, at its pulled-out size (like
+                         the headline card), so it isn't scaled up with it -->
+                    <div
+                        class="clip-tip"
+                        class:low={spot.low}
+                        style="--dx: {spot.dx}px; --dy: {spot.dy}px; --w: {tileW * spot.scale}px; --h: {tileH * spot.scale}px; --tip-d: {tipDelay(spot)}s;"
+                    >
+                        <span class="clip-tip-bubble">
+                            {#if tipSwitch}
+                                <ArrowRightLeft size={16} strokeWidth={2} aria-hidden="true" />
+                                Tap to switch clip audio
+                            {:else}
+                                <Volume2 size={16} strokeWidth={2} aria-hidden="true" />
+                                Tap to play clip audio
+                            {/if}
+                        </span>
+                    </div>
+                {/if}
                 {#if f?.type === "heads" && cell.date}
                     <!-- the headline card sits outside the tile, at its pulled-out size, so
                          it isn't scaled up (Safari would blur it). It flies out from the
@@ -1568,7 +1625,7 @@
        scattered delay (--d), the pulled-out ones along with the rest */
     .bg-grid.closing .slot > .cell {
         opacity: 0;
-        transition: opacity 500ms ease var(--d);
+        transition: opacity 350ms ease calc(var(--d) * var(--clear));
         /* solid, so the intro's title underneath shows only as each tile goes */
         background: var(--wnba-tan-bg);
     }
@@ -1614,9 +1671,92 @@
         height: var(--h);
         pointer-events: none;
     }
+    /* the speech bubble on a pulled-out clip: the box is the clip at its pulled-out size;
+       the bubble sits under it, or above it in the lower half of the screen */
+    .clip-tip {
+        position: absolute;
+        z-index: 3;
+        left: calc(50% + var(--dx) - var(--w) / 2);
+        top: calc(50% + var(--dy) - var(--h) / 2);
+        width: var(--w);
+        height: var(--h);
+        pointer-events: none;
+    }
+    .clip-tip-bubble {
+        position: absolute;
+        top: calc(100% + 16px);
+        left: 0;
+        right: 0;
+        width: max-content;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 0.4em;
+        padding: 0.4em 0.8em;
+        background: var(--color-fg);
+        color: var(--color-white);
+        border-radius: 4px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        font-family: var(--font-sans);
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.2;
+        white-space: nowrap;
+        transform-origin: 50% 0;
+        animation: tip-pop 400ms cubic-bezier(0.2, 1.4, 0.4, 1) var(--tip-d) both;
+    }
+    .clip-tip.low .clip-tip-bubble {
+        top: auto;
+        bottom: calc(100% + 16px);
+        transform-origin: 50% 100%;
+    }
+    .clip-tip-bubble :global(svg) {
+        flex: none;
+        height: 1rem;
+        width: 1rem;
+    }
+    /* the tail, pointing at the clip */
+    .clip-tip-bubble::after {
+        content: "";
+        position: absolute;
+        left: calc(50% - 5px);
+        top: -4px;
+        width: 10px;
+        height: 10px;
+        background: var(--color-fg);
+        border-right: 0;
+        border-bottom: 0;
+        transform: rotate(45deg);
+    }
+    .clip-tip.low .clip-tip-bubble::after {
+        top: auto;
+        bottom: -6px;
+        transform: rotate(225deg);
+    }
+    @keyframes tip-pop {
+        from {
+            opacity: 0;
+            transform: scale(0.6);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .clip-tip-bubble {
+            animation-name: tip-fade;
+            animation-timing-function: ease;
+        }
+    }
+    @keyframes tip-fade {
+        from {
+            opacity: 0;
+        }
+    }
     .bg-grid.closing .clip-out {
         opacity: 0;
-        transition: opacity 500ms ease var(--d);
+        transition: opacity 350ms ease calc(var(--d) * var(--clear));
     }
     /* a headline card is taller than its tile: it hangs from the tile's top edge, or in
        the lower half of the screen stands on its bottom edge, so it stays on screen */
