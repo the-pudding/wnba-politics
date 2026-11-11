@@ -29,7 +29,7 @@
 	import { faces, clipPops } from "$utils/clips.js";
 	import { or } from "$utils/fill.js";
 	import { cubicInOut } from "svelte/easing";
-	import { tick } from "svelte";
+	import { tick, untrack } from "svelte";
 
 	let {
 		steps = null,
@@ -178,6 +178,45 @@
 	let t = $state(0);
 	const clamp = (v) => Math.max(0, Math.min(1, v));
 	let phase = $derived(t <= 0 ? "gap" : t >= 1 ? "ternary" : "bridge");
+
+	// On a touch screen the flight doesn't follow the scroll: once the bridge
+	// is TRIGGER of the way past the line it plays on its own clock, over
+	// FLIGHT_MS (and plays back if the reader scrolls back above it). Mobile
+	// Safari scrolls off the main thread, so a scroll-scrubbed flight stutters.
+	// `prog` stands in for t in everything the flight draws.
+	const TRIGGER = 0.08,
+		FLIGHT_MS = 1400;
+	let timed = $state(false);
+	$effect(() => {
+		timed = window.matchMedia("(pointer: coarse)").matches;
+	});
+	let clock = $state(0); // 0 → 1 over FLIGHT_MS
+	let aim = $derived(t >= TRIGGER);
+	$effect(() => {
+		if (!timed) return;
+		const goal = aim ? 1 : 0;
+		// where each face starts and lands, measured once as it takes off
+		if (goal) untrack(measure);
+		let frame = null;
+		let last = performance.now();
+		const step = (now) => {
+			const dt = (now - last) / FLIGHT_MS;
+			last = now;
+			clock = goal ? Math.min(1, clock + dt) : Math.max(0, clock - dt);
+			frame = clock === goal ? null : requestAnimationFrame(step);
+		};
+		frame = requestAnimationFrame(step);
+		return () => frame !== null && cancelAnimationFrame(frame);
+	});
+	let prog = $derived(
+		!timed
+			? t
+			: clock <= 0
+				? 0
+				: clock >= 1
+					? 1
+					: FLY_FROM + (FLY_TO - FLY_FROM) * clock
+	);
 
 	// the dot plot holds its last step through the handoff and after
 	let gapStep = $derived(
@@ -337,6 +376,9 @@
 				},
 				end
 			});
+			// drawn at its biggest and scaled down (a transform, not a resize)
+			const last = out.at(-1);
+			last.size = Math.max(last.start.r, end ? Math.max(end.r, HEAD_MIN) : 0);
 		}
 		// the top row leaves first
 		out.sort((a, b) => a.start.y - b.start.y);
@@ -390,17 +432,25 @@
 	$effect(() => {
 		if (!bridgeEl) return;
 		let frame = null;
+		let resized = false;
 		const update = () => {
 			frame = null;
 			const r = bridgeEl.getBoundingClientRect();
 			const line = window.innerHeight * HANDOFF_LINE;
 			t = clamp((line - r.top) / Math.max(1, r.height));
+			if (timed) {
+				// the timed flight measures as it takes off, and again only when
+				// the screen changes size (the toolbar showing or hiding)
+				if (resized && untrack(() => clock) > 0) measure();
+			}
 			// (and once past it, if a fast scroll skipped it, so the names are known)
 			// and while the heads sit on the triangle, so they follow a resize
-			if ((t > 0 && t < 1) || (t >= 1 && (!bridgeWords.length || headsOn)))
+			else if ((t > 0 && t < 1) || (t >= 1 && (!bridgeWords.length || headsOn)))
 				measure();
+			resized = false;
 		};
-		const queue = () => {
+		const queue = (e) => {
+			if (e?.type === "resize") resized = true;
 			// a scroll takes a head's tooltip away
 			headTerm = null;
 			if (frame === null) frame = requestAnimationFrame(update);
@@ -442,16 +492,18 @@
 		return HEAD_MIN + (biggest - HEAD_MIN) * share;
 	};
 	// the dot plot's heads stay hoverable into the bridge, until they start to fly
-	let flying = $derived(t >= FLY_FROM);
-	let gapOpacity = $derived(1 - clamp((t - 0.05) / 0.35));
-	let terOpacity = $derived(clamp((t - 0.35) / (FLY_TO - 0.35)));
+	let flying = $derived(prog >= FLY_FROM);
+	let gapOpacity = $derived(1 - clamp((prog - 0.05) / 0.35));
+	let terOpacity = $derived(clamp((prog - 0.35) / (FLY_TO - 0.35)));
 	// the triangle answers a pointer once the faces have landed on it
-	let terLive = $derived(phase === "ternary" || (phase === "bridge" && t >= FLY_TO));
+	let terLive = $derived(
+		(phase === "ternary" || phase === "bridge") && prog >= FLY_TO
+	);
 	const lerp = (a, b, p) => a + (b - a) * p;
 	function flight(f, i, n) {
 		const delay = n > 1 ? (STAGGER * i) / (n - 1) : 0;
 		const p = cubicInOut(
-			clamp((t - FLY_FROM - delay) / (FLY_TO - FLY_FROM - STAGGER))
+			clamp((prog - FLY_FROM - delay) / (FLY_TO - FLY_FROM - STAGGER))
 		);
 		// a face with no word on the triangle fades where it is
 		const end = f.end ?? f.start;
@@ -775,11 +827,12 @@
 			<div class="flyers" aria-hidden="true" style:opacity={headsOn ? 1 : 0}>
 				{#each flyers as f, i (f.slug)}
 					{@const at = flight(f, i, flyers.length)}
+					{@const s = at.r / f.size}
 					<div
 						class="flyer"
-						style:width="{at.r * 2}px"
-						style:height="{at.r * 2}px"
-						style:transform="translate({at.x - at.r}px, {at.y - at.r}px)"
+						style:width="{f.size * 2}px"
+						style:height="{f.size * 2}px"
+						style:transform="translate({at.x - f.size}px, {at.y - f.size}px) scale({s})"
 						style:opacity={at.opacity * (headQuiet(f.term) ? HEAD_QUIET : 1)}
 						class:live={headsOn && at.landed}
 						onpointerdown={(e) => (headTouched = !hovers(e))}
@@ -789,7 +842,12 @@
 						role="presentation"
 					>
 						{#if f.img}<img src={f.img} alt="" />{/if}
-						<span class="ring" style:border-color={at.ring}></span>
+						<!-- 3px on screen, whatever the head's scale -->
+						<span
+							class="ring"
+							style:border-color={at.ring}
+							style:border-width="{3 / s}px"
+						></span>
 					</div>
 				{/each}
 			</div>
@@ -954,6 +1012,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		/* each fades on its own layer, so Safari doesn't repaint the big SVGs */
+		will-change: opacity;
 	}
 
 	/* the triangle sits as near the middle as the cards beside it allow (in the
@@ -1137,6 +1197,7 @@
 		border-radius: 50%;
 		overflow: hidden;
 		background: var(--wnba-tan-light);
+		transform-origin: 50% 50%;
 		will-change: transform;
 		transition: opacity 250ms ease;
 	}

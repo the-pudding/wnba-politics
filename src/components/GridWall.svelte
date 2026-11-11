@@ -31,12 +31,22 @@
 		while (walker.nextNode()) texts.push(walker.currentNode);
 		for (const t of texts) {
 			const frag = document.createDocumentFragment();
-			for (const c of t.data) {
-				const s = document.createElement("span");
-				s.className = "ch";
-				s.textContent = c;
-				frag.append(s);
-				chars.push(s);
+			// each word's letters go in a nowrap wrapper: with every letter in its own span,
+			// Safari (iOS especially) will break a line between any two of them, mid-word
+			for (const part of t.data.split(/(\s+)/)) {
+				if (!part) continue;
+				const word = /^\s+$/.test(part) ? frag : document.createElement("span");
+				if (word !== frag) {
+					word.className = "word";
+					frag.append(word);
+				}
+				for (const c of part) {
+					const s = document.createElement("span");
+					s.className = "ch";
+					s.textContent = c;
+					word.append(s);
+					chars.push(s);
+				}
 			}
 			t.replaceWith(frag);
 		}
@@ -1499,9 +1509,17 @@
     .typed:global(.ready) {
         visibility: visible;
     }
+    .typed :global(.word) {
+        white-space: nowrap;
+    }
+    /* the padding (taken back by the negative margin, so nothing moves) gives each letter's
+       box room for the italic's overhang: Safari clips a letter's ink to its own span,
+       which cut off the tails of letters like j and f */
     .typed :global(.ch) {
         position: relative;
         visibility: hidden;
+        padding: 0.2em 0.25em;
+        margin: 0 -0.25em;
     }
     .typed :global(.ch.on) {
         visibility: visible;
@@ -1510,11 +1528,12 @@
     .typed :global(.ch.at::after) {
         content: "";
         position: absolute;
+        /* (offset by the letter's padding above) */
         left: 100%;
-        top: 0.12em;
-        bottom: 0.08em;
+        top: 0.32em;
+        bottom: 0.28em;
         width: 0.06em;
-        margin-left: 0.04em;
+        margin-left: -0.21em;
         background: currentColor;
         animation: caret-blink 0.9s steps(1) infinite;
     }

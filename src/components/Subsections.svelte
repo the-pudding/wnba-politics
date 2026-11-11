@@ -1,5 +1,4 @@
 <script>
-    import { tick } from "svelte";
     import CMS from "$components/helpers/CMS.svelte";
     import { hl } from "$utils/clips.js";
 
@@ -11,23 +10,12 @@
         collapsed = false,
         look = "",
         previous = "",
-        next = "",
-        // the button under a clipped stack (Doc: `more:` / `less:`), e.g.
-        // "Show More" where the stacks are charts rather than reading
-        more = "",
-        less = ""
+        next = ""
     } = $props();
-    const MORE = "Read More";
-    const LESS = "Show Less";
 
     const items = $derived(
         (tabs ?? []).filter((t) => t && (t.title || t.content))
     );
-
-    // Track state
-    let expanded = $state({});
-    let outerHeights = $state({});
-    let innerHeights = $state({});
 
     // The panel is a one-section body for the CMS
     const bodyOf = (tab, i) => [
@@ -43,27 +31,12 @@
             .replace(/^-+|-+$/g, "");
     const idOf = (tab) => slug(tab.kicker || tab.title) || undefined;
 
-    // Show Less keeps the stack's bottom (where its button is) where it was on
-    // screen: everything above folds away, and the reader would otherwise land
-    // far down the page
-    async function toggle(i) {
-        const sheet = sheets[i];
-        const before = sheet?.getBoundingClientRect().bottom;
-        expanded[i] = !expanded[i];
-        if (expanded[i] || before === undefined) return;
-        await tick();
-        // the button is redrawn once the clipped height is measured
-        await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-        scrollBy({ top: sheet.getBoundingClientRect().bottom - before, behavior: "instant" });
-    }
-
-    // The nav: a button jumps to its stack, opened, just under the sticky nav
+    // The nav: a button jumps to its stack, just under the sticky nav
     let navEl = $state(null);
     let sheets = $state([]);
     let active = $state(-1);
     const navBottom = () => navEl?.getBoundingClientRect().bottom ?? 0;
     function jump(i) {
-        expanded[i] = true;
         const sheet = sheets[i];
         if (!sheet) return;
         const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -75,7 +48,7 @@
         });
     }
 
-    // a link to a stack opens it and goes to it
+    // a link to a stack goes to it
     $effect(() => {
         const openFromLink = () => {
             const id = decodeURIComponent(location.hash.slice(1));
@@ -133,34 +106,13 @@
     </nav> -->
     <div class="stack">
         {#each items as tab, i (i)}
-            {@const isExpanded = expanded[i]}
-            {@const isOverflowing = (innerHeights[i] ?? 0) > (outerHeights[i] ?? 0) + 2}
-            
             <section class="sheet" id={idOf(tab)} bind:this={sheets[i]}>
                 <!-- a stack whose chart has its own title can leave this out -->
                 {#if tab.title}<h3 class="heading">{tab.title}</h3>{/if}
 
-                <div
-                    class="content-wrapper"
-                    class:expanded={isExpanded}
-                    bind:clientHeight={outerHeights[i]}
-                >
-                    <div class="panel" bind:clientHeight={innerHeights[i]}>
-                        <CMS body={bodyOf(tab, i)} {components} />
-                    </div>
-                    
-                    <!-- Gradient overlay when content is clipped -->
-                    {#if isOverflowing && !isExpanded}
-                        <div class="fade-out"></div>
-                    {/if}
+                <div class="panel">
+                    <CMS body={bodyOf(tab, i)} {components} />
                 </div>
-
-                <!-- Show button if content exceeds 100svh or is currently expanded -->
-                {#if isOverflowing || isExpanded}
-                    <button class="expand-btn" onclick={() => toggle(i)}>
-                        {isExpanded ? less || LESS : more || MORE}
-                    </button>
-                {/if}
             </section>
         {/each}
     </div>
@@ -273,48 +225,6 @@
         line-height: 1.15;
         margin: 0;
         color: var(--color-ink-dark);
-    }
-
-    /* Outer wrapper caps height to 100svh */
-    .content-wrapper {
-        position: relative;
-    }
-
-    .fade-out {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 120px;
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
-        pointer-events: none;
-    }
-
-    .expand-btn {
-        display: block;
-		max-width: 200px;
-        width: 100%;
-        margin: 16px auto;
-        padding: 14px;
-        background: var(--color-ink-dark);
-        color: #fff;
-        font-family: var(--font-sans);
-        font-size: 15px;
-        font-weight: 600;
-        text-align: center;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background 150ms ease;
-    }
-
-    .expand-btn:hover {
-        background: #000;
-    }
-
-    .expand-btn:focus-visible {
-        outline: 2px solid var(--color-ink-dark);
-        outline-offset: 2px;
     }
 
     .panel :global(section.act) {
