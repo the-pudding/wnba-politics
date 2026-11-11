@@ -6,6 +6,12 @@
 	let {
 		source = null,
 		highlight = null,
+		// unlit: words to leave dark while every other bar is lit (a step that
+		// lights nearly the whole chart); nothing moves
+		unlit = null,
+		// inPlace: the highlighted words light where they are, and one off the
+		// page is not pulled up onto it
+		inPlace = false,
 		top = 12,
 		// more: rank the list further than `top`, a page of `top` at a time
 		// with Previous / Next under the bars, the frame the same height
@@ -98,6 +104,10 @@
 
 	let lit = $derived(new Set((highlight ?? []).map((w) => w.toLowerCase())));
 	let anyLit = $derived(lit.size > 0);
+	let off = $derived(new Set((unlit ?? []).map((w) => w.toLowerCase())));
+	// the bars hold their places: no highlighted word is brought up the list
+	let still = $derived(off.size > 0 || inPlace === true || String(inPlace) === "true");
+	const isOn = (word) => (off.size ? !off.has(word.toLowerCase()) : !anyLit || lit.has(word.toLowerCase()));
 
 	// pixel-true: the frame is measured, the drawing fills it
 	let el = $state(null);
@@ -192,7 +202,7 @@
 	//. The page keeps its height.
 	let pins = $derived.by(() => {
 		const none = { 1: [], [-1]: [], rows: 0, keep: topN };
-		if (!paged || !anyLit) return none;
+		if (!paged || !anyLit || still) return none;
 		const ranked = { 1: side(1).map((p, i) => ({ ...p, rank: i + 1 })), [-1]: side(-1).map((p, i) => ({ ...p, rank: i + 1 })) };
 		let keep = topN, out = none;
 		// the rows given up can uncover more highlighted words: settle it
@@ -219,7 +229,7 @@
 			];
 		// highlighted words ranked lower join the bottom; on a short screen
 		// they take the place of the last unhighlighted ones
-		const isLit = (p) => lit.has(p.word.toLowerCase());
+		const isLit = (p) => !still && lit.has(p.word.toLowerCase());
 		let keep = topN;
 		while (keep > 1 && keep + list.slice(keep).filter(isLit).length > Math.min(fitRows, MAX_BARS)) keep--;
 		return [...list.slice(0, keep), ...list.slice(keep).filter(isLit)];
@@ -655,7 +665,7 @@
 				{#each list as p, i (p.word)}
 					{@const y = yOf(p.pin ? i + 1 : i)}
 					{@const w = len(p.z)}
-					{@const on = !anyLit || lit.has(p.word.toLowerCase())}
+					{@const on = isOn(p.word)}
 					{@const weak = Math.abs(p.z) < WEAK_Z}
 					{@const color = weak ? WEAK_BAR : sign > 0 ? FOX : OTHERS}
 					<!-- a label too long for its half (three-word phrases on a phone)

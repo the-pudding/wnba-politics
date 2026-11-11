@@ -19,6 +19,13 @@
 					.split(",")
 					.map((w) => w.trim())
 					.filter(Boolean),
+				// skip: light every bar but these; inPlace: light `words` where
+				// they sit. Either way no bar moves
+				skip: (step.skip ?? "")
+					.split(",")
+					.map((w) => w.trim())
+					.filter(Boolean),
+				inPlace: step.inPlace === true || step.inPlace === "true",
 				explore: step.explore === true || step.explore === "true",
 				// a step can switch to two-word phrases (ngrams: 2) or back (ngrams: 1);
 				// unset, the block's own setting carries on
@@ -40,6 +47,8 @@
 		<!-- articles, not headlines: headline counts are too sparse for these words -->
 		<FightinWords
 			highlight={index >= STEPS.length ? [] : current.words}
+			unlit={index >= STEPS.length ? [] : current.skip}
+			inPlace={index < STEPS.length && current.inPlace}
 			bare
 			controls
 			live={index >= STEPS.length}

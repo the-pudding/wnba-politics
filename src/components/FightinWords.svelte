@@ -107,6 +107,9 @@
 	// `source` ({points, topLabel, bottomLabel}) lets another dataset borrow the chart
 	let {
 		highlight = null,
+		// unlit, inPlace: the bars' other ways to light a step (see WordBars)
+		unlit = null,
+		inPlace = false,
 		bare = false,
 		controls = true,
 		// pager: Previous / Next under the bars (a scrolly holds it back until
@@ -1203,6 +1206,8 @@
 			otherName={against === ALL_OUTLETS ? "others" : against}
 			{topName}
 			highlight={[...HIGHLIGHT]}
+			{unlit}
+			{inPlace}
 			top={mobile ? 10 : 14}
 			more={50}
 			pager={!source && controls && showPager}
