@@ -45,7 +45,8 @@
 		padding: 1rem;
 		width: 50%;
 		border: 1px solid var(--color-rule);
-		border-radius: 8px;
+		border-radius: 4px;
+		background: var(--color-white);
 	}
 	.col :global(.act) {
 		margin: 0;

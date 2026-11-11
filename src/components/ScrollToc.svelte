@@ -282,7 +282,7 @@
 	/* phones: narrower, so the sticky headings keep most of the width */
 	@media (max-width: 768px) {
 		.scroll-toc {
-			width: 9.5rem;
+			width: 5.5rem;
 		}
 	}
 	/* as tall as the sound switch, with a chevron (--color-fg) in place of the
@@ -295,7 +295,7 @@
 		padding: 0 2.25rem 0 1rem;
 		border: 1px solid var(--color-rule);
 		border-radius: 4px;
-		background-color: var(--wnba-tan-bg);
+		background-color: var(--color-white);
 		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23171717' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 		background-repeat: no-repeat;
 		background-position: right 0.75rem center;
@@ -341,7 +341,6 @@
 			padding: 0 calc(2.25rem / 0.6875) 0 calc(1rem / 0.6875);
 			--chev-size: calc(16px / 0.6875);
 			background-position: right calc(0.75rem / 0.6875) center;
-			border-radius: 999px;
 			transform: scale(0.6875);
 			transform-origin: top left;
 			/* its own text is hidden under the plain name (.current) */

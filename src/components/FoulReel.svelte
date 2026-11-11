@@ -436,7 +436,7 @@
 											</p>
 										{/if}
 										<p class="dateline">
-											{r.dateText || when(r.d)}{#if r.h}&nbsp;· <span class="badge">headline</span>{/if}{#if r.u}&nbsp;· <a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>Article ↗</a>{/if}
+											{r.dateText || when(r.d)}{#if r.h}&nbsp;· <span class="badge">headline</span>{/if}{#if r.u}&nbsp;· <a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>Article ↗&#xFE0E;</a>{/if}
 										</p>
 									</figure>
 								{:else}
@@ -487,7 +487,7 @@
 										<span class="dot">·</span>
 										{when(r.d)}
 										{#if r.h}<span class="dot">·</span><span class="badge">headline</span>{/if}
-										{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>article ↗</a>{/if}
+										{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>article ↗&#xFE0E;</a>{/if}
 									</p>
 								{:else}
 									{@const c = cut(r)}
@@ -524,7 +524,7 @@
 							<span class="dot">·</span>
 							{when(r.d)}
 							{#if r.h}<span class="dot">·</span><span class="badge">headline</span>{/if}
-							{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>article ↗</a>{/if}
+							{#if r.u}<span class="dot">·</span><a href={r.u} target="_blank" rel="noopener" aria-label={articleLabel(r)}>article ↗&#xFE0E;</a>{/if}
 						</p>
 					{:else}
 						{@const c = cut(r)}

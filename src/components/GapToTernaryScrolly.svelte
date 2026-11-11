@@ -944,8 +944,8 @@
 
 	.sticky {
 		position: sticky;
-		top: 4rem;
-		height: calc(100vh - 4rem);
+		top: 3rem;
+		height: calc(100vh - 3rem);
 	}
 	/* the two charts share the frame, one over the other */
 	.stage {
@@ -1497,9 +1497,10 @@
 	}
 	.control input[type="search"] {
 		width: 200px;
-		height: 30px;
+		height: 2.5rem;
 		padding: 0 10px 0 28px;
-		border: 1px solid var(--wnba-tan-light);
+		border: 1px solid var(--color-rule);
+		outline: none;
 		border-radius: 4px;
 		background: var(--color-white)
 			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23727272' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E")
@@ -1508,9 +1509,12 @@
 		font-size: 14px;
 		color: var(--color-ink-dark);
 	}
+	.control input[type="search"]:hover {
+		border-color: var(--color-fg);
+	}
 	.control input[type="search"]:focus {
-		outline: 2px solid var(--color-ink-dark);
-		outline-offset: -2px;
+		outline: 2px solid var(--color-fox);
+		outline-offset: 2px;
 	}
 	.search-box {
 		position: relative;

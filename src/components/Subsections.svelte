@@ -254,6 +254,11 @@
         position: relative;
     }
 
+    /* only the story's text paragraphs, not the ones inside charts */
+    :global(#us-vs-them section.act > p) {
+        padding: 0 !important;
+    }
+
     .sheet-header {
         margin-bottom: 20px;
         padding-bottom: 12px;
@@ -320,10 +325,6 @@
     @media (max-width: 640px) {
         .stack {
             gap: 24px;
-        }
-        .sheet {
-            padding: 20px 16px;
-            border-width: 2px;
         }
         .name {
             font-size: 18px;

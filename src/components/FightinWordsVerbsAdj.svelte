@@ -591,12 +591,12 @@
 						class:narrow
 						inert={!live}
 					>
-						<span
-							>{narrow
-								? or(phoneVs, "vs.")
-								: or(comparedWith, "Compared with")}</span
-						>
 						{#if OUTLET_MENU}
+							<span
+								>{narrow
+									? or(phoneVs, "vs.")
+									: or(comparedWith, "Compared with")}</span
+							>
 							<LogoSelect
 								options={OUTLET_OPTIONS}
 								bind:value={pickedOutlet}
@@ -616,7 +616,13 @@
 								label="Compared with"
 							/>
 						{:else}
-							<span>{or(allOutlets, "six other outlets")}</span>
+							<!-- no menu: plain text, e.g. "Compared with six other outlets" -->
+							<span
+								>{narrow
+									? or(phoneVs, "vs.")
+									: or(comparedWith, "Compared with")}
+								{or(allOutlets, "six other outlets")}</span
+							>
 						{/if}
 						{#if narrow}{@render unitSwitch()}{/if}
 						<!-- on a desktop the slider follows the menu on its line -->
@@ -789,8 +795,8 @@
 
 	.sticky {
 		position: sticky;
-		top: 4rem;
-		height: calc(100vh - 4rem);
+		top: 3rem;
+		height: calc(100vh - 3rem);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -1237,12 +1243,55 @@
 		margin-left: 18px;
 	}
 	.uses input[type="range"] {
+		-webkit-appearance: none;
+		appearance: none;
 		width: 130px;
-		accent-color: var(--color-fox);
+		height: 16px;
+		margin: 0;
+		padding: 0;
+		border: none;
+		border-radius: 0;
+		outline: none;
+		background: transparent;
+		cursor: pointer;
+	}
+	.uses input[type="range"]:focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: 2px;
+	}
+	/* the bar behind the thumb: flat, no border */
+	.uses input[type="range"]::-webkit-slider-runnable-track {
+		height: 6px;
+		background: var(--wnba-tan-mid);
+		border: none;
+		border-radius: 3px;
+	}
+	.uses input[type="range"]::-moz-range-track {
+		height: 6px;
+		background: var(--wnba-tan-mid);
+		border: none;
+		border-radius: 3px;
+	}
+	.uses input[type="range"]::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 16px;
+		height: 16px;
+		margin-top: -5px;
+		border: none;
+		border-radius: 50%;
+		background: var(--color-fox);
+	}
+	.uses input[type="range"]::-moz-range-thumb {
+		width: 16px;
+		height: 16px;
+		border: none;
+		border-radius: 50%;
+		background: var(--color-fox);
 	}
 	.uses-row {
 		display: flex;
-		justify-content: center;
+		justify-content: flex-start;
 		margin-top: 6px;
 	}
 	/* the controls take the subheading's highlighter swipe when they go live
@@ -1267,7 +1316,7 @@
 	/* the slider only appears once live: it fades and rises in, then takes
 	   its own swipe */
 	.uses {
-		padding: 1px 4px;
+		padding: 1px 4px 1px 0;
 		animation:
 			uses-in 450ms cubic-bezier(0.22, 0.8, 0.3, 1) both,
 			menu-swipe 1.6s ease 400ms both;

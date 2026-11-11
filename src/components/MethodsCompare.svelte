@@ -166,9 +166,9 @@
 		align-items: center;
 		gap: 8px;
 		padding: 10px 14px;
-		border: 1px solid var(--rule);
-		border-radius: 6px;
-		background: var(--color-paper);
+		border: 1px solid var(--color-rule);
+		border-radius: 4px;
+		background: var(--color-white);
 		font-size: 15px;
 		font-weight: 700;
 		cursor: pointer;
@@ -203,7 +203,7 @@
 		line-height: 1.3;
 	}
 	th {
-		padding: 0 6px 6px;
+		padding: 6px 6px;
 		border-bottom: 1px solid var(--color-ink);
 		font-size: 12.5px;
 		font-weight: 700;
@@ -238,10 +238,7 @@
 	}
 	/* fightin' words, the method the piece uses, set apart */
 	.fw {
-		background: rgba(185, 28, 28, 0.06);
-	}
-	th.fw {
-		border-bottom-color: var(--color-fox-navy);
+		background: var(--wnba-tan-light);
 	}
 	.note {
 		margin: 8px 0 0;

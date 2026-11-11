@@ -65,7 +65,7 @@
 			fieldAt: "2025-01"
 		},
 		protect: {
-			color: "#166534",
+			color: "#7C7060",
 			kicker: "Protect",
 			name: "“protect”",
 			notes: []
@@ -819,7 +819,7 @@
 	}
 	.gtext,
 	.xtext {
-		fill: #727272;
+		fill: var(--wnba-tan-dark);
 		font-size: 12px;
 	}
 	.base {
@@ -987,12 +987,12 @@
 		opacity: 0.12;
 	}
 	.sm-base {
-		stroke: #727272;
+		stroke: var(--wnba-tan-dark);
 		stroke-width: 1;
 		vector-effect: non-scaling-stroke;
 	}
 	.sm-tick {
-		fill: #727272;
+		fill: var(--wnba-tan-dark);
 		font-size: 10px;
 	}
 	.source {
@@ -1001,7 +1001,7 @@
 		border-top: 1px solid #e2e2e2;
 		font-size: 12px;
 		line-height: 1.5;
-		color: #727272;
+		color: var(--wnba-tan-dark);
 	}
 	.source p {
 		margin: 0 0 2px;

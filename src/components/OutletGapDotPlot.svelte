@@ -256,7 +256,7 @@
 	// height binds on desktop (sticky frame), width on a phone — hence the narrow variant
 	let narrow = $state(false);
 	$effect(() => {
-		const query = window.matchMedia("(max-width: 640px)");
+		const query = window.matchMedia("(max-width: 800px)");
 		const sync = () => (narrow = query.matches);
 		sync();
 		query.addEventListener("change", sync);
