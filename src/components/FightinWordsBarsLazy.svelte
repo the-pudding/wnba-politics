@@ -24,11 +24,15 @@
 	});
 </script>
 
-{#if Chart}
-	<Chart {...props} />
-{:else}
-	<div class="holder" bind:this={holder}></div>
-{/if}
+<!-- on the page before the chart loads, so the sections menu can link here
+     (the Doc's [toc]: go: player-words) -->
+<div id="player-words">
+	{#if Chart}
+		<Chart {...props} />
+	{:else}
+		<div class="holder" bind:this={holder}></div>
+	{/if}
+</div>
 
 <style>
 	/* keeps the chart's place until it loads */

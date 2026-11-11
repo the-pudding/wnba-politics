@@ -1,6 +1,7 @@
 <script>
 	// Contents list built from the section h2
 	import { tick } from "svelte";
+	import { replaceState } from "$app/navigation";
 	import copy from "$data/copy.json";
 
 	const entries = (copy.body ?? [])
@@ -31,7 +32,7 @@
 							e.preventDefault();
 							// a collapsed section opens first (replaceState is silent,
 							// so say so)
-							history.replaceState(null, "", `#${entry.id}`);
+							replaceState(`#${entry.id}`, {});
 							dispatchEvent(new HashChangeEvent("hashchange"));
 							await tick();
 							target.scrollIntoView({ behavior: "instant", block: "start" });

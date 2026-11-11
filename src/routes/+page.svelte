@@ -12,7 +12,8 @@
 		"https://pudding.cool/assets/fonts/tiempos/TiemposTextWeb-Regular.woff2",
 		"https://pudding.cool/assets/fonts/tiempos/TiemposTextWeb-Bold.woff2",
 		"https://pudding.cool/assets/fonts/atlas/AtlasGrotesk-Regular-Web.woff2",
-		"https://pudding.cool/assets/fonts/atlas/AtlasGrotesk-Bold-Web.woff2"
+		"https://pudding.cool/assets/fonts/atlas/AtlasGrotesk-Bold-Web.woff2",
+		"https://pudding.cool/assets/fonts/that-new-pixel/ThatThatNewPixel-ItalicRound.woff2"
 	];
 
 	// The Doc's {meta} block leaves title/description blank, so fall back to the

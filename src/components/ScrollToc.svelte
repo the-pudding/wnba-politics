@@ -4,6 +4,7 @@
 	// choosing another jumps there. Under each section with an h2 come its h3s,
 	// the charts' included, read off the page as it renders.
 	import { tick, onMount } from "svelte";
+	import { replaceState } from "$app/navigation";
 	import copy from "$data/copy.json";
 
 	// a section without a heading (the opening) is named after its id
@@ -228,7 +229,7 @@
 		// silent, so say so), or there's too little page below it to bring it
 		// to the top
 		if (e.hash) {
-			history.replaceState(null, "", `#${e.hash}`);
+			replaceState(`#${e.hash}`, {});
 			dispatchEvent(new HashChangeEvent("hashchange"));
 		}
 		await tick();
