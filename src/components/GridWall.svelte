@@ -820,6 +820,47 @@
 		[["L", 0.2], ["R", 0.33], ["L", 0.5], ["R", 0.67], ["L", 0.8]],
 		[["R", 0.2], ["L", 0.33], ["R", 0.5], ["L", 0.67], ["R", 0.8]]
 	];
+	// room a pulled-out clip's "Tap to … clip audio" bubble needs: its 16px gap from the
+	// clip plus the bubble itself (see .clip-tip-bubble)
+	const TIP_SPACE = 44;
+	// wide screens: clips keep their layout spots, but two on the same side of the screen
+	// that are too close for the bubbles between them (one under the clip above, one over
+	// the clip below) are pushed apart, each by half of what's missing, just far enough,
+	// and kept on screen. Only if the screen is too short for that do the clips shrink.
+	// Returns the new spots, in the same order, and the width.
+	function spreadClips(spots, w, H, top) {
+		const span = H - PAD - top;
+		const sides = new Map();
+		spots.forEach(([x], i) => sides.set(x, [...(sides.get(x) ?? []), i]));
+		const most = Math.max(...[...sides.values()].map((s) => s.length));
+		let h = w * TILE_RATIO;
+		if (most > 1) h = Math.max(0, Math.min(h, (span - 2 * TIP_SPACE * (most - 1)) / most));
+		const need = h + 2 * TIP_SPACE; // closest two clips' centers can be
+		const lo = top + h / 2;
+		const hi = H - PAD - h / 2;
+		const out = spots.map((s) => [...s]);
+		for (const idx of sides.values()) {
+			if (idx.length < 2) continue;
+			idx.sort((a, b) => spots[a][1] - spots[b][1]);
+			const ys = idx.map((i) => spots[i][1]);
+			// nudge pairs apart, then back on screen, until nothing's too close
+			for (let pass = 0; pass < 20; pass++) {
+				let moved = false;
+				for (let j = 0; j < ys.length - 1; j++) {
+					const short = need - (ys[j + 1] - ys[j]);
+					if (short > 0.5) {
+						ys[j] -= short / 2;
+						ys[j + 1] += short / 2;
+						moved = true;
+					}
+				}
+				for (let j = 0; j < ys.length; j++) ys[j] = Math.min(hi, Math.max(lo, ys[j]));
+				if (!moved) break;
+			}
+			idx.forEach((i, j) => (out[i][1] = ys[j]));
+		}
+		return { spots: out, w: h / TILE_RATIO };
+	}
 	// tile index -> { g: group, type, k: place in its list, dx, dy, scale }
 	let tiles = $derived.by(() => {
 		const map = new Map();
@@ -857,15 +898,18 @@
 		// the grid is centered, so its overflow is split evenly on each side
 		const x0 = (gridW - cols * tileW) / 2;
 		const y0 = (gridH - rows * tileH) / 2;
-		const scale = w / tileW;
-		// a big card on a short screen could still reach the band: nudge it down
-		const minY = top + (w * TILE_RATIO) / 2;
 		// one tile per video / highlight headline; a single one takes the middle spot
 		const spotsFor = (list, n) => (n === 1 ? [list[1]] : list.slice(0, n));
 		pulls.groups.forEach((group, g) => {
 			const many = group.items.length > 3 && wide;
 			const spots = many ? layoutsFive[g % layoutsFive.length] : layouts[g % layouts.length];
-			spotsFor(spots, Math.min(group.items.length, spots.length)).forEach(([tx, spotY], k) => {
+			let chosen = spotsFor(spots, Math.min(group.items.length, spots.length));
+			let gw = w;
+			if (wide && group.type === "clips") ({ spots: chosen, w: gw } = spreadClips(chosen, w, H, top));
+			const scale = gw / tileW;
+			// a big card on a short screen could still reach the band: nudge it down
+			const minY = top + (gw * TILE_RATIO) / 2;
+			chosen.forEach(([tx, spotY], k) => {
 				const ty = Math.max(spotY, minY);
 				// take the tile nearest the spot so it only has a short way to travel,
 				// skipping tiles another group already uses
@@ -975,7 +1019,7 @@
 		}
 	}
 	// the speech bubble on a pulled-out clip: with sound off, on the clip whose turn it is
-	// ("Tap to play clip audio"); with sound on, on the first other clip ("Switch clip audio")
+	// ("Tap to play clip audio"); with sound on, on every other clip ("Switch clip audio")
 	let pulledClips = $derived(
 		[...tiles.values()]
 			.filter((t) => t.g === activeGroup && t.type === "clips")
@@ -983,10 +1027,10 @@
 			.map(videoName)
 	);
 	let tipSwitch = $derived(sound.on && !sound.blocked);
-	let tipClip = $derived.by(() => {
-		if (!wallInView || closing || !pulledClips.length) return null;
-		if (!tipSwitch) return speaking ?? pulledClips[0];
-		return pulledClips.find((name) => name !== speaking) ?? null;
+	let tipClips = $derived.by(() => {
+		if (!wallInView || closing || !pulledClips.length) return [];
+		if (!tipSwitch) return [speaking ?? pulledClips[0]];
+		return pulledClips.filter((name) => name !== speaking);
 	});
 	// the bubble first waits for its clip to finish lifting out; once they're out, it
 	// moves between clips (or changes) straight away
@@ -1298,7 +1342,7 @@
                         </p>
                     {/each}
                 </div>
-                {#if f?.type === "clips" && tipClip === videoName(spot)}
+                {#if f?.type === "clips" && tipClips.includes(videoName(spot))}
                     <!-- the speech bubble sits outside the tile, at its pulled-out size (like
                          the headline card), so it isn't scaled up with it -->
                     <div
@@ -1730,7 +1774,7 @@
     }
     .clip-tip.low .clip-tip-bubble::after {
         top: auto;
-        bottom: -6px;
+        bottom: -4px;
         transform: rotate(225deg);
     }
     @keyframes tip-pop {
