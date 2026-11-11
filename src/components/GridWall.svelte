@@ -724,7 +724,7 @@
 	const FAST_SCROLL = 1.2;
 	// a wall without a title card (header: false) ends quickly, so the text after it
 	// comes up soon: how tall its closing blank step is, as a share of the screen
-	const END_SPACE = 0.25;
+	const END_SPACE = 0.5;
 
 	// background wall: tiles share the screenshot's shape so they sit edge to edge.
 	// tiles are at most 100px wide, and at least 16 fit across on narrow screens.

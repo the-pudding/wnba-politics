@@ -380,8 +380,6 @@
 		font-weight: 700;
 		margin: 0 0 1rem 0;
 		height: 4.5rem;
-		position: sticky;
-		top: 0;
 		z-index: 1000;
 		background: var(--wnba-tan-bg);
 		border-bottom: 1px solid var(--color-rule);
@@ -405,11 +403,11 @@
 		cursor: pointer;
 	}
 	/* phones: the arrow keeps clear of the corner buttons (ScrollToc, SoundCorner) */
-	@media (max-width: 768px) {
+	/* @media (max-width: 768px) {
 		.fold-head button {
-			padding-right: 13.75rem;
+			padding-right: 4rem;
 		}
-	}
+	} */
 	.chev {
 		flex: none;
 		width: 12px;

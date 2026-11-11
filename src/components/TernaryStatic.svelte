@@ -378,6 +378,18 @@
 		mq.addEventListener("change", set);
 		return () => mq.removeEventListener("change", set);
 	});
+	// on a phone a full name is too wide to sit beside its face and gets flung
+	// far off with a long line back: surnames there (the tooltip has the whole
+	// name), unless two of the people share one
+	let shortNames = $derived.by(() => {
+		if (!narrow) return null;
+		const last = (p) => p.label.split(" ").at(-1);
+		const lasts = named.map(last);
+		return new Map(
+			named.map((p) => [p.term, lasts.filter((l) => l === last(p)).length > 1 ? p.label : last(p)])
+		);
+	});
+	const labelOf = (t) => shortNames?.get(t.term) ?? t.label ?? t.term;
 	// nudge lit labels apart; anything above the apex hits the network's corner label
 	const CEILING = corners.A[1] - 2;
 	// a label this far from its dot (drawing px past the dot's edge) gets a line to it
@@ -407,7 +419,7 @@
 		const reach = (t) => (t.name ? Math.max(radius(t.total), t.markReach ?? markR) : radius(t.total));
 		for (const term of lit.toSorted((a, b) => crowd(a) - crowd(b) || a.py - b.py)) {
 			const gap = narrow ? 9 : big ? 7 : 5;
-			const width = (term.label ?? term.term).length * perChar;
+			const width = labelOf(term).length * perChar;
 			const r = reach(term);
 			// level with the dot, or a little above it on the triangle's base,
 			// clear of the corners' names
@@ -923,7 +935,7 @@
 				text-anchor={term.anchor ?? "start"}
 				fill={term.lit}
 			>
-				{term.label ?? term.term}
+				{labelOf(term)}
 			</text>
 		{/each}
 		<!-- the hovered word named above its dot, when it has no label of its own -->
@@ -935,7 +947,7 @@
 				text-anchor="middle"
 				fill={shown.lit ?? regionColor(shown.shares)}
 			>
-				{shown.label ?? shown.term}
+				{labelOf(shown)}
 			</text>
 		{/if}
 	</svg>

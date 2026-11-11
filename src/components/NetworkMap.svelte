@@ -1440,6 +1440,7 @@
 		margin: 5rem auto;
 		color: var(--ink);
 		font-family: var(--font-sans);
+		border-radius: 4px;
 	}
 
 	/* desktop: steps as white cards on the orange page, on the left; the map
@@ -1603,7 +1604,7 @@
 	}
 	.netmap :global(.scrub .yr) {
 		font: 11px var(--font-sans);
-		fill: var(--ink-3);
+		fill: var(--wnba-tan-dark);
 	}
 	.netmap :global(.scrub .tick) {
 		display: none;
@@ -1619,7 +1620,7 @@
 	.netmap :global(.key) {
 		margin: 2px 0 0;
 		font-size: 12px;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 
 	/* story steps */
@@ -1842,7 +1843,7 @@
 	.netmap :global(.heads .d) {
 		display: block;
 		font: 11.5px var(--font-sans);
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 	/* back to everyone: top left of the list */
 	.netmap :global(.back) {
@@ -1877,7 +1878,7 @@
 		font: 700 10.5px var(--font-sans);
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 	.netmap :global(.tip .r i) {
 		display: inline-block;
@@ -1908,7 +1909,7 @@
 		display: block;
 		margin-bottom: 1px;
 		font: 11.5px var(--font-sans);
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 	.netmap :global(.source) {
 		max-width: 760px;
@@ -1943,7 +1944,6 @@
 	@media (max-width: 860px) {
 		.netmap.still {
 			padding: 22px 16px 18px;
-			border-radius: 0;
 		}
 	}
 	.netmap.still :global(.graphic) {
@@ -2039,9 +2039,9 @@
 			height: 62px;
 		}
 		.netmap :global(.play) {
-			width: 28px;
-			height: 28px;
-			margin-bottom: 16px;
+			width: 38px;
+			height: 38px;
+			margin-bottom: 1rem;
 		}
 		.netmap :global(.key) {
 			font-size: 11px;

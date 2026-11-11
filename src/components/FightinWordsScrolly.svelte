@@ -91,8 +91,8 @@
 
 	.sticky {
 		position: sticky;
-		top: 4rem;
-		height: calc(100vh - 4rem);
+		top: 3rem;
+		height: calc(100vh - 3rem);
 		display: flex;
 		align-items: center;
 		justify-content: center;

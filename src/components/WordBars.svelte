@@ -89,9 +89,12 @@
 	const WEAK_TEXT = "#000"; // and their words
 	const WEAK_TEXT_FADED = "#cdc4b8"; // those words when a step highlights others
 	const LOADING = "Loading words…"; // while a comparison's words are still on their way
-	// the heads at the bars' outer edges; on a narrow chart each breaks before "to"
-	const EDGE_OTHERS = "← More distinctive to other outlets";
-	const EDGE_FOX = "More distinctive to Fox News →";
+	// the heads at the bars' outer edges; on a narrow chart each breaks before "to".
+	// Below 800px of screen the shorter wording
+	let screenW = $state(1024);
+	let shortHeads = $derived(screenW < 800);
+	let EDGE_OTHERS = $derived(shortHeads ? "← More distinctive others" : "← More distinctive to other outlets");
+	let EDGE_FOX = $derived(shortHeads ? "More distinctive Fox →" : "More distinctive to Fox News →");
 	// the hover counts when each side's article counts are known: how many
 	// times as many articles use it, and each side's share (the Doc's
 	// hoverCounts takes over once it has {topShare})
@@ -121,7 +124,8 @@
 	// measured, so a two-line note under a pager is never cut off the screen
 	let belowEl = $state(null);
 	let pagerEl = $state(null);
-	const reserve = () => 24 + (belowEl?.offsetHeight ?? 0) + (pagerEl?.offsetHeight ?? 0);
+	// (.below is a flow-root, so its height counts the note's margins; 6 is the pager's margin)
+	const reserve = () => 24 + (belowEl?.offsetHeight ?? 0) + (pagerEl ? pagerEl.offsetHeight + 6 : 0);
 	$effect(() => {
 		if (!fill || !el) return;
 		rows;
@@ -130,21 +134,28 @@
 		const measure = () => {
 			const sticky = el.closest(".sticky");
 			const er = el.getBoundingClientRect();
+			// the screen that is actually visible: on a phone 100vh runs under the
+			// browser's toolbar, so the sticky frame can be taller than the screen
+			const screenH = window.visualViewport?.height ?? window.innerHeight;
 			if (sticky) {
 				const sr = sticky.getBoundingClientRect();
-				avail = sr.height - (er.top - sr.top) - reserve();
+				const pinnedAt = parseFloat(getComputedStyle(sticky).top) || 0;
+				const frameH = Math.min(sr.height, screenH - pinnedAt);
+				avail = frameH - (er.top - sr.top) - reserve();
 			} else {
-				avail = window.innerHeight - er.top - reserve();
+				avail = screenH - er.top - reserve();
 			}
 		};
 		measure();
 		window.addEventListener("resize", measure);
+		window.visualViewport?.addEventListener("resize", measure);
 		// the controls above the chart come and go with the step
 		const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
 		ro?.observe(el.parentElement ?? el);
 		if (belowEl) ro?.observe(belowEl);
 		return () => {
 			window.removeEventListener("resize", measure);
+			window.visualViewport?.removeEventListener("resize", measure);
 			ro?.disconnect();
 		};
 	});
@@ -159,7 +170,10 @@
 	// to fill a tall screen; they only close up when a short screen can't fit them
 	let ROW = $derived(
 		fill && avail > 0
-			? Math.max(viewRows > fitRows ? ROW_SQUEEZE : ROW_MIN, Math.min(ROW_COMFY, (avail - TOP - BOTTOM) / viewRows))
+			? Math.max(
+					viewRows * ROW_MIN > avail - TOP - BOTTOM ? ROW_SQUEEZE : ROW_MIN,
+					Math.min(ROW_COMFY, (avail - TOP - BOTTOM) / viewRows)
+				)
 			: ROW_MIN
 	);
 	let height = $derived(TOP + rows * ROW + BOTTOM);
@@ -580,7 +594,7 @@
 	});
 </script>
 
-<svelte:window onclick={clickAway} />
+<svelte:window onclick={clickAway} bind:innerWidth={screenW} />
 
 <div class="word-bars" bind:this={el}>
 	{#if source}
@@ -1145,6 +1159,10 @@
 		border-top-color: transparent;
 		border-bottom-color: var(--tip-bg);
 	} */
+	/* a flow-root keeps the note's margins inside, so its measured height is all of it */
+	.below {
+		display: flow-root;
+	}
 	.note {
 		margin: 6px auto 0;
 		padding-bottom: 2rem;

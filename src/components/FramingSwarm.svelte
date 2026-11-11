@@ -54,6 +54,9 @@
 	// height (px) of the chart on desktop (null = fit the tallest tab). The faces are
 	// centred in it; if a tab's swarm needs more room than this, the chart grows to fit
 	const DESKTOP_HEIGHT = 380;
+	// height (px) of the upright value axis on phones: a share of the screen height,
+	// kept between min and max. Lower these to make the mobile chart shorter
+	const PHONE_AXIS = { min: 240, max: 320, share: 0.38 };
 	// on the tone tab, faces ringed red (harsher) or green (warmer); within this much
 	// of zero they keep the plain ring, as neutral
 	const NEUTRAL_BAND = 0.02;
@@ -388,7 +391,10 @@
 				const gutter = 34,
 					top = 26,
 					bottom = 22;
-				const PH = Math.max(300, Math.min(420, innerHeight * 0.5));
+				const PH = Math.max(
+					PHONE_AXIS.min,
+					Math.min(PHONE_AXIS.max, innerHeight * PHONE_AXIS.share)
+				);
 				const cx = gutter + (W - gutter) / 2;
 				scale = d3
 					.scaleLinear()
@@ -1363,8 +1369,8 @@
 		padding: 0 0 8px;
 		margin-bottom: -1px;
 		border-bottom: 3px solid transparent;
-		font: 700 15px var(--font-sans);
-		color: var(--ink-3);
+		font: 700 14px var(--font-sans);
+		color: var(--wnba-tan-dark);
 		cursor: pointer;
 	}
 	.swarm :global(.tabs button.on) {
@@ -1382,7 +1388,7 @@
 		gap: 12px;
 		padding-bottom: 9px;
 		font-size: 13px;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 	.swarm :global(.unit button) {
 		font-size: 13px;
@@ -1421,7 +1427,7 @@
 		stroke-dasharray: 3 3;
 	}
 	.swarm :global(.base) {
-		stroke: var(--ink-3);
+		stroke: var(--wnba-tan-dark);
 		stroke-width: 2;
 		shape-rendering: crispEdges;
 	}
@@ -1436,7 +1442,7 @@
 	}
 	.swarm :global(.tick) {
 		font-size: 12px;
-		fill: var(--ink-3);
+		fill: var(--wnba-tan-dark);
 		font-variant-numeric: tabular-nums;
 	}
 	.swarm :global(.dir) {
@@ -1530,14 +1536,14 @@
 		animation: fs-fadein 400ms ease 500ms both;
 	}
 	.swarm :global(.lab .v) {
-		fill: var(--ink-2);
+		fill: var(--color-fg);
 	}
 	.swarm :global(.lab.still),
 	.swarm :global(.lead.still) {
 		animation: none;
 	}
 	.swarm :global(.lead) {
-		stroke: var(--ink-3);
+		stroke: var(--wnba-tan-dark);
 		stroke-width: 1;
 	}
 	.swarm :global(.lead.fade) {
@@ -1595,7 +1601,7 @@
 	}
 	.swarm :global(.tip .rk) {
 		font: 400 12px/1.4 var(--font-sans);
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 		margin: 2px 0 0;
 	}
 	.swarm :global(.tip .q) {
@@ -1615,17 +1621,17 @@
 	.swarm :global(.tip .q span) {
 		display: block;
 		font: 400 11.5px var(--font-sans);
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 		margin-bottom: 1px;
 	}
 	.swarm :global(.tip .q.none) {
 		font-style: italic;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 	.swarm :global(.tip .hint) {
 		margin: 8px 0 0;
 		font: 400 11.5px var(--font-sans);
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 
 	/* between the chart and the table: the prompt, quiet and unruled */
@@ -1634,7 +1640,7 @@
 		min-height: 20px;
 		font-size: 14px;
 		line-height: 1.4;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 
 	/* the headlines */
@@ -1651,7 +1657,7 @@
 		margin: 0 0 10px;
 		font-size: 16px;
 		line-height: 1.5;
-		color: var(--ink-2);
+		color: var(--color-fg);
 	}
 	.swarm :global(.summary b) {
 		color: var(--ink);
@@ -1688,7 +1694,7 @@
 	}
 	.swarm :global(.chip span) {
 		font-weight: 400;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 		font-size: 14px;
 		line-height: 1;
 	}
@@ -1702,7 +1708,7 @@
 		padding: 0;
 		margin-left: 4px;
 		font: 400 13px var(--font-sans);
-		color: var(--ink-2);
+		color: var(--color-fg);
 		text-decoration: underline;
 		text-underline-offset: 2px;
 		cursor: pointer;
@@ -1719,22 +1725,25 @@
 		align-items: center;
 		gap: 6px;
 		font-size: 13px;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 	.swarm :global(.tctl select) {
 		font: 400 14px var(--font-sans);
 		color: var(--ink);
+		outline: none;
 		background-color: var(--color-white);
-		border: 1px solid var(--wnba-tan-light);
-		outline: 1px solid var(--color-border, ray);
+		border: 1px solid var(--color-rule);
 		border-radius: 4px;
 		padding: 4px 24px 4px 6px;
-		height: 30px;
+		height: 2.5rem;
 		width: 120px;
 	}
+	.swarm :global(.tctl select:hover) {
+		border-color: var(--color-fg);
+	}
 	.swarm :global(.tctl select:focus) {
-		outline: 2px solid var(--color-fg);
-		outline-offset: -2px;
+		outline: 2px solid var(--color-fox);
+		outline-offset: 2px;
 	}
 	.swarm :global(.find) {
 		position: relative;
@@ -1743,9 +1752,10 @@
 
 	.swarm :global(.find input) {
 		width: 200px;
-		height: 30px;
+		height: 2.5rem;
 		padding: 0 10px 0 28px;
-		border: 1px solid var(--wnba-tan-light);
+		border: 1px solid var(--color-rule);
+		outline: none;
 		border-radius: 4px;
 		background: var(--color-white)
 			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23727272' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E")
@@ -1754,9 +1764,13 @@
 		font-size: 14px;
 		color: var(--color-ink-dark);
 	}
+	.swarm :global(.find input:hover) {
+		border-color: var(--color-fg);
+	}
+
 	.swarm :global(.find input:focus) {
-		outline: 2px solid var(--color-ink-dark);
-		outline-offset: -2px;
+		outline: 2px solid var(--color-fox);
+		outline-offset: 2px;
 	}
 
 	/* the headlines table: date | headline | tone */
@@ -1794,7 +1808,7 @@
 		background: var(--sheet);
 		font-size: 12px;
 		font-weight: 700;
-		color: var(--ink-3);
+		color: var(--);
 	}
 	.swarm :global(.rows-h th) {
 		padding-bottom: 6px;
@@ -1808,7 +1822,7 @@
 		background: none;
 		padding: 0;
 		font: 700 12px var(--font-sans);
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 		cursor: pointer;
 		text-align: left;
 	}
@@ -1827,7 +1841,7 @@
 	}
 	.swarm :global(.hd) {
 		font-size: 12.5px;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
 	}
@@ -1851,7 +1865,7 @@
 		margin-top: 3px;
 		font-size: 12.5px;
 		line-height: 1.5;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 	.swarm :global(.hm .tg) {
 		appearance: none;
@@ -1863,7 +1877,7 @@
 		font: 700 10.5px var(--font-sans);
 		letter-spacing: 0.07em;
 		text-transform: uppercase;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 		cursor: pointer;
 	}
 	.swarm :global(.hm .tg:hover) {
@@ -1911,7 +1925,7 @@
 	.swarm :global(.ht .sc) {
 		width: 38px;
 		text-align: right;
-		color: var(--ink-2);
+		color: var(--color-fg);
 	}
 	.swarm :global(.ht .sc.negative) {
 		color: var(--harsh);
@@ -1925,7 +1939,7 @@
 		padding: 28px 0;
 		text-align: center;
 		font-size: 14px;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 	/* the headlines scroll inside their own box, under the column heads; a
 	   dark rule ends it, and a fade over the last row says there's more */
@@ -1956,7 +1970,7 @@
 		border-top: 1px solid var(--rule);
 		font-size: 12px;
 		line-height: 1.5;
-		color: var(--ink-3);
+		color: var(--wnba-tan-dark);
 	}
 	.swarm :global(.source a) {
 		color: inherit;
