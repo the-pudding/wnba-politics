@@ -18,7 +18,7 @@ staging:
 	make github
 
 production:
-	npm run build
+	BASE_PATH=/2026/11/wnba-politics npm run build
 	rm -rf build/data/nocollege build/data/informative build/data/prior-1 build/data/prior-uniform
 	make pudding
 

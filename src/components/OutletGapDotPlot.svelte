@@ -401,19 +401,15 @@
 	// arrives, then keeps the last one (blurred) between steps
 	let shownClip = $derived(clip ?? lastClip);
 
-	// Where the equal line really is on screen
 	let svgEl = $state(null);
-	let equalLeft = $state(null);
-	let shift = $state(0);
 	// the axis ends as shares of the frame, so the title can span them (shares,
 	// not measured pixels: the title's height feeds back into the frame)
 	let axisLeft = $derived(((NAMES + 24) / WIDTH) * 100);
 	let axisWidth = $derived(((PLOT - 24) / WIDTH) * 100);
 	$effect(() => {
 		if (!svgEl) return;
-		// read these here so the effect re-runs when the layout flips (the
-		// ResizeObserver callback alone would not track them)
-		const shifting = centerLine && !narrow;
+		// re-measure when the layout flips (the ResizeObserver alone would not)
+		narrow;
 		const measure = () => {
 			const box = svgEl.closest(".outlet-gap");
 			if (!box) return;
@@ -430,22 +426,10 @@
 			// keep the natural rows then
 			const next = { w, h: box.clientHeight > 0 && h > 200 ? h : 0 };
 			if (next.w !== frame.w || next.h !== frame.h) frame = next;
-			const r = svgEl.getBoundingClientRect();
-			if (!r.width || !r.height) return;
-			const scale = Math.min(r.width / WIDTH, r.height / height);
-			const offset = (r.width - WIDTH * scale) / 2;
-			equalLeft = offset + x(0) * scale;
-			if (!shifting) {
-				shift = 0;
-				return;
-			}
-			// how far left the box must move for the line to sit at its centre,
-			// but never past the viewport's left edge
-			const bb = box.getBoundingClientRect();
-			const baseLeft = bb.left - shift;
-			shift = Math.max(bb.width / 2 - equalLeft, -(baseLeft - 8));
 		};
-		measure();
+		// untracked: measure reads and writes `frame`, which would re-run this
+		// effect from inside itself
+		untrack(measure);
 		// the frame's size is set by the page, so watching it cannot loop
 		const ro = new ResizeObserver(measure);
 		ro.observe(svgEl.closest(".outlet-gap"));
