@@ -6,7 +6,7 @@
 	//
 	// In the Doc (each line optional; the wording below is the default):
 	//   {.FramingTabs}
-	//   kicker: How Fox News frames each player
+	//   kicker: How Fox News frames each player in headlines
 	//   tabTone: Tone   tabPolitics: Politics   tabAppearance: Appearance
 	//   tabCelebrity: Celebrity   tabPlay: Play
 	//   countLabel: Count:   sentences: Sentences   headlines: Headlines
@@ -118,8 +118,8 @@
 	const SOURCE =
 		"Source: Fox News and OutKick WNBA coverage, {from} to {to}: {headlines} headlines. Players included are named in at least four headlines. " +
 		'Tone is measured with a <a href="https://huggingface.co/cardiffnlp/twitter-roberta-large-topic-sentiment-latest" target="_blank">RoBERTa sentiment model</a>. ' +
-		"Topics were tagged through LLM classification and manual labelling. " +
-		"These methods are meant to illuminate broad patterns and may include inaccuracies.";
+		"Topics were tagged through a combination of keywords, LLM classification, and manual labelling. " +
+		"These topics are subjective, and tags are meant to illuminate broad patterns.";
 
 	const TABS = $derived([
 		{ key: "tone", label: or(tabTone, "Tone") },
@@ -1293,7 +1293,7 @@
 
 <section class="swarm" bind:this={root}>
 	<p class="kicker">on the web</p>
-	<h3 class="heading">{or(kicker, "How Fox News frames each player")}</h3>
+	<h3 class="heading">{or(kicker, "How Fox News frames each player in headlines")}</h3>
 	<div class="tabrow">
 		<div class="tabs" data-id="tabs" role="tablist" aria-label="Measure"></div>
 		<select class="tab-menu" data-id="tabsel" aria-label="Measure"></select>

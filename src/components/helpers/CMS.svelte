@@ -55,6 +55,8 @@
 		"BoxScore",
 		"SimpleBars",
 		"HeadlineTable",
+		// the framing beeswarm uses its kicker as its own heading
+		"FramingTabs",
 		"timeline-scrolly",
 		"headline-table",
 		"Gallery",
