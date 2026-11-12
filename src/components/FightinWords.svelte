@@ -38,6 +38,7 @@
 	const WEAK = "var(--wnba-tan-dark)"; // words within noise, either side
 	const MOST_USES = 1000; // the right end of the "Minimum uses" check slider
 	const SANS = "var(--font-chart)";
+	const SEARCH = false; // the "Find a word" box at the right end of the tabs
 
 	// crude greedy wrap: SVG text has no box to flow inside
 	function wrap(sentence, perLine = 48, lines = 3) {
@@ -1121,7 +1122,7 @@
 			</div>
 		{/if}
 		{#if controls}
-			<!-- the unit as tabs on a rule, the search at the rule's right end -->
+			<!-- the unit as tabs on a rule, the search (if on) at the rule's right end -->
 			<div class="unit-row">
 				{#if bodyMode}
 					<div
@@ -1142,55 +1143,57 @@
 						{/each}
 					</div>
 				{/if}
-				<div class="find" class:off={!live} inert={!live}>
-					<input
-						type="search"
-						placeholder={or(search, "Find a word…")}
-						aria-label="Find a word"
-						bind:value={query}
-						autocomplete="off"
-						spellcheck="false"
-						onfocus={() => (open = true)}
-						onblur={() => (open = false)}
-						oninput={() => ((open = true), (cursor = -1))}
-						onkeydown={onKey}
-					/>
-					{#if open && q && suggestions.length}
-						<ul class="suggest" role="listbox">
-							{#each suggestions as t, i (t.term)}
-								<li
-									role="option"
-									aria-selected={i === cursor}
-									class:on={i === cursor}
-									onpointerdown={(e) => (e.preventDefault(), choose(t.term))}
-								>
-									<span class="term">{properCase(t.term)}</span>
-									{#if Math.abs(t.z) < SIGNIFICANT}
-										<span class="uses even">{or(rankEven, "Even")}</span>
-									{:else}
-										<span class="uses" style="color:{t.z > 0 ? FOX : OTHER}"
-											>{fillIn(
-												t.z > 0
-													? paired
-														? `${topName} #{rank}`
-														: or(rankFox, "Fox #{rank}")
-													: or(
-															rankOthers,
-															against === ALL_OUTLETS
-																? "Others #{rank}"
-																: `${bottomName} #{rank}`
-														),
-												{
-													rank: rankOf.get(t.term)
-												}
-											)}</span
-										>
-									{/if}
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				</div>
+				{#if SEARCH}
+					<div class="find" class:off={!live} inert={!live}>
+						<input
+							type="search"
+							placeholder={or(search, "Find a word…")}
+							aria-label="Find a word"
+							bind:value={query}
+							autocomplete="off"
+							spellcheck="false"
+							onfocus={() => (open = true)}
+							onblur={() => (open = false)}
+							oninput={() => ((open = true), (cursor = -1))}
+							onkeydown={onKey}
+						/>
+						{#if open && q && suggestions.length}
+							<ul class="suggest" role="listbox">
+								{#each suggestions as t, i (t.term)}
+									<li
+										role="option"
+										aria-selected={i === cursor}
+										class:on={i === cursor}
+										onpointerdown={(e) => (e.preventDefault(), choose(t.term))}
+									>
+										<span class="term">{properCase(t.term)}</span>
+										{#if Math.abs(t.z) < SIGNIFICANT}
+											<span class="uses even">{or(rankEven, "Even")}</span>
+										{:else}
+											<span class="uses" style="color:{t.z > 0 ? FOX : OTHER}"
+												>{fillIn(
+													t.z > 0
+														? paired
+															? `${topName} #{rank}`
+															: or(rankFox, "Fox #{rank}")
+														: or(
+																rankOthers,
+																against === ALL_OUTLETS
+																	? "Others #{rank}"
+																	: `${bottomName} #{rank}`
+															),
+													{
+														rank: rankOf.get(t.term)
+													}
+												)}</span
+											>
+										{/if}
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		{/if}
 	{/if}

@@ -1,13 +1,13 @@
 <script>
 	// A dropdown under the Fightin' Words intro: Fox News' top five two-word
-	// phrases by five ways of measuring "more Fox", fightin' words first, its
+	// phrases by four ways of measuring "more Fox", fightin' words first, its
 	// five in bold wherever they turn up. The numbers are in each cell's hover.
 	//
 	//   {.MethodsCompare}
 	//   label: See how Fox’s top 5 phrases compare across possible methods.
 	//   intro: …            (optional, a line above the table)
 	//   note: …             (optional, a line under the table)
-	//   fwHead, rawHead, diffHead, ratioHead, logoddsHead, and …Unit for each
+	//   fwHead, rawHead, diffHead, ratioHead, and …Unit for each
 	//   {}
 	//
 	// The numbers are notebook 06's, Fox News against the six other outlets,
@@ -65,18 +65,6 @@
 				["popular because", "20 / 0", 191],
 				["identity politics", "17 / 0", 209],
 				["Cari Champion", "14 / 0", 224]
-			]
-		},
-		{
-			key: "logodds",
-			head: "Log-odds ratio",
-			unit: "smoothed",
-			rows: [
-				["Dan Dakich", "6.6", 49],
-				["stay fearless", "6.1", 125],
-				["popular because", "5.8", 191],
-				["identity politics", "5.8", 209],
-				["Cari Champion", "5.7", 224]
 			]
 		}
 	];
