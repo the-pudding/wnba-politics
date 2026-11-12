@@ -547,7 +547,8 @@
 	}
 	// the word in its example: in bold, with a rule in the side's colour under it
 	// a phrase ("nifty assist", "foul out") marks each of its words: the stored
-	// form is the first, and the others are found close by, before or after it
+	// form is one of them (the first, or the head, "rebounder" in "great
+	// rebounder"), and the others are found close by, before or after it
 	// ("fouled her out")
 	const NEAR = 60;
 	function markWord(sentence, word, form, color, at) {
@@ -555,7 +556,9 @@
 		const m = findWord(cut, wordRx(word, form), where);
 		if (!m) return escapeHtml(cut);
 		const marks = [[m.index, m.index + m[0].length]];
-		for (const part of word.split(/\s+/).slice(1)) {
+		const parts = word.split(/\s+/);
+		const own = parts.findIndex((part) => wordRx(part).test(m[0]));
+		for (const part of parts.filter((_, i) => i !== own)) {
 			const from = Math.max(0, m.index - NEAR);
 			const near = nearestTo(cut.slice(from, m.index + m[0].length + NEAR), wordRx(part), m.index - from);
 			if (near) marks.push([from + near.index, from + near.index + near[0].length]);

@@ -548,18 +548,6 @@
 	$effect(() => {
 		if (!q) found = null;
 	});
-	// a phone scrolls the page as its keyboard opens, and an iPhone can leave the
-	// cursor drawn where the box was before: once the scroll settles, setting the
-	// cursor again draws it back in the box
-	function redrawCursor(input) {
-		const again = () => {
-			if (document.activeElement !== input) return;
-			const end = input.value.length;
-			input.setSelectionRange(end, end);
-		};
-		setTimeout(again, 350);
-		setTimeout(again, 800);
-	}
 	function onKey(e) {
 		if (e.key === "ArrowDown") {
 			cursor = Math.min(cursor + 1, suggestions.length - 1);
@@ -1004,8 +992,13 @@
 	// the word in its example: in bold, with a rule in the side's colour under it
 	function markWord(sentence, word, color, form, at) {
 		const [cut, where] = excerpt(sentence, word, form, at);
+		// a phrase is marked whole where its words sit together ("great
+		// rebounder"), not just the one word stored with the example
+		const whole = word.includes(" ") && wordRx(word).test(cut);
 		const rx =
-			form && wordRx(word, form).test(cut) ? wordRx(word, form) : wordRx(word);
+			!whole && form && wordRx(word, form).test(cut)
+				? wordRx(word, form)
+				: wordRx(word);
 		const m = findWord(cut, rx, where);
 		if (!m) return escapeHtml(cut);
 		return (
@@ -1157,7 +1150,7 @@
 						bind:value={query}
 						autocomplete="off"
 						spellcheck="false"
-						onfocus={(e) => ((open = true), redrawCursor(e.currentTarget))}
+						onfocus={() => (open = true)}
 						onblur={() => (open = false)}
 						oninput={() => ((open = true), (cursor = -1))}
 						onkeydown={onKey}
@@ -1165,14 +1158,11 @@
 					{#if open && q && suggestions.length}
 						<ul class="suggest" role="listbox">
 							{#each suggestions as t, i (t.term)}
-								<!-- picked when the tap ends, so the menu is still there under
-								     the finger (gone sooner, a phone sends the tap to the tabs below) -->
 								<li
 									role="option"
 									aria-selected={i === cursor}
 									class:on={i === cursor}
-									onpointerdown={(e) => e.preventDefault()}
-									onclick={() => choose(t.term)}
+									onpointerdown={(e) => (e.preventDefault(), choose(t.term))}
 								>
 									<span class="term">{properCase(t.term)}</span>
 									{#if Math.abs(t.z) < SIGNIFICANT}

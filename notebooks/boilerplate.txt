@@ -19,6 +19,13 @@ www\.\S+
 pic\.twitter\.com/\S+
 \S+@\S+\.\w+
 follow (?:along )?on (?:x|twitter)[^.]*?@\w+
+# embedded posts: "View this post on Instagram A post shared by Indiana Fever
+# (@indianafever)" and a tweet's sign-off, "— Indiana Fever (@IndianaFever) June 11, 2023"
+view this post on instagram
+a post shared by [^()]{1,80}\(@\w+\)
+[—–]\s*[^()—–]{1,80}\(@\w+\)\s*(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2},\s*\d{4}
+# any other handle ("WHITE PRIVILEGE @indianafever"): a handle isn't a word
+(?<![\w.])@\w+
 
 # writers' sign-offs asking for readers' thoughts
 [^.!?]*\blet (?:me|us) know\b[^.!?]*?\S+@\S+\.\w+[^.!?]*[.!?]?
