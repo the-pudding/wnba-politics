@@ -548,6 +548,18 @@
 	$effect(() => {
 		if (!q) found = null;
 	});
+	// a phone scrolls the page as its keyboard opens, and an iPhone can leave the
+	// cursor drawn where the box was before: once the scroll settles, setting the
+	// cursor again draws it back in the box
+	function redrawCursor(input) {
+		const again = () => {
+			if (document.activeElement !== input) return;
+			const end = input.value.length;
+			input.setSelectionRange(end, end);
+		};
+		setTimeout(again, 350);
+		setTimeout(again, 800);
+	}
 	function onKey(e) {
 		if (e.key === "ArrowDown") {
 			cursor = Math.min(cursor + 1, suggestions.length - 1);
@@ -1145,7 +1157,7 @@
 						bind:value={query}
 						autocomplete="off"
 						spellcheck="false"
-						onfocus={() => (open = true)}
+						onfocus={(e) => ((open = true), redrawCursor(e.currentTarget))}
 						onblur={() => (open = false)}
 						oninput={() => ((open = true), (cursor = -1))}
 						onkeydown={onKey}
@@ -1153,11 +1165,14 @@
 					{#if open && q && suggestions.length}
 						<ul class="suggest" role="listbox">
 							{#each suggestions as t, i (t.term)}
+								<!-- picked when the tap ends, so the menu is still there under
+								     the finger (gone sooner, a phone sends the tap to the tabs below) -->
 								<li
 									role="option"
 									aria-selected={i === cursor}
 									class:on={i === cursor}
-									onpointerdown={(e) => (e.preventDefault(), choose(t.term))}
+									onpointerdown={(e) => e.preventDefault()}
+									onclick={() => choose(t.term)}
 								>
 									<span class="term">{properCase(t.term)}</span>
 									{#if Math.abs(t.z) < SIGNIFICANT}

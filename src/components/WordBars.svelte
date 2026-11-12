@@ -3,6 +3,7 @@
 	import { base } from "$app/paths";
 	import { LOGO_WIDTH, LOGO_RATIO } from "$utils/outlets.js";
 	import { properCase } from "$utils/properCase.js";
+	import { checks } from "$utils/checks.svelte.js";
 	let {
 		source = null,
 		highlight = null,
@@ -125,18 +126,35 @@
 	let belowEl = $state(null);
 	let pagerEl = $state(null);
 	// (.below is a flow-root, so its height counts the note's margins; 6 is the pager's margin)
-	const reserve = () => 24 + (belowEl?.offsetHeight ?? 0) + (pagerEl ? pagerEl.offsetHeight + 6 : 0);
-	// the visible screen with a phone's toolbar showing (100svh): on a phone 100vh
-	// runs under the toolbar, and the toolbar slides in and out as the reader
-	// scrolls, so this is the height that holds still (the bars don't resize mid-scroll)
-	const screenHeight = () => {
+	const pagerRoom = () => (pagerEl ? pagerEl.offsetHeight + 6 : 0);
+	// the note's padding under its last line only spaces it from what follows the
+	// chart, so on a pinned screen it can fall past the bottom edge
+	const belowRoom = () => {
+		if (!belowEl) return 0;
+		const note = belowEl.querySelector(".note");
+		const padding = note ? parseFloat(getComputedStyle(note).paddingBottom) || 0 : 0;
+		return belowEl.offsetHeight - padding;
+	};
+	const reserve = () => 8 + belowRoom() + pagerRoom();
+	// A phone's toolbars slide in and out as the reader scrolls, so the screen has
+	// two heights that hold still: short, with the toolbars showing (100svh), and
+	// tall, with them tucked away (100lvh). Sizing to these, not to the moment's
+	// height, keeps the bars from resizing mid-scroll.
+	const screenHeight = (unit) => {
 		const probe = document.createElement("div");
-		probe.style.cssText = "position: fixed; top: 0; height: 100svh; visibility: hidden; pointer-events: none";
+		probe.style.cssText = `position: fixed; top: 0; height: 100${unit}; visibility: hidden; pointer-events: none`;
 		document.body.appendChild(probe);
 		const h = probe.offsetHeight || window.innerHeight;
 		probe.remove();
 		return h;
 	};
+	// the window's height as the page opened, toolbars showing: some phone
+	// browsers report a 100svh shorter than the screen they actually show. Only
+	// until the phone is turned (the width changes)
+	const opened = typeof window !== "undefined" ? { w: window.innerWidth, h: window.innerHeight } : { w: 0, h: 0 };
+	const openHeight = () => (window.innerWidth === opened.w ? opened.h : 0);
+	// the measurements, for the ?checks readout under the chart
+	let sizes = $state("");
 	$effect(() => {
 		if (!fill || !el) return;
 		rows;
@@ -145,16 +163,20 @@
 		const measure = () => {
 			const sticky = el.closest(".sticky");
 			const er = el.getBoundingClientRect();
-			// the sticky frame (100vh) can be taller than the visible screen
-			const screenH = screenHeight();
-			if (sticky) {
+			const shortH = Math.max(screenHeight("svh"), openHeight());
+			const tallH = Math.max(screenHeight("lvh"), shortH);
+			// room from the top of the bars to the bottom of a screen this tall
+			// (the sticky frame, 100vh, can be taller than the visible screen)
+			const room = (screenH) => {
+				if (!sticky) return screenH - er.top;
 				const sr = sticky.getBoundingClientRect();
 				const pinnedAt = parseFloat(getComputedStyle(sticky).top) || 0;
-				const frameH = Math.min(sr.height, screenH - pinnedAt);
-				avail = frameH - (er.top - sr.top) - reserve();
-			} else {
-				avail = screenH - er.top - reserve();
-			}
+				return Math.min(sr.height, screenH - pinnedAt) - (er.top - sr.top);
+			};
+			// the bars and the pager stay clear of the toolbars; the note under them
+			// can run behind the toolbars while they show
+			avail = Math.min(room(shortH) - 8 - pagerRoom(), room(tallH) - reserve());
+			sizes = `svh ${screenHeight("svh")} · opened ${openHeight()} · lvh ${screenHeight("lvh")} · now ${window.innerHeight} · room ${Math.round(avail)}`;
 		};
 		measure();
 		window.addEventListener("resize", measure);
@@ -864,6 +886,10 @@
 					within noise. Hover a bar for an example.
 				</p>
 			{/if}
+			{#if checks.on && fill}
+				<!-- pinned to the screen's corner, so it takes no room from the bars -->
+				<p class="sizes">{sizes}</p>
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -1179,6 +1205,17 @@
 		font-size: 12px;
 		color: var(--wnba-tan-dark);
 		text-align: center;
+	}
+	.sizes {
+		position: fixed;
+		left: 4px;
+		bottom: 4px;
+		z-index: 100;
+		margin: 0;
+		padding: 2px 6px;
+		background: var(--color-white);
+		font-family: var(--font-mono);
+		font-size: 10px;
 	}
 	.note.source {
 		font-family: var(--font-sans);

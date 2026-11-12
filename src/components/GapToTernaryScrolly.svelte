@@ -703,15 +703,14 @@
 				{#if open && q && suggestions.length}
 					<ul class="suggest" role="listbox">
 						{#each suggestions as w, i (w.term)}
+							<!-- picked when the tap ends, so the menu is still there under
+							     the finger (gone sooner, a phone sends the tap to what's below) -->
 							<li
 								role="option"
 								aria-selected={i === cursor}
 								class:on={i === cursor}
-								onpointerdown={(e) => (
-									e.preventDefault(),
-									choose(w.term),
-									doneTyping()
-								)}
+								onpointerdown={(e) => e.preventDefault()}
+								onclick={() => (choose(w.term), doneTyping())}
 							>
 								<span class="term">{w.term}</span>
 								<span class="uses">{w.total.toLocaleString()}</span>
