@@ -126,6 +126,17 @@
 	let pagerEl = $state(null);
 	// (.below is a flow-root, so its height counts the note's margins; 6 is the pager's margin)
 	const reserve = () => 24 + (belowEl?.offsetHeight ?? 0) + (pagerEl ? pagerEl.offsetHeight + 6 : 0);
+	// the visible screen with a phone's toolbar showing (100svh): on a phone 100vh
+	// runs under the toolbar, and the toolbar slides in and out as the reader
+	// scrolls, so this is the height that holds still (the bars don't resize mid-scroll)
+	const screenHeight = () => {
+		const probe = document.createElement("div");
+		probe.style.cssText = "position: fixed; top: 0; height: 100svh; visibility: hidden; pointer-events: none";
+		document.body.appendChild(probe);
+		const h = probe.offsetHeight || window.innerHeight;
+		probe.remove();
+		return h;
+	};
 	$effect(() => {
 		if (!fill || !el) return;
 		rows;
@@ -134,9 +145,8 @@
 		const measure = () => {
 			const sticky = el.closest(".sticky");
 			const er = el.getBoundingClientRect();
-			// the screen that is actually visible: on a phone 100vh runs under the
-			// browser's toolbar, so the sticky frame can be taller than the screen
-			const screenH = window.visualViewport?.height ?? window.innerHeight;
+			// the sticky frame (100vh) can be taller than the visible screen
+			const screenH = screenHeight();
 			if (sticky) {
 				const sr = sticky.getBoundingClientRect();
 				const pinnedAt = parseFloat(getComputedStyle(sticky).top) || 0;
@@ -148,14 +158,12 @@
 		};
 		measure();
 		window.addEventListener("resize", measure);
-		window.visualViewport?.addEventListener("resize", measure);
 		// the controls above the chart come and go with the step
 		const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
 		ro?.observe(el.parentElement ?? el);
 		if (belowEl) ro?.observe(belowEl);
 		return () => {
 			window.removeEventListener("resize", measure);
-			window.visualViewport?.removeEventListener("resize", measure);
 			ro?.disconnect();
 		};
 	});

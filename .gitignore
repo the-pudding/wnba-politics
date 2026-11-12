@@ -13,18 +13,18 @@ archive/
 data/samples/
 data/audit/
 
-# article text stays local: the corpora hold full article bodies, which the
-# site does not read. Headline/URL tables and the term lists are kept.
-data/*.csv
+# data/ stays local (the corpora hold full article text) except the files
+# the site build and notebooks 01-08 read (notebook 02 also reads
+# all_outlets_index.csv, which is out of date and left out)
+data/*
 !data/topic_terms.csv
-!data/politicization_terms.csv
-!data/framing_terms.csv
 !data/framing_review.csv
 !data/framing_machine.csv
-!data/all_outlets_index.csv
-!data/*_dropped.csv
-!data/chyron_words.csv
+!data/framing_terms.csv
+!data/politicization_terms.csv
 !data/fox_people_mentions.csv
+!data/chyron_matches.tsv
+!data/chyron_monthly.json
 
 # no-college check data (?checks): local only, 120 MB with its parse caches
 static/data/nocollege/
@@ -35,6 +35,27 @@ static/data/prior-uniform/
 # Storm TV sources and build script (downloads clips)
 notebooks/storm_tv/
 
-# data shared with Maddy, kept out of the public repo
-for-maddy-wnba-news-data/
-for-maddy-wnba-news-data.zip
+# Maddy's working copy and its zips (the public version is static/assets/data/)
+for-maddy*
+
+# files the piece doesn't use, kept on this computer
+unused/
+
+# notebooks and scripts kept local
+notebooks/09-*.ipynb
+notebooks/10-*.ipynb
+notebooks/*.py
+
+# data the notebooks still write that the piece doesn't read
+src/data/captions_examples.json
+src/data/chyron_topics.json
+src/data/fox_kw.json
+src/data/fox_ngrams.csv
+src/data/photo_credits.json
+src/data/trans_articles.csv
+
+# Illustrator files and exports
+static/images/1x/
+static/images/2x/
+*.ai
+~ai-*.tmp

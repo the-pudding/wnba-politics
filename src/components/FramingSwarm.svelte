@@ -848,8 +848,12 @@
 					this.style.transform = `translate(${d.x}px, ${d.y}px)`;
 					this.querySelector(".inner").style.transform = `scale(${d.r / R0})`;
 				});
-			// the picked face on top
-			nodeSel.filter((p) => p.name === picked).raise();
+			// the picked face on top. Moving it drops its focus (which would close
+			// its tooltip), so it gets the focus back, without scrolling the page
+			const pickedNode = nodeSel.filter((p) => p.name === picked);
+			const hadFocus = pickedNode.node() && document.activeElement === pickedNode.node();
+			pickedNode.raise();
+			if (hadFocus) pickedNode.node().focus({ preventScroll: true });
 			el("svg").classList.toggle("dimmed", Boolean(picked && on.has(picked)));
 			const anchors = L.narrow ? ANCHORS.phone : ANCHORS.desktop;
 			const names = standouts(L.P);
@@ -944,7 +948,8 @@
 			)
 			.on("pointerleave", (e) => e.pointerType === "mouse" && hideTip())
 			.on("focus", (e, p) => showTip(p.name))
-			.on("blur", () => hideTip())
+			// focus gone elsewhere, not just handed back after the face moved
+			.on("blur", (e) => document.activeElement !== e.currentTarget && hideTip())
 			.on("click", (e, p) => {
 				e.stopPropagation();
 				setPicked(picked === p.name ? null : p.name);

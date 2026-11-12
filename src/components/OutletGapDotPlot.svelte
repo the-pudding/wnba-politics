@@ -281,7 +281,8 @@
 	let headerClip = $derived(
 		clipAt === "header" && !narrow && Boolean(clip || clipSlot)
 	);
-	let TOP = $derived(44 + (headerClip ? 70 : 0));
+	// a phone's direction labels take two lines each
+	let TOP = $derived(44 + (narrow ? 14 : 0) + (headerClip ? 70 : 0));
 	const BOTTOM = 62;
 	// the names start at the left edge; the plot takes the rest of the width
 	let LEFT = $derived(narrow ? 2 : 6);
@@ -562,20 +563,25 @@
 		>
 			<!-- the Fox half: from the equal line to the end of the axis -->
 			<rect class="fox-half" x={x(0)} y="28" width={NAMES + PLOT - x(0)} height={height - 82} />
-			<text
-				class="head"
-				x={narrow ? NAMES + 24 + 10 : x(0) - 22}
-				y={TOP - (narrow ? 22 : 0)}
-				text-anchor={narrow ? "start" : "end"}
-				fill={THEM}>← Bigger share {narrow ? themShort : them}</text
-			>
-			<text
-				class="head"
-				x={narrow ? NAMES + PLOT - 10 : x(0) + 22}
-				y={TOP - (narrow ? 22 : 0)}
-				text-anchor={narrow ? "end" : "start"}
-				fill={FOX}>{narrow ? `Bigger share ${topShort} →` : `Bigger share ${topName} →`}</text
-			>
+			<!-- on a phone each label takes two lines, so a long outlet name
+			     ("USA Today") doesn't run into the other side's -->
+			{#if narrow}
+				<text class="head" y={TOP - 36} text-anchor="start" fill={THEM}>
+					<tspan x={NAMES + 24 + 10}>← Bigger share</tspan>
+					<tspan x={NAMES + 24 + 10} dy="14">{themShort}</tspan>
+				</text>
+				<text class="head" y={TOP - 36} text-anchor="end" fill={FOX}>
+					<tspan x={NAMES + PLOT - 10}>Bigger share →</tspan>
+					<tspan x={NAMES + PLOT - 10} dy="14">{topShort}</tspan>
+				</text>
+			{:else}
+				<text class="head" x={x(0) - 22} y={TOP} text-anchor="end" fill={THEM}
+					>← Bigger share {them}</text
+				>
+				<text class="head" x={x(0) + 22} y={TOP} text-anchor="start" fill={FOX}
+					>Bigger share {topName} →</text
+				>
+			{/if}
 			<!-- the ends of the axis, in each side's colour -->
 			<line
 				class="edge"

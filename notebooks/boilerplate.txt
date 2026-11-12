@@ -1,0 +1,101 @@
+# Boilerplate cut from article text before words are counted (notebook 06).
+# One regular expression per line; lines starting with # are notes, blank lines
+# are skipped. Matching ignores case, and . also matches a line break.
+click here to get the fox news app
+get the fox news app
+follow (?:us|fox news digital)[^.]*\.
+fox news digital
+sign up for[^.]*newsletter[^.]*\.
+subscribe to[^.]*\.
+download the (?:espn|yahoo|cbs) app[^.]*\.
+this article (?:first )?appeared on[^.]*\.
+\(?(?:ap|reuters|getty images)\)?\s*[-—]
+all rights reserved
+copyright \d{4}[^.]*\.
+
+# links, email addresses and social handles
+https?://\S+
+www\.\S+
+pic\.twitter\.com/\S+
+\S+@\S+\.\w+
+follow (?:along )?on (?:x|twitter)[^.]*?@\w+
+
+# writers' sign-offs asking for readers' thoughts
+[^.!?]*\blet (?:me|us) know\b[^.!?]*?\S+@\S+\.\w+[^.!?]*[.!?]?
+[^.!?]*\b(?:let (?:me|us) know (?:your thoughts|what you think)|(?:send|shoot) (?:us|me) your thoughts)\b[^.!?]*[.!?]?
+continue reading\W*
+outkick nightcaps is a daily column set to run monday through friday at \d+\s*p\.?\s*m\.?(?:\s*(?:et|eastern)\b\.?)?
+\(?roughly, we['’]re not robots\)?
+(?:ok, )?let['’]s rapid-fire this [\w ]{1,20}? class into a big [\w ]{1,20}? night
+[^.!?]*\b(?:pretending to work|catches the biggest sports and culture stories)\b[^.!?]*[.!?]?
+[^.!?]*\b(?:follow me on (?:x|twitter)|check out my [\w ]{0,30}podcast)\b[^.!?]*[.!?]?
+betting/odds, ticketing and streaming links in this article are provided by partners of the athletic\.?
+restrictions may apply\.?
+[^.!?]*\bhit me (?:with your thoughts|up)\b[^.!?]*[.!?]?
+for (?:more )?sports betting information and plays, follow \w+ on [^:]{1,20}:?(?:\s|&nbsp;)*@\w+(?:&nbsp;)?
+\[?want great stories delivered right to your inbox\?[^\]]*\]?
+create or log in to your fox sports account[^.\]]*[.\]]?
+
+# shopping links, sponsorship and independence notices
+[^.!?]*\b(?:may earn a commission|prices and availability may change|prices were accurate at the time|editorial recommendations are made independently|our editors independently choose|produced with paid support|editorial decisions remain independent|maintains full editorial independence|partners have no control over|do not review stories before publication)\b[^.!?]*[.!?]?
+
+# betting odds ("bet $10 to win $80 total")
+\(?bet \$[\d,.]+ to win \$[\d,.]+ total\)?
+
+# automated game stories and previews, and subscription promos
+[^.]*using technology provided by data skrive[^.]*\.?
+edt bottom line:
+download for award-winning coverage[^.]*\.
+see ap['’]s full [^.]*?coverage here
+any commercial use or distribution without[^.]*\.
+click here (?:to|for) [^.!?]*
+
+# credit lines ("The Associated Press contributed to this report") and
+
+# USA Today's audio button
+[^.!?]{0,80}\bcontributed to this report\b\.?
+\bhear this story\b
+
+# the Nightcaps column's openers ("welcome to a Thursday Nightcaps",
+
+# "settle in for a Monday 'Cap!")
+\bwelcome to an? [^.!?]{0,40}\bnightcaps\b
+\bsettle in for an? [^.!?]{0,60}['‘’]cap\b!?
+
+# the Nightcaps blurb, writers' contact lines, sign-offs, and newsletter and show plugs
+[^.!?]*\bis a daily column that catches you up\b[^.!?]*[.!?]?
+\bit runs monday\W+friday on outkick\.com\.?
+stay\W+fearless\W+on the go!?\s*take tomi lahren with you\.?
+[^.!?]*\b(?:email me|tweet me)\b[^.!?]*[.!?]?
+\b(?:ok,\s*)?that['’]s it for (?:today|tonight|this week|the week|monday|tuesday|wednesday|thursday|friday)\b\W?
+[^.!?]*\bsports huddle newsletter\b[^.!?]*[.!?]?
+
+# sportsbook and streaming promos (CBS), and wire credits
+[^.!?]*\b(?:promo code|bonus bets|no sweat bet|sportsbook|sportsline|fubo(?:tv)?|sling tv|hulu \+ live tv|paramount\+|paramount plus|paramount with showtime|free trial|cloud-based dvr|channels including)\b[^.!?]*[.!?]?
+-*\s*field level media\b
+
+# app promos, photo captions, writers' bios and shopping notices (USA Today, ESPN, Andscape)
+the usa today app gets you to the heart of the news\W*fast\.?
+\bhide caption\b
+[^.!?]*\b(?:sortable [\w ]{0,30}schedule|independently handpicks|recommend interesting products|make a purchase|affiliate fee|newsrooms operate independently|reach (?:her|him|them) at|reach [\w' ]{0,60}reporter|orange (?:\+|and|&)? ?blue|sports extras?|(?:is|are) an? [\w' ]{0,40}(?:writer|reporter|columnist|correspondent|editor) (?:for|at)\b|athletic peak came)\b[^.!?]*[.!?]?
+
+# photo credits
+\bphotos?:[^.]{0,200}?/\s*getty images
+[\w .,'’-]{0,80}/\s*(?:nbae via )?getty images
+[\w .'’-]{0,40}/\s*(?:usa today sports|imagn images)
+
+# the New York Times's page code, newsletter boxes and pick'em widgets
+document\.queryselectorall.*?\}\s*\);
+free, daily sports updates direct to your inbox\.?(?:\s*sign up)?
+share full article
+daily pick['’]em\b.*?\bvotes\b
+
+# the Washington Post's story bar and newsletter box
+listen \d+ min share comment on this story comment add to your saved stories save
+the sports moment newsletter
+editor['’]s note:[^.!?]*[.!?]?
+
+# AP's bracket links, ESPN's power-ranking labels
+▶?\s*view and download the [\w’' ]{0,40}bracket
+previous ranking: \d+
+next seven days:
