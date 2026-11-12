@@ -336,6 +336,10 @@
 				return g;
 			});
 		let L = null; // the current layout
+		// the screen height the phone axis is sized from: a phone's toolbar
+		// changes innerHeight as the page scrolls, so it's read again only when
+		// the width changes (turning the phone), not on every redraw
+		let screenH = innerHeight;
 
 		function layout(t = tab, b = basis) {
 			const W = plot.clientWidth;
@@ -414,7 +418,7 @@
 					bottom = 22;
 				const PH = Math.max(
 					PHONE_AXIS.min,
-					Math.min(PHONE_AXIS.max, innerHeight * PHONE_AXIS.share)
+					Math.min(PHONE_AXIS.max, screenH * PHONE_AXIS.share)
 				);
 				const cx = gutter + (W - gutter) / 2;
 				scale = d3
@@ -791,7 +795,7 @@
 
 		let maxH = { key: "", H: 0 };
 		function fixedH() {
-			const key = `${plot.clientWidth}x${innerHeight}x${noneOpen}`;
+			const key = `${plot.clientWidth}x${screenH}x${noneOpen}`;
 			if (maxH.key !== key) {
 				let H = 0;
 				for (const t of TABS.map((x) => x.key))
@@ -1277,6 +1281,7 @@
 		const ro = new ResizeObserver(() => {
 			if (Math.abs(plot.clientWidth - lastW) < 2) return;
 			lastW = plot.clientWidth;
+			screenH = innerHeight;
 			hideTip();
 			draw(false);
 		});
